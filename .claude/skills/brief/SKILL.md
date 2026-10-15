@@ -13,7 +13,7 @@ Tu es l'orchestrateur. Objectif : que Pascal valide un brief et une spec qui dis
    non remplies), ne lance personne : pose à Pascal les questions manquantes, au plus
    quatre, et attends ses réponses. Le brief est à Pascal ; tu ne l'inventes pas.
 2. **Lancer le `contradicteur`** sur le brief, avec pour consigne explicite : critiquer,
-   citer ses sources, chercher les conventions existantes (ITTS ONF, fiches CNPF) avant
+   citer ses sources, chercher les conventions publiées (DSF, INRAE, CCTG, guides du ministère) avant
    toute invention.
 3. **Rendre la critique à Pascal**, classée, sans l'adoucir. Pour chaque point : ce que
    tu proposes de changer dans le brief. Pascal tranche ; tu reportes ses arbitrages

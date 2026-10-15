@@ -114,7 +114,7 @@ Une bonne décision peut sacrifier une valeur : **le sacrifice doit être nommé
 - **Formats ouverts, code libre, lisible par un successeur** (fiche n° 11, test du successeur).
 - **Règle du sommier** : dans `docs/journal.md`, on n'efface pas, on ajoute. Chaque inscription est datée et signée ; une correction est une nouvelle ligne qui renvoie à l'ancienne.
 - **Toujours comparer plusieurs sources** pour une observation (fiche n° 5) ; **une seule source** pour une référence (loi, référentiel, procédure).
-- **Ne jamais inventer un code** quand une convention existe : codes travaux tirés des ITTS de l'ONF et des fiches travaux du CNPF.
+- **Ne jamais inventer un code** quand une convention existe : chaque référentiel (états des plants, causes, protocoles, seuils) est tiré d'une convention publiée et sourcée (DSF, INRAE, guide « Réussir la plantation forestière », fascicule 34 du CCTG…). Les codes travaux ne sont pas tenus par Surculus : ils sont lus dans la tournée, la nomenclature relève de sommieR.
 
 ## Les boucles et les rituels
 
