@@ -1,0 +1,22 @@
+# Référentiel : libellés de travaux de plantation et de suivi de plantation (PREMIÈRE ÉBAUCHE)
+# Propriétaire : Pascal Obstétar. Consulté le 2026-10-15 par l'agent acquereur.
+# AUCUN CODE OFFICIEL N'A ÉTÉ TROUVÉ : ni les ITTS de l'ONF (fiches par essence et contexte, sans nomenclature codée publique)
+# ni les fiches du CNPF/CRPF ne publient de code de travaux. La colonne code est donc VIDE partout. Aucun code inventé.
+# ATTENTION : le texte intégral des documents n'a pas pu être ouvert (WebFetch en échec DNS sur tous les domaines). Les lignes
+# reposent sur des extraits de résultats de recherche web ; niveau_verification = "extrait" tant que Pascal n'a pas ouvert le document.
+# Écarts entre sources : voir codes-travaux.md. Confrontation à sommieR : voir correspondance-sommier.md.
+code,libelle,famille,source,reference_precise,niveau_verification,remarque
+,Préparation du terrain (débroussaillage; mise en andain des rémanents),préparation,Avis de marché sylvicole 2026 (plateforme marchesonline),https://www.marchesonline.com/appels-offres/avis/realisation-de-prestations-de-services-sylvicoles-d/ao-9617006-1 (à confirmer : l'extrait ne désigne pas l'avis exact),extrait,Libellé sans code
+,Plantation (piquetage; ouverture de potets),plantation,Avis de marché sylvicole 2026 (marchesonline),même réserve que ci-dessus,extrait,Libellé sans code
+,Plantation en plein / compléments de plantation / confection de placeaux,plantation,Avis BOAMP (recherche « travaux de plantations »),https://www.boamp.fr/telechargements/FILES/PDF/2025/04/25-46523.pdf (à confirmer),extrait,CPV 77200000 « Services sylvicoles » = code de marché public, pas un code travaux
+,Dégagement de plantation,entretien/dégagement,Appels d'offres ONF Grand Est et agence d'Alençon 2026,https://www.marchesonline.com/appels-offres/avis/travaux-de-degagements-divers-de-plantations-et-de-re/ao-9587510-1,extrait,Libellé sans code
+,Dégagement de régénération naturelle,entretien/dégagement,Appels d'offres ONF 2026,même URL,extrait,Hors plantation stricte; utile pour la frontière avec RN de sommieR
+,Nettoiement-dépressage,entretien/dégagement,Appels d'offres ONF Grand Est 2026,https://www.marchesonline.com/appels-offres/avis/travaux-mecanises-sur-vegetation/ao-9600729-1 (à confirmer),extrait,Le dépressage est distingué du dégagement
+,Élimination de la végétation herbacée (binage; travail superficiel; désherbage homologué),entretien/dégagement,CRPF PACA code de bonnes pratiques; document OFME,https://www.ofme.org/documents/ForetPrivee/srgs/616012.pdf,extrait,Trois volets d'entretien dans le CRPF PACA
+,Contrôle de la végétation ligneuse concurrente,entretien/dégagement,CRPF PACA code de bonnes pratiques,https://www.ofme.org/documents/ForetPrivee/srgs/616012.pdf,extrait,
+,Protection contre les animaux (gaine individuelle; engrillagement; répulsif),protection,CRPF Hauts-de-France (formation); CRPF PACA; essai INRAE/ONF,https://www.ofme.org/documents/ForetPrivee/srgs/616012.pdf,extrait,Gaines individuelles seules efficaces contre abroutissement et sangliers (essai INRAE/ONF)
+,Regarni (remplacement de plants morts),regarni,Cahier des charges AAP Renouvellement forestier volet 1 (arrêté du 19/04/2023),https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047471612,extrait,Regarnis non éligibles sauf force majeure
+,Enrichissement,plantation,Cahier des charges AAP Renouvellement forestier volet 1,https://auvergnerhonealpes.cnpf.fr/sites/auvergnerhonealpes/files/2023-05/Renouvellement%20Forestier%20-%20Cahier%20des%20charges%20.pdf,extrait,Seuil 75 % du nombre de plants facturés à défaut d'arrêté régional
+,Constat de reprise / contrôle de plantation,contrôle,Guide « Réussir la plantation forestière » (Min. Agriculture; 3e éd. déc. 2014),https://agriculture.gouv.fr/sites/default/files/guide_reussir_la_plantation_forestiere_201501_a4_cle8a81f1.pdf,extrait,Guide non contractuel
+,Notation de reprise annuelle (DSF; printemps et automne),contrôle,Protocole DSF; instruction DGAL 2017 annexe 2,https://info.agriculture.gouv.fr/gedei/site/bo-agri/instruction-2017-964/telechargement,extrait,Forme et rayon des placettes non vérifiés
+,Contrôle de placeau (16 ou 9 plants),contrôle,Cahier des charges AAP Renouvellement forestier volet 1,voir ci-dessus,extrait,Voir conventions de contrôle dans codes-travaux.md

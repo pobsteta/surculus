@@ -8,7 +8,7 @@
 
 | Référentiel | Source | Propriétaire | Statut |
 |---|---|---|---|
-| Codes travaux de plantation | Itinéraires techniques de travaux sylvicoles (ITTS) de l'ONF ; fiches travaux du CNPF | Pascal | à acquérir |
+| Codes travaux de plantation | Itinéraires techniques de travaux sylvicoles (ITTS) de l'ONF ; fiches travaux du CNPF | Pascal | **ébauche déposée le 2026-10-15** : `codes-travaux.csv`, `codes-travaux.md`, `correspondance-sommier.md`. Libellés sans code (aucun code ONF/CNPF trouvé), textes sources non ouverts ; à valider par Pascal |
 | Essences et leurs codes | _à déterminer (cf. codes CHS / CHP dictés en alphabet international dans Marculus)_ | Pascal | à acquérir |
 
 Chaque référentiel est déposé en format ouvert (CSV ou YAML) avec, en tête :
