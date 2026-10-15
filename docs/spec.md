@@ -215,12 +215,14 @@ Règles du brief (arbitrages de Pascal ; sources dans `docs/referentiels/seuils-
 
 ### 4.8 Sauvegarder et rendre la tournée
 
-* **Sauvegarde hors de l'appareil** : à chaque fin de placette, de constat ou
-  d'intervention, Surculus écrit une sauvegarde du journal dans un fichier local
-  partageable sans réseau (stockage partagé ou carte SD), restaurable sur un autre
-  appareil. **[ADR à venir : stockage et sauvegarde]**
+* **Sauvegarde hors de l'appareil** (ADR 0005) : à chaque fin de placette, de constat,
+  de vide ou d'intervention, et au moins toutes les N saisies ou M minutes, Surculus
+  écrit un `.sursync` dans le stockage partagé et le fait sortir de l'appareil par trois
+  voies automatiques : carte SD ou clé USB, téléphone du binôme, envoi quand le réseau
+  passe (serveur WebDAV de l'employeur). Les photos sont écrites dès la prise. À
+  l'ouverture d'une journée, Surculus signale, sans bloquer, les saisies jamais sorties.
 * Vérification complète (§ 6) ; la liste des fautes renvoie à la saisie.
-* Fusion des tournées de plusieurs opérateurs : `<tournée>-<opérateur>-<horodatage>.sursync`,
+* Fusion des tournées de plusieurs opérateurs : `<code-tournée>-<appareil>-<horodatage>.sursync` (sans nom de propriétaire ni d'agent, ADR 0005),
   **union sur l'UUID**, idempotente, comme les `.marsync` de Marculus.
 * Export `<tournée>.zip` : `travaux.gpkg` complété, `DCIM/`. La tournée passe *rendue*
   et reste consultable. **[ADR à venir : format d'échange et fusion]**
