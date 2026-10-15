@@ -1,0 +1,19 @@
+# Nomenclature INTERNE des codes travaux de sommieR (SOMMIER_CODES_TRAVAUX), fournie par Pascal le 2026-10-15.
+# Statut : nomenclature interne assumée (arbitrage de Pascal, 2026-10-15) ; aucune source ONF/CNPF ne codifie les travaux.
+# Rattachement aux libellés du RNTSF §1.1 : voir correspondance-sommier.md. Propriétaire : Pascal.
+code,famille,libelle,unites,formes
+PS,preparation,"Préparation du sol (broyage, andainage, crochetage, potets)",ha,surface
+PL,plantation,"Plantation en plein, placeaux, enrichissement",ha,surface
+RG,plantation,"Regarnis, compléments",plants,"surface, point"
+PG,protection,Clôture,m,ligne
+PI,protection,"Protections individuelles, répulsifs",nb,surface
+DG,education,"Dégagement (manuel, mécanique)",ha,surface
+CL,education,"Cloisonnement sylvicole (ouverture, entretien)","m, ha",ligne
+NT,education,"Nettoiement, dépressage",ha,surface
+TF,education,Taille de formation,tiges,surface
+EL,education,Élagage,tiges,surface
+DE,education,Désignation d'arbres objectif,tiges,"surface, point"
+RN,regeneration,"Travaux en régénération naturelle (dégagement de semis, crochetage localisé)",ha,surface
+BI,biodiversite,"Îlots, arbres habitat, mares, lisières","ha, nb","surface, point"
+DS,desserte,"Entretien de piste, fossés, places de dépôt",m,ligne
+PA,parcellaire,"Entretien des limites (peinture, bornes)",m,ligne
