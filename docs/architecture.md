@@ -11,7 +11,8 @@ sommieR ── sommier_projet_qfield_travaux() ──► <tournée>/travaux.gpkg
    │          :data  Room (journal append-only), lecture/écriture GeoPackage
    │          :core  Kotlin pur : règles du registre 6, plants, totaux,
    │                 numérotation, fusion par UUID, grammaire de dictée
-   │          ── bibliothèques communes (GNSS/NTRIP, géodésie, GeoPackage,
+   │          ── tranche 1 : groma-core provisoire ; ensuite bibliothèques
+   │             communes (GNSS/NTRIP, géodésie, GeoPackage,
    │             carte, dictée, journal) partagées avec Marculus et Groma
    │                                                   │
    │                  <tournée>.zip (travaux.gpkg complété + DCIM/)
@@ -46,10 +47,10 @@ GeoPackage attendu par sommieR.
 ## Le contrat avec sommieR
 
 Le `travaux.gpkg` de sommieR 0.31.1 (Lambert-93) est la seule interface ;
-le détail des couches est dans la spécification (§ 5). Les couches
-ajoutées par Surculus (`plants`, `etats_plants`, `projet`) sont ignorées
-par l'import actuel : la tournée reste importable avant que sommieR ne
-livre le brief `travaux-2`.
+le détail des couches, y compris celles qu'ajoute Surculus, est dans la
+spécification (`docs/spec.md`, § 5) : elles sont ignorées par l'import
+actuel, la tournée reste importable avant que sommieR ne les lise (brief
+`briefs/vers-sommier/2026-10-15-travaux-2-plants.md`).
 
 ## Une règle, deux langages
 
