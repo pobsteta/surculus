@@ -39,9 +39,11 @@
 - **Deux protocoles, deux usages** :
   - les **placettes fixes** de sommieR, plants pointés, pour le suivi dans le temps
     (gestionnaire) ;
-  - un **constat de reprise en cheminement** sur les lignes, selon une convention publiée
-    (méthode cemagref reprise par l'INRAE et l'ONF, ou protocole du DSF), pour le taux à
-    l'échelle de la plantation
+  - un **constat de reprise en cheminement** selon la **méthode cemagref** reprise par
+    l'INRAE et l'ONF (arbitrage de Pascal : le constat sert d'abord la décision de
+    regarni ; c'est la méthode la plus robuste quand la mortalité se regroupe), pour le
+    taux à l'échelle de la plantation ; comptage en plein pour les peupliers, les hautes
+    tiges et les petits chantiers
     ([INRAE RENFOR](https://renfor.hub.inrae.fr/ressources/articles-techniques/protocole-constat-de-reprise)).
 - **Ce qu'elle produit** : la tournée complétée (interventions localisées, placettes,
   plants et leurs états, photos) ; le taux de reprise à l'échelle de la plantation,
@@ -52,9 +54,10 @@
     (garantie de reprise du fascicule 34 du CCTG ; 80 % est aussi l'échec selon le DSF
     et le seuil de regarni de la plupart des ITTS de l'ONF, qui vont de 60 à 80 % selon
     l'essence et la densité), source affichée à l'écran ;
-  - seulement à partir de **300 plants comptés** (écart inférieur à 5 points dans 95 %
-    des cas selon l'étude INRAE/ONF ; une placette de 10 plants donne un taux à
-    ±25 points) ;
+  - **seulement quand le seuil est au-dessus de la marge** du taux (intervalle de
+    confiance) : un comptage en plein alerte toujours ; un sondage vise au moins
+    **300 plants** pour que sa marge soit petite (une placette de 10 plants donne un
+    taux à ±25 points) ;
   - **vides** : des plants morts ou absents groupés sur **10 ares** ou plus déclenchent
     une alerte même si le taux moyen est bon (ITTS de l'ONF : 10 ares pour les chênes du
     Sud-Ouest, 10 à 20 ares pour le chêne rouge, 50 ares ailleurs).
@@ -75,9 +78,8 @@ sommieR** : il remplit un fichier, l'import de sommieR décide.
 - **Appareil perdu ou cassé** : le journal des saisies est sauvegardé hors de l'appareil
   à chaque fin de placette (fichier local partageable sans réseau). Une tournée ne se
   perd pas avec le téléphone.
-- **Coordonnées** : tous les points en Lambert-93 (EPSG:2154) dans le GeoPackage ;
-  azimut en degrés depuis le **nord géographique**, sens horaire ; distance
-  **horizontale** en mètres. Un test vérifie qu'une placette française tombe en France.
+- **Coordonnées** : repères et unités explicites partout, détaillés dans `docs/spec.md`
+  (§ 3). Un test vérifie qu'une placette française tombe en France.
 - **Référentiels** :
   - **codes travaux** : Surculus n'embarque aucune liste ; il lit la couche `codes` de la
     tournée. La nomenclature relève de sommieR. Les 15 codes actuels de sommieR ne sont
@@ -100,11 +102,14 @@ sommieR** : il remplit un fichier, l'import de sommieR décide.
 ## Comment saura-t-on que ça marche ?
 
 - **Signe concret** : un agent contrôle une placette fixe de 50 m² (une dizaine de
-  plants) en **moins de 10 minutes**, piquet retrouvé compris, sans papier, et la tournée
-  rendue s'importe dans sommieR 0.31.1 sans une faute.
+  plants) **déjà pointée** en **moins de 10 minutes** (médiane sur au moins 10
+  placettes), piquet retrouvé compris, sans papier, et la tournée rendue s'importe dans
+  sommieR 0.31.1 sans une faute. Le premier passage, où chaque plant est pointé, est
+  chronométré sans cible.
 - **Terrain, automne 2026** : sur une plantation réelle de 1 à 3 ans, **deux opérateurs
-  contrôlent les mêmes placettes le même jour** ; Pascal vérifie que les plants pointés
-  coïncident et que les deux taux, et le sien, sont égaux. Le suivi d'un passage à
+  contrôlent les mêmes placettes le même jour, dans deux tournées séparées** ; Pascal
+  vérifie que les plants pointés coïncident **à 0,5 m près** et que les deux taux, et le
+  sien, sont égaux. Le suivi d'un passage à
   l'autre (mêmes UUID au printemps 2027) n'est pas un critère de la tranche 1.
   **[plantation : à désigner par Pascal]**
 
