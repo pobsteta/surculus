@@ -8,3 +8,4 @@
 > Format : `AAAA-MM-JJ · auteur · mission · ce qui a été fait / décidé / bloqué`
 
 2026-10-15 · Claude (orchestrateur) · mise en place · Configuration de l'équipe selon la méthode de l'Impératrice : orchestrateur (CLAUDE.md), agents des six A et de réalisation, commandes /brief /mission /boucle /bilan, hooks (main protégée, tests obligatoires, journal en ajout seul). Règle de staffing proposée, à valider par Pascal.
+2026-10-15 · Claude (orchestrateur) · brief · Brief rempli à la demande de Pascal à partir des échanges du jour et des dépôts sommieR, Marculus, Groma et nemetonshiny ; propositions marquées [à trancher], dont l'origine non ITTS/CNPF des codes travaux de sommieR. À amender par Pascal avant /brief.
