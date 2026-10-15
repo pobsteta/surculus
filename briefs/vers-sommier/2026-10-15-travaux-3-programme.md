@@ -1,5 +1,8 @@
 # Brief — Travaux, lot 3 : le programme prévu, venu du plan d'action de nemetonshiny
 
+> **Gelé** (orchestrateur, 2026-10-15) : ne pas déposer avant que la correspondance des codes de sommieR (nomenclature interne, `docs/referentiels/correspondance-sommier.md`) et la table des types d'action soient revues avec Pascal.
+
+
 *Établi le 15 octobre 2026 depuis le dépôt `surculus`, à partir de sommieR
 0.31.1 (`fd92078`) et de nemetonshiny (`9144139`). Va avec le brief
 `vers-nemetonshiny/2026-10-15-plan-action-vers-surculus.md`. À déposer dans

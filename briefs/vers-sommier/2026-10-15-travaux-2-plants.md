@@ -1,5 +1,8 @@
 # Brief — Travaux, lot 2 : les plants, pointés et suivis d'un passage à l'autre
 
+> **À réviser avant dépôt dans sommieR** (orchestrateur, 2026-10-15) : le brief validé et `docs/spec.md` changent ce lot — états `vivant`, `mort`, `non_retrouve` (réversible, remplace `disparu`) ; dégâts dans une couche `degats_plants` au lieu de la marque `abrouti` ; dispositifs C1/C2 au lieu de la placette fixe de 50 m² ; géométrie des plants en **Lambert-93 (EPSG:2154)**, pas WGS 84 ; `projet.version_contrat`. Voir `docs/spec.md` §5 ; la décision 5 (« un plant mort ou disparu le reste ») est remplacée.
+
+
 *Établi le 15 octobre 2026 depuis le dépôt `surculus`, à partir de sommieR
 0.31.1 (`main`, `fd92078`). À déposer dans `specs/` de sommieR sous le nom
 `brief_travaux-2_plants.md`.*
@@ -38,7 +41,7 @@ ou saisis dans QField.
 ## Décisions de conception
 
 1. **Un quatrième type d'entrée, `plant`.** Il porte `placette_id`,
-   `numero` (dans la placette), `geometrie` (point WGS 84), `essence`,
+   `numero` (dans la placette), `geometrie` (point Lambert-93, EPSG:2154), `essence`,
    `methode` (`rtk`, `distance_azimut`, `gnss`), `precision_m`, et, pour un
    plant pointé en distance et azimut, `distance_m` et `azimut_deg` depuis
    le centre. Un plant s'inscrit une fois, au passage où il est pointé ; un
