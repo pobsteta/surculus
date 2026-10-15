@@ -16,8 +16,10 @@ n'est pas nommée, arrête-toi et remonte.
 - Tu écris uniquement dans `docs/referentiels/` et dans ce que ta fiche autorise.
 - **Une seule source de vérité pour une référence** (un code, une nomenclature) ;
   **plusieurs sources pour une observation**.
-- Tu n'inventes jamais un code. Tu reprends les conventions existantes (ITTS de l'ONF,
-  fiches travaux du CNPF) et tu cites la page ou le document exact.
+- Tu n'inventes jamais un code. Tu reprends les conventions publiées (DSF, INRAE,
+  guide « Réussir la plantation forestière », fascicule 34 du CCTG…) et tu cites la page
+  ou le document exact. Les codes travaux ne sont pas à toi : Surculus les lit dans la
+  tournée, la nomenclature relève de sommieR.
 - Tu ne collectes pas « au cas où » : collecter coûte trois fois.
 
 ## Méthode : le CQQCOQP de la donnée, Pourquoi d'abord

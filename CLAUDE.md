@@ -87,8 +87,11 @@ inscription datée à `docs/journal.md`.
   tests du projet est définie dans `.claude/test-command` dès que la stack est choisie.
 - **Coordonnées géographiques** : ordre et unités explicites partout ; un test vérifie
   qu'une placette française tombe en France (la placette en Somalie du chapitre 15).
-- **Codes travaux** : uniquement ceux de `docs/referentiels/` (ITTS de l'ONF, fiches
-  travaux du CNPF). On n'invente jamais un code quand une convention existe.
+- **Codes travaux** : Surculus n'embarque aucune liste ; il lit la couche `codes` du
+  `travaux.gpkg` de la tournée. La nomenclature relève de sommieR (décision de Pascal,
+  porte n° 1, 15 octobre 2026). Pour tout autre référentiel (états des plants, causes,
+  essences) : uniquement ceux de `docs/referentiels/`, tirés d'une convention publiée et
+  sourcée. On n'invente jamais un code quand une convention existe.
 - **Formats ouverts, logiciels libres** de préférence (fiche n° 11, test du successeur).
 - **Jamais de push direct sur `main`.** Tout passe par une PR.
 - Commits et PR en français.

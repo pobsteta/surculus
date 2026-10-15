@@ -1,5 +1,11 @@
 # Surculus v1 — spécification
 
+> **Brouillon, à revoir après le brief amendé** (`docs/brief.md`, porte n° 1 du
+> 15 octobre 2026). Écrite avant la critique du brief : protocole en cheminement, états
+> du DSF, sauvegarde du journal, repères de coordonnées et périmètre de la tranche 1
+> restent à y reporter. Les choix techniques notés ici sont des propositions, à trancher
+> en ADR (`docs/adr/`).
+
 *Établie le 15 octobre 2026, à partir de sommieR 0.31.1 (`main`, `fd92078`),
 de Marculus (`87f5720`), de Groma (`af551dc`) et de nemetonshiny
 (`9144139`). Décisions de Pascal du même jour : application séparée qui
@@ -194,8 +200,8 @@ Les mêmes qu'à l'import (`controler_tournee_travaux()`,
 
 La programmation des travaux et le chantier (fiche, déclaration,
 facturation), les calculs du bilan (dans sommieR), le martelage (Marculus),
-l'inventaire (Groma). Surculus n'écrit jamais dans une base : il remplit un
-GeoPackage, et l'import décide.
+l'inventaire (Groma). Surculus n'écrit jamais dans la base de sommieR : il
+remplit un GeoPackage, et l'import décide.
 
 ## 9. Questions ouvertes
 
