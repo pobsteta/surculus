@@ -4,7 +4,8 @@
 > `contradicteur` (12 objections) et sur les référentiels acquis par l'`acquereur`
 > (`docs/referentiels/`). Les chiffres marqués *extrait* viennent de résumés de recherche :
 > les textes intégraux (ministère, DRAAF, DSF) étaient injoignables depuis la session.
-> Les passages encore ouverts sont marqués **[ouvert]**.
+> Les passages encore ouverts sont marqués **[ouvert]**. **Validé par Pascal le 15 octobre
+> 2026 (porte n° 1, brief).**
 
 ## Le problème, et pour qui (Abstraction)
 
@@ -88,8 +89,8 @@
 - **Lien avec l'existant** : sommieR prépare la tournée et la relit, il est la seule
   destination des saisies ; nemetonshiny fournit le prévu (son plan d'action) ; Surculus
   reprend les bibliothèques communes avec Marculus et Groma (GNSS, GeoPackage, carte,
-  dictée, journal) sans les recopier ; nemeton n'est pas sur le chemin. **[ouvert : à
-  confirmer par Pascal]**
+  dictée, journal) sans les recopier ; nemeton n'est pas sur le chemin (confirmé par Pascal le
+  15 octobre 2026).
 - **Contrat avec sommieR** : le `travaux.gpkg` de sommieR, sans renommer ses couches ni
   ses champs, porte un **numéro de version** (`projet.version_contrat`) que Surculus
   vérifie à l'ouverture de la tournée : une version inconnue est refusée clairement,
