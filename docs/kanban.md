@@ -9,22 +9,29 @@
 
 _Idées, à trier au prochain `/mission`._
 
-- Brief amendé après critique : **à valider par Pascal** (porte n° 1).
-- Pascal : licencier Marculus (préalable aux bibliothèques communes).
-- Pascal : chiffrer le coût (surfaces, prix d'un regarni, ressaisie), fixer seuil et
-  effectif minimal d'alerte, nommer le matériel de pointage, désigner la plantation
-  d'essai et le successeur.
-- `acquereur` : déposer dans `docs/referentiels/` les états et causes du DSF, le
-  protocole de constat en cheminement, les seuils et densités minimales.
-- Orchestrateur : revoir `docs/spec.md` (brouillon) d'après le brief validé.
-- ADR à proposer : application dédiée ; stack ; stockage et sauvegarde ; protocole ;
-  GNSS et repères ; bibliothèques communes ; format d'échange ; licence.
+- **Orchestrateur + `contradicteur`** : proposer et faire critiquer les ADR restantes,
+  à trancher par Pascal avant `/mission` : 0002 protocole de constat ; 0003 GNSS et
+  repères ; 0004 stack et dictée (puis `.claude/test-command`) ; 0005 stockage et
+  sauvegarde ; 0006 format d'échange et fusion ; 0007 couches ajoutées au contrat
+  sommieR ; 0008 bibliothèques communes ; 0009 carte hors ligne ; 0010 distribution et
+  identifiant.
+- **`acquereur`** : codes des essences (avant la tranche 2) ; WMM2025 ou IGRF-14 et sa
+  licence ; version de RGF93 diffusée par Centipède.
+- **Pascal** : matériel de pointage ; plantation d'essai d'automne 2026 ; successeur ;
+  coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
+  fascicule 34 ; URL du guide des chênaies continentales.
+- **Pascal (dans sommieR)** : mettre à jour les briefs `vers-sommier` (couches
+  ajoutées, données des plantations à constater, décision « hors entreprise », table de
+  correspondance des codes, `montant_eur` facultatif).
 
 ## Validé
 
 ## Planifié
 
 ## Terminé
+
+- Porte n° 1 franchie le 2026-10-15 : brief (PR #5), références des sources (PR #6),
+  ADR 0001 (PR #7), référentiels de plantation (PR #8), spec v1 (PR #9) — Pascal.
 
 ## Abandonné
 
