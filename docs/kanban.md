@@ -9,7 +9,16 @@
 
 _Idées, à trier au prochain `/mission`._
 
-- Faire critiquer le brief par le `contradicteur` (`/brief`).
+- Brief amendé après critique : **à valider par Pascal** (porte n° 1).
+- Pascal : licencier Marculus (préalable aux bibliothèques communes).
+- Pascal : chiffrer le coût (surfaces, prix d'un regarni, ressaisie), fixer seuil et
+  effectif minimal d'alerte, nommer le matériel de pointage, désigner la plantation
+  d'essai et le successeur.
+- `acquereur` : déposer dans `docs/referentiels/` les états et causes du DSF, le
+  protocole de constat en cheminement, les seuils et densités minimales.
+- Orchestrateur : revoir `docs/spec.md` (brouillon) d'après le brief validé.
+- ADR à proposer : application dédiée ; stack ; stockage et sauvegarde ; protocole ;
+  GNSS et repères ; bibliothèques communes ; format d'échange ; licence.
 
 ## Validé
 
