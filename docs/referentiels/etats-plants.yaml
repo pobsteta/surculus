@@ -1,0 +1,184 @@
+# États d'un plant contrôlé et causes d'atteinte ou de mortalité
+#
+# Propriétaire : Pascal Obstétar
+# Date de consultation : 2026-10-15
+# Constitué par : agent `acquereur` (Surculus)
+#
+# DÉCISION ÉCLAIRÉE : les valeurs (états et causes) que l'agent de terrain dira à la
+# voix ou aux boutons, et ce que Surculus rendra au sommier.
+#
+# SOURCES
+#   [DSF24]  Département de la santé des forêts, « Bilan de la santé des forêts en 2024 :
+#            réussite des plantations forestières de l'année », 16 p. (PDF).
+#            https://agriculture.gouv.fr/telecharger/148150
+#            Pages citées = pages du PDF (p. 1 = couverture). Rédaction J.-B. Daubrée.
+#   [RENFOR] M. Puyal (INRAE), H. Chevalier, J.-P. Renaud, J. Pitaud (ONF), 2021,
+#            « Protocole constat de reprise », créé le 2021-03-30, modifié le 2023-09-14.
+#            https://renfor.hub.inrae.fr/ressources/articles-techniques/protocole-constat-de-reprise
+#            LU PAR RÉSUMÉ (outil de lecture qui synthétise la page), non mot à mot :
+#            les formulations ci-dessous sont à reconfirmer sur la page.
+#   [GUIDE14] « Réussir la plantation forestière », 3e éd., décembre 2014, p. 47.
+#            https://www.oise.gouv.fr/contenu/telechargement/67699/411339/file/GUIDE_reussir%20plantation%20forestiere_2015.pdf
+#   [F34]    CCTG fascicule 34 « Travaux forestiers de boisement », arrêté du 30 mai 2012,
+#            art. 3-1.1 (texte p. 23).
+#            https://www.bulletin-officiel.developpement-durable.gouv.fr/documents/Bulletinofficiel-0030524/F34_2012-05-30.pdf
+#            Pages = numéros imprimés (PDF = numéro imprimé + 4).
+#
+# ÉCARTS RELEVÉS ENTRE SOURCES (à arbitrer par Pascal, détail en bas de fichier)
+#   E1. « Cinq groupes de causes » (brief) : le bilan DSF analyse QUATRE groupes (p. 8).
+#       Le chiffre cinq correspond aux CINQ lignes « autres problèmes » de la fiche
+#       d'observation DSF (p. 16). Les deux découpages sont reproduits ci-dessous.
+#   E2. Les quatre états DSF (sain, atteint, mort, absent) et les trois états du constat
+#       de reprise (vivant, mort, mort-ou-absent hors entreprise) ne se recouvrent pas :
+#       aucune des deux sources ne publie la correspondance. Celle de ce fichier est une
+#       PROPOSITION de l'acquéreur, marquée comme telle.
+#   E3. Dans [DSF24] p. 8, la somme des quatre états (72 951 + 27 189 + 8 047 + 5 327 =
+#       113 514) ne vaut pas le total annoncé (112 400 plants = 1 124 plantations × 100).
+#       Écart de 1 114 plants (1 %), non expliqué par la source.
+#   E4. [DSF24] p. 8 dit que les plants absents « sont inclus dans le calcul du taux de
+#       mortalité global » ; or le taux de mortalité publié (7,1 %, p. 3) correspond aux
+#       seuls morts (8 047 / 113 514 = 7,09 %, calcul de l'acquéreur). Absents compris,
+#       on obtiendrait 11,8 %. La reprise (sain + atteint) / total vaut alors 88,2 %,
+#       cohérente avec la lecture du graphique p. 3 (autour de 89 % à l'automne).
+#   E5. La distinction « indépendant de l'entreprise » (RENFOR, GUIDE14, F34) est une
+#       question de RESPONSABILITÉ contractuelle ; les groupes de causes du DSF sont une
+#       question de CAUSE biologique. Deux axes différents : ne pas les fusionner.
+
+version: 1
+
+etats_dsf:
+  # Nomenclature DSF, [DSF24] p. 8 (répartition des 112 400 plants notés à l'automne 2024).
+  # Valeurs publiées : 72 951 sains (65 %), 27 189 atteints (24 %), 8 047 morts (7 %),
+  # 5 327 absents (4 %).
+  - etat: sain
+    definition_source: "non définie par la source ; employé comme opposé de « atteint » (inférence de l'acquéreur : plant vivant sans problème noté)"
+    page: "[DSF24] p. 8"
+  - etat: atteint
+    definition_source: "présence d'un problème sanitaire sans mort du plant : le plant est vivant"
+    page: "[DSF24] p. 8"
+  - etat: mort
+    definition_source: "plant mort ; la raison principale est recherchée (méthodologie, p. 16)"
+    page: "[DSF24] p. 8 et p. 16"
+  - etat: absent
+    definition_source: "plant manquant ; la fiche DSF demande un « nombre estimé de plants absents »"
+    page: "[DSF24] p. 16 (fiche d'observation) ; p. 8 (exclu de l'analyse des causes)"
+    remarque: "Les absents n'ont pas de cause DSF : l'analyse des causes ne porte que sur atteints et morts (p. 8)."
+
+etats_constat_reprise:
+  # [RENFOR] (lu par résumé) : « au minimum trois catégories ». La troisième est exclue du
+  # calcul pour la garantie contractuelle de reprise.
+  # [GUIDE14] p. 47 : mêmes trois catégories, notées Nv, Nm, nm.
+  - etat: vivant
+    notation_guide14: Nv
+    page: "[RENFOR] ; [GUIDE14] p. 47"
+  - etat: mort
+    notation_guide14: "Nm (morts ou disparus)"
+    page: "[RENFOR] ; [GUIDE14] p. 47"
+  - etat: mort_ou_absent_independant_de_l_entreprise
+    notation_guide14: "nm (sous-ensemble de Nm : plants « détruits ou emportés pour des causes indépendantes de l'action de l'entreprise »)"
+    page: "[GUIDE14] p. 47 ; [RENFOR]"
+    effet_sur_le_taux: "retiré du dénominateur : taux = Nv x 100 / (Nv + Nm - nm)"
+
+correspondance_proposee:
+  # PROPOSITION de l'acquéreur (écart E2) : ni [DSF24] ni [RENFOR] ne la publient.
+  # À valider par Pascal avant qu'un agent la dise sur le terrain.
+  - etat_dsf: sain
+    etat_constat: vivant
+  - etat_dsf: atteint
+    etat_constat: vivant
+    remarque: "vivant : un plant atteint compte pour la reprise (déduit de [DSF24] p. 8, « atteints mais vivants »)."
+  - etat_dsf: mort
+    etat_constat: "mort, ou mort hors entreprise si la cause relève de la liste F34 ci-dessous"
+  - etat_dsf: absent
+    etat_constat: "mort (disparu), ou hors entreprise si la cause relève de la liste F34"
+    remarque: "[GUIDE14] p. 47 compte « morts ou disparus » ensemble."
+
+causes_dsf_groupes_bilan:
+  # [DSF24] p. 8, section 6 : « Les causes des atteintes ... et des mortalités des plants
+  # sont classées en QUATRE groupes ». Part 2024 des plants atteints / des plants morts.
+  - groupe: entomologique
+    libelle_source: "entomologique (insectes)"
+    part_atteints: "5 861 plants (22 %)"
+    part_morts: "300 plants (4 %)"
+  - groupe: pathologique
+    libelle_source: "pathologique (champignons, bactéries...)"
+    part_atteints: "7 676 plants (28 %)"
+    part_morts: "54 plants (< 1 %)"
+  - groupe: animaux
+    libelle_source: "animaux autres que les insectes (cervidés, rongeurs, oiseaux...)"
+    part_atteints: "6 726 plants (25 %)"
+    part_morts: "706 plants (9 %)"
+  - groupe: abiotique_complexe_indetermine
+    libelle_source: "abiotique ou complexe (qualité des plants et des travaux de préparation, concurrence) ou indéterminé"
+    part_atteints: "6 926 plants (25 %)"
+    part_morts: "6 987 plants (87 %)"
+    remarque: "Regroupe tous les cas « inexpliqués » ou à plusieurs facteurs ([DSF24] p. 16, méthodologie)."
+
+causes_dsf_fiche_observation:
+  # [DSF24] p. 16, fiche « Suivi plantation, notation de printemps / d'automne », mai 2016,
+  # version définitive : CINQ lignes sous « Autres problèmes » (colonnes : code, plants
+  # atteints mais vivants, plants morts - cause principale seulement - nombre d'échantillons).
+  # Les CODES de la colonne « code » ne sont pas lisibles dans le bilan : non repris.
+  - ligne: "Défoliateurs"
+  - ligne: "Rongeurs"
+  - ligne: "Gibier"
+  - ligne: "Autre insecte ou champignon déterminé"
+  - ligne: "Cause inexpliquée, abiotique ou anthropique (qualité des plants, de plantation...)"
+
+causes_dsf_detail:
+  # Détail publié, pour mémoire (pas nécessairement à dire à la voix). Effectifs 2024.
+  animaux:  # [DSF24] p. 12, tableau « Atteintes et mortalités dues à des animaux autres que les insectes »
+    - cervides
+    - sanglier
+    - rongeurs
+    - lievre
+    - gasteropodes
+    - "autres (oiseaux indéterminés)"
+  abiotique:  # [DSF24] p. 13, détail des 6 987 plants morts abiotiques
+    - "dégât abiotique indéterminé (71 %)"
+    - "dégât dû à un excès d'eau (12 %)"
+    - "problème lié à la plantation (9 %)"
+    - "concurrence herbacée (3 %)"
+    - "dégât dû au gel (2 %)"
+    - "dégât dû à une opération sylvicole (2 %)"
+    - "tassement du sol dû à des engins (1 %)"
+    - "problème dû à un coup de chaleur (0 %)"
+  insectes:  # [DSF24] p. 9
+    - "défoliateurs (absence des insectes responsables lors de la notation)"
+    - "hylobe ou grand charançon du pin"
+    - "cécidomyie du douglas"
+    - "charançons phyllophages"
+    - altises
+    - "hannetons (commun et forestier)"
+    - "chrysomèle du peuplier"
+    - "punaise réticulée du chêne"
+    - "autres insectes (25 espèces)"
+  pathogenes:  # [DSF24] p. 11 (principaux)
+    - "oïdium du chêne"
+    - "rouille du peuplier"
+    - "sphaeropsis des pins"
+    - "phytophthora spp"
+    - "autres pathogènes"
+    - "pathogène non déterminé"
+
+causes_hors_entreprise_f34:
+  # [F34] art. 3-1.1 « Remplacement des plants », texte p. 23 : la responsabilité de
+  # l'entrepreneur est engagée en cas d'insuffisance de réussite SAUF si les pertes
+  # résultent de :
+  - "éboulements, inondations, ravinements, glissements et reptations de neige ou avalanches ayant détruit ou emporté le boisement ; incendies imputables aux tiers"
+  - "attaques d'animaux prédateurs ou parasites non imputables à l'insuffisance ou à la mauvaise qualité d'ouvrages de protection établis ou de traitement réalisés par l'entrepreneur dans le cadre du marché"
+  # [GUIDE14] p. 47 : « détruits ou emportés pour des causes indépendantes de l'action de
+  # l'entreprise ». [RENFOR] (résumé) cite comme causes de mortalité : sécheresses
+  # répétées, hylobe, gibier, compétences des intervenants (ces deux dernières étant, par
+  # nature, imputables à l'entreprise ou à son encadrement : la source ne tranche pas).
+
+hors_nomenclature_publiee:
+  # Pas de convention publiée trouvée : ne pas inventer de valeur.
+  - "plant regarni (le suivi d'un plant regarni d'un passage à l'autre est l'objet propre de Surculus ; aucune des quatre sources n'en publie le statut)"
+  - "plant abrouti / frotté (le DSF classe l'atteinte par groupe de cause, pas par symptôme)"
+  - "indicateur « hors entreprise » à la voix : qui le pose ? (agent de terrain ou gestionnaire ?) : question ouverte pour Pascal"
+
+questions_pour_pascal:
+  - "Valide-t-on la correspondance proposée sain/atteint -> vivant, mort/absent -> mort ? (E2)"
+  - "Surculus note-t-il la cause en quatre groupes (bilan DSF) ou cinq lignes (fiche DSF) ? Proposition : quatre groupes + détail facultatif, car le bilan l'analyse ainsi. (E1)"
+  - "Le drapeau « hors entreprise » est-il posé sur le terrain ou au bureau ? (E5)"

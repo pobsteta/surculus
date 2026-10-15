@@ -1,0 +1,47 @@
+# Codes article du référentiel Teck de l'ONF, publiés dans les ITTS hêtraies des Pyrénées
+# Propriétaire : Pascal Obstétar
+# Date de consultation : 2026-10-15
+# Constitué par : agent `acquereur`
+# Décision éclairée : la table de correspondance que Pascal portera dans sommieR (Surculus n'embarque aucun code).
+#
+# SOURCES (deux documents, qui se recoupent)
+#  MEMENTO  ONF, « Mémento pratique d'utilisation des ITTS : Hêtraies et hêtraies sapinières des Pyrénées », T. Sardin et T. Villiers, mars 2017 (réf. 9200-17-GUI-SAM-061), chapitre 4 « Nomenclature des travaux du référentiel Teck », p. 30-31 (numéros imprimés ; PDF = imprimé + 4). Fichier local « ONF - ITTS_Memento hetraies Pyrenees.pdf ». Les numéros entre crochets [1] à [25] sont ceux que les logigrammes des p. 17 et 19 citent.
+#  ITTS13   ONF, « Travaux sylvicoles et ITTS : Hêtraies et hêtraies sapinières des Pyrénées », coordination T. Sardin, octobre 2013 (réf. 9200-13-GUI-SAM-015), colonne « code tache » des tableaux de coûts de 3 HET 10 (p. 33) et 3 HET 20 (p. 35) (numéros imprimés ; PDF = imprimé + 2). Fichier local « ONF - ITTS_Travaux sylvicoles hetraies Pyrenees.pdf ».
+#  Les deux PDF ne portent pas d'URL : à compléter.
+#
+# CE QUE LE DOCUMENT DIT DE CES CODES
+#  - Le MEMENTO les appelle « Code Article » du « référentiel Teck » et les libellés « libellé devis non modifiable » : ce sont des articles de devis de l'ONF (prestations), pas une nomenclature publique de la profession.
+#  - Structure observée (non expliquée dans le document) : « 04 » + famille à 4 lettres (PRVG, PRSO, CLOI, DEGN, DEGP, NETD, PLAN) + 3 lettres + 2 chiffres ; les fournitures de plants commencent par « 02 » (02-FP-HET-602). Ne pas déduire de règle de construction.
+#  - Le premier chiffre des codes d'ITINÉRAIRE (1, 3, 5, 9) est publié et expliqué (voir codes d'itinéraire plus bas), mais il porte sur le TYPE DE RÉGÉNÉRATION (1 naturelle, 3 artificielle, 5 amélioration, 9 irrégulier), pas sur le type de travail.
+#  - PAS DE CODE pour : regarnis (le tableau de 3 HET 10 réutilise 02-FP-HET-602 et 04-PLAN-DSN01 en option à 5 %), protection contre le gibier, taille de formation, contrôle de reprise. Le memento 2017 p. 19 écrit simplement « Regarnis » sans code.
+#  - Ces codes ne couvrent que le hêtre des Pyrénées dans les deux documents lus (famille PLAN et fournitures : « HET »). Les autres ITTS lus ne publient pas de code de tâche, hors plateau landais (voir codes-taches-onf.csv). Aucun document lu ne dit que ces codes valent pour toutes les directions territoriales.
+#
+# CODES D'ITINÉRAIRE (rappel, non des tâches) : 1 HET 10/20/30/40/50 régénération naturelle ; 3 HET 10 et 3 HET 20 plantation, mécanisable ou non (ITTS13 p. 6) ; 5 HET 10 à 40 amélioration ; 9 HET 10 à 30 irrégulier. Châtaignier DT Île-de-France Nord-Ouest 2004 (p. 39) : « un premier chiffre indiquant la nature de l'opération (1 régénération naturelle, 3 régénération artificielle, 5 travaux d'amélioration), trois lettres pour l'essence (CHT), un dernier chiffre pour le numéro de la norme » (ex. 3CHT1, 3CHT2, 3CHT3).
+#
+code_numero,code_article,libelle_source,source_page,code_sommier_propose,correspondance,remarque
+"1","04-PRVG-RCO01","Travaux préalables à la régénération : relevé de couvert, élimination de sous-étage et des morts bois","MEMENTO p. 30","","aucune","Régénération naturelle."
+"2","04-PRVG-NMA01","Travaux préalables à la régénération : nettoyage manuel localisé de la végétation avant régénération","MEMENTO p. 30 ; ITTS13 p. 35 (3 HET 20 : « nettoyage manuel en bandes du recru »)","PS","partielle","Pour la plantation (3 HET 20) : maîtrise du recru avant plantation."
+"3","04-PRVG-CHM01","Travaux préalables à la régénération : application de produit phytocide sur la végétation avant régénération","MEMENTO p. 30","PS","partielle","Libellé sommieR de PS : broyage, andainage, crochetage, potets ; pas de phytocide."
+"4","04-PRVG-NPM01","Travaux préalables à la régénération : nettoyage du terrain à la pelle mécanique et andainage ou mise en tas","MEMENTO p. 30","PS","exacte",""
+"5","04-PRVG-BPE01","Travaux préalables à la régénération : broyage en plein de végétation herbacée, semi-ligneuse ou ligneuse de faible diamètre","MEMENTO p. 30 ; ITTS13 p. 33 (3 HET 10 : « broyage en bandes du recru »)","PS","exacte","Libellé sommieR : broyage."
+"6","04-PRVG-CRO01","Travaux préalables à la régénération : peignage de la ronce par crochetage mécanique","MEMENTO p. 30 ; ITTS13 p. 33","PS","exacte","« crochetage » figure au libellé sommieR de PS."
+"6 bis","04-PRSO-CRO01","Travaux préalables à la régénération : crochetage superficiel au cultivateur à dents","MEMENTO p. 30","PS","exacte","Famille PRSO (sol) distincte de PRVG (végétation)."
+"7","04-PRVG-BPO01","Travaux préalables à la régénération : broyage en plein de végétation ligneuse de fort diamètre ou de rémanents d'exploitation (5-7 cm)","MEMENTO p. 30","PS","exacte",""
+"8","04-CLOI-CYE01","Ouverture de cloisonnement sylvicole au broyeur dans une régénération de moins de 3 m, végétation herbacée ou semi-ligneuse de faible diamètre","MEMENTO p. 30","CL","exacte",""
+"9","04-CLOI-CYO01","Ouverture de cloisonnement sylvicole au broyeur dans une régénération de moins de 3 m, végétation ligneuse très dense ou de fort diamètre (ou réouverture)","MEMENTO p. 30","CL","exacte",""
+"10","04-CLOI-EYE01","Maintenance de cloisonnement sylvicole au broyeur dans une régénération de moins de 3 m, végétation herbacée ou semi-ligneuse de faible diamètre","MEMENTO p. 30 ; ITTS13 p. 33 et 35 (« entretien de cloisonnements sylvicoles »)","CL","exacte","« ouverture, entretien » au libellé sommieR de CL."
+"11","04-CLOI-EYO01","Maintenance de cloisonnement sylvicole au broyeur dans une régénération de moins de 3 m, végétation ligneuse très dense ou de fort diamètre","MEMENTO p. 30","CL","exacte",""
+"12","04-DEGN-FOU01","Dégagement manuel de régénération naturelle : bâtonnage de la fougère","MEMENTO p. 31","RN","exacte","Aussi cité au flux « en plantation » p. 19 (bâtonnage)."
+"13","04-DEGN-APRFD09","Dégagement manuel en plein de régénération naturelle feuillue en cours d'installation avec coupe rez-terre : feuillus divers","MEMENTO p. 31","RN","exacte",""
+"14","04-DEGN-APGFD01","Dégagement manuel en plein de régénération naturelle feuillue avec maintien du gainage : feuillus divers","MEMENTO p. 31","RN","exacte",""
+"15","04-CLOI-EYE02","Maintenance de cloisonnement sylvicole au broyeur dans une régénération de plus de 3 m, végétation herbacée ou semi-ligneuse de faible diamètre","MEMENTO p. 31","CL","exacte",""
+"16","04-NETD-NML36F","Nettoiement manuel localisé de jeune peuplement feuillu à 3-6 m","MEMENTO p. 31","NT","exacte","Amélioration (hauteur supérieure à 3 m)."
+"17","04-NETD-NML69F","Nettoiement manuel localisé de jeune peuplement feuillu à 6-9 m","MEMENTO p. 31","NT","exacte",""
+"18","04-NETD-NML36FD","Nettoiement manuel localisé de jeune peuplement feuillu à 3-6 m au seul profit de la diversité","MEMENTO p. 31","NT","exacte",""
+"19","04-NETD-NML69FD","Nettoiement manuel localisé de jeune peuplement feuillu à 6-9 m au seul profit de la diversité","MEMENTO p. 31","NT","exacte",""
+"20","04-NETD-NDMP69F","Dépressage et nettoiement manuel en plein de jeune peuplement feuillu à 6-9 m","MEMENTO p. 31","NT","exacte","« Nettoiement, dépressage » au libellé sommieR de NT."
+"21","04-DEGP-ALR01","Dégagement manuel de plantation sur la ligne avec coupe rez-terre","MEMENTO p. 31 ; ITTS13 p. 33 et 35 (« si plants de H < 75 cm »)","DG","exacte","Le seul code publié qui nomme le dégagement d'une PLANTATION (famille DEGP)."
+"22","04-DEGP-ALG01","Dégagement manuel de plantation sur la ligne avec maintien du gainage","MEMENTO p. 31 ; ITTS13 p. 33 et 35 (« dégagements manuels, 3 passages en moyenne »)","DG","exacte",""
+"23","04-PLAN-DSN01","Mise en place de plants à racines nues en potet manuel en sol non travaillé préalablement","MEMENTO p. 31 ; ITTS13 p. 33 et 35 (« mise en place de plants au potet travaillé »)","PL","exacte","Utilisé AUSSI pour le regarni (option à 5 %, ITTS13 p. 33 et 35) : le regarni n'a pas de code propre."
+"24","02-FP-HET-00","Fourniture de plants de hêtre","MEMENTO p. 31","PL","partielle","Fourniture, pas mise en place. ITTS13 p. 33 et 35 écrit 02-FP-HET-602 (601)-RN (régions de provenance 602 et 601, racines nues) : le code existe avec suffixe de provenance."
+"25","04-FIRR-…","Intervention en futaie irrégulière combinant relevé de couvert, dégagement de semis, nettoiement, dépressage et intervention sur les perches","MEMENTO p. 31","","aucune","Code tronqué dans le document (« 04– FIRR –… ») : non recopié en entier, ne pas compléter."

@@ -1,0 +1,25 @@
+# Codes de tâche élémentaire publiés dans les ITTS de l'ONF
+# Propriétaire : Pascal Obstétar
+# Date de consultation : 2026-10-15
+# Constitué par : agent `acquereur`
+# Décision éclairée : la table de correspondance que Pascal portera dans sommieR (Surculus n'embarque aucun code).
+# Source unique : ONF, Direction territoriale Sud-Ouest, Agence Landes Nord-Aquitaine, « Itinéraires Techniques de Travaux Sylvicoles (I.T.T.S.) Le plateau landais (Aquitaine) », révision post-Klaus 2013 ; fichier local « ONF_ITTS_plateau landais.pdf » (non versionné). URL : à compléter (le PDF ne la porte pas).
+# Pages = numéros imprimés (PDF = imprimé + 2). Libellés recopiés des tableaux « Itinéraires détaillés » (3 PM 70 p. 89 ; 3 PM 71 p. 99 ; 3 PM 73 p. 115).
+# Ces codes sont des codes de tâche élémentaire propres aux ITTS de l'ONF (DT Sud-Ouest, ITTS « 89 3 PM xx »), pas une nomenclature nationale ouverte : le document ne dit pas s'ils sont repris ailleurs à l'ONF. Leur structure observée : 3 lettres de famille (EPR, RRG, RRA) + 3 lettres de tâche. La signification des préfixes n'est pas expliquée dans le document : non interprétée ici.
+# Les autres ITTS lus (Arc jurassien 2015, chênes du Sud-Ouest 2011, mémento Alpes du Sud 2019, mémento hêtraie 2020, guide chênaies 2008) ne publient AUCUN code de tâche : colonne « code tâche » vide dans l'Arc jurassien (p. 33 et 35), absente ailleurs.
+# Codes d'itinéraire (non des tâches) publiés : Arc jurassien p. 8 (schéma « 1 SE XX » : type 1 régénération naturelle, 3 régénération artificielle, 5 amélioration, 9 irrégulier ; essence objectif S.E, SP, EPC) ; chênes du Sud-Ouest p. 57 et 130 (3 CHP 10 à 3 CHP 30 pour le pédonculé ; 3 CHS 10 pour le sessile, sans code de tâche dans le tableau p. 131) ; plateau landais p. 6 (ex. 3 PM 73, 3 PAE 10) ; hêtraie p. 18 (3 HET A, B, C).
+# VOIR AUSSI codes-teck-onf.csv : les ITTS hêtraies des Pyrénées (2013, memento 2017) publient un second système, les « codes article du référentiel Teck » (04-PLAN-DSN01, 04-DEGP-ALG01…). Les deux systèmes diffèrent (6 lettres espacées contre préfixe 04 + famille + numéro) et n'apparaissent dans aucun document en commun : l'ONF n'a donc PAS, dans les 12 ITTS lus, un système unique de codes d'opération.
+#
+code_onf,libelle_source,itineraires_ou_page,code_sommier_propose,correspondance,remarque
+"EPR DPE","Débroussaillement en plein avant coupe rase aux rouleaux simples","3 PM 70 p. 89 ; 3 PM 73 p. 115","PS","partielle","Intervient avant la coupe rase : travaux préparatoires amont."
+"RRG NTE","Nettoyage du terrain : débroussaillement mécanique en plein (croisé aux rouleaux débroussailleurs lourds en tandem ; ou au broyeur)","3 PM 70 p. 89 ; 3 PM 71 p. 99 ; 3 PM 73 p. 115","PS","exacte","Libellé sommieR : broyage."
+"RRG CAS","Assainissement : curage du réseau et remise en état des ouvrages de franchissement","3 PM 70 p. 89 ; 3 PM 73 p. 115","","aucune","Pas de code sommieR."
+"RRG FOE","Fertilisation : fourniture de superphosphate triple à 45 % (60 unités de P2O5/ha)","3 PM 70 p. 89","","aucune",""
+"RRG FER","Fertilisation : épandage en plein","3 PM 70 p. 89","","aucune",""
+"RRG LAP","Labour en plein à la charrue à socs","3 PM 70 p. 89","PS","partielle","Libellé sommieR de PS : broyage, andainage, crochetage, potets."
+"RRG LAB","Labour en bandes à la charrue à socs (3 PM 71) ; confection de 1 250 potets/ha (3 PM 73)","3 PM 71 p. 99 ; 3 PM 73 p. 115","PS","partielle","Un même code recouvre deux opérations selon l'itinéraire : labour en bandes et confection de potets."
+"RRG PUL","Pulvérisation du labour (aux rouleaux landais ; au cover-crop)","3 PM 70 p. 89 ; 3 PM 71 p. 99","PS","partielle",""
+"RRA FOP","Fourniture des plants (1 250 plants/ha de pin maritime 1-0 en godets de 200 cm3)","3 PM 70 p. 89 ; 3 PM 71 p. 99 ; 3 PM 73 p. 115","PL","partielle","Fourniture, pas mise en place : sommieR n'a qu'un code PL sans distinguer."
+"RRA MPP","Mise en place des plants (au tube à planter)","3 PM 70 p. 89 ; 3 PM 71 p. 99 ; 3 PM 73 p. 115","PL","exacte",""
+"RRG DGM","Dégagement dans les tâches de fougère (manuel et localisé)","3 PM 70 p. 89 ; 3 PM 71 p. 99 ; 3 PM 73 p. 115","DG","exacte","Dégagement localisé, 1 à 2 ans après la plantation (p. 49)."
+"EPR DIE","Entretien de chaque interligne (au débroussailleur ou au broyeur)","3 PM 70 p. 89 ; 3 PM 71 p. 99 ; 3 PM 73 p. 115","DG","partielle","Entretien de l'interligne, pas de la ligne de plants. Année indicative n+10 dans les tableaux."
