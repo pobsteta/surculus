@@ -2,6 +2,9 @@
 
 Propriétaire : Pascal Obstétar. Inventaire établi le 2026-10-15 par l'agent `acquereur`, à partir de l'extraction de texte de chaque PDF (`pdftotext -layout`) et de la lecture de pages d'origine pour contrôle.
 
+> **Décision de Pascal (2026-10-15)** : les PDF ne sont **pas versionnés** dans ce dépôt (`.gitignore`). Ils restent sur le poste de Pascal (`~/dev/surculus/docs/referentiels/`) ; seuls nos CSV et notices, avec référence document + page, sont publiés. Les URL officielles sont à compléter quand le réseau le permettra (cnpf.fr, onf.fr injoignables depuis la session). `guide-version-bfc.pdf` est hors sujet et n'est plus cité comme source.
+
+
 ## Réutilisation et rediffusion : ce que disent les documents
 
 **Aucun des 24 documents ne porte de licence, de mention « © » ni de conditions de réutilisation dans son texte extrait.** Recherche faite sur : licence, droits, reproduction, propriété intellectuelle, ©, crédits. Les seules mentions de ce type : le RNTSF (« Conception et réalisation imprimerie ONF Fontainebleau - Photos ONF - Septembre 2010 - 9200-10-RN-SAM-001 »), le CNPTSF (« Maquette DCOM », logo PEFC), le guide BFC (« Crédit photo et conception : Parc naturel régional du Morvan »). Les fiches CNPF empruntent des cartes (zones GRECO de l'IGN) et des illustrations de la « Flore forestière française » (introduction_6.pdf p.5/8) : contenu de tiers possible.
