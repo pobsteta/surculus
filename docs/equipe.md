@@ -4,13 +4,13 @@
 > Appliquer la règle de staffing de `docs/methode-imperatrice.md` : un agent par mission
 > qui passe les trois questions, jamais un agent « par principe ».
 
-- **Statut :** proposée par l'orchestrateur le 2026-10-15 (`/mission`), **à valider par Pascal** (porte n° 2)
-- **Validée par :** _Pascal, le AAAA-MM-JJ_
+- **Statut :** validée (porte n° 2)
+- **Validée par :** Pascal, le 2026-10-15 (PR #13)
 
 ## Plafond humain
 
 - **PR ouvertes en même temps, au plus :** 3
-- **Rythme de relecture de Pascal :** _à fixer par Pascal_
+- **Rythme de relecture de Pascal :** un créneau par jour
 
 _Régler l'ambition sur le rythme qu'on peut tenir, et les Hommes avant la toupie._
 
