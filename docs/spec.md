@@ -49,7 +49,7 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
 
 | Grandeur | Repère, unité |
 |---|---|
-| Points du GeoPackage | Lambert-93, **EPSG:2154** (RGF93), ordre (x = E, y = N), mètres |
+| Points du GeoPackage | Lambert-93, ordre (x = E, y = N), mètres ; **EPSG:2154** (contrat sommieR 0.31.1) tant que sommieR n'est pas passé à **EPSG:9794** (RGF93 v2b / Lambert-93), cible de toute la tournée (ADR 0003) |
 | Position GNSS brute | référentiel **de la source** : **RGF93** (ETRS89) si RTK corrigé par Centipède, dont les bases diffusent des coordonnées RGF93 ; **WGS 84** (EPSG:4326) si autonome. Ordre (latitude, longitude) en degrés décimaux. Convertie en EPSG:2154 avant écriture ; la source et le référentiel sont enregistrés |
 | Azimut saisi | lu à la boussole, donc **magnétique** ; unité de la boussole **déclarée** (degrés ou grades), convertie en degrés |
 | Azimut géographique | azimut magnétique **+ déclinaison** au point et à la date, par un modèle géomagnétique embarqué (WMM2025, valable jusqu'à fin 2029, puis son successeur, ou IGRF) ; déclinaison enregistrée |
@@ -87,10 +87,14 @@ point à Brest et à Strasbourg.
 ### 4.3 Contrôler une placette fixe — cœur de l'application
 
 * **Arrivée** : la placette est retrouvée par le guidage ; le contrôle porte sa position
-  et `placette_uuid`. Sans placette à 15 m, le contrôle est refusé (règle de l'import
-  0.31.1).
-* **Premier passage** : chaque plant est pointé à sa place, au RTK fixe à la canne, sinon
-  en distance et azimut depuis le piquet (§ 3). Il reçoit un UUID et un numéro, donné par
+  et `placette_uuid`. La position est **moyennée** quelques secondes et comparée à la
+  placette la plus proche (règle des 15 m de l'import 0.31.1). Si le GNSS la place hors
+  des 15 m mais que l'agent **confirme l'identité** par le code lu sur le piquet, le
+  contrôle prend la **position stockée du piquet** et la position mesurée est gardée à
+  part, avec le drapeau « rattaché par identité » (ADR 0003).
+* **Premier passage** : chaque plant est pointé **relativement au piquet** : distance
+  horizontale et azimut magnétique bruts, observation primaire ; ses coordonnées sont
+  dérivées (§ 3, ADR 0003). Le RTK sert au piquet, pas aux plants. Il reçoit un UUID et un numéro, donné par
   l'azimut depuis le nord géographique, sens horaire (numérotation de Groma). Beaucoup de
   plantations ONF jalonnent déjà chaque plant (ITTS, `docs/referentiels/protocole-constat-reprise.md`).
 * **Passages suivants** : les plants pointés s'affichent sur le plan de la placette ; on
@@ -116,7 +120,11 @@ point à Brest et à Strasbourg.
   | volume bas, appui court | mort, puis plant suivant | mort |
   | volume haut, appui long | atteint (la cause se dicte ensuite) | atteint |
   | volume bas, appui long | ouvre la dictée | absent |
-  | volume haut et bas ensemble | annule la dernière saisie | annule la dernière saisie |
+  | volume bas, double appui court | annule la dernière saisie | annule la dernière saisie |
+
+  Les deux touches ensemble sont évitées (raccourci d'accessibilité d'Android). En
+  tranche 1, l'écran reste allumé, application au premier plan, en « mode poche » qui
+  ignore l'écran tactile (ADR 0004).
 
   Dictée hors ligne à **grammaire fermée** : « sain », « atteint », « mort », « absent »,
   « non observé », « insectes », « champignon », « animaux », « abiotique »,
@@ -136,26 +144,22 @@ point à Brest et à Strasbourg.
 ### 4.4 Constat de reprise en cheminement
 
 Le constat sert d'abord **la décision de regarni du gestionnaire** (arbitrage de
-Pascal) ; il ne remplace pas la réception contractuelle du chantier. Méthode retenue par
-Pascal, sur la critique du `contradicteur` : la plus robuste quand la mortalité se
-regroupe (RENFOR, `docs/referentiels/protocole-constat-reprise.md`). Le détail de
-l'estimateur sera tranché en ADR **[ADR à venir : protocole de constat]**.
+Pascal) ; il ne remplace pas la réception contractuelle du chantier. Protocole détaillé :
+**ADR 0002** (cemagref à deux départs par zone, trois états d'alerte).
 
 | Type de plantation | Méthode |
 |---|---|
-| **À densité définitive** (peupliers, noyers, hautes tiges) ou **petit chantier** (le sondage cemagref y dépasserait la moitié des plants) | **Comptage en plein** de tous les plants (fascicule 34, guide 2014) : pas de marge |
-| **En lignes** | **Cheminement cemagref** : diagonale, un plant sur deux (séries alternées de 2 et 3 plants), décalage d'une ligne à chaque segment, une ligne sur 2, 3, 5 ou 10 selon la taille du chantier (taux de 50 % sous 400 plants à 5 % au-delà de 2 500). **Deux départs tirés au sort indépendamment**, au pas double, pour une marge sans biais pour le même effort |
-| **En plein, sans lignes lisibles** (placeaux, enrichissement) | **Petites grappes** sur une grille systématique à départ aléatoire, sur le modèle du DSF (groupes de 10 plants) ; placeaux entiers là où ils existent ; règle pour les grappes en lisière |
+| **À densité définitive** (peupliers, noyers, hautes tiges) ou **N ≤ 600 plants** | **Comptage en plein** de tous les plants (fascicule 34, guide 2014) : pas de marge |
+| **En lignes** | **Cheminement cemagref** (diagonale, un plant sur deux, décalage d'une ligne par segment), taux de sondage **max(grille cemagref, 300/N)**, **deux départs tirés au sort dans chacune de H zones** |
+| **En plein, sans lignes lisibles** | **placeaux entiers** comptés comme grappes ; sinon placettes à surface fixe et **densité de vivants à l'hectare** ; à défaut, comptage en plein |
 
 * **Taux** : `taux = Nv × 100 / (Nv + Nm − nm)` (guide 2014), où `nm` (pertes hors
   entreprise) vaut **0 sur le téléphone** : il n'est connu qu'après la décision du
   gestionnaire dans sommieR. Le taux du téléphone est un taux brut, minorant.
-* **Marge** : intervalle de confiance à 95 % par l'estimateur par le quotient, variance
-  tirée des deux départs indépendants (ou, à défaut, par différences successives), avec
-  correction de population finie et quantile de Student. Les morts se regroupent : la
-  formule binomiale serait trop optimiste et n'est pas utilisée. Le taux est **toujours
-  affiché avec son effectif et sa marge** ; sous un nombre minimal de segments comptés
-  (à fixer en ADR), pas de marge affichée.
+* **Marge** : intervalle de confiance à **90 %**, rapport des sommes, variance entre les
+  deux départs de chaque zone (environ H degrés de liberté), jamais plus étroite que la
+  marge binomiale ; affichée à partir de 6 zones complètes (ADR 0002). Le taux est
+  **toujours affiché avec son effectif et sa marge**.
 * **Données nécessaires** : contour de la plantation, nombre de plants, écartement et
   orientation des lignes, essence par ligne si mélange, date de réception,
   cloisonnements. La tournée de sommieR 0.31.1 ne les porte pas : en tranche 2, l'agent
@@ -172,11 +176,10 @@ l'estimateur sera tranché en ADR **[ADR à venir : protocole de constat]**.
 Règles du brief (arbitrages de Pascal ; sources dans `docs/referentiels/seuils-densites.csv`) :
 
 * **Reprise** : seuil de **80 %**, **90 %** pour les peupliers et hautes tiges
-  (fascicule 34), source affichée. Alerte **quand le seuil est au-dessus de
-  l'intervalle de confiance** du taux (arbitrage de Pascal) : un comptage en plein, sans
-  marge, alerte dès que le taux est sous le seuil ; un sondage alerte dès que sa marge
-  le permet. Surculus vise **au moins 300 plants** dans un sondage pour que la marge soit
-  petite, et dit « marge trop large, compléter » quand le seuil tombe dans l'intervalle.
+  (fascicule 34), source affichée. **Trois états** (ADR 0002) : **« sous le seuil »**
+  (borne haute de l'intervalle à 90 % sous le seuil), **« au-dessus »** (borne basse
+  au-dessus), **« indéterminé »** sinon, qui propose un **comptage en plein**. Un
+  comptage en plein compare directement le taux au seuil.
 * **Vides** : alerte si des plants morts ou absents **groupés couvrent 10 ares ou plus**,
   même si le taux moyen est bon (ITTS de l'ONF). Un sondage en lignes ne localise pas un
   vide de 10 ares (deux lignes comptées peuvent être à 30-40 m) : le vide est donc
@@ -242,7 +245,8 @@ rien.
 
 | Couche | Géométrie | Champs |
 |---|---|---|
-| `plants` | POINT | `uuid`, `placette_uuid`, `numero`, `essence`, `regarni` (bool), `remplace_uuid`, `pointe_le`, `methode` (rtk, distance_azimut, gnss), `precision_m`, `referentiel_source` (rgf93, wgs84), `distance_m`, `azimut_mag_deg`, `declinaison_deg`, `convergence_deg`, `azimut_geo_deg` |
+| `plants` | POINT (dérivé) | `uuid`, `placette_uuid`, `numero`, `essence` (code ONF, `essences.csv`), `regarni` (bool), `remplace_uuid`, `pointe_le`, `distance_m` (horizontale), `azimut_mag` et `unite_azimut` (deg, gr) bruts, `declinaison_deg`, `convergence_deg`, `azimut_geo_deg`, `modele_geomagnetique` |
+| `positions_controles` | POINT | `controle_uuid`, position GNSS **mesurée** (moyennée), `precision_m`, `source_gnss`, `referentiel_source`, `simulee` (bool), `rattache_par_identite` (bool) |
 | `etats_plants` | — | `uuid`, `controle_uuid`, `plant_uuid`, `etat` (sain, atteint, mort, absent, ou `non_observe` : absence de mesure, hors totaux), `cause_groupe` (entomologique, pathologique, animaux, abiotique_complexe_indetermine), `cause_detail`, `hauteur_cm` |
 | `constats_reprise` | POLYGON (surface constatée) | `uuid`, `methode` (plein, cemagref, grappes), `pas_lignes`, `departs` (les deux départs tirés), `essence`, `nb_plants_chantier`, `nb_sains`, `nb_atteints`, `nb_morts`, `nb_absents`, `taux_brut_pct`, `ic_bas_pct`, `ic_haut_pct`, `seuil_pct`, `seuil_source`, `alerte` (bool), `visite_le`, `operateur` |
 | `vides` | POLYGON | `uuid`, `constat_uuid` ou `placette_uuid`, `surface_are`, `origine` (trace, propose), `visite_le`, `operateur` |

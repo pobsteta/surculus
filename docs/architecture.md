@@ -8,7 +8,8 @@ sommieR ── sommier_projet_qfield_travaux() ──► <tournée>/travaux.gpkg
    │                                                   ▼
    │        Surculus (Android, hors ligne, copie privée de la tournée)
    │          :app   Compose : Tournées, Carte, Intervention, Placette, Rendre
-   │          :data  Room (journal append-only), lecture/écriture GeoPackage
+   │          :data  Room (journal append-only), photos
+   │          :gpkg  JVM : lecture/écriture du travaux.gpkg (geopackage-java)
    │          :core  Kotlin pur : règles du registre 6, plants, totaux,
    │                 numérotation, fusion par UUID, grammaire de dictée
    │          ── tranche 1 : groma-core provisoire ; ensuite bibliothèques
@@ -26,7 +27,8 @@ sommieR ── sommier_projet_qfield_travaux() ──► <tournée>/travaux.gpkg
 | Module | Rôle | Testé |
 |---|---|---|
 | `:core` | Domaine pur : codes et formes, règles d'import, plants et états, totaux d'un contrôle, taux de reprise et densité, numérotation des plants par azimut, fusion par UUID, grammaire et analyse de la dictée | JVM, avec `fixtures/` |
-| `:data` | Journal Room des saisies (une ligne par saisie, UUID, horodatage `modifie`), import d'une tournée, écriture du `travaux.gpkg` à l'export, photos | instrumenté |
+| `:gpkg` | Lecture d'une tournée et écriture du `travaux.gpkg` à l'export (geopackage-java, JVM) | JVM, et import R de sommieR rejoué en CI |
+| `:data` | Journal Room des saisies (une ligne par saisie, UUID, horodatage `modifie`), photos | instrumenté |
 | `:app` | Écrans Compose (Tournées, Carte, Intervention, Placette, Rendre, Paramètres), service GNSS, dictée | appareil |
 
 ## Le journal et le GeoPackage
