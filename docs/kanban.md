@@ -25,8 +25,9 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-_Après le « oui » de Pascal sur `docs/equipe.md` : missions 001 à 014 (voir le tableau),
-cycle 1 = 001 et 002._
+Missions 001 à 014 validées par Pascal le 2026-10-15 (`docs/equipe.md`, PR #13).
+Cycle 1 : **001** squelette Gradle et CI (`dev`, tenir) ; **002** fixtures sourcées et
+tests du domaine (`testeur`, appuyer).
 
 ## Planifié
 
