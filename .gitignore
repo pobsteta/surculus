@@ -1,2 +1,3 @@
 # Documents sources : on garde leurs références, pas les fichiers (décision de Pascal, 2026-10-15)
 docs/referentiels/**/*.pdf
+.claude/worktrees/
