@@ -282,8 +282,7 @@ Chaque geste est une ligne ajoutée au journal, jamais modifiée (arbitrage de P
   l'horloge monotone dans un même démarrage, est noté. Le jour civil d'un contrôle se
   calcule sur l'heure GNSS quand le fix a au plus 5 s au moment de la saisie (âge mesuré sur
   l'horloge monotone, enregistré avec la ligne), sinon sur l'heure du téléphone.
-- Une annulation agit sur la clé (objet, type) de la ligne annulée ; annuler une racine ne
-  laisse aucune valeur courante.
+- Une annulation agit sur la clé (objet, type) de la ligne annulée.
 - Un `remplace_uuid` inconnu : la ligne est gardée comme tête, avec une anomalie signalée.
 - En conflit, la valeur montrée est la dernière selon l'ordre total, avec le drapeau
   « conflit » et la liste des têtes ; un conflit se résout en annulant l'une des têtes.
@@ -295,7 +294,8 @@ Chaque geste est une ligne ajoutée au journal, jamais modifiée (arbitrage de P
   `saut_horloge` note l'heure brute de la ligne précédente et de la ligne courante.
 - Un fix GNSS d'âge négatif (postérieur à la saisie) est ignoré : le jour civil se calcule
   alors sur l'heure du téléphone.
-- Annuler la seule saisie d'une clé ne laisse aucune valeur courante (confirmé par Pascal).
+- Annuler une racine, c'est-à-dire la seule saisie d'une clé, ne laisse aucune valeur
+  courante (confirmé par Pascal).
 
 (Arbitrages de Pascal du 2026-10-17, mission 019 ; décisions de format de l'orchestrateur.)
 
