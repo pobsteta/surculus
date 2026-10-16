@@ -28,6 +28,7 @@ _Idées, à trier au prochain `/mission`._
 Missions 001 à 014 validées par Pascal le 2026-10-15 (`docs/equipe.md`, PR #13).
 Cycle 1 : **001** squelette Gradle et CI (`dev`, tenir) ; **002** fixtures sourcées et
 tests du domaine (`testeur`, appuyer).
+Hors découpage, demandées par Pascal le 2026-10-16 : **015** icône « S » (`dev`, appuyer) ; **016** badges et releases automatiques (`dev`, appuyer).
 
 ## Planifié
 
