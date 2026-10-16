@@ -7,7 +7,9 @@ et tout push forcé.
 Code de sortie 2 = l'action est bloquée ; le message part vers l'agent.
 """
 import json
+import os
 import re
+import shlex
 import subprocess
 import sys
 
@@ -24,6 +26,29 @@ def branche_courante(cwd):
         return ""
 
 
+def est_branche(cwd, nom):
+    try:
+        return subprocess.run(
+            ["git", "rev-parse", "--verify", "--quiet", f"refs/heads/{nom}"],
+            cwd=cwd, capture_output=True, timeout=5,
+        ).returncode == 0
+    except Exception:
+        return False
+
+
+def resoudre(base, chemin):
+    """Chemin absolu de `chemin`, lu depuis `base` (~ et variables développés)."""
+    chemin = os.path.expandvars(os.path.expanduser(chemin))
+    return os.path.normpath(os.path.join(base or os.getcwd(), chemin))
+
+
+def mots_de(morceau):
+    try:
+        return shlex.split(morceau)
+    except ValueError:
+        return morceau.split()
+
+
 def bloquer(message):
     print(message, file=sys.stderr)
     sys.exit(2)
@@ -37,17 +62,44 @@ def main():
     commande = (entree.get("tool_input") or {}).get("command", "") or ""
     cwd = entree.get("cwd") or None
 
-    # Une ligne de commande peut enchaîner plusieurs commandes.
+    # Une ligne de commande peut enchaîner plusieurs commandes. On suit, morceau par
+    # morceau, le dossier courant (cd, git -C) et la branche quand elle vient d'être
+    # créée ou changée dans la même ligne : un agent dans son worktree, ou qui crée sa
+    # branche puis commite, n'est pas sur main.
+    branche_connue = {}  # dossier -> branche posée plus tôt dans la ligne
     for morceau in re.split(r"&&|\|\||;|\n", commande):
-        mots = morceau.split()
+        mots = mots_de(morceau.strip())
+        if not mots:
+            continue
+        if mots[0] == "cd":
+            cwd = resoudre(cwd, mots[1] if len(mots) > 1 else "~")
+            continue
         if len(mots) < 2 or mots[0] != "git":
             continue
+        dossier = cwd
         # git -C chemin commit ...
-        if mots[1] == "-C" and len(mots) > 3:
-            cwd, mots = mots[2], ["git"] + mots[3:]
+        while len(mots) > 3 and mots[1] == "-C":
+            dossier, mots = resoudre(dossier, mots[2]), ["git"] + mots[3:]
         sous_commande = mots[1]
 
-        if sous_commande == "commit" and branche_courante(cwd) in PROTEGEES:
+        def branche():
+            return branche_connue.get(dossier) or branche_courante(dossier)
+
+        if sous_commande in ("checkout", "switch"):
+            arguments = [a for a in mots[2:] if a != "--"]
+            for drapeau in ("-b", "-B", "-c", "-C", "--create", "--force-create"):
+                if drapeau in arguments:
+                    i = arguments.index(drapeau)
+                    if i + 1 < len(arguments):
+                        branche_connue[dossier] = arguments[i + 1]
+                    break
+            else:
+                cibles = [a for a in arguments if not a.startswith("-")]
+                if len(cibles) == 1 and est_branche(dossier, cibles[0]):
+                    branche_connue[dossier] = cibles[0]
+            continue
+
+        if sous_commande == "commit" and branche() in PROTEGEES:
             bloquer(
                 "Commit refusé : tu es sur main. Une mission = une branche = une PR. "
                 "Crée une branche (git switch -c mission/NNN-titre) puis recommence."
@@ -56,6 +108,7 @@ def main():
         if sous_commande == "push":
             arguments = mots[2:]
             if any(a in ("-f", "--force", "--force-with-lease") or a.startswith("--force")
+                   or (a.startswith("+") and len(a) > 1)
                    for a in arguments):
                 bloquer("Push forcé refusé : on n'efface pas l'historique (règle du sommier).")
             cibles = [a for a in arguments if not a.startswith("-")]
@@ -63,7 +116,7 @@ def main():
             vise_main = any(
                 r.split(":")[-1].removeprefix("refs/heads/") in PROTEGEES for r in refspecs
             )
-            if not refspecs and branche_courante(cwd) in PROTEGEES:
+            if not refspecs and branche() in PROTEGEES:
                 vise_main = True
             if vise_main:
                 bloquer(
