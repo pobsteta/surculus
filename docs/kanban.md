@@ -25,14 +25,17 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-Missions 001 à 014 validées par Pascal le 2026-10-15 (`docs/equipe.md`, PR #13).
-Cycle 1 : **001** squelette Gradle et CI (`dev`, tenir) ; **002** fixtures sourcées et
-tests du domaine (`testeur`, appuyer).
-Hors découpage, demandées par Pascal le 2026-10-16 : **015** icône « S » (`dev`, appuyer) ; **016** badges et releases automatiques (`dev`, appuyer).
+Missions 003 à 014 validées par Pascal le 2026-10-15 (`docs/equipe.md`, PR #13).
+Cycle 2 proposé : **003** reprise provisoire du GNSS de Groma, **004** domaine du contrôle
+de placette (tenir), **005** chaîne des repères (tenir).
 
 ## Planifié
 
 ## Terminé
+
+- Cycle 1, 2026-10-16 : **001** squelette Gradle et CI (PR #16), **002** fixtures sourcées
+  et tests d'acceptation (PR #19), **015** icône « S » (PR #18), **016** badges et
+  releases automatiques (PR #20, v0.1.0 sans APK) ; hook garde_main (PR #17) — Pascal.
 
 - ADR 0002 à 0005 et 0007, commande de tests, référentiels essences, WMM, Centipède
   (PR #11, #12) — Pascal, 2026-10-15.
