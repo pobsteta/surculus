@@ -60,6 +60,14 @@ class NtripTest {
         assertEquals(listOf("CT", "LIENSS"), e.map { it.nom })
         assertEquals("Centipede", e[0].identifiant)
         assertEquals("RTCM 3.2", e[0].format)
+        assertEquals(null, e[0].latitude)
+    }
+
+    @Test
+    fun tableDesSourcesAvecPositionDeLaBase() {
+        val e = Ntrip.tableSources("STR;LIENSS;La Rochelle;RTCM 3.3;;2;GPS+GLO+GAL;Centipede;FRA;46.15;-1.16;1;0;sNTRIP;none;B;N;9600;")
+        assertEquals(46.15, e.single().latitude!!, 1e-9)
+        assertEquals(-1.16, e.single().longitude!!, 1e-9)
     }
 
     @Test
