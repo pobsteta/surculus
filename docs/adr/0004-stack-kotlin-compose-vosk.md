@@ -46,8 +46,8 @@ d'où le module **`:gpkg` en JVM** (arbitrage de Pascal), plutôt que Robolectri
 
 | Sujet | Règle |
 |---|---|
-| Modules | `:core` (Kotlin pur), `:gpkg` (JVM : geopackage-java MIT + sqlite-jdbc), `:data` (Room, journal), `:app` (Compose, services GNSS et dictée) |
-| Tests | JUnit Jupiter, aligné sur `groma-core` ; la CI joue `./gradlew :core:test :gpkg:test :app:assembleDebug :app:lintDebug` (lint ajouté le 2026-10-16, arbitrage de Pascal) et rejoue l'import R de sommieR (`sommier_importer_qfield_travaux()`) sur l'export de la démo Couchey |
+| Modules | `:core` (Kotlin pur), `:gpkg` (JVM : sqlite-jdbc, écrivain GeoPackage maison sans geopackage-java depuis l'ADR 0011), `:data` (Room, journal), `:app` (Compose, services GNSS et dictée) |
+| Tests | JUnit Jupiter, aligné sur `groma-core` ; la CI joue `./gradlew :core:test :gpkg:test :app:assembleDebug :app:lintDebug` (lint ajouté le 2026-10-16, arbitrage de Pascal) et rejoue l'import R de sommieR (`sommier_importer_qfield_travaux()`) sur l'export de la démo Couchey ; le workflow release essaie l'APK release sur émulateur avant de publier (ADR 0011, arbitrage de Pascal du 2026-10-17) |
 | Vosk | `vosk-android` **0.3.75** ; contrôle d'alignement des bibliothèques natives sur **16 Ko** (`zipalign -P 16`) en CI |
 | Modèle | `vosk-model-small-fr-0.22` (41 Mo, Apache-2.0), **nom exact et somme SHA-256** inscrits dans `docs/dependances.md` ; les modèles français NC (`small-fr-pguyot`) et AGPL (`fr-linto`) sont exclus ; modèle **republié** dans les releases de Surculus (NOTICE conservé) et **importable par fichier**, sans réseau |
 | Grammaire | un test `:core` vérifie que chaque mot de la grammaire figure dans la liste de mots du modèle (fixture versionnée) ; la grammaire est neutre vis-à-vis du moteur, ce que le test rend vérifiable |
