@@ -159,3 +159,4 @@ jobs:
           name: Surculus ${{ needs.construire.outputs.new_tag }}
           body_path: dist/notes.md
           files: dist/*.apk
+          fail_on_unmatched_files: ${{ needs.construire.outputs.signe == 'true' }}

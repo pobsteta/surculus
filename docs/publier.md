@@ -34,7 +34,8 @@ piège le forestier. En local, `./gradlew :app:assembleRelease` garde le repli d
 
 **(b) Première version `v0.1.0`, automatique.** Quand aucun tag `v*` n'existe, le workflow pose
 `v0.1.0` (sans cela, l'action partirait de 0.0.1). Ensuite le calcul normal reprend. Aucun geste
-manuel.
+manuel. Les notes de cette première release seront vides, mis à part la mention sur l'APK
+(la liste des commits n'a pas de point de départ).
 
 ## Commits conventionnels
 
