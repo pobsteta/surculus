@@ -58,6 +58,21 @@ def main():
                 env["ANDROID_HOME"] = candidat
                 break
 
+    # Deux builds Gradle dans le même dossier se gênent (fichiers de build tronqués) :
+    # un verrou par dossier de travail fait attendre le second (incident du 2026-10-16).
+    verrou = None
+    try:
+        dossier_git = subprocess.run(
+            ["git", "rev-parse", "--absolute-git-dir"], cwd=cwd,
+            capture_output=True, text=True, timeout=10,
+        ).stdout.strip()
+        if dossier_git:
+            import fcntl
+            verrou = open(os.path.join(dossier_git, "surculus-tests.lock"), "w")
+            fcntl.flock(verrou, fcntl.LOCK_EX)
+    except Exception:
+        verrou = None
+
     try:
         resultat = subprocess.run(
             commande, shell=True, cwd=cwd, env=env,

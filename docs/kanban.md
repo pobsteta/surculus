@@ -25,13 +25,18 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-Missions 003 à 014 validées par Pascal le 2026-10-15 (`docs/equipe.md`, PR #13).
-Cycle 2 proposé : **003** reprise provisoire du GNSS de Groma, **004** domaine du contrôle
-de placette (tenir), **005** chaîne des repères (tenir).
+Missions 006 à 014 validées par Pascal le 2026-10-15 (`docs/equipe.md`, PR #13).
+Cycle 3 proposé : **006** module GeoPackage, lecture et export (tenir), **007** CI qui
+rejoue l'import de sommieR, **008** journal en ajout seul (tenir).
 
 ## Planifié
 
 ## Terminé
+
+- Cycle 2, 2026-10-16 : **003** GNSS de Groma, fraîcheur du fix, lint dans la commande de
+  tests (PR #24) ; **005** chaîne des repères, WMM2025 copié de Groma (PR #25) ; **018**
+  écran d'essai GNSS (PR #27) ; **004** domaine du contrôle de placette (PR #28) ; clé de
+  signature et premières releases avec APK (v0.4.1, v0.5.0) — Pascal.
 
 - Cycle 1, 2026-10-16 : **001** squelette Gradle et CI (PR #16), **002** fixtures sourcées
   et tests d'acceptation (PR #19), **015** icône « S » (PR #18), **016** badges et
