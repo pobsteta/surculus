@@ -56,6 +56,7 @@ class PolitiqueFixTest {
         val r = politique.evaluer(fix(ageCorrections = 30.1), maintenant) as EvaluationFix.Accepte
         assertEquals(QualiteFix.AUTONOME, r.fix.qualite)
         assertEquals(QualiteFix.RTK_FIXE, r.qualiteAnnoncee)
+        assertEquals(QualiteFix.RTK_FIXE, r.fix.qualiteAnnoncee) // le fix porte sa qualité d'origine
         assertTrue(r.retrograde)
         assertFalse(r.fix.qualite.estRtk)
     }
@@ -74,8 +75,17 @@ class PolitiqueFixTest {
     }
 
     @Test
-    fun `un age de corrections inconnu ne retrograde pas, un fix autonome non plus`() {
-        assertEquals(QualiteFix.RTK_FIXE, (politique.evaluer(fix(ageCorrections = null), maintenant) as EvaluationFix.Accepte).fix.qualite)
+    fun `un RTK sans age de corrections est retrograde (arbitrage de Pascal)`() {
+        for (q in listOf(QualiteFix.RTK_FIXE, QualiteFix.RTK_FLOTTANT)) {
+            val r = politique.evaluer(fix(qualite = q, ageCorrections = null), maintenant) as EvaluationFix.Accepte
+            assertEquals(QualiteFix.AUTONOME, r.fix.qualite)
+            assertEquals(q, r.fix.qualiteAnnoncee)
+        }
+    }
+
+    @Test
+    fun `un fix autonome n est pas retrograde, meme sans age de corrections`() {
+        assertFalse((politique.evaluer(fix(qualite = QualiteFix.AUTONOME, ageCorrections = null), maintenant) as EvaluationFix.Accepte).retrograde)
         val auto = politique.evaluer(fix(qualite = QualiteFix.AUTONOME, ageCorrections = 999.0), maintenant) as EvaluationFix.Accepte
         assertFalse(auto.retrograde)
     }
@@ -99,6 +109,7 @@ class PolitiqueFixTest {
         val corps = "GNGGA,141322.00,4715.5589,N,00455.9820,E,4,12,0.65,300.0,M,47.5,M,1.0,0000"
         val p = Nmea.gga("\$$corps*${Nmea.sommeControle(corps)}")!!.position
         assertEquals(47.259315, p.latitude, 1e-5)
+        assertEquals("141322.00", Nmea.fix(Nmea.gga("\$$corps*${Nmea.sommeControle(corps)}")!!, horodatageMs = 0L).heureUtc)
         assertEquals(4.933034, p.longitude, 1e-5)
         val (x, y) = Projections.versLambert93(lon = p.longitude, lat = p.latitude)
         assertTrue(EmpriseLambert93.FRANCE_METROPOLITAINE.contient(PointLambert93(xMetres = x, yMetres = y)))

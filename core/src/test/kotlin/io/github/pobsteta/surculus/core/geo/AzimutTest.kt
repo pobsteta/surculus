@@ -56,10 +56,12 @@ class AzimutTest {
     }
 
     @Test
-    fun `convergence Lambert-93 a Brest et a Strasbourg (valeurs de l ADR 0003)`() {
-        // ADR 0003 : γ = −5,43° à Brest (lon −4,486°) et +3,45° à Strasbourg (lon 7,752°).
-        assertEquals(-5.43, Azimut.convergenceLambert93(-4.486), 0.01)
-        assertEquals(3.45, Azimut.convergenceLambert93(7.752), 0.01)
+    fun `convergence Lambert-93 a Brest et a Strasbourg (pyproj, fixtures reperes convergence)`() {
+        // Source : fixtures/reperes/convergence.json, cas C1 et C2 : pyproj 3.6.1 (PROJ 9.4.0),
+        // Proj("EPSG:2154").get_factors(lon, lat).meridian_convergence, calculé le 2026-10-16
+        // (à recouper avec Circé, IGN : Pascal). Brest lon −4,49 ; Strasbourg lon 7,75.
+        assertEquals(-5.4348, Azimut.convergenceLambert93(-4.49), 0.01)
+        assertEquals(3.4466, Azimut.convergenceLambert93(7.75), 0.01)
         assertEquals(0.0, Azimut.convergenceLambert93(3.0), 1e-12)
     }
 

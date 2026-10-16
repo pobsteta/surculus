@@ -8,7 +8,7 @@
  * Origine : dépôt Groma (https://github.com/pobsteta/groma), fichier android/groma-core/src/main/kotlin/groma/core/Nmea.kt,
  *           état au commit f12b644 (2026-10-16). Reprise provisoire (ADR 0003, mission 003)
  *           jusqu'à l'extraction en bibliothèque commune (ADR 0008).
- * Modifications : paquet ; horloge injectable et horodatage de chaque fix (LecteurNmea).
+ * Modifications : paquet ; horloge injectable et horodatage de réception de chaque fix (LecteurNmea) ; heure UTC de la GGA gardée dans TrameGga et FixGnss.
  */
 package io.github.pobsteta.surculus.core.gnss
 
@@ -29,6 +29,8 @@ data class TrameGga(
     val altitudeM: Double?,
     val ageCorrectionsS: Double?,
     val stationRef: String? = null,
+    /** UTC time of the fix as written in the GGA (`hhmmss.ss`), if present. */
+    val heureUtc: String? = null,
 )
 
 /** Decoded GSA: dilutions of precision. */
@@ -104,6 +106,7 @@ object Nmea {
             f.getOrNull(9)?.toDoubleOrNull(),
             f.getOrNull(13)?.toDoubleOrNull(),
             f.getOrNull(14)?.takeIf { it.isNotBlank() },
+            f.getOrNull(1)?.takeIf { it.isNotBlank() },
         )
     }
 
@@ -142,7 +145,7 @@ object Nmea {
     fun fix(gga: TrameGga, gst: TrameGst? = null, gsa: TrameGsa? = null, rmc: TrameRmc? = null, satellites: List<SatelliteVu> = emptyList(), horodatageMs: Long) = FixGnss(
         position = gga.position, qualite = gga.qualite, nbSatellites = gga.nbSatellites, hdop = gga.hdop ?: gsa?.hdop,
         altitudeM = gga.altitudeM, ageCorrectionsS = gga.ageCorrectionsS, precisionHorizontaleM = gst?.precisionHorizontaleM,
-        horodatageMs = horodatageMs,
+        horodatageMs = horodatageMs, heureUtc = gga.heureUtc,
         pdop = gsa?.pdop, vdop = gsa?.vdop, stationRef = gga.stationRef, capDeg = rmc?.capDeg, vitesseMs = rmc?.vitesseMs,
         satellites = satellites,
     )

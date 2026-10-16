@@ -5,10 +5,12 @@
  * Ce fichier est un logiciel libre : vous pouvez le redistribuer et/ou le modifier selon
  * les termes de la licence publique générale GNU (GPL), version 3 ou ultérieure (voir LICENSE).
  *
- * Origine : dépôt Groma (https://github.com/pobsteta/groma), fichier android/app/src/main/kotlin/groma/app/gnss/Transports.kt,
+ * Origine : dépôt Groma (https://github.com/pobsteta/groma), fichier
+ *           android/app/src/main/kotlin/groma/app/gnss/Transports.kt,
  *           état au commit f12b644 (2026-10-16). Reprise provisoire (ADR 0003, mission 003)
  *           jusqu'à l'extraction en bibliothèque commune (ADR 0008).
- * Modifications : paquet ; imports ; textes en français.
+ * Modifications : paquet ; imports ; deux commentaires mis à jour (module :core, Surculus). Le reste, y compris les
+ *           commentaires en anglais, est celui de Groma.
  */
 package io.github.pobsteta.surculus.gnss
 

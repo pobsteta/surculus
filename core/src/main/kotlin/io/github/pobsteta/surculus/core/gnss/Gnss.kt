@@ -70,8 +70,10 @@ data class FixGnss(
     val ageCorrectionsS: Double?,
     val precisionHorizontaleM: Double?,
     /**
-     * Instant où Surculus a reçu le fix (millisecondes depuis 1970-01-01T00:00:00Z, horloge du
-     * téléphone) ; sert à refuser un fix trop vieux (ADR 0003). Obligatoire : pas de valeur par défaut.
+     * Instant où Surculus a **reçu** le fix (millisecondes depuis 1970-01-01T00:00:00Z, horloge du
+     * téléphone), et non l'instant de la mesure par le récepteur : il sert à refuser un fix trop vieux
+     * (ADR 0003). Obligatoire : pas de valeur par défaut. L'heure de la mesure, quand le récepteur la
+     * donne, est dans [heureUtc].
      */
     val horodatageMs: Long,
     val pdop: Double? = null,
@@ -84,6 +86,13 @@ data class FixGnss(
     val vitesseMs: Double? = null,
     val satellites: List<SatelliteVu> = emptyList(),
     val origine: OrigineFix = OrigineFix.RECEPTEUR,
+    /** Heure UTC de la mesure telle que le récepteur l'écrit dans la GGA (`hhmmss.ss`), sinon null. */
+    val heureUtc: String? = null,
+    /**
+     * Qualité annoncée par le récepteur quand [PolitiqueFix] l'a rétrogradée (corrections trop vieilles
+     * ou d'âge inconnu) ; [qualite] porte alors la qualité retenue. Null si le fix n'a pas été rétrogradé.
+     */
+    val qualiteAnnoncee: QualiteFix? = null,
     /** Vrai si Android signale une position simulée (`Location.isMock()`) : détectée et enregistrée, ADR 0003. */
     val simule: Boolean = false,
 )
@@ -94,22 +103,25 @@ enum class RaisonRefus { SANS_POSITION, TROP_VIEUX, HORLOGE_INCOHERENTE }
 /** Verdict de [PolitiqueFix.evaluer]. */
 sealed interface EvaluationFix {
     /**
-     * Fix utilisable. Si [qualiteAnnoncee] n'est pas nulle, le fix a été rétrogradé : elle garde la
-     * qualité que le récepteur annonçait (corrections trop vieilles) ; [fix] porte la qualité retenue.
+     * Fix utilisable. S'il a été rétrogradé, [FixGnss.qualiteAnnoncee] garde la qualité que le
+     * récepteur annonçait et [fix] porte la qualité retenue.
      */
-    data class Accepte(val fix: FixGnss, val qualiteAnnoncee: QualiteFix? = null) : EvaluationFix {
-        val retrograde: Boolean get() = qualiteAnnoncee != null
+    data class Accepte(val fix: FixGnss) : EvaluationFix {
+        val qualiteAnnoncee: QualiteFix? get() = fix.qualiteAnnoncee
+        val retrograde: Boolean get() = fix.qualiteAnnoncee != null
     }
 
     data class Refuse(val raison: RaisonRefus) : EvaluationFix
 }
 
 /**
- * Règles de fraîcheur de l'ADR 0003 : un fix plus vieux que [ageMaxFixMs] est refusé ; un RTK dont
- * l'âge des corrections dépasse [ageMaxCorrectionsS] est rétrogradé en autonome (il ne revendique
- * plus de centimètres). Valeurs par défaut à confirmer sur le terrain.
+ * Règles de fraîcheur de l'ADR 0003 : un fix plus vieux que [ageMaxFixMs] est refusé ; un RTK (fixe ou
+ * flottant) dont l'âge des corrections dépasse [ageMaxCorrectionsS], **ou est absent** (champ GGA 13
+ * vide, arbitrage de Pascal du 2026-10-16), est rétrogradé en autonome : il ne revendique plus de
+ * centimètres. Le fix rétrogradé garde la qualité annoncée dans [FixGnss.qualiteAnnoncee].
  *
- * Un âge de corrections absent (champ GGA vide) n'est pas rétrogradé : il est inconnu, pas trop vieux.
+ * **Seuils (5 s, 30 s, 1 s) : valeurs retenues par Pascal le 2026-10-16, à mesurer à l'essai
+ * terrain** ; ils ne sont pas tirés d'une source.
  */
 data class PolitiqueFix(
     val ageMaxFixMs: Long = 5_000,
@@ -127,8 +139,8 @@ data class PolitiqueFix(
         if (age < -toleranceFuturMs) return EvaluationFix.Refuse(RaisonRefus.HORLOGE_INCOHERENTE)
         if (age > ageMaxFixMs) return EvaluationFix.Refuse(RaisonRefus.TROP_VIEUX)
         val corrections = fix.ageCorrectionsS
-        if (fix.qualite.estRtk && corrections != null && corrections > ageMaxCorrectionsS) {
-            return EvaluationFix.Accepte(fix.copy(qualite = QualiteFix.AUTONOME), qualiteAnnoncee = fix.qualite)
+        if (fix.qualite.estRtk && (corrections == null || corrections > ageMaxCorrectionsS)) {
+            return EvaluationFix.Accepte(fix.copy(qualite = QualiteFix.AUTONOME, qualiteAnnoncee = fix.qualite))
         }
         return EvaluationFix.Accepte(fix)
     }

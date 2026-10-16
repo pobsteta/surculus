@@ -102,7 +102,12 @@ class ServiceGnssRtk : Service() {
             )
         }
         // Notification seulement quand le texte change (qualité ou centimètres).
-        if (retenu != null && (ancien == null || ancien.qualite != retenu.qualite || texte(ancien) != texte(retenu))) premierPlan(retenu)
+        if (retenu == null) {
+            // Fix refusé ou absent : la notification ne garde pas l'ancien texte.
+            if (ancien != null) premierPlan(null)
+        } else if (ancien == null || ancien.qualite != retenu.qualite || texte(ancien) != texte(retenu)) {
+            premierPlan(retenu)
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

@@ -116,7 +116,7 @@ object SourcePosition {
 
     private fun fixDepuis(l: Location): FixGnss {
         // Instant de la mesure par l'horloge monotone d'Android, ramené à l'horloge murale.
-        val ageMs = (SystemClock.elapsedRealtime() - l.elapsedRealtimeMillis).coerceAtLeast(0L)
+        val ageMs = (SystemClock.elapsedRealtime() - (l.elapsedRealtimeNanos / 1_000_000L)).coerceAtLeast(0L)
         val precision = if (l.hasAccuracy()) l.accuracy.toDouble() else null
         return FixGnss(
             position = Position(l.latitude, l.longitude),

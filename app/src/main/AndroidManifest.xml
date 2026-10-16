@@ -4,6 +4,7 @@
     <!-- Corrections NTRIP (Centipède) ; position du téléphone (repli, jamais en arrière-plan) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Récepteur RTK en Bluetooth SPP (API 31 et plus), permissions historiques avant -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />

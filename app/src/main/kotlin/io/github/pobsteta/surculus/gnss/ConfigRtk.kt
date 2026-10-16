@@ -17,10 +17,12 @@ import android.content.Context
 enum class TransportRtk { BLUETOOTH, TCP }
 
 /**
- * External RTK receiver and NTRIP caster (brief 2026-10-14 carte RTK, § 6).
- * [ntrip] = true: Groma pulls RTCM from the caster and forwards it to the
+ * External RTK receiver and NTRIP caster. Sources : le brief « carte RTK » du 2026-10-14, § 6, et
+ * `docs/terrain.md` (« Corrections RTK Centipède »), tous deux dans le dépôt Groma (Surculus n'en
+ * a pas de copie) ; côté Surculus, ADR 0003.
+ * [ntrip] = true: Surculus pulls RTCM from the caster and forwards it to the
  * receiver; false: the receiver gets its corrections by itself. Centipède by
- * default (docs/terrain.md, « Corrections RTK Centipède »); the mount point
+ * default (Groma docs/terrain.md, « Corrections RTK Centipède »); the mount point
  * is the nearest base, picked with « Charger ».
  */
 data class ConfigRtk(
@@ -34,6 +36,7 @@ data class ConfigRtk(
     val casterHote: String = "caster.centipede.fr",
     val casterPort: Int = 2101,
     val pointMontage: String = "",
+    // Compte public de Centipède : voir la documentation du réseau, https://docs.centipede.fr/
     val utilisateur: String = "centipede",
     val motDePasse: String = "centipede",
     /** Length of « Mesurer le centre » (s), brief § 5.4. */
