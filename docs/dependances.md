@@ -44,9 +44,10 @@ Licences lues sur l'API GitHub (`/repos/<action>/license`) le 2026-10-16.
 | `actions/setup-java` | v4 | MIT | tous les workflows (Temurin 21) |
 | `android-actions/setup-android` | v3 | MIT | tous les workflows |
 | `gradle/actions/setup-gradle` | v4 | **non déclarée par l'API (NOASSERTION)** : à confirmer, voir ci-dessous | tous les workflows |
-| `actions/upload-artifact`, `actions/download-artifact` | v4 | MIT | `ci.yml`, `badges.yml` |
+| `actions/upload-artifact` | v4 | MIT | `ci.yml`, `badges.yml`, `release.yml` |
+| `actions/download-artifact` | v4.3.0, épinglée par SHA | MIT | `badges.yml`, `release.yml` (jobs qui écrivent) |
 | `mathieudutour/github-tag-action` | v6.2 | MIT | `release.yml` (calcul de la version, préfixe `v`) |
-| `softprops/action-gh-release` | v2 | MIT | `release.yml` (tag et release) |
+| `softprops/action-gh-release` | v2.6.2, épinglée par SHA | MIT | `release.yml` (tag et release) |
 | `cicirello/jacoco-badge-generator` | v2 | MIT | `badges.yml` (badge de couverture) |
 
 `gradle/actions` est utilisée depuis la mission 001 : sa licence n'est pas déclarée de façon

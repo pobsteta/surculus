@@ -1,38 +1,59 @@
 name: Release
 
 # Chaque fusion dans main : version SemVer calculée depuis les commits conventionnels,
-# tests et contrôle 16 Ko, APK release, puis tag vX.Y.Z et release GitHub.
-# Repris de Marculus (arbitrage de Pascal, 2026-10-16), avec une garde en plus : le tag
-# n'est créé qu'après des tests verts (calcul en « dry_run », tag posé par la release).
+# tests et contrôle 16 Ko, APK release signé, puis tag vX.Y.Z et release GitHub.
+# Repris de Marculus (arbitrage de Pascal, 2026-10-16) avec deux décisions de Pascal :
+#  - pas d'APK sans clé de signature : sans secrets, la release part avec ses notes, sans APK ;
+#  - première version v0.1.0 automatique quand aucun tag « v* » n'existe.
+# Deux jobs : « construire » exécute le code du dépôt en lecture seule ; « publier » a le droit
+# d'écrire (tag, release), ne fait ni checkout ni Gradle. Le tag n'est posé qu'après des tests verts.
 on:
   push:
     branches: [ main ]
 
-# Seul ce workflow écrit (tag et release). Il ne pousse aucun commit : jamais sur main.
-permissions:
-  contents: write
+permissions: {}
 
+# Une seule release à la fois. Si deux fusions arrivent pendant qu'une release tourne, GitHub
+# n'en garde qu'une en attente (la plus récente) et annule l'autre : voir docs/publier.md.
 concurrency:
   group: release
   cancel-in-progress: false
 
 jobs:
-  release:
+  construire:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      new_tag: ${{ steps.version.outputs.new_tag }}
+      signe: ${{ steps.cle.outputs.signe }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      # Aucun tag « v* » : première version v0.1.0 (custom_tag). Sinon, calcul normal.
+      - name: Chercher un tag existant
+        id: existant
+        run: |
+          if [ -n "$(git tag --list 'v*')" ]; then
+            echo "premiere=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "premiere=true" >> "$GITHUB_OUTPUT"
+            echo "Aucun tag v* : première version v0.1.0."
+          fi
 
       # feat: -> mineur · fix: -> patch · ! ou BREAKING CHANGE -> majeur · sinon -> patch.
       - name: Calculer la version (sans poser le tag)
-        id: tag
+        id: version
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: patch
           release_branches: main
           tag_prefix: v
+          custom_tag: ${{ steps.existant.outputs.premiere == 'true' && '0.1.0' || '' }}
           dry_run: true
 
       - name: Configurer JDK 21
@@ -50,63 +71,91 @@ jobs:
       - name: Configurer Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # La release ne part que si ces deux contrôles sont verts.
+      # La release ne part que si les tests et le contrôle 16 Ko sont verts.
       - name: Commande de tests du projet (.claude/test-command)
         run: sh -c "$(cat .claude/test-command) --no-daemon"
+
+      - name: Contrôle des pages de 16 Ko (APK debug des tests)
+        run: bash scripts/verifier-16ko.sh app/build/outputs/apk/debug/app-debug.apk
 
       - name: Préparer la clé de signature release
         id: cle
         env:
           KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          MOT_DE_PASSE: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          MOT_DE_PASSE_CLE: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_B64" ]; then
+          if [ -n "$KEYSTORE_B64" ] && [ -n "$MOT_DE_PASSE" ] && [ -n "$ALIAS" ] && [ -n "$MOT_DE_PASSE_CLE" ]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
             echo "RELEASE_KEYSTORE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
-            echo "signature=release" >> "$GITHUB_OUTPUT"
-            echo "Clé release détectée : APK signé release (mises à jour possibles)."
+            echo "signe=true" >> "$GITHUB_OUTPUT"
+            echo "Les quatre secrets de signature sont présents : APK signé release."
           else
-            echo "signature=debug" >> "$GITHUB_OUTPUT"
-            echo "Secret RELEASE_KEYSTORE_BASE64 absent : repli sur la signature debug."
+            echo "signe=false" >> "$GITHUB_OUTPUT"
+            echo "Secrets de signature absents ou incomplets : release sans APK."
           fi
 
       - name: Compiler l'APK release
+        if: steps.cle.outputs.signe == 'true'
         env:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: >
-          ./gradlew :app:assembleRelease --no-daemon
-          -PappVersionName=${{ steps.tag.outputs.new_version }}
-          -PappVersionCode=${{ github.run_number }}
+          VERSION: ${{ steps.version.outputs.new_version }}
+          NUMERO: ${{ github.run_number }}
+        run: ./gradlew :app:assembleRelease --no-daemon "-PappVersionName=$VERSION" "-PappVersionCode=$NUMERO"
 
       - name: Contrôle des pages de 16 Ko (APK release)
+        if: steps.cle.outputs.signe == 'true'
         run: bash scripts/verifier-16ko.sh app/build/outputs/apk/release/app-release.apk
 
-      - name: Nommer l'APK et écrire les notes
-        id: apk
+      - name: Préparer l'APK, les notes et le résumé
         env:
-          TAG: ${{ steps.tag.outputs.new_tag }}
-          SIGNATURE: ${{ steps.cle.outputs.signature }}
-          CHANGELOG: ${{ steps.tag.outputs.changelog }}
+          TAG: ${{ steps.version.outputs.new_tag }}
+          SIGNE: ${{ steps.cle.outputs.signe }}
+          CHANGELOG: ${{ steps.version.outputs.changelog }}
         run: |
-          NAME="surculus-${TAG}-$(date -u +%Y%m%d-%H%M).apk"
-          cp app/build/outputs/apk/release/app-release.apk "$NAME"
-          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          mkdir dist
           {
             printf '%s\n\n' "$CHANGELOG"
-            if [ "$SIGNATURE" = "debug" ]; then
-              echo "> **APK signé avec la clé de debug** (aucune clé release configurée)."
-              echo "> Il ne se mettra pas à jour par-dessus un APK signé release : désinstaller d'abord."
-            else
+            if [ "$SIGNE" = "true" ]; then
               echo "> APK signé avec la clé release."
+            else
+              echo "> **Cette release n'a pas d'APK** : aucune clé de signature n'est configurée"
+              echo "> (secrets \`RELEASE_*\` absents). Voir \`docs/publier.md\`."
             fi
-          } > notes.md
+          } > dist/notes.md
+          if [ "$SIGNE" = "true" ]; then
+            cp app/build/outputs/apk/release/app-release.apk "dist/surculus-${TAG}-$(date -u +%Y%m%d-%H%M).apk"
+            echo "Release $TAG avec APK signé release." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "**Release $TAG sans APK** : les secrets de signature sont absents." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: dist/
+          if-no-files-found: error
+
+  publier:
+    needs: construire
+    runs-on: ubuntu-latest
+    # Seul droit d'écriture du workflow ; pas de checkout, pas de Gradle.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release
+          path: dist
 
       - name: Créer le tag et la release GitHub
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
-          tag_name: ${{ steps.tag.outputs.new_tag }}
+          tag_name: ${{ needs.construire.outputs.new_tag }}
           target_commitish: ${{ github.sha }}
-          name: Surculus ${{ steps.tag.outputs.new_tag }}
-          body_path: notes.md
-          files: ${{ steps.apk.outputs.name }}
+          name: Surculus ${{ needs.construire.outputs.new_tag }}
+          body_path: dist/notes.md
+          files: dist/*.apk

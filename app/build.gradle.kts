@@ -26,9 +26,13 @@ android {
 
     // Clé de signature release lue dans l'environnement (CI, secrets) ou les propriétés Gradle,
     // jamais dans le dépôt. Sans keystore, repli sur la signature debug (builds locaux, et releases
-    // tant que Pascal n'a pas créé la clé : voir docs/publier.md). Distribution et clé : ADR 0010.
+    // L'APK de release publié sur GitHub n'existe qu'avec une clé : la CI ne se replie jamais sur
+    // le debug (docs/publier.md). Distribution et clé : ADR 0010.
     val cheminKeystore = System.getenv("RELEASE_KEYSTORE") ?: (project.findProperty("releaseKeystore") as String?)
     val keystoreExiste = cheminKeystore != null && file(cheminKeystore).exists()
+    if (cheminKeystore != null && !keystoreExiste) {
+        logger.warn("RELEASE_KEYSTORE pointe vers un fichier absent ($cheminKeystore) : signature debug utilisée.")
+    }
 
     signingConfigs {
         if (keystoreExiste) {
