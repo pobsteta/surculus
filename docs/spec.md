@@ -317,7 +317,7 @@ jamais dans la base de sommieR.
 | Seuils et densités minimales | acquis : `seuils-densites.csv` ; **pages du fascicule 34 à revérifier** | Pascal |
 | Table de correspondance des codes travaux | proposée : `operations-plantation.csv`, `codes-taches-onf.csv`, `codes-teck-onf.csv` ; **à porter dans sommieR** | Pascal |
 | Codes des essences | acquis : `essences.csv`, **codes ONF à 3 caractères** (arbitrage de Pascal), correspondance IGN ; seuil à **90 %** pour tous les peupliers et pour toute plantation marquée **« haute tige »** (case de l'agent ou de la tournée), 80 % sinon, noyers compris | — |
-| Modèle géomagnétique hors ligne (déclinaison) | acquis : `modele-geomagnetique.md` ; **`WMM.COF` de NCEI** (domaine public selon NCEI), code C de NOAA **porté en Kotlin** dans `:core`, dates hors validité refusées (arbitrage de Pascal) ; mise à jour avant fin 2029 | — |
+| Modèle géomagnétique hors ligne (déclinaison) | acquis : `modele-geomagnetique.md` ; **`WMM.COF` de NCEI** (domaine public selon NCEI), `Declinaison.kt` **copié de Groma** dans `:core` (arbitrage de Pascal du 2026-10-16, mission 005), coefficients identiques à l'archive NCEI, 100 valeurs de test officielles, dates hors validité refusées (arbitrage de Pascal) ; mise à jour avant fin 2029 | — |
 | Référentiel des positions Centipède (version de RGF93) | `referentiel-centipede.md` : RGF93, version non écrite (Centipède recommande EPSG:4171, v1) ; **question à poser à Centipède** et contrôle sur une borne géodésique à fiche publiée | Pascal |
 
 ## 10. Questions ouvertes
