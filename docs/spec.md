@@ -274,6 +274,7 @@ dans Surculus.
 | Totaux du contrôle = décompte des états des plants (vivants = sains + atteints ; non observés et plants remplacés exclus) | Surculus | 1 |
 | Un regarni remplace exactement un plant mort ou absent de la même placette (`remplace_uuid` obligatoire) ; le plant remplacé compte dans le contrôle où il est vu mort ou absent, puis sort des contrôles suivants | Surculus | 1 |
 | Un plant appartient à une seule placette et garde son UUID ; un UUID de plant en double est refusé | Surculus | 1 |
+| Numérotation de Groma sans masquage (les plants n'ont pas de diamètre) ; un plant pointé après coup prend le numéro suivant le plus grand déjà donné, sans renuméroter ; pente ≥ 90° refusée ; date hors validité du WMM2025 (après le 31/12/2029) refusée | Surculus | 1 |
 | États et causes uniquement ceux de `etats-plants.yaml` ; une cause sur un plant sain ou absent est refusée | Surculus | 1 |
 | `h_moy_cm` = moyenne des hauteurs des plants vivants (sains + atteints) mesurés ; absent si aucune hauteur | Surculus | 1 |
 | Unités de la boussole (degrés ou grades) et de la pente (% ou degrés) déclarées à l'ouverture de la tournée ; azimut saisi refusé hors [0, 360[ ou [0, 400[ avant normalisation | ADR 0003 | 1 |
