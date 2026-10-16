@@ -7,7 +7,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Créer le squelette Gradle de Surculus (`:core`, `:gpkg`, `:data`, `:app`, identifiant `io.github.pobsteta.surculus`) et une CI GitHub qui joue `.claude/test-command`, pour que toute mission suivante s'écrive sur une base qui compile et se teste.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent (`dev`, 2026-10-16) :** Poser le squelette Gradle de Surculus (`:core` Kotlin pur, `:gpkg` JVM, `:data` bibliothèque Android Room, `:app` Compose réduit à une activité vide, identifiant `io.github.pobsteta.surculus`) et une CI GitHub qui joue `.claude/test-command` et contrôle l'alignement 16 Ko de l'APK de debug, pour que chaque mission suivante parte d'une base qui compile et se teste.
 
 ## Les trois questions (règle de staffing)
 
@@ -33,7 +33,7 @@
 
 ## Tests
 
-- **Comment saura-t-on que c'est juste :** `./gradlew :core:test :gpkg:test :app:assembleDebug` vert en local et en CI ; un test de `:core` vérifie qu'un point Lambert-93 de Couchey (x ≈ 849 000, y ≈ 6 676 000, à confirmer depuis la démo sommieR) tombe dans l'emprise de la France métropolitaine. Commande du projet : `.claude/test-command`.
+- **Comment saura-t-on que c'est juste :** `./gradlew :core:test :gpkg:test :app:assembleDebug` vert en local et en CI ; un test de `:core` vérifie qu'un point Lambert-93 de Couchey (x = 846 164,76 m, y = 6 686 123,26 m : place de dépôt PD-01 de sommieR `R/demo.R` l. 318-321, lon 4.933034, lat 47.259315, reprojetée par pyproj ; corrigé le 2026-10-16, la fiche portait par erreur y ≈ 6 676 000) tombe dans l'emprise de la France métropolitaine. Commande du projet : `.claude/test-command`.
 
 ## Terrain
 
