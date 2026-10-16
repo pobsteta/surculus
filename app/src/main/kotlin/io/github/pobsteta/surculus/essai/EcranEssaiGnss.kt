@@ -52,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.core.essai.AffichageEssai
@@ -96,31 +97,48 @@ fun EcranEssaiGnss() {
     }
     val affichage = EssaiGnss.afficher(fix, etat.fixRefuse, maintenant)
 
-    // Le GNSS du téléphone sert de repli (et de banc d'essai de la position simulée) tant que l'écran est ouvert.
-    val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
-    androidx.compose.runtime.DisposableEffect(SourcePosition.localisationAutorisee(ctx)) {
-        val ecoute = SourcePosition.ecouterTelephone(ctx)
-        onDispose { ecoute.close() }
-    }
-
     var config by remember { mutableStateOf(ConfigRtk.lire(ctx)) }
     var points by remember { mutableStateOf<List<PointMontage>>(emptyList()) }
     var menuAppareil by remember { mutableStateOf(false) }
     var menuPoints by remember { mutableStateOf(false) }
     var enregistre by remember { mutableStateOf(false) }
+    var manquantes by remember { mutableStateOf<List<String>>(emptyList()) }
+    var localisationOk by remember { mutableStateOf(SourcePosition.localisationAutorisee(ctx)) }
     val scope = rememberCoroutineScope()
 
-    fun demarrer() {
-        val manquantes = permissionsAUtiliser().filter {
-            ContextCompat.checkSelfPermission(ctx, it) != PackageManager.PERMISSION_GRANTED
-        }
-        if (manquantes.isNotEmpty()) permissions.launch(manquantes.toTypedArray())
-        // Enregistré seulement ici, sur l'action de Pascal.
+    // Le GNSS du téléphone sert de repli (et de banc d'essai de la position simulée) seulement tant que
+    // l'écran est visible ; l'effet ne dépend que de la permission, pas de l'horloge.
+    LifecycleStartEffect(localisationOk) {
+        val ecoute = SourcePosition.ecouterTelephone(ctx)
+        onStopOrDispose { ecoute.close() }
+    }
+
+    fun lancer() {
+        // Enregistré seulement ici, sur l'action de Pascal, permissions accordées.
         val c = config.copy(actif = true, transport = TransportRtk.BLUETOOTH, ntrip = true)
         ConfigRtk.memoriser(ctx, c)
         config = c
         enregistre = true
         ServiceGnssRtk.demarrer(ctx)
+    }
+
+    val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { accordees ->
+        localisationOk = SourcePosition.localisationAutorisee(ctx)
+        manquantes = accordees.filterValues { !it }.keys.toList()
+        if (manquantes.isEmpty()) lancer()
+    }
+
+    fun demarrer() {
+        val aDemander = permissionsAUtiliser().filter {
+            ContextCompat.checkSelfPermission(ctx, it) != PackageManager.PERMISSION_GRANTED
+        }
+        if (aDemander.isEmpty()) {
+            manquantes = emptyList()
+            lancer()
+        } else {
+            // Le service ne démarre que dans le rappel, et seulement si tout est accordé.
+            permissions.launch(aDemander.toTypedArray())
+        }
     }
 
     Column(
@@ -155,6 +173,12 @@ fun EcranEssaiGnss() {
                 onClick = { ServiceGnssRtk.arreter(ctx) },
                 modifier = Modifier.weight(1f).height(64.dp),
             ) { Text(stringResource(R.string.essai_arreter), fontSize = 20.sp, color = Noir) }
+        }
+        if (manquantes.isNotEmpty()) {
+            Text(
+                stringResource(R.string.essai_permissions_manquantes, manquantes.joinToString(", ") { it.substringAfterLast('.') }),
+                fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Rouge,
+            )
         }
         if (enregistre) Text(stringResource(R.string.essai_enregistre), fontSize = 14.sp, color = Noir)
 
@@ -196,7 +220,8 @@ fun EcranEssaiGnss() {
             OutlinedButton(
                 onClick = {
                     scope.launch {
-                        points = ClientNtrip.pointsMontage(config.casterHote, config.casterPort)
+                        val recus = ClientNtrip.pointsMontage(config.casterHote, config.casterPort)
+                        points = EssaiGnss.trierPoints(recus, SourcePosition.positionApprochee(ctx))
                         menuPoints = true
                     }
                 },
@@ -248,7 +273,8 @@ fun BlocMesure(a: AffichageEssai) {
         Text(a.ageFix, fontSize = 20.sp, color = Blanc)
         Text(a.ageCorrections, fontSize = 20.sp, color = Blanc)
         a.drapeaux.forEach { Text("▲ " + it.texte, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Blanc) }
-        a.lambert93?.let { Text("Lambert-93 : $it", fontSize = 18.sp, color = Blanc) }
+        a.lambertX?.let { Text("Lambert-93 · $it", fontSize = 18.sp, color = Blanc) }
+        a.lambertY?.let { Text("Lambert-93 · $it", fontSize = 18.sp, color = Blanc) }
         if (a.enFrance == false) {
             Text(stringResource(R.string.essai_hors_france), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Blanc)
         }
@@ -275,7 +301,7 @@ private fun ApercuRtkFixe() {
         AffichageEssai(
             qualite = QualiteFix.RTK_FIXE.libelle, ton = Ton.BON, precision = "± 0,02 m",
             ageFix = "Récepteur · fix il y a 1 s", ageCorrections = "Corrections : 3 s", drapeaux = emptyList(),
-            lambert93 = "X 846 164,76 m · Y 6 686 123,26 m", enFrance = true,
+            lambertX = "X 846 164,76 m", lambertY = "Y 6 686 123,26 m", enFrance = true,
         ),
     )
 }
@@ -285,10 +311,10 @@ private fun ApercuRtkFixe() {
 private fun ApercuRetrograde() {
     BlocMesure(
         AffichageEssai(
-            qualite = QualiteFix.AUTONOME.libelle, ton = Ton.A_SURVEILLER, precision = "± 0,02 m",
+            qualite = QualiteFix.AUTONOME.libelle, ton = Ton.A_SURVEILLER, precision = "—",
             ageFix = "Récepteur · fix il y a 1 s", ageCorrections = "Corrections : 34 s",
             drapeaux = listOf(Drapeau.Retrograde(QualiteFix.RTK_FIXE)),
-            lambert93 = "X 846 164,76 m · Y 6 686 123,26 m", enFrance = true,
+            lambertX = "X 846 164,76 m", lambertY = "Y 6 686 123,26 m", enFrance = true,
         ),
     )
 }

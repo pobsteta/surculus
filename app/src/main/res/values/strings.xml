@@ -16,6 +16,7 @@
     <string name="essai_ntrip_erreur">Caster : %1$s</string>
     <string name="essai_demarrer">Démarrer</string>
     <string name="essai_arreter">Arrêter</string>
+    <string name="essai_permissions_manquantes">Permissions refusées, démarrage annulé : %1$s</string>
     <string name="essai_enregistre">Réglages enregistrés au démarrage.</string>
     <string name="essai_reglages">Réglages</string>
     <string name="essai_choisir_recepteur">Choisir le récepteur apparié</string>

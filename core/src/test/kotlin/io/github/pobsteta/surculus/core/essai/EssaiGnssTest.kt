@@ -10,6 +10,7 @@ package io.github.pobsteta.surculus.core.essai
 import io.github.pobsteta.surculus.core.gnss.EvaluationFix
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.core.gnss.OrigineFix
+import io.github.pobsteta.surculus.core.gnss.PointMontage
 import io.github.pobsteta.surculus.core.gnss.PolitiqueFix
 import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.gnss.QualiteFix
@@ -64,6 +65,8 @@ class EssaiGnssTest {
         val a = EssaiGnss.afficher(retenu, refus, maintenant)
         assertEquals("Autonome", a.qualite)
         assertEquals(Ton.A_SURVEILLER, a.ton)
+        // Décision de Pascal : pas de précision centimétrique sous « Autonome » rétrogradé.
+        assertEquals("—", a.precision)
         assertEquals(listOf<Drapeau>(Drapeau.Retrograde(QualiteFix.RTK_FIXE)), a.drapeaux)
         assertTrue(a.drapeaux.single().texte.contains("RTK fixe"))
     }
@@ -75,7 +78,8 @@ class EssaiGnssTest {
         assertEquals("Fix refusé", a.qualite)
         assertEquals(Ton.MAUVAIS, a.ton)
         assertEquals(listOf<Drapeau>(Drapeau.Refuse(RaisonRefus.TROP_VIEUX)), a.drapeaux)
-        assertNull(a.lambert93)
+        assertNull(a.lambertX)
+        assertNull(a.lambertY)
     }
 
     @Test
@@ -96,8 +100,9 @@ class EssaiGnssTest {
     fun `Couchey est affiche en Lambert-93 et tombe en France`() {
         val a = EssaiGnss.afficher(fix(), null, maintenant)
         // Espaces insécables ou fines selon la version de l'ICU : on les normalise.
-        val normalise = a.lambert93!!.replace(Regex("[\\u00A0\\u202F]"), " ")
-        assertEquals("X 846 164,76 m · Y 6 686 123,26 m", normalise)
+        val espaces = Regex("[\\u00A0\\u202F]")
+        assertEquals("X 846 164,76 m", a.lambertX!!.replace(espaces, " "))
+        assertEquals("Y 6 686 123,26 m", a.lambertY!!.replace(espaces, " "))
         assertEquals(true, a.enFrance)
     }
 
@@ -106,6 +111,20 @@ class EssaiGnssTest {
         val inverse = Position(latitude = couchey.longitude, longitude = couchey.latitude)
         val a = EssaiGnss.afficher(fix(position = inverse), null, maintenant)
         assertEquals(false, a.enFrance)
+    }
+
+    @Test
+    fun `points de montage tries par distance puis sans coordonnees par nom`() {
+        val loin = PointMontage("LOIN", "x", "RTCM 3.2", 43.3, 5.4)
+        val proche = PointMontage("PROCHE", "x", "RTCM 3.2", 47.3, 4.9)
+        val sans = PointMontage("ANONYME", "x", "RTCM 3.2")
+        assertEquals(listOf("PROCHE", "LOIN", "ANONYME"), EssaiGnss.trierPoints(listOf(sans, loin, proche), couchey).map { it.nom })
+    }
+
+    @Test
+    fun `points de montage tries par nom sans position`() {
+        val l = listOf(PointMontage("b", "x", "f"), PointMontage("A", "x", "f"), PointMontage("c", "x", "f", 47.0, 5.0))
+        assertEquals(listOf("A", "b", "c"), EssaiGnss.trierPoints(l, null).map { it.nom })
     }
 
     @Test

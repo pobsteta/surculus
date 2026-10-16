@@ -8,10 +8,13 @@
 package io.github.pobsteta.surculus.core.essai
 
 import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
+import io.github.pobsteta.surculus.core.geo.Geodesie
 import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.geo.Projections
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.core.gnss.OrigineFix
+import io.github.pobsteta.surculus.core.gnss.PointMontage
+import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.gnss.QualiteFix
 import io.github.pobsteta.surculus.core.gnss.RaisonRefus
 import java.util.Locale
@@ -53,8 +56,10 @@ data class AffichageEssai(
     val ageFix: String,
     val ageCorrections: String,
     val drapeaux: List<Drapeau>,
-    /** « X … m · Y … m » en Lambert-93 (EPSG:2154), null sans position. */
-    val lambert93: String?,
+    /** « X … m » en Lambert-93 (EPSG:2154), null sans position. */
+    val lambertX: String?,
+    /** « Y … m » en Lambert-93 (EPSG:2154), null sans position. */
+    val lambertY: String?,
     /** Faux si la position, une fois en Lambert-93, tombe hors de la France métropolitaine (inversion lat/lon). */
     val enFrance: Boolean?,
 )
@@ -79,7 +84,8 @@ object EssaiGnss {
                 ageFix = "Fix : —",
                 ageCorrections = "Corrections : —",
                 drapeaux = drapeaux,
-                lambert93 = null,
+                lambertX = null,
+                lambertY = null,
                 enFrance = null,
             )
         }
@@ -89,13 +95,31 @@ object EssaiGnss {
         return AffichageEssai(
             qualite = fix.qualite.libelle,
             ton = ton(fix),
-            precision = fix.precisionHorizontaleM?.let { precision(it) } ?: "—",
+            // Décision de Pascal (2026-10-16) : rétrogradé, la précision du récepteur n'est plus valable ;
+            // on n'affiche pas un chiffre centimétrique sous « Autonome », le drapeau dit pourquoi.
+            precision = if (fix.qualiteAnnoncee != null) "—" else fix.precisionHorizontaleM?.let { precision(it) } ?: "—",
             ageFix = "$origine · fix il y a ${secondes(ageS)}",
             ageCorrections = fix.ageCorrectionsS?.let { "Corrections : ${secondes(it)}" } ?: "Corrections : aucune",
             drapeaux = drapeaux,
-            lambert93 = String.format(Locale.FRANCE, "X %,.2f m · Y %,.2f m", x, y),
+            lambertX = String.format(Locale.FRANCE, "X %,.2f m", x),
+            lambertY = String.format(Locale.FRANCE, "Y %,.2f m", y),
             enFrance = EmpriseLambert93.FRANCE_METROPOLITAINE.contient(PointLambert93(x, y)),
         )
+    }
+
+    /**
+     * Points de montage triés par distance à [position] quand elle est connue (les points sans coordonnées
+     * en dernier, par nom), sinon par nom.
+     */
+    fun trierPoints(points: List<PointMontage>, position: Position?): List<PointMontage> {
+        val parNom = compareBy<PointMontage> { it.nom.lowercase(Locale.ROOT) }
+        if (position == null) return points.sortedWith(parNom)
+        fun distance(p: PointMontage): Double {
+            val lat = p.latitude
+            val lon = p.longitude
+            return if (lat != null && lon != null) Geodesie.distanceM(position, Position(lat, lon)) else Double.MAX_VALUE
+        }
+        return points.sortedWith(compareBy<PointMontage> { distance(it) }.then(parNom))
     }
 
     private fun ton(fix: FixGnss) = when {

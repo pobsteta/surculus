@@ -17,7 +17,14 @@ import java.util.Locale
 import kotlin.math.abs
 
 /** `STR` entry of an NTRIP source table: a mount point offered by the caster. */
-data class PointMontage(val nom: String, val identifiant: String, val format: String)
+data class PointMontage(
+    val nom: String,
+    val identifiant: String,
+    val format: String,
+    /** Position de la base (champs 10 et 11 de l'entrée `STR`), degrés WGS 84 ; null si la table ne la donne pas. */
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+)
 
 /** Caster answer to an NTRIP request. */
 enum class StatutNtrip { OK, TABLE_SOURCES, NON_AUTORISE, INCONNU }
@@ -48,7 +55,7 @@ object Ntrip {
     /** Mount points (`STR;` lines) of a source table. */
     fun tableSources(texte: String): List<PointMontage> = texte.lineSequence().filter { it.startsWith("STR;") }.mapNotNull { l ->
         val f = l.split(';')
-        if (f.size < 4) null else PointMontage(f[1], f[2], f[3])
+        if (f.size < 4) null else PointMontage(f[1], f[2], f[3], f.getOrNull(9)?.toDoubleOrNull(), f.getOrNull(10)?.toDoubleOrNull())
     }.toList()
 
     /** Status from the first line of the answer (ICY / HTTP 200, 401, source table). */
