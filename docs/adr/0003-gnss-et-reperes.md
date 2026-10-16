@@ -49,7 +49,7 @@ Options envisagées :
 | Piquet (installation) | RTK fixe exigé ; sans 4G, **journal UBX brut et post-traitement** (RTKLIB, RINEX de la base), comme Groma (`docs/terrain.md`) ; sinon précision obtenue enregistrée et dite |
 | Plant | observation primaire **relative au piquet** : distance horizontale (m), azimut magnétique brut, unité de la boussole (degrés ou grades), déclinaison et convergence appliquées, date ; EPSG dérivé |
 | Unités d'azimut | refus **avant normalisation** hors [0, 360[ en degrés et hors [0, 400[ en grades (`groma-core` normalise : à ne pas reprendre tel quel) |
-| Déclinaison | modèle géomagnétique embarqué (`docs/referentiels/modele-geomagnetique.md`, à venir), au point et à la date |
+| Déclinaison | modèle géomagnétique embarqué (`docs/referentiels/modele-geomagnetique.md`), au point et à la date ; WMM2025 copié de Groma, bornes 2025-01-01 à 2029-12-31 (mission 005, arbitrage de Pascal du 2026-10-16) ; altitude prise à 0 m (écart < 0,005° pour 500 m, testé) |
 | Convergence | γ = n·(λ − 3°), formule de `groma-core` ; **une seule** implémentation (proj4j retiré) |
 | Règle des 15 m | position **moyennée** quelques secondes, précision enregistrée ; placette la plus proche ; si le fix est hors des 15 m mais que l'agent **confirme l'identité** (code lu sur le piquet), le contrôle prend la **position stockée du piquet** et garde à part la position GNSS mesurée, avec le drapeau « rattaché par identité » (arbitrage de Pascal) |
 | Fix | horodaté ; un fix plus vieux que quelques secondes est refusé ; un RTK dont les corrections sont trop vieilles est rétrogradé ; une **position simulée** (`Location.isMock()`) est détectée et enregistrée |

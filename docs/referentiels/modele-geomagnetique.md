@@ -94,6 +94,7 @@ Lecture : les valeurs de test à comparer sont celles de la colonne en gras (tol
 
 - Le rapport technique WMM2025 (annoncé publié le 2025-08-19 par NESDIS, non lu) et la carte d'erreur WMM2025 ; seule la formule de la page NCEI-ERR est lue.
 - Les valeurs de test officielles de `WMM.COF` (le fichier n'a pas été téléchargé : les liens passent par un sondage) : à récupérer pour l'ADR.
+  **Mise à jour du 2026-10-16 (mission 005)** : récupérées dans l'archive officielle https://www.ncei.noaa.gov/sites/default/files/2024-12/WMM2025COF.zip (`WMM2025_TestValues.txt`, 100 valeurs) ; le `WMM.COF` de l'archive est identique à celui de Groma (sha256 dans `NOTICE`).
 - Une bibliothèque Java ou Kotlin libre dont la prise en charge du WMM2025 et la licence soient établies.
 - Un texte du BGS qui règle la distribution des coefficients (voir licence).
 - La page Android exacte (lue en résumé).
