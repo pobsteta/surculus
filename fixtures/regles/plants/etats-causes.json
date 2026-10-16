@@ -225,6 +225,54 @@
       "source": "Pascal 2026-10-16 : sur un plant sain, un groupe de cause est refusé"
     },
     {
+      "id": "E7a",
+      "description": "Non observé avec une hauteur : refusé.",
+      "entree": {
+        "etat": "non_observe",
+        "hauteur_cm": 45
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "spec § 6, arbitrage de Pascal du 2026-10-16"
+    },
+    {
+      "id": "E7b",
+      "description": "Non observé avec un groupe de cause : refusé.",
+      "entree": {
+        "etat": "non_observe",
+        "cause_groupe": "animaux"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "spec § 6, arbitrage de Pascal du 2026-10-16"
+    },
+    {
+      "id": "E7c",
+      "description": "Non observé avec un détail de cause : refusé.",
+      "entree": {
+        "etat": "non_observe",
+        "cause_detail": "abroutissement"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "spec § 6, arbitrage de Pascal du 2026-10-16"
+    },
+    {
+      "id": "E7d",
+      "description": "Absent avec une hauteur : refusé.",
+      "entree": {
+        "etat": "absent",
+        "hauteur_cm": 45
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "spec § 6, arbitrage de Pascal du 2026-10-16"
+    },
+    {
       "id": "E5",
       "description": "« gel » comme groupe de cause (c'est un détail) : refusé.",
       "entree": {

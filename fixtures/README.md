@@ -53,3 +53,8 @@ l'unité déclarée une fois par tournée.
 * Jour civil : fuseau Europe/Paris (tzdata), changement d'heure du 25 octobre 2026.
 * Numérotation : cas copiés de Groma (`fixtures/numerotation/`, commit 6f953e1), sans modification.
 * Les listes d'états, de causes et d'essences ne sont pas copiées : les tests les lisent dans `docs/referentiels/`.
+
+## Note pour sommieR (rejeu en R)
+
+* `h_moy_cm` est arrondie à l'entier le plus proche, **demi vers le haut** (T9c : 40 et 45 cm donnent 43). `round()` de R arrondit au pair (`round(42.5)` donne 42) : utiliser `floor(x + 0.5)` pour rejouer ce cas.
+* Un cas qui attend `{"refuse": true}` ou `{"accepte": false}` doit être refusé ; le libellé du refus n'est pas fixé.
