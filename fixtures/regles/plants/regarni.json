@@ -1,6 +1,6 @@
 {
   "fichier": "regarni.json",
-  "regle": "Un regarni remplace au plus un plant mort ou absent de la même placette",
+  "regle": "Un regarni remplace exactement un plant mort ou absent de la même placette (remplace_uuid obligatoire)",
   "format": "voir fixtures/README.md",
   "cas": [
     {
@@ -23,7 +23,7 @@
       "attendu": {
         "accepte": true
       },
-      "source": "docs/spec.md § 6 (un regarni remplace au plus un plant mort ou absent de la même placette)"
+      "source": "docs/spec.md § 6 (PR #15) : un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire"
     },
     {
       "id": "G2",
@@ -45,7 +45,7 @@
       "attendu": {
         "accepte": true
       },
-      "source": "docs/spec.md § 6 (un regarni remplace au plus un plant mort ou absent de la même placette)"
+      "source": "docs/spec.md § 6 (PR #15) : un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire"
     },
     {
       "id": "G3",
@@ -67,7 +67,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (un regarni remplace au plus un plant mort ou absent de la même placette)"
+      "source": "docs/spec.md § 6 (PR #15) : un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire"
     },
     {
       "id": "G4",
@@ -89,7 +89,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (un regarni remplace au plus un plant mort ou absent de la même placette)"
+      "source": "docs/spec.md § 6 (PR #15) : un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire"
     },
     {
       "id": "G5",
@@ -111,7 +111,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (un regarni remplace au plus un plant mort ou absent de la même placette)"
+      "source": "docs/spec.md § 6 (PR #15) : un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire"
     },
     {
       "id": "G6",
@@ -133,7 +133,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (un regarni remplace au plus un plant mort ou absent de la même placette) (déduit)"
+      "source": "docs/spec.md § 6 (PR #15) : un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire (déduit)"
     },
     {
       "id": "G7",
@@ -162,7 +162,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (un regarni remplace au plus un plant mort ou absent de la même placette) : « au plus un »"
+      "source": "docs/spec.md § 6 (PR #15) : un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire (exactement un)"
     },
     {
       "id": "G9",
@@ -184,7 +184,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "arbitrage de Pascal 2026-10-16 (Q12) ; docs/spec.md § 6 (un regarni remplace au plus un plant mort ou absent de la même placette)"
+      "source": "docs/spec.md § 6 (PR #15) : un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire"
     },
     {
       "id": "G10",

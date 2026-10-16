@@ -7,8 +7,8 @@
       "id": "U1",
       "description": "Borne basse incluse.",
       "entree": {
-        "valeur": 0,
-        "unite": "deg"
+        "azimut_mag": 0,
+        "unite_azimut": "deg"
       },
       "attendu": {
         "accepte": true
@@ -19,8 +19,8 @@
       "id": "U2",
       "description": "Juste sous la borne haute.",
       "entree": {
-        "valeur": 359.999,
-        "unite": "deg"
+        "azimut_mag": 359.999,
+        "unite_azimut": "deg"
       },
       "attendu": {
         "accepte": true
@@ -31,8 +31,8 @@
       "id": "U3",
       "description": "Borne haute exclue.",
       "entree": {
-        "valeur": 360,
-        "unite": "deg"
+        "azimut_mag": 360,
+        "unite_azimut": "deg"
       },
       "attendu": {
         "accepte": false,
@@ -44,8 +44,8 @@
       "id": "U4",
       "description": "Négatif.",
       "entree": {
-        "valeur": -0.001,
-        "unite": "deg"
+        "azimut_mag": -0.001,
+        "unite_azimut": "deg"
       },
       "attendu": {
         "accepte": false,
@@ -57,8 +57,8 @@
       "id": "U5",
       "description": "Pas ramené à 0 (groma-core normalise, pas Surculus).",
       "entree": {
-        "valeur": 720,
-        "unite": "deg"
+        "azimut_mag": 720,
+        "unite_azimut": "deg"
       },
       "attendu": {
         "accepte": false,
@@ -70,8 +70,8 @@
       "id": "U6",
       "description": "Borne basse incluse.",
       "entree": {
-        "valeur": 0,
-        "unite": "gr"
+        "azimut_mag": 0,
+        "unite_azimut": "gr"
       },
       "attendu": {
         "accepte": true
@@ -82,8 +82,8 @@
       "id": "U7",
       "description": "Juste sous la borne haute.",
       "entree": {
-        "valeur": 399.999,
-        "unite": "gr"
+        "azimut_mag": 399.999,
+        "unite_azimut": "gr"
       },
       "attendu": {
         "accepte": true
@@ -94,8 +94,8 @@
       "id": "U8",
       "description": "Borne haute exclue.",
       "entree": {
-        "valeur": 400,
-        "unite": "gr"
+        "azimut_mag": 400,
+        "unite_azimut": "gr"
       },
       "attendu": {
         "accepte": false,
@@ -107,8 +107,8 @@
       "id": "U9",
       "description": "Négatif.",
       "entree": {
-        "valeur": -1,
-        "unite": "gr"
+        "azimut_mag": -1,
+        "unite_azimut": "gr"
       },
       "attendu": {
         "accepte": false,
@@ -120,8 +120,8 @@
       "id": "U10",
       "description": "Hors plage.",
       "entree": {
-        "valeur": 800,
-        "unite": "gr"
+        "azimut_mag": 800,
+        "unite_azimut": "gr"
       },
       "attendu": {
         "accepte": false,
@@ -133,8 +133,8 @@
       "id": "U11",
       "description": "100 gr = 90°.",
       "entree": {
-        "valeur": 100,
-        "unite": "gr"
+        "azimut_mag": 100,
+        "unite_azimut": "gr"
       },
       "attendu": {
         "accepte": true,
@@ -146,8 +146,8 @@
       "id": "U12",
       "description": "200 gr = 180°.",
       "entree": {
-        "valeur": 200,
-        "unite": "gr"
+        "azimut_mag": 200,
+        "unite_azimut": "gr"
       },
       "attendu": {
         "accepte": true,
@@ -159,8 +159,8 @@
       "id": "U13",
       "description": "399,5 gr = 359,55°.",
       "entree": {
-        "valeur": 399.5,
-        "unite": "gr"
+        "azimut_mag": 399.5,
+        "unite_azimut": "gr"
       },
       "attendu": {
         "accepte": true,
@@ -172,8 +172,8 @@
       "id": "U14a",
       "description": "380 est valide en grades.",
       "entree": {
-        "valeur": 380,
-        "unite": "gr"
+        "azimut_mag": 380,
+        "unite_azimut": "gr"
       },
       "attendu": {
         "accepte": true,
@@ -185,8 +185,8 @@
       "id": "U14b",
       "description": "380 est hors plage en degrés.",
       "entree": {
-        "valeur": 380,
-        "unite": "deg"
+        "azimut_mag": 380,
+        "unite_azimut": "deg"
       },
       "attendu": {
         "accepte": false,

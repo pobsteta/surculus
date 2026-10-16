@@ -10,7 +10,8 @@
         "lat": 48.39,
         "lon": -4.49,
         "date": "2026-10-15",
-        "azimut_mag_deg": 90
+        "azimut_mag": 90,
+        "unite_azimut": "deg"
       },
       "attendu": {
         "declinaison_deg": 0.0444,
@@ -29,7 +30,8 @@
         "lat": 48.58,
         "lon": 7.75,
         "date": "2026-10-15",
-        "azimut_mag_deg": 90
+        "azimut_mag": 90,
+        "unite_azimut": "deg"
       },
       "attendu": {
         "declinaison_deg": 3.4997,
@@ -72,7 +74,8 @@
         "lat": 48.58,
         "lon": 7.75,
         "date": "2026-10-15",
-        "azimut_mag_deg": 359
+        "azimut_mag": 359,
+        "unite_azimut": "deg"
       },
       "attendu": {
         "declinaison_deg": 3.4997,

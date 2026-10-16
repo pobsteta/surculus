@@ -5,7 +5,7 @@
   "cas": [
     {
       "id": "J1",
-      "description": "Deux contrôles le même après-midi.",
+      "description": "Deux contrôles le même jour (11:00 et 15:00 heure de Paris).",
       "entree": {
         "placette": "P-001",
         "controles_saisis_le_utc": [

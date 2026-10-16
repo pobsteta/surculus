@@ -324,6 +324,62 @@
       },
       "source": "Groma, fixtures/numerotation/10_groupe_ancre.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
       "copie_de_groma": true
+    },
+    {
+      "id": "N-sans-masquage",
+      "description": "Sans masquage : A (5°, 12 m) et B (5,5°, 4 m) sont à égalité d'azimut ; le plus proche, B, est le n° 1 et A le n° 2. Avec le masquage de Groma, A serait numéroté en dernier (n° 5).",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "deg",
+          "tolerance_deg": 1.0
+        },
+        "plants": [
+          {
+            "id": "A",
+            "x": 1.045869,
+            "y": 11.954336,
+            "dbh_cm": 30
+          },
+          {
+            "id": "B",
+            "x": 0.383383,
+            "y": 3.981585,
+            "dbh_cm": 60
+          },
+          {
+            "id": "C",
+            "x": 6.0,
+            "y": 0.0,
+            "dbh_cm": 30
+          },
+          {
+            "id": "D",
+            "x": -2.736161,
+            "y": -7.517541,
+            "dbh_cm": 30
+          },
+          {
+            "id": "E",
+            "x": -8.660254,
+            "y": 5.0,
+            "dbh_cm": 30
+          }
+        ]
+      },
+      "attendu": {
+        "numeros": {
+          "B": "1",
+          "A": "2",
+          "C": "3",
+          "D": "4",
+          "E": "5"
+        },
+        "exclus": {}
+      },
+      "source": "Groma 02 adapté + arbitrage de Pascal du 2026-10-16 (pas de masquage) ; valeur contrôlée avec groma.numerotation.numeroter, est_masque neutralisé (commit Groma 6f953e1)",
+      "adapte_de_groma": true
     }
   ]
 }

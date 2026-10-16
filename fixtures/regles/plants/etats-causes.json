@@ -188,6 +188,43 @@
       "source": "arbitrage de Pascal 2026-10-16 (Q15) ; docs/referentiels/etats-plants.yaml (DSF24 p. 8) (les absents n'ont pas de cause)"
     },
     {
+      "id": "E4c",
+      "description": "Plant sain, détail « abroutissement » seul : accepté.",
+      "entree": {
+        "etat": "sain",
+        "cause_detail": "abroutissement"
+      },
+      "attendu": {
+        "accepte": true
+      },
+      "source": "Pascal 2026-10-16 : sur un plant sain, un groupe de cause est refusé, mais le détail « abroutissement » est permis, et lui seul ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "E4d",
+      "description": "Plant sain, autre détail seul (« gel ») : refusé.",
+      "entree": {
+        "etat": "sain",
+        "cause_detail": "gel"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "Pascal 2026-10-16 (le détail « abroutissement » est le seul permis sur un sain)"
+    },
+    {
+      "id": "E4e",
+      "description": "Plant sain, groupe de cause avec le détail « abroutissement » : refusé (le groupe est refusé).",
+      "entree": {
+        "etat": "sain",
+        "cause_groupe": "animaux",
+        "cause_detail": "abroutissement"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "Pascal 2026-10-16 : sur un plant sain, un groupe de cause est refusé"
+    },
+    {
       "id": "E5",
       "description": "« gel » comme groupe de cause (c'est un détail) : refusé.",
       "entree": {

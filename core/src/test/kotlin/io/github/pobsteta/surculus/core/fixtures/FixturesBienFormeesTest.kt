@@ -122,7 +122,11 @@ class FixturesBienFormeesTest {
     @Test
     fun `chaque regle du paragraphe 6 de la tranche 1 a au moins un cas`() {
         val familles = fichiers.map { it.famille }.toSet()
-        listOf("rattachement-15m", "un-controle-par-jour", "totaux-controle", "regarni", "identite", "etats-causes", "emprise-et-france", "unites-azimut", "convergence", "declinaison-wmm2025")
+        listOf(
+            "rattachement-15m", "un-controle-par-jour", "totaux-controle", "regarni", "identite", "etats-causes",
+            "emprise-et-france", "numerotation", "unites-azimut", "distance-horizontale", "chaine-azimut",
+            "convergence", "declinaison-wmm2025",
+        )
             .forEach { assertTrue(it in familles, "règle sans fixture : $it") }
     }
 

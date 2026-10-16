@@ -123,10 +123,11 @@
       },
       "attendu": {
         "hors_validite": true,
+        "refuse": true,
         "extrapolation_silencieuse": false
       },
       "source": "docs/spec.md § 9 (dates hors validité refusées) ; docs/referentiels/modele-geomagnetique.md (validité 2025.0 à fin 2029)",
-      "note": "Arbitrage de l'orchestrateur 2026-10-16 (Q4) : valide jusqu'au 31/12/2029 inclus, 2030-01-01 refusé"
+      "note": "Spec § 6 (PR #15) : date hors validité du WMM2025 (après le 31/12/2029) refusée"
     },
     {
       "id": "C11b",
@@ -137,9 +138,10 @@
         "date": "2029-12-31"
       },
       "attendu": {
-        "hors_validite": false
+        "hors_validite": false,
+        "refuse": false
       },
-      "source": "docs/spec.md § 9 ; NCEI : « expires on December 31, 2029 » ; arbitrage 2026-10-16 (Q4) : 31/12/2029 inclus"
+      "source": "docs/spec.md § 9 ; NCEI : « expires on December 31, 2029 » ; spec § 6 (PR #15) : 31/12/2029 inclus"
     },
     {
       "id": "C11c",
@@ -150,7 +152,8 @@
         "date": "2024-12-31"
       },
       "attendu": {
-        "hors_validite": true
+        "hors_validite": true,
+        "refuse": true
       },
       "source": "docs/referentiels/modele-geomagnetique.md (WMM2025 valable à partir de 2025.0)"
     }

@@ -139,7 +139,7 @@
         "ouverture_refusee": true,
         "motif": "unite_pente_non_declaree"
       },
-      "source": "arbitrage de Pascal 2026-10-16 (Q9) ; confirmé par l'orchestrateur 2026-10-16 (D8) : ouverture sans unité de pente refusée"
+      "source": "arbitrage de Pascal 2026-10-16 (Q9) ; spec § 6 (PR #15) : unités de la boussole et de la pente déclarées à l'ouverture, donc ouverture sans unité de pente refusée"
     },
     {
       "id": "D9",
@@ -154,7 +154,7 @@
       "attendu": {
         "refuse": true
       },
-      "source": "arbitrage de l'orchestrateur 2026-10-16 (D9) : une pente de 90° ou plus est refusée"
+      "source": "spec § 6 (PR #15) : pente ≥ 90° refusée"
     },
     {
       "id": "D9b",
@@ -169,7 +169,7 @@
       "attendu": {
         "refuse": true
       },
-      "source": "arbitrage de l'orchestrateur 2026-10-16 (D9)"
+      "source": "spec § 6 (PR #15) : pente ≥ 90° refusée"
     },
     {
       "id": "D9c",
@@ -186,7 +186,7 @@
         "distance_horizontale_m": 0.0175,
         "tolerance_m": 0.001
       },
-      "source": "arbitrage D9 (borne : 90° exclu) ; d·cos(α)",
+      "source": "spec § 6 (PR #15) (borne : 90° exclu) ; d·cos(α)",
       "tolerance_proposee": true
     }
   ]

@@ -19,8 +19,25 @@ Un fichier = une règle ou une famille de règles :
 }
 ```
 
-Champs facultatifs d'un cas : `tolerance_proposee` (tolérance à confirmer par Pascal),
-`question_ouverte`, `a_recouper_avec_circe_pascal`, `note`, `limite`.
+Champs facultatifs d'un cas :
+
+* `tolerance_proposee` : la tolérance de `attendu` (`tolerance_deg`, `tolerance_m`) est une proposition, à confirmer par Pascal.
+* `a_recouper_avec_circe_pascal` : valeur de convergence à recouper avec Circé (IGN), par Pascal.
+* `note`, `limite` : précisions (par exemple une valeur reprise d'un autre document et non recalculée).
+* `copie_de_groma` : cas copié sans modification de `fixtures/numerotation/` de Groma ; la source donne le fichier et le commit.
+* `adapte_de_groma` : cas adapté d'un cas de Groma (ici : sans masquage).
+* `verifier_que_XYZ_est_absent_de` : le test vérifie que le code inventé « XYZ » est absent du fichier de référentiel indiqué.
+
+Champs facultatifs d'un fichier :
+
+* `unites` : unités des entrées du fichier.
+* `tolerance_proposee_deg` : tolérance proposée valable pour tout le fichier.
+* `non_reprises` : cas de Groma écartés, avec la raison.
+* `decision` : arbitrage de Pascal appliqué au fichier (ici : pas de masquage pour les plants).
+* `convention_xy` : convention des coordonnées locales (x vers l'est, y vers le nord géographique, mètres depuis le piquet).
+
+Dans `plants/numerotation.json`, la liste `arbres` de Groma est **renommée `plants`** et placée dans `entree`, avec `parametres`.
+Un azimut saisi s'écrit toujours `azimut_mag` et `unite_azimut` (`deg` ou `gr`), comme la couche `plants` (spec § 5).
 
 ## Unités
 

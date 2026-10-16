@@ -15,9 +15,11 @@
       "attendu": {
         "en_france": true,
         "x_l93": 146341.35,
-        "y_l93": 6836245.4
+        "y_l93": 6836245.4,
+        "tolerance_m": 0.01
       },
-      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)"
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
     },
     {
       "id": "F-Paris",
@@ -31,9 +33,11 @@
       "attendu": {
         "en_france": true,
         "x_l93": 652310.72,
-        "y_l93": 6862414.64
+        "y_l93": 6862414.64,
+        "tolerance_m": 0.01
       },
-      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)"
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
     },
     {
       "id": "F-Couchey",
@@ -47,9 +51,11 @@
       "attendu": {
         "en_france": true,
         "x_l93": 850469.39,
-        "y_l93": 6686306.33
+        "y_l93": 6686306.33,
+        "tolerance_m": 0.01
       },
-      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)"
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
     },
     {
       "id": "F-Strasbourg",
@@ -63,9 +69,11 @@
       "attendu": {
         "en_france": true,
         "x_l93": 1050163.94,
-        "y_l93": 6841622.72
+        "y_l93": 6841622.72,
+        "tolerance_m": 0.01
       },
-      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)"
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
     },
     {
       "id": "F-Bordeaux",
@@ -79,9 +87,11 @@
       "attendu": {
         "en_france": true,
         "x_l93": 417189.46,
-        "y_l93": 6422060.31
+        "y_l93": 6422060.31,
+        "tolerance_m": 0.01
       },
-      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)"
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
     },
     {
       "id": "F-Marseille",
@@ -95,9 +105,11 @@
       "attendu": {
         "en_france": true,
         "x_l93": 892394.78,
-        "y_l93": 6247424.65
+        "y_l93": 6247424.65,
+        "tolerance_m": 0.01
       },
-      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)"
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
     },
     {
       "id": "C15",

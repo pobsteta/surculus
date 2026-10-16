@@ -336,17 +336,20 @@
     },
     {
       "id": "T5",
-      "description": "nb_abroutis demandé supérieur à nb_vivants : refus (3 vivants, 5 abroutis).",
+      "description": "Contrôle comptant des abroutis (sain abrouti, atteint abrouti, mort abrouti non compté) : totaux déduits, nb_abroutis ≤ nb_vivants.",
       "entree": {
         "placette": "P-001",
         "plants": [
           {
             "uuid": "s1",
-            "etat": "sain"
+            "etat": "sain",
+            "cause_detail": "abroutissement"
           },
           {
             "uuid": "a1",
-            "etat": "atteint"
+            "etat": "atteint",
+            "cause_groupe": "animaux",
+            "cause_detail": "abroutissement"
           },
           {
             "uuid": "a2",
@@ -354,22 +357,26 @@
           },
           {
             "uuid": "m1",
-            "etat": "mort"
+            "etat": "mort",
+            "cause_groupe": "animaux",
+            "cause_detail": "abroutissement"
           }
         ],
         "regarnis": [],
         "controle_calcule": 1
       },
       "attendu": {
-        "refuse": true,
-        "motif": "nb_abroutis_superieur_a_nb_vivants"
+        "nb_total": 4,
+        "nb_vivants": 3,
+        "nb_abroutis": 2,
+        "h_moy_cm": null
       },
-      "source": "docs/spec.md § 6 (nb_abroutis ≤ nb_vivants)",
-      "nb_abroutis_declare": 5
+      "source": "docs/spec.md § 6 (nb_abroutis ≤ nb_vivants) ; Pascal 2026-10-16 : les totaux sont toujours déduits des plants, aucun nombre n'est saisi",
+      "note": "Invariants à vérifier sur le résultat : nb_vivants <= nb_total et nb_abroutis <= nb_vivants."
     },
     {
       "id": "T6",
-      "description": "Plant sain abrouti.",
+      "description": "Plant sain abrouti (détail « abroutissement » seul, sans groupe de cause).",
       "entree": {
         "placette": "P-001",
         "plants": [
@@ -392,7 +399,7 @@
         "nb_abroutis": 1,
         "h_moy_cm": null
       },
-      "source": "docs/spec.md § 4.3 (plant abrouti)"
+      "source": "docs/spec.md § 4.3 (plant abrouti : sain ou atteint dont le détail porte l'abroutissement) ; Pascal 2026-10-16 : sur un sain, le détail « abroutissement » est permis, et lui seul"
     },
     {
       "id": "T7",
@@ -611,7 +618,7 @@
         "h_moy_cm": null,
         "etat_accepte": true
       },
-      "source": "docs/spec.md § 5 (etats_plants) ; arbitrage de l'orchestrateur 2026-10-16 : non_observe n'est pas un état du DSF, donc hors etats-plants.yaml, mais accepté dans etats_plants"
+      "source": "docs/spec.md § 5 (etats_plants) ; non_observe n'est pas un état du DSF, donc hors etats-plants.yaml, mais accepté dans etats_plants (spec § 5)"
     },
     {
       "id": "T14",
@@ -664,11 +671,11 @@
         "controle_calcule": 1
       },
       "attendu": {
-        "invariant": "nb_vivants <= nb_total",
         "nb_total": 10,
         "nb_vivants": 7
       },
-      "source": "docs/spec.md § 6"
+      "source": "docs/spec.md § 6 (nb_vivants ≤ nb_total)",
+      "note": "Invariant à vérifier sur le résultat : nb_vivants <= nb_total."
     }
   ]
 }

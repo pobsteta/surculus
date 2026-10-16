@@ -8,15 +8,17 @@
       "id": "R1",
       "description": "Position mesurée sur le piquet.",
       "entree": {
-        "piquet_stocke": {
-          "x": 850469.39,
-          "y": 6686306.33,
-          "crs": "EPSG:2154",
-          "code": "P-001"
-        },
-        "decalage_mesure_m": {
-          "dx_est": 0,
-          "dy_nord": 0
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": {
+          "x": 850469,
+          "y": 6686306,
+          "crs": "EPSG:2154"
         },
         "identite_confirmee": false
       },
@@ -26,21 +28,23 @@
         "distance_m": 0.0,
         "rattache_par_identite": false
       },
-      "source": "docs/spec.md § 4.3 et § 6 (15 m au plus) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16"
+      "source": "docs/spec.md § 4.3 et § 6 (15 m au plus, borne incluse ; code de piquet inconnu refusé) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16"
     },
     {
       "id": "R2",
       "description": "14,9 m au nord.",
       "entree": {
-        "piquet_stocke": {
-          "x": 850469.39,
-          "y": 6686306.33,
-          "crs": "EPSG:2154",
-          "code": "P-001"
-        },
-        "decalage_mesure_m": {
-          "dx_est": 0,
-          "dy_nord": 14.9
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": {
+          "x": 850469,
+          "y": 6686320.9,
+          "crs": "EPSG:2154"
         },
         "identite_confirmee": false
       },
@@ -50,21 +54,23 @@
         "distance_m": 14.9,
         "rattache_par_identite": false
       },
-      "source": "docs/spec.md § 4.3 et § 6 (15 m au plus) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16"
+      "source": "docs/spec.md § 4.3 et § 6 (15 m au plus, borne incluse ; code de piquet inconnu refusé) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16"
     },
     {
       "id": "R3",
       "description": "Exactement 15,0 m (9 m E, 12 m N) : borne incluse.",
       "entree": {
-        "piquet_stocke": {
-          "x": 850469.39,
-          "y": 6686306.33,
-          "crs": "EPSG:2154",
-          "code": "P-001"
-        },
-        "decalage_mesure_m": {
-          "dx_est": 9,
-          "dy_nord": 12
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": {
+          "x": 850478,
+          "y": 6686318,
+          "crs": "EPSG:2154"
         },
         "identite_confirmee": false
       },
@@ -74,21 +80,23 @@
         "distance_m": 15.0,
         "rattache_par_identite": false
       },
-      "source": "docs/spec.md § 4.3 et § 6 (15 m au plus) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16 ; Q1 tranchée : 15 m inclus"
+      "source": "docs/spec.md § 4.3 et § 6 (15 m au plus, borne incluse ; code de piquet inconnu refusé) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16"
     },
     {
       "id": "R4",
       "description": "15,1 m, identité non confirmée : refus.",
       "entree": {
-        "piquet_stocke": {
-          "x": 850469.39,
-          "y": 6686306.33,
-          "crs": "EPSG:2154",
-          "code": "P-001"
-        },
-        "decalage_mesure_m": {
-          "dx_est": 0,
-          "dy_nord": 15.1
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": {
+          "x": 850469,
+          "y": 6686321.1,
+          "crs": "EPSG:2154"
         },
         "identite_confirmee": false
       },
@@ -96,21 +104,23 @@
         "issue": "refus",
         "motif": "hors_15_m"
       },
-      "source": "docs/spec.md § 4.3 et § 6 (15 m au plus) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16"
+      "source": "docs/spec.md § 4.3 et § 6 (15 m au plus, borne incluse ; code de piquet inconnu refusé) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16"
     },
     {
       "id": "R5",
       "description": "40 m, code du piquet confirmé : le contrôle prend la position stockée, la mesurée est gardée à part.",
       "entree": {
-        "piquet_stocke": {
-          "x": 850469.39,
-          "y": 6686306.33,
-          "crs": "EPSG:2154",
-          "code": "P-001"
-        },
-        "decalage_mesure_m": {
-          "dx_est": 0,
-          "dy_nord": 40
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": {
+          "x": 850469,
+          "y": 6686346,
+          "crs": "EPSG:2154"
         },
         "identite_confirmee": true,
         "code_lu": "P-001"
@@ -120,12 +130,12 @@
         "placette": "P-001",
         "rattache_par_identite": true,
         "position_controle": {
-          "x": 850469.39,
-          "y": 6686306.33
+          "x": 850469,
+          "y": 6686306
         },
         "position_mesuree_conservee": {
-          "dx_est": 0,
-          "dy_nord": 40
+          "x": 850469,
+          "y": 6686346
         }
       },
       "source": "docs/adr/0003-gnss-et-reperes.md, règle des 15 m"
@@ -137,18 +147,19 @@
         "piquets_stockes": [
           {
             "code": "P-001",
-            "dx_est": 8,
-            "dy_nord": 0
+            "x": 850477,
+            "y": 6686306
           },
           {
             "code": "P-002",
-            "dx_est": 0,
-            "dy_nord": 12
+            "x": 850469,
+            "y": 6686318
           }
         ],
-        "mesuree": {
-          "dx_est": 0,
-          "dy_nord": 0
+        "position_mesuree": {
+          "x": 850469,
+          "y": 6686306,
+          "crs": "EPSG:2154"
         },
         "identite_confirmee": false
       },
@@ -163,15 +174,23 @@
       "id": "R7",
       "description": "Aucune placette dans la tournée : refus.",
       "entree": {
-        "piquets_stockes": [],
-        "mesuree": {
-          "dx_est": 0,
-          "dy_nord": 0
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": {
+          "x": 850469,
+          "y": 6686306,
+          "crs": "EPSG:2154"
         },
         "identite_confirmee": false
       },
       "attendu": {
-        "issue": "refus"
+        "issue": "refus",
+        "motif": "aucune_placette"
       },
       "source": "docs/spec.md § 6 (déduit de la règle ; le libellé du refus n'est pas spécifié)"
     },
@@ -179,15 +198,17 @@
       "id": "R8",
       "description": "Distance en Lambert-93 : 3 m E et 4 m N.",
       "entree": {
-        "piquet_stocke": {
-          "x": 850469.39,
-          "y": 6686306.33,
-          "crs": "EPSG:2154",
-          "code": "P-001"
-        },
-        "decalage_mesure_m": {
-          "dx_est": 3,
-          "dy_nord": 4
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": {
+          "x": 850472,
+          "y": 6686310,
+          "crs": "EPSG:2154"
         },
         "identite_confirmee": false
       },
@@ -202,15 +223,17 @@
       "id": "R9",
       "description": "40 m, identité confirmée mais code inconnu de la tournée : refus.",
       "entree": {
-        "piquet_stocke": {
-          "x": 850469.39,
-          "y": 6686306.33,
-          "crs": "EPSG:2154",
-          "code": "P-001"
-        },
-        "decalage_mesure_m": {
-          "dx_est": 0,
-          "dy_nord": 40
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": {
+          "x": 850469,
+          "y": 6686346,
+          "crs": "EPSG:2154"
         },
         "identite_confirmee": true,
         "code_lu": "ZZ-999"
@@ -219,7 +242,7 @@
         "issue": "refus",
         "motif": "code_inconnu"
       },
-      "source": "arbitrage de Pascal 2026-10-16 (Q3) ; docs/adr/0003-gnss-et-reperes.md"
+      "source": "docs/spec.md § 4.3 et § 6 (15 m au plus, borne incluse ; code de piquet inconnu refusé) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16"
     }
   ]
 }
