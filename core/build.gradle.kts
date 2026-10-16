@@ -20,6 +20,7 @@ kotlin {
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.gson)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 
@@ -27,6 +28,9 @@ tasks.test {
     useJUnitPlatform()
     // Rapport de couverture après chaque exécution des tests (lu par le badge, workflow badges.yml).
     finalizedBy("jacocoTestReport")
+    // Les tests relisent les fixtures et les référentiels : les déclarer, sinon Gradle ignore leurs changements.
+    inputs.dir(rootProject.file("fixtures")).withPropertyName("fixtures")
+    inputs.dir(rootProject.file("docs/referentiels")).withPropertyName("referentiels")
 }
 
 tasks.named<JacocoReport>("jacocoTestReport") {

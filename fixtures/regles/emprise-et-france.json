@@ -1,0 +1,223 @@
+{
+  "fichier": "emprise-et-france.json",
+  "regle": "Tout point écrit tombe dans l'emprise de la forêt et en France ; inversions détectées",
+  "format": "voir fixtures/README.md",
+  "cas": [
+    {
+      "id": "F-Brest",
+      "description": "Brest : placette française en (lat, lon) puis en Lambert-93.",
+      "entree": {
+        "lat": 48.39,
+        "lon": -4.49,
+        "ordre": "lat,lon",
+        "degres_decimaux": true
+      },
+      "attendu": {
+        "en_france": true,
+        "x_l93": 146341.35,
+        "y_l93": 6836245.4,
+        "tolerance_m": 0.01
+      },
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "F-Paris",
+      "description": "Paris : placette française en (lat, lon) puis en Lambert-93.",
+      "entree": {
+        "lat": 48.86,
+        "lon": 2.35,
+        "ordre": "lat,lon",
+        "degres_decimaux": true
+      },
+      "attendu": {
+        "en_france": true,
+        "x_l93": 652310.72,
+        "y_l93": 6862414.64,
+        "tolerance_m": 0.01
+      },
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "F-Couchey",
+      "description": "Couchey : placette française en (lat, lon) puis en Lambert-93.",
+      "entree": {
+        "lat": 47.26,
+        "lon": 4.99,
+        "ordre": "lat,lon",
+        "degres_decimaux": true
+      },
+      "attendu": {
+        "en_france": true,
+        "x_l93": 850469.39,
+        "y_l93": 6686306.33,
+        "tolerance_m": 0.01
+      },
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "F-Strasbourg",
+      "description": "Strasbourg : placette française en (lat, lon) puis en Lambert-93.",
+      "entree": {
+        "lat": 48.58,
+        "lon": 7.75,
+        "ordre": "lat,lon",
+        "degres_decimaux": true
+      },
+      "attendu": {
+        "en_france": true,
+        "x_l93": 1050163.94,
+        "y_l93": 6841622.72,
+        "tolerance_m": 0.01
+      },
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "F-Bordeaux",
+      "description": "Bordeaux : placette française en (lat, lon) puis en Lambert-93.",
+      "entree": {
+        "lat": 44.84,
+        "lon": -0.58,
+        "ordre": "lat,lon",
+        "degres_decimaux": true
+      },
+      "attendu": {
+        "en_france": true,
+        "x_l93": 417189.46,
+        "y_l93": 6422060.31,
+        "tolerance_m": 0.01
+      },
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "F-Marseille",
+      "description": "Marseille : placette française en (lat, lon) puis en Lambert-93.",
+      "entree": {
+        "lat": 43.3,
+        "lon": 5.37,
+        "ordre": "lat,lon",
+        "degres_decimaux": true
+      },
+      "attendu": {
+        "en_france": true,
+        "x_l93": 892394.78,
+        "y_l93": 6247424.65,
+        "tolerance_m": 0.01
+      },
+      "source": "coordonnées de docs/referentiels/modele-geomagnetique.md ; conversion pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "C15",
+      "description": "Inversion (lat, lon) : Couchey (47,26 ; 4,99) saisi à l'envers donne lat 4,99 / lon 47,26.",
+      "entree": {
+        "lat": 4.99,
+        "lon": 47.26,
+        "ordre": "lat,lon"
+      },
+      "attendu": {
+        "en_france": false,
+        "inversion_detectee": true,
+        "refuse": true
+      },
+      "source": "CLAUDE.md et docs/spec.md § 3 : piège de la Somalie. (lat 4,99 N, lon 47,26 E : intérieur de la Somalie, à confirmer sur une carte)"
+    },
+    {
+      "id": "C16",
+      "description": "Brest inversé (lat −4,49 ; lon 48,39) : océan Indien.",
+      "entree": {
+        "lat": -4.49,
+        "lon": 48.39,
+        "ordre": "lat,lon"
+      },
+      "attendu": {
+        "en_france": false,
+        "inversion_detectee": true,
+        "refuse": true
+      },
+      "source": "CLAUDE.md, la placette en Somalie"
+    },
+    {
+      "id": "C18",
+      "description": "Lambert-93 inversé (x = 6 500 000 ; y = 800 000) : hors domaine EPSG:2154.",
+      "entree": {
+        "x": 6500000,
+        "y": 800000,
+        "crs": "EPSG:2154",
+        "ordre": "x_est,y_nord"
+      },
+      "attendu": {
+        "en_france": false,
+        "inversion_detectee": true,
+        "refuse": true
+      },
+      "source": "docs/spec.md § 3 (x = E, y = N) ; domaine de EPSG:2154 (x environ 100 000 à 1 300 000)"
+    },
+    {
+      "id": "C19",
+      "description": "Point français mais hors de l'emprise de la forêt fictive de Couchey.",
+      "entree": {
+        "foret_emprise_l93": {
+          "xmin": 848469.39,
+          "xmax": 852469.39,
+          "ymin": 6684306.33,
+          "ymax": 6688306.33
+        },
+        "point_l93": {
+          "x": 855469.39,
+          "y": 6686306.33
+        }
+      },
+      "attendu": {
+        "dans_emprise": false,
+        "en_france": true,
+        "refuse": true
+      },
+      "source": "docs/spec.md § 6 ; emprise fictive de la fixture (pas de travaux.gpkg de démo disponible : Q5, à remplacer par la couche foret)",
+      "note": "Emprise fictive de ± 2 km autour de Couchey."
+    },
+    {
+      "id": "C19b",
+      "description": "Point dans l'emprise fictive.",
+      "entree": {
+        "foret_emprise_l93": {
+          "xmin": 848469.39,
+          "xmax": 852469.39,
+          "ymin": 6684306.33,
+          "ymax": 6688306.33
+        },
+        "point_l93": {
+          "x": 850569.39,
+          "y": 6686206.33
+        }
+      },
+      "attendu": {
+        "dans_emprise": true,
+        "en_france": true,
+        "refuse": false
+      },
+      "source": "docs/spec.md § 6"
+    },
+    {
+      "id": "C20",
+      "description": "WGS 84 vers EPSG:2154, Strasbourg.",
+      "entree": {
+        "lat": 48.58,
+        "lon": 7.75,
+        "crs": "EPSG:4326"
+      },
+      "attendu": {
+        "x": 1050163.94,
+        "y": 6841622.72,
+        "crs": "EPSG:2154",
+        "tolerance_m": 0.01
+      },
+      "source": "pyproj 3.6.1 (PROJ 9.4.0), Transformer EPSG:4326 vers EPSG:2154 (always_xy)",
+      "tolerance_proposee": true
+    }
+  ]
+}
