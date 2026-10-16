@@ -48,9 +48,19 @@ def main():
     if not code_modifie:
         sys.exit(0)
 
+    # Un worktree d'agent n'a pas de local.properties : sans ANDROID_HOME, le build
+    # Android échoue (« SDK location not found »). Repli sur l'emplacement standard
+    # du SDK s'il existe sur ce poste ; rien n'est écrit dans le dépôt.
+    env = dict(os.environ)
+    if not env.get("ANDROID_HOME") and not os.path.isfile(os.path.join(cwd, "local.properties")):
+        for candidat in (os.path.expanduser("~/Android/Sdk"), os.path.expanduser("~/Library/Android/sdk")):
+            if os.path.isdir(candidat):
+                env["ANDROID_HOME"] = candidat
+                break
+
     try:
         resultat = subprocess.run(
-            commande, shell=True, cwd=cwd,
+            commande, shell=True, cwd=cwd, env=env,
             capture_output=True, text=True, timeout=DELAI,
         )
     except subprocess.TimeoutExpired:

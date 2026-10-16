@@ -11,3 +11,6 @@ local.properties
 *.jks
 .idea/
 app/icone/*.ttf
+
+# Cache Python des scripts (app/icone, hooks)
+__pycache__/
