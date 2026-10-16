@@ -54,6 +54,7 @@ demande dans ces tranches (le `bilan` les rappellera).
 | [016](missions/016-badges-releases-automatiques.md) Badges et releases automatiques | `dev` | sonnet | appuyer | oui (demandée par Pascal le 2026-10-16) | 1 |
 | [017](missions/017-icone-s-new-rocker.md) Icône « S » en New Rocker | `dev` | sonnet | appuyer | oui (demandée par Pascal le 2026-10-16) | 1 |
 | [018](missions/018-ecran-essai-gnss.md) Écran d'essai GNSS | `afficheur` | sonnet | appuyer | 3 oui (après 003) | 2 |
+| [019](missions/019-scenarios-ajout-seul.md) Scénarios du journal en ajout seul | `testeur` | sonnet | appuyer | 3 oui | 3 |
 
 Plafond : au plus **3 PR ouvertes** ; un cycle ne démarre que quand le précédent est
 fusionné ou en revue sous le plafond. Aucune mission n'est « lâchée » : aucune n'a encore
