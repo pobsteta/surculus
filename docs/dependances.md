@@ -35,3 +35,23 @@ Aucune dépendance non commerciale ni AGPL n'est prévue.
 | UnifrakturCook Bold (police de l'icône) | – | OFL-1.1 | `google/fonts`, `ofl/unifrakturcook` ; téléchargée par `app/icone/generer_icone.py`, non versionnée (`.gitignore`), comme Groma. Outil de génération (avec Pillow), absent de l'APK |
 
 Le catalogue complet, avec les versions reprises de Marculus, est `gradle/libs.versions.toml`.
+
+## Actions GitHub (mission 016, 2026-10-16)
+
+Licences lues sur l'API GitHub (`/repos/<action>/license`) le 2026-10-16.
+
+| Action | Version | Licence | Où |
+|---|---|---|---|
+| `actions/checkout` | v4 | MIT | tous les workflows |
+| `actions/setup-java` | v4 | MIT | tous les workflows (Temurin 21) |
+| `android-actions/setup-android` | v3 | MIT | tous les workflows |
+| `gradle/actions/setup-gradle` | v4 | **non déclarée par l'API (NOASSERTION)** : à confirmer, voir ci-dessous | tous les workflows |
+| `actions/upload-artifact` | v4 | MIT | `ci.yml`, `badges.yml`, `release.yml` |
+| `actions/download-artifact` | v4.3.0, épinglée par SHA | MIT | `badges.yml`, `release.yml` (jobs qui écrivent) |
+| `mathieudutour/github-tag-action` | v6.2 | MIT | `release.yml` (calcul de la version, préfixe `v`) |
+| `softprops/action-gh-release` | v2.6.2, épinglée par SHA | MIT | `release.yml` (tag et release) |
+| `cicirello/jacoco-badge-generator` | v2 | MIT | `badges.yml` (badge de couverture) |
+
+`gradle/actions` est utilisée depuis la mission 001 : sa licence n'est pas déclarée de façon
+univoque par l'API. À confirmer par Pascal. C'est un outil de CI, non embarqué dans l'APK ;
+la retirer des workflows reste possible sans toucher au code de l'application.

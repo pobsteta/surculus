@@ -13,6 +13,7 @@ android {
         applicationId = "io.github.pobsteta.surculus"
         minSdk = 26
         targetSdk = 36
+        // Version injectée par la CI (-PappVersionName / -PappVersionCode) ; valeurs de repli en local.
         versionCode = (project.findProperty("appVersionCode") as String?)?.toIntOrNull() ?: 1
         versionName = (project.findProperty("appVersionName") as String?) ?: "0.1.0"
 
@@ -23,11 +24,35 @@ android {
         }
     }
 
-    // Signature release, distribution et clé : ADR 0010 (pas encore écrite). Seul le debug est construit.
+    // Clé de signature release lue dans l'environnement (CI, secrets) ou les propriétés Gradle,
+    // jamais dans le dépôt. Sans keystore, repli sur la signature debug (builds locaux seulement).
+    // La CI ne publie jamais d'APK debug : docs/publier.md. Distribution et clé : ADR 0010.
+    val cheminKeystore = System.getenv("RELEASE_KEYSTORE") ?: (project.findProperty("releaseKeystore") as String?)
+    val keystoreExiste = cheminKeystore != null && file(cheminKeystore).exists()
+    if (cheminKeystore != null && !keystoreExiste) {
+        logger.warn("RELEASE_KEYSTORE pointe vers un fichier absent ($cheminKeystore) : signature debug utilisée.")
+    }
+
+    signingConfigs {
+        if (keystoreExiste) {
+            create("release") {
+                storeFile = file(cheminKeystore!!)
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                    ?: (project.findProperty("releaseKeystorePassword") as String?)
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                    ?: (project.findProperty("releaseKeyAlias") as String?)
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+                    ?: (project.findProperty("releaseKeyPassword") as String?)
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            // Un APK signé debug ne se met pas à jour en APK signé release (signatures différentes).
+            signingConfig = signingConfigs.getByName(if (keystoreExiste) "release" else "debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

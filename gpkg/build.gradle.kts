@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    jacoco
 }
 
 // Module JVM (ADR 0004) : lecture et écriture du travaux.gpkg, testées sans appareil.
@@ -27,4 +28,16 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    // Rapport de couverture après chaque exécution des tests (lu par le badge, workflow badges.yml).
+    finalizedBy("jacocoTestReport")
+}
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    dependsOn("test")
+    reports {
+        xml.required.set(true)
+        csv.required.set(true)
+        html.required.set(true)
+        csv.outputLocation.set(layout.buildDirectory.file("reports/jacoco/jacoco.csv"))
+    }
 }
