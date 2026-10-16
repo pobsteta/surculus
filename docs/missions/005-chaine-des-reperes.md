@@ -27,7 +27,7 @@
 
 ## Harnais
 
-- **Peut :** porter le code C public de NOAA en Kotlin, embarquer `WMM.COF` de NCEI avec sa citation, réutiliser la convergence de `groma-core`.
+- **Peut :** copier `Declinaison.kt` et `WMM2025.COF` de Groma avec attribution GPL (arbitrage de Pascal du 2026-10-16 : Groma porte déjà le WMM2025, testé contre les 100 valeurs NCEI), appliquer autour les bornes de Surculus (2025-01-01 au 2029-12-31), réutiliser la convergence copiée par la 003 ; pente et unités de tournée comprises.
 - **Ne doit pas :** sortir du périmètre de cette phrase ; inventer un code (travaux, essence, état) ; toucher à `main` ; modifier sommieR, Marculus ou Groma ; trancher une question de sens (la remonter à l'orchestrateur).
 - **Sources autorisées :** ADR 0003 ; `docs/referentiels/modele-geomagnetique.md`, `referentiel-centipede.md` ; NCEI WMM2025.
 
