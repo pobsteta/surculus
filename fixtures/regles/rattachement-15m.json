@@ -174,13 +174,7 @@
       "id": "R7",
       "description": "Aucune placette dans la tournée : refus.",
       "entree": {
-        "piquets_stockes": [
-          {
-            "code": "P-001",
-            "x": 850469,
-            "y": 6686306
-          }
-        ],
+        "piquets_stockes": [],
         "position_mesuree": {
           "x": 850469,
           "y": 6686306,
