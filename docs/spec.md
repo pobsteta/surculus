@@ -261,6 +261,27 @@ nombre de plants, leurs lignes, leur date de réception ou leurs cloisonnements
 Les totaux de `controles` restent écrits : un import 0.31.1 relit la tournée comme
 aujourd'hui.
 
+### Journal des saisies (sur l'appareil, ADR 0005)
+
+Chaque geste est une ligne ajoutée au journal, jamais modifiée (arbitrage de Pascal du
+2026-10-17, plan de la mission 008) :
+
+| `type` | Objet (`objet_uuid`) | Ce que porte `valeur` |
+|---|---|---|
+| `controle` | le contrôle | placette, jour civil, opérateur |
+| `pointage` | le plant | observation brute (distance horizontale, azimut saisi et unité) et termes dérivés (déclinaison, convergence, position, EPSG) |
+| `etat` | la ligne de `etats_plants` | contrôle, plant, état, cause, détail, hauteur |
+| `annulation` | l'objet de la ligne annulée | rien ; `remplace_uuid` désigne la ligne annulée |
+| `saut_horloge` | l'appareil | écart mesuré, heure avant et après |
+
+- L'état courant d'un (objet, type) suit le lien `remplace_uuid`, pas l'heure : deux têtes
+  actives sont **signalées comme conflit**.
+- Annuler, c'est défaire : la valeur remplacée redevient courante ; annuler une annulation
+  refait.
+- L'heure brute n'est jamais réécrite. Un saut d'horloge de plus de 60 s, mesuré sur
+  l'horloge monotone dans un même démarrage, est noté. Le jour civil d'un contrôle se
+  calcule sur l'heure GNSS quand elle existe, sinon sur l'heure du téléphone.
+
 ## 6. Règles vérifiées sur le téléphone
 
 Chaque règle a un cas dans `fixtures/regles/`, rejoué en R dans sommieR et en Kotlin
