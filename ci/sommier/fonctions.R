@@ -25,15 +25,16 @@ connecter <- function(dbname) {
 
 # ---------------------------------------------------------------- schéma ----
 
-# Description d'un GeoPackage : par table, champs (nom, type SQL), type de
-# géométrie et srs_id. Les champs gardent l'ordre de la table.
+# Description d'un GeoPackage : par table, champs (type SQL, notnull, pk),
+# type de géométrie, drapeaux z et m, srs_id. Les champs gardent l'ordre de
+# la table.
 decrire_gpkg <- function(chemin) {
   db <- DBI::dbConnect(RSQLite::SQLite(), chemin, flags = RSQLite::SQLITE_RO)
   on.exit(DBI::dbDisconnect(db))
   tables <- DBI::dbGetQuery(
     db, "SELECT table_name, data_type FROM gpkg_contents ORDER BY table_name")
   geom <- DBI::dbGetQuery(
-    db, "SELECT table_name, geometry_type_name AS geometrie, srs_id
+    db, "SELECT table_name, geometry_type_name AS geometrie, srs_id, z, m
            FROM gpkg_geometry_columns")
   res <- lapply(tables$table_name, function(t) {
     champs <- DBI::dbGetQuery(db, sprintf("PRAGMA table_info(\"%s\")", t))
@@ -42,7 +43,12 @@ decrire_gpkg <- function(chemin) {
       data_type = tables$data_type[tables$table_name == t],
       geometrie = if (nrow(g)) g$geometrie else NA_character_,
       srs_id = if (nrow(g)) as.integer(g$srs_id) else NA_integer_,
-      champs = stats::setNames(as.list(toupper(champs$type)), champs$name)
+      z = if (nrow(g)) as.integer(g$z) else NA_integer_,
+      m = if (nrow(g)) as.integer(g$m) else NA_integer_,
+      champs = stats::setNames(
+        as.list(paste0(toupper(champs$type), " notnull=", champs$notnull,
+                       " pk=", champs$pk)),
+        champs$name)
     )
   })
   stats::setNames(res, tables$table_name)
@@ -69,6 +75,9 @@ comparer_schema <- function(tournee_gpkg, modele_gpkg) {
     if (!identical(a$geometrie, b$geometrie))
       fautes <- c(fautes, paste0(couche, " : géométrie ", a$geometrie,
                                  " -> ", b$geometrie))
+    if (!identical(a$z, b$z) || !identical(a$m, b$m))
+      fautes <- c(fautes, paste0(couche, " : drapeaux z/m ", a$z, "/", a$m,
+                                 " -> ", b$z, "/", b$m))
     if (!identical(a$srs_id, b$srs_id))
       fautes <- c(fautes, paste0(couche, " : srs_id ", a$srs_id,
                                  " -> ", b$srs_id))
@@ -83,13 +92,44 @@ comparer_schema <- function(tournee_gpkg, modele_gpkg) {
                                       paste(manquants, collapse = ", ")),
         if (length(ajoutes)) paste0(couche, " : champs ajoutés ",
                                     paste(ajoutes, collapse = ", ")),
-        if (length(changes)) paste0(couche, " : types changés ",
+        if (length(changes)) paste0(couche, " : type, notnull ou pk changés ",
                                     paste(changes, collapse = ", ")),
         if (!length(manquants) && !length(ajoutes) && !length(changes))
           paste0(couche, " : ordre des champs différent"))
     }
   }
   fautes
+}
+
+# Copie `dossier` dans `destination` privée des `couches` données : tables,
+# lignes de gpkg_contents, gpkg_geometry_columns, gpkg_data_columns et
+# gpkg_extensions. Une couche absente est ignorée. C'est le témoin « sans »
+# du critère (a) : le même export, sans ce que Surculus a ajouté. Vérifie
+# qu'il ne reste aucune trace.
+retirer_couches <- function(dossier, destination, couches = COUCHES_AJOUTEES) {
+  unlink(destination, recursive = TRUE)
+  dir.create(destination, recursive = TRUE)
+  file.copy(list.files(dossier, full.names = TRUE, all.files = TRUE,
+                       no.. = TRUE), destination, recursive = TRUE)
+  gpkg <- file.path(destination, "travaux.gpkg")
+  for (couche in intersect(couches, sf::st_layers(gpkg)$name))
+    sf::st_delete(gpkg, layer = couche, quiet = TRUE)
+  db <- DBI::dbConnect(RSQLite::SQLite(), gpkg)
+  on.exit(DBI::dbDisconnect(db))
+  for (couche in couches) {
+    for (t in c("gpkg_contents", "gpkg_geometry_columns",
+                "gpkg_data_columns", "gpkg_extensions")) {
+      if (DBI::dbExistsTable(db, t))
+        DBI::dbExecute(db, sprintf("DELETE FROM %s WHERE table_name = ?", t),
+                       params = list(couche))
+    }
+  }
+  restes <- intersect(couches, c(DBI::dbListTables(db),
+                                 sf::st_layers(gpkg)$name))
+  if (length(restes))
+    stop("Couches non retirées : ", paste(restes, collapse = ", "),
+         call. = FALSE)
+  invisible(destination)
 }
 
 # (c) Toutes les couches ajoutées sont listées par sf::st_layers().

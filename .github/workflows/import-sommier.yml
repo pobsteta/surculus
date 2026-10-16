@@ -14,6 +14,12 @@ on:
 permissions:
   contents: read
 
+env:
+  # Mot de passe d'un service éphémère, détruit avec le job ; il ne protège
+  # rien. Défini ici une seule fois ; aucun autre mot de passe n'entre dans le
+  # dépôt.
+  SOMMIER_CI_PASSWORD: ci-ephemere
+
 concurrency:
   group: import-sommier-${{ github.ref }}
   cancel-in-progress: true
@@ -30,9 +36,7 @@ jobs:
       postgres:
         image: postgis/postgis:16-3.4
         env:
-          # Mot de passe d'un service éphémère, détruit avec le job ; il ne
-          # protège rien. Aucun autre mot de passe n'entre dans le dépôt.
-          POSTGRES_PASSWORD: ci-ephemere
+          POSTGRES_PASSWORD: ${{ env.SOMMIER_CI_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
@@ -49,10 +53,8 @@ jobs:
       SOMMIER_CI_HOST: localhost
       SOMMIER_CI_PORT: 5432
       SOMMIER_CI_USER: postgres
-      SOMMIER_CI_PASSWORD: ci-ephemere
       # Emplacement de l'export Surculus décompressé (mission 006), voir
-      # ci/sommier/README.md. S'il est absent, seule la tournée de sommieR
-      # est rejouée.
+      # ci/sommier/README.md.
       EXPORT_SURCULUS: ci/sommier/export-surculus
 
     steps:
@@ -95,14 +97,14 @@ jobs:
       # cette exécution) et écrit son export décompressé dans
       # $EXPORT_SURCULUS. Voir ci/sommier/README.md.
 
-      - name: Rejouer l'import et comparer
+      - name: Rejouer l'import et comparer (critère (a) en attente de la 006 si pas d'export)
         run: |
           if [ -f "$EXPORT_SURCULUS/travaux.gpkg" ]; then
-            echo "Export Surculus trouvé : comparaison avec/sans."
+            echo "Export Surculus trouvé : comparaison avec/sans couches ajoutées."
             Rscript ci/sommier/verifier.R --sortie ci/sommier/sortie \
               --etape comparer --avec "$EXPORT_SURCULUS"
           else
-            echo "Pas d'export Surculus (mission 006) : tournée de sommieR seule."
+            echo "::warning title=Critère (a) non mesuré::Pas d'export Surculus (mission 006) : le travail est vert, mais seul le mécanisme de retrait des couches est éprouvé, pas la comparaison."
             Rscript ci/sommier/verifier.R --sortie ci/sommier/sortie \
               --etape comparer
           fi
