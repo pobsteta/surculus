@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Surculus</string>
+    <string name="rtk_canal">Récepteur GNSS RTK</string>
+    <string name="rtk_notif_titre">Surculus — GNSS RTK</string>
+    <string name="rtk_liberer">Libérer le récepteur</string>
+    <string name="rtk_connexion">Connexion au récepteur…</string>
+    <string name="rtk_config_incomplete">Récepteur RTK non choisi.</string>
 </resources>
