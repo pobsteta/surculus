@@ -280,7 +280,19 @@ Chaque geste est une ligne ajoutée au journal, jamais modifiée (arbitrage de P
   refait.
 - L'heure brute n'est jamais réécrite. Un saut d'horloge de plus de 60 s, mesuré sur
   l'horloge monotone dans un même démarrage, est noté. Le jour civil d'un contrôle se
-  calcule sur l'heure GNSS quand elle existe, sinon sur l'heure du téléphone.
+  calcule sur l'heure GNSS quand le fix a au plus 5 s au moment de la saisie (âge mesuré sur
+  l'horloge monotone, enregistré avec la ligne), sinon sur l'heure du téléphone.
+- Une annulation agit sur la clé (objet, type) de la ligne annulée ; annuler une racine ne
+  laisse aucune valeur courante.
+- Un `remplace_uuid` inconnu : la ligne est gardée comme tête, avec une anomalie signalée.
+- En conflit, la valeur montrée est la dernière selon l'ordre total, avec le drapeau
+  « conflit » et la liste des têtes ; un conflit se résout en annulant l'une des têtes.
+- Une ligne reçue deux fois à l'identique est ignorée ; le même `uuid` avec un contenu
+  différent est refusé et signalé (la première reçue est gardée).
+- Un saut d'horloge est noté au-delà de 60 s **strictement**, dans les deux sens, entre deux
+  lignes consécutives d'un même appareil et d'un même démarrage.
+
+(Arbitrages de Pascal et de l'orchestrateur du 2026-10-17, mission 019.)
 
 ## 6. Règles vérifiées sur le téléphone
 
