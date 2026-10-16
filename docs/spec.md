@@ -287,12 +287,17 @@ Chaque geste est une ligne ajoutée au journal, jamais modifiée (arbitrage de P
 - Un `remplace_uuid` inconnu : la ligne est gardée comme tête, avec une anomalie signalée.
 - En conflit, la valeur montrée est la dernière selon l'ordre total, avec le drapeau
   « conflit » et la liste des têtes ; un conflit se résout en annulant l'une des têtes.
-- Une ligne reçue deux fois à l'identique est ignorée ; le même `uuid` avec un contenu
-  différent est refusé et signalé (la première reçue est gardée).
+- Une ligne reçue deux fois à l'identique est ignorée ; le même `uuid` avec deux contenus
+  différents : **les deux versions sont refusées** et l'anomalie est signalée, pour que le
+  résultat ne dépende pas de l'ordre d'arrivée.
 - Un saut d'horloge est noté au-delà de 60 s **strictement**, dans les deux sens, entre deux
-  lignes consécutives d'un même appareil et d'un même démarrage.
+  lignes consécutives (rangées par `sequence`) d'un même appareil et d'un même démarrage ;
+  `saut_horloge` note l'heure brute de la ligne précédente et de la ligne courante.
+- Un fix GNSS d'âge négatif (postérieur à la saisie) est ignoré : le jour civil se calcule
+  alors sur l'heure du téléphone.
+- Annuler la seule saisie d'une clé ne laisse aucune valeur courante (confirmé par Pascal).
 
-(Arbitrages de Pascal et de l'orchestrateur du 2026-10-17, mission 019.)
+(Arbitrages de Pascal du 2026-10-17, mission 019 ; décisions de format de l'orchestrateur.)
 
 ## 6. Règles vérifiées sur le téléphone
 
