@@ -268,13 +268,15 @@ dans Surculus.
 
 | Règle | Origine | Tranche |
 |---|---|---|
-| Contrôle rattaché à une placette à 15 m au plus | sommieR 0.31.0 | 1 |
+| Contrôle rattaché à une placette à 15 m au plus, borne incluse (`distances <= 15`, `R/travaux_qfield.R` l. 303) ; code de piquet confirmé mais inconnu de la tournée refusé | sommieR 0.31.0 | 1 |
 | Un contrôle par placette et par jour | sommieR 0.28.0 | 1 |
 | `nb_vivants` ≤ `nb_total`, `nb_abroutis` ≤ `nb_vivants` | sommieR 0.28.0 | 1 |
 | Totaux du contrôle = décompte des états des plants (vivants = sains + atteints ; non observés et plants remplacés exclus) | Surculus | 1 |
-| Un regarni remplace au plus un plant mort ou absent de la même placette | Surculus | 1 |
-| Un plant appartient à une seule placette et garde son UUID | Surculus | 1 |
-| États et causes uniquement ceux de `etats-plants.yaml` | Surculus | 1 |
+| Un regarni remplace exactement un plant mort ou absent de la même placette (`remplace_uuid` obligatoire) ; le plant remplacé compte dans le contrôle où il est vu mort ou absent, puis sort des contrôles suivants | Surculus | 1 |
+| Un plant appartient à une seule placette et garde son UUID ; un UUID de plant en double est refusé | Surculus | 1 |
+| États et causes uniquement ceux de `etats-plants.yaml` ; une cause sur un plant sain ou absent est refusée | Surculus | 1 |
+| `h_moy_cm` = moyenne des hauteurs des plants vivants (sains + atteints) mesurés ; absent si aucune hauteur | Surculus | 1 |
+| Unités de la boussole (degrés ou grades) et de la pente (% ou degrés) déclarées à l'ouverture de la tournée ; azimut saisi refusé hors [0, 360[ ou [0, 400[ avant normalisation | ADR 0003 | 1 |
 | Tout point écrit tombe dans l'emprise de la forêt et en France ; azimut dans [0, 360[ ; déclinaison et convergence enregistrées | `CLAUDE.md` | 1 |
 | Alerte de reprise quand le seuil (80 % ou 90 % selon l'essence) est au-dessus de l'intervalle de confiance | brief | 2 |
 | Vide ≥ 10 ares signalé | brief | 2 |
@@ -329,3 +331,4 @@ jamais dans la base de sommieR.
    entreprise », table de correspondance des codes, `montant_eur` facultatif.
 8. **Unité des boussoles** (degrés ou grades) et **temps réel de pointage** d'un plant :
    à mesurer au premier essai.
+9. **Emprise de la France** : le test « placette en France » utilise le rectangle du domaine d'usage EPSG:2154 ; un contour officiel (ADMIN-EXPRESS de l'IGN) serait un nouveau référentiel, à décider (Pascal).
