@@ -25,5 +25,5 @@ fun interface Reperes {
 /** Les missions 004 et 005 remplacent ces deux fonctions ; tant que non, les tests de rejeu restent désactivés. */
 object Implementations {
     fun reglesPlacette(): ReglesPlacette = throw NotImplementedError("en attente de la mission 004")
-    fun reperes(): Reperes = throw NotImplementedError("en attente de la mission 005")
+    fun reperes(): Reperes = AdaptateurReperes
 }

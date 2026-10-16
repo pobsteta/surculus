@@ -1,0 +1,42 @@
+Surculus — avis de provenance des éléments repris de tiers
+=========================================================
+
+Surculus est distribué sous GPL-3.0-or-later (voir LICENSE).
+
+Modèle magnétique mondial WMM2025 (NOAA NCEI / British Geological Survey)
+--------------------------------------------------------------------------
+
+Fichiers :
+  core/src/main/resources/io/github/pobsteta/surculus/core/reperes/wmm/WMM2025.COF
+  core/src/test/resources/io/github/pobsteta/surculus/core/reperes/wmm/WMM2025_TestValues.txt
+
+Origine : archive officielle NOAA NCEI
+  https://www.ncei.noaa.gov/sites/default/files/2024-12/WMM2025COF.zip
+  (page https://www.ncei.noaa.gov/products/world-magnetic-model), téléchargée le 2026-10-16.
+  WMM2025.COF est identique au fichier WMM.COF de l'archive
+  (sha256 dfa8597825af4e0b87ff4198a5b4fb661b3c49f4cd090cd0164e0259b075582f) ;
+  WMM2025_TestValues.txt est recopié sans modification
+  (sha256 e6975b093dddeb6153e0b23cc418425c438167e7c5b1dd795da379cb654f5819).
+
+Citation : NOAA NCEI Geomagnetic Modeling Team; British Geological Survey. 2024:
+  World Magnetic Model 2025. NOAA National Centers for Environmental Information.
+  DOI 10.25921/aqfd-sd83.
+
+Licence, selon NOAA NCEI (docs/referentiels/modele-geomagnetique.md) :
+  « The WMM source code is in the public domain and not licensed or under copyright. »
+  « Not subject to copyright protection within the United States. »
+  « NOAA and NCEI cannot provide any warranty as to the accuracy, reliability, or
+  completeness of furnished data. »
+  Avis 17 U.S.C. 403 : ces fichiers sont une œuvre du gouvernement des États-Unis.
+
+Validité appliquée par Surculus : du 2025-01-01 au 2029-12-31 inclus (NCEI : « expires on
+December 31, 2029 ») ; toute date hors de cette période est refusée, jamais extrapolée.
+
+Code repris de Groma (GPL-3.0-or-later, Pascal Obstétar)
+--------------------------------------------------------
+
+Reprise provisoire jusqu'à l'extraction en bibliothèque commune (ADR 0008). Chaque fichier
+repris porte en en-tête son chemin d'origine, le commit et les modifications.
+  - core/.../core/geo/{Azimut,Projections,Geodesie}.kt, core/.../core/gnss/ (mission 003)
+  - core/.../core/reperes/wmm/Declinaison.kt (mission 005), depuis
+    android/groma-core/src/main/kotlin/groma/core/Declinaison.kt, commit 2909744
