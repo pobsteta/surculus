@@ -1,0 +1,91 @@
+{
+  "fichier": "chaine-azimut.json",
+  "regle": "Chaîne azimut magnétique + déclinaison − convergence ; placement du plant",
+  "format": "voir fixtures/README.md",
+  "cas": [
+    {
+      "id": "C12",
+      "description": "Chaîne azimut magnétique 90° à Brest : + déclinaison puis − convergence.",
+      "entree": {
+        "lat": 48.39,
+        "lon": -4.49,
+        "date": "2026-10-15",
+        "azimut_mag": 90,
+        "unite_azimut": "deg"
+      },
+      "attendu": {
+        "declinaison_deg": 0.0444,
+        "convergence_deg": -5.4348,
+        "azimut_geo_deg": 90.0444,
+        "azimut_grille_deg": 95.4792,
+        "tolerance_deg": 0.01
+      },
+      "source": "az_grille = az_mag + D − γ (docs/adr/0003) ; D de docs/referentiels/modele-geomagnetique.md, γ de pyproj 3.6.1 (PROJ 9.4.0) ; sommes faites par le testeur",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "C13",
+      "description": "Chaîne azimut magnétique 90° à Strasbourg : + déclinaison puis − convergence.",
+      "entree": {
+        "lat": 48.58,
+        "lon": 7.75,
+        "date": "2026-10-15",
+        "azimut_mag": 90,
+        "unite_azimut": "deg"
+      },
+      "attendu": {
+        "declinaison_deg": 3.4997,
+        "convergence_deg": 3.4466,
+        "azimut_geo_deg": 93.4997,
+        "azimut_grille_deg": 90.0531,
+        "tolerance_deg": 0.01
+      },
+      "source": "az_grille = az_mag + D − γ (docs/adr/0003) ; D de docs/referentiels/modele-geomagnetique.md, γ de pyproj 3.6.1 (PROJ 9.4.0) ; sommes faites par le testeur",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "C14",
+      "description": "Plant à 10 m du piquet de Couchey, azimut magnétique 0°.",
+      "entree": {
+        "piquet_l93": {
+          "x": 850469.39,
+          "y": 6686306.33
+        },
+        "distance_m": 10.0,
+        "azimut_mag": 0.0,
+        "unite_azimut": "deg",
+        "date": "2026-10-15"
+      },
+      "attendu": {
+        "azimut_grille_deg": 1.3564,
+        "dx_m": 0.2367,
+        "dy_m": 9.9972,
+        "x": 850469.627,
+        "y": 6686316.327,
+        "tolerance_m": 0.01
+      },
+      "source": "dx = d·sin(az_grille), dy = d·cos(az_grille), az_grille = D − γ avec D = +2,8004 (NOAA) et γ de pyproj ; calcul indépendant du testeur",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "U16",
+      "description": "Chaîne azimut magnétique 359° à Strasbourg : + déclinaison puis − convergence. L'azimut géographique dépasse 360 : résultat normalisé dans [0, 360[, alors que l'entrée n'est jamais normalisée.",
+      "entree": {
+        "lat": 48.58,
+        "lon": 7.75,
+        "date": "2026-10-15",
+        "azimut_mag": 359,
+        "unite_azimut": "deg"
+      },
+      "attendu": {
+        "declinaison_deg": 3.4997,
+        "convergence_deg": 3.4466,
+        "azimut_geo_deg": 2.4997,
+        "azimut_grille_deg": 359.0531,
+        "tolerance_deg": 0.01
+      },
+      "source": "az_grille = az_mag + D − γ (docs/adr/0003) ; D de docs/referentiels/modele-geomagnetique.md, γ de pyproj 3.6.1 (PROJ 9.4.0) ; sommes faites par le testeur",
+      "tolerance_proposee": true
+    }
+  ]
+}

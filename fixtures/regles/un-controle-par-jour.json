@@ -1,0 +1,159 @@
+{
+  "fichier": "un-controle-par-jour.json",
+  "regle": "Un contrôle par placette et par jour (jour civil Europe/Paris)",
+  "format": "voir fixtures/README.md",
+  "cas": [
+    {
+      "id": "J1",
+      "description": "Deux contrôles le même jour (11:00 et 15:00 heure de Paris).",
+      "entree": {
+        "placette": "P-001",
+        "controles_saisis_le_utc": [
+          "2026-10-14T09:00:00Z",
+          "2026-10-14T13:00:00Z"
+        ],
+        "operateur": "op1"
+      },
+      "attendu": {
+        "jours_paris": [
+          "2026-10-14",
+          "2026-10-14"
+        ],
+        "meme_jour_civil": true,
+        "controles_ecrits": 1,
+        "le_second_corrige_le_premier": true
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (jour civil Europe/Paris) ; heure locale calculée avec tzdata du système, zoneinfo Python : fin de l'heure d'été le dimanche 25/10/2026 à 03:00 CEST"
+    },
+    {
+      "id": "J2",
+      "description": "Deux jours consécutifs.",
+      "entree": {
+        "placette": "P-001",
+        "controles_saisis_le_utc": [
+          "2026-10-14T09:00:00Z",
+          "2026-10-15T09:00:00Z"
+        ],
+        "operateur": "op1"
+      },
+      "attendu": {
+        "jours_paris": [
+          "2026-10-14",
+          "2026-10-15"
+        ],
+        "meme_jour_civil": false,
+        "controles_ecrits": 2,
+        "le_second_corrige_le_premier": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (jour civil Europe/Paris) ; heure locale calculée avec tzdata du système, zoneinfo Python : fin de l'heure d'été le dimanche 25/10/2026 à 03:00 CEST"
+    },
+    {
+      "id": "J3",
+      "description": "Deux placettes différentes le même jour.",
+      "entree": {
+        "controles": [
+          {
+            "placette": "P-001",
+            "saisi_le_utc": "2026-10-14T09:00:00Z"
+          },
+          {
+            "placette": "P-002",
+            "saisi_le_utc": "2026-10-14T10:00:00Z"
+          }
+        ]
+      },
+      "attendu": {
+        "controles_ecrits": 2
+      },
+      "source": "docs/spec.md § 6"
+    },
+    {
+      "id": "J4",
+      "description": "Autour du changement d'heure (00:30 CEST puis 02:30 CET le 25/10/2026) : même jour civil.",
+      "entree": {
+        "placette": "P-001",
+        "controles_saisis_le_utc": [
+          "2026-10-24T22:30:00Z",
+          "2026-10-25T01:30:00Z"
+        ],
+        "operateur": "op1"
+      },
+      "attendu": {
+        "jours_paris": [
+          "2026-10-25",
+          "2026-10-25"
+        ],
+        "meme_jour_civil": true,
+        "controles_ecrits": 1,
+        "le_second_corrige_le_premier": true
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (jour civil Europe/Paris) ; heure locale calculée avec tzdata du système, zoneinfo Python : fin de l'heure d'été le dimanche 25/10/2026 à 03:00 CEST"
+    },
+    {
+      "id": "J5",
+      "description": "Après le changement d'heure : 23:30 CET le 25 puis 00:30 CET le 26 : deux jours (piège : jour calculé en UTC).",
+      "entree": {
+        "placette": "P-001",
+        "controles_saisis_le_utc": [
+          "2026-10-25T22:30:00Z",
+          "2026-10-25T23:30:00Z"
+        ],
+        "operateur": "op1"
+      },
+      "attendu": {
+        "jours_paris": [
+          "2026-10-25",
+          "2026-10-26"
+        ],
+        "meme_jour_civil": false,
+        "controles_ecrits": 2,
+        "le_second_corrige_le_premier": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (jour civil Europe/Paris) ; heure locale calculée avec tzdata du système, zoneinfo Python : fin de l'heure d'été le dimanche 25/10/2026 à 03:00 CEST"
+    },
+    {
+      "id": "J6",
+      "description": "Avant le retour à l'heure d'hiver : 01:30 et 02:30 CEST le 25/10/2026 : même jour.",
+      "entree": {
+        "placette": "P-001",
+        "controles_saisis_le_utc": [
+          "2026-10-24T23:30:00Z",
+          "2026-10-25T00:30:00Z"
+        ],
+        "operateur": "op1"
+      },
+      "attendu": {
+        "jours_paris": [
+          "2026-10-25",
+          "2026-10-25"
+        ],
+        "meme_jour_civil": true,
+        "controles_ecrits": 1,
+        "le_second_corrige_le_premier": true
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (jour civil Europe/Paris) ; heure locale calculée avec tzdata du système, zoneinfo Python : fin de l'heure d'été le dimanche 25/10/2026 à 03:00 CEST"
+    },
+    {
+      "id": "J7",
+      "description": "23:30 puis 00:30 heure de Paris, en heure d'été (21:30Z et 22:30Z) : deux jours, bien que UTC les place le même jour.",
+      "entree": {
+        "placette": "P-001",
+        "controles_saisis_le_utc": [
+          "2026-10-14T21:30:00Z",
+          "2026-10-14T22:30:00Z"
+        ],
+        "operateur": "op1"
+      },
+      "attendu": {
+        "jours_paris": [
+          "2026-10-14",
+          "2026-10-15"
+        ],
+        "meme_jour_civil": false,
+        "controles_ecrits": 2,
+        "le_second_corrige_le_premier": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (jour civil Europe/Paris) ; heure locale calculée avec tzdata du système, zoneinfo Python : fin de l'heure d'été le dimanche 25/10/2026 à 03:00 CEST"
+    }
+  ]
+}

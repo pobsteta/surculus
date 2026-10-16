@@ -1,0 +1,71 @@
+{
+  "fichier": "convergence.json",
+  "regle": "Convergence des méridiens, Lambert-93 (unités : degrés, signe : positif à l'est de 3° E)",
+  "format": "voir fixtures/README.md",
+  "tolerance_proposee_deg": 0.01,
+  "note": "La tolérance de 0,01° est une proposition, à confirmer par Pascal.",
+  "cas": [
+    {
+      "id": "C1",
+      "description": "Convergence des méridiens, Brest.",
+      "entree": {
+        "lat": 48.39,
+        "lon": -4.49,
+        "crs": "EPSG:2154"
+      },
+      "attendu": {
+        "convergence_deg": -5.4348,
+        "tolerance_deg": 0.01
+      },
+      "source": "pyproj 3.6.1 (PROJ 9.4.0) : Proj(\"EPSG:2154\").get_factors(lon, lat).meridian_convergence (calculé le 2026-10-16) ; formule γ = 0,7256·(λ−3°) de docs/adr/0003 ; a recouper avec Circé (IGN) : Pascal",
+      "tolerance_proposee": true,
+      "a_recouper_avec_circe_pascal": true
+    },
+    {
+      "id": "C2",
+      "description": "Convergence des méridiens, Strasbourg.",
+      "entree": {
+        "lat": 48.58,
+        "lon": 7.75,
+        "crs": "EPSG:2154"
+      },
+      "attendu": {
+        "convergence_deg": 3.4466,
+        "tolerance_deg": 0.01
+      },
+      "source": "pyproj 3.6.1 (PROJ 9.4.0) : Proj(\"EPSG:2154\").get_factors(lon, lat).meridian_convergence (calculé le 2026-10-16) ; formule γ = 0,7256·(λ−3°) de docs/adr/0003 ; a recouper avec Circé (IGN) : Pascal",
+      "tolerance_proposee": true,
+      "a_recouper_avec_circe_pascal": true
+    },
+    {
+      "id": "C3",
+      "description": "Convergence des méridiens, Couchey.",
+      "entree": {
+        "lat": 47.26,
+        "lon": 4.99,
+        "crs": "EPSG:2154"
+      },
+      "attendu": {
+        "convergence_deg": 1.444,
+        "tolerance_deg": 0.01
+      },
+      "source": "pyproj 3.6.1 (PROJ 9.4.0) : Proj(\"EPSG:2154\").get_factors(lon, lat).meridian_convergence (calculé le 2026-10-16) ; formule γ = 0,7256·(λ−3°) de docs/adr/0003 ; a recouper avec Circé (IGN) : Pascal",
+      "tolerance_proposee": true,
+      "a_recouper_avec_circe_pascal": true
+    },
+    {
+      "id": "C4",
+      "description": "Méridien central : λ = 3° donne γ = 0.",
+      "entree": {
+        "lat": 46.5,
+        "lon": 3.0
+      },
+      "attendu": {
+        "convergence_deg": 0.0,
+        "tolerance_deg": 0.0001
+      },
+      "source": "formule de docs/adr/0003 (valeur exacte) ; pyproj 3.6.1 (PROJ 9.4.0)",
+      "tolerance_proposee": true
+    }
+  ]
+}

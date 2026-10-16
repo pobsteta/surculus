@@ -1,0 +1,385 @@
+{
+  "fichier": "numerotation.json",
+  "regle": "Numérotation des plants par l'azimut géographique depuis le piquet, sens horaire (règle de Groma)",
+  "format": "voir fixtures/README.md",
+  "non_reprises": {
+    "02_masque_fin_de_tour": "masquage par le diamètre : pas de masquage pour les plants",
+    "04_rayon_et_seuil": "rayon et seuil de diamètre propres à l'inventaire",
+    "09_gros_bois_masquant": "masquage par le diamètre : pas de masquage pour les plants"
+  },
+  "decision": "Pascal 2026-10-16 : pas de masquage de Groma pour les plants (ils n'ont pas de diamètre). Les arbres de ces cas ont un dbh_cm sans effet ici ; 10 est repris car son résultat ne dépend pas du masquage (N1, d'azimut le plus petit, est visible et n° 1).",
+  "convention_xy": "x vers l'est, y vers le nord géographique, mètres depuis le piquet (README Groma)",
+  "cas": [
+    {
+      "id": "N-01_simple",
+      "description": "Quatre arbres bien séparés : ordre des azimuts croissants depuis 0°.",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "deg",
+          "tolerance_deg": 1.0
+        },
+        "plants": [
+          {
+            "id": "A",
+            "x": 2.5,
+            "y": 4.330127,
+            "dbh_cm": 30
+          },
+          {
+            "id": "B",
+            "x": 4.330127,
+            "y": -2.5,
+            "dbh_cm": 30
+          },
+          {
+            "id": "C",
+            "x": -2.5,
+            "y": -4.330127,
+            "dbh_cm": 30
+          },
+          {
+            "id": "D",
+            "x": -4.330127,
+            "y": 2.5,
+            "dbh_cm": 30
+          }
+        ]
+      },
+      "attendu": {
+        "numeros": {
+          "A": "1",
+          "B": "2",
+          "C": "3",
+          "D": "4"
+        },
+        "exclus": {}
+      },
+      "source": "Groma, fixtures/numerotation/01_simple.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
+      "copie_de_groma": true
+    },
+    {
+      "id": "N-03_egalite_plus_proche",
+      "description": "T2 (az 100°, 12 m) et T3 (az 100,6°, 6 m) sont à égalité d'azimut (écart < 1°) : le plus proche (T3) passe d'abord.",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "deg",
+          "tolerance_deg": 1.0
+        },
+        "plants": [
+          {
+            "id": "T1",
+            "x": 1.710101,
+            "y": 4.698463,
+            "dbh_cm": 30
+          },
+          {
+            "id": "T2",
+            "x": 11.817693,
+            "y": -2.083778,
+            "dbh_cm": 30
+          },
+          {
+            "id": "T3",
+            "x": 5.897612,
+            "y": -1.103708,
+            "dbh_cm": 30
+          },
+          {
+            "id": "T4",
+            "x": -6.577848,
+            "y": -2.394141,
+            "dbh_cm": 30
+          }
+        ]
+      },
+      "attendu": {
+        "numeros": {
+          "T1": "1",
+          "T3": "2",
+          "T2": "3",
+          "T4": "4"
+        },
+        "exclus": {}
+      },
+      "source": "Groma, fixtures/numerotation/03_egalite_plus_proche.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
+      "copie_de_groma": true
+    },
+    {
+      "id": "N-05_grades",
+      "description": "Placette en grades. La tolérance d'égalité reste 1° (1,11 gr) : G3 à 101 gr et G2 à 100 gr sont à égalité, le plus proche (G3) d'abord. Les azimuts sont rendus en grades.",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "gr",
+          "tolerance_deg": 1.0
+        },
+        "plants": [
+          {
+            "id": "G1",
+            "x": 2.723943,
+            "y": 5.346039,
+            "dbh_cm": 30
+          },
+          {
+            "id": "G2",
+            "x": 10.0,
+            "y": 0.0,
+            "dbh_cm": 30
+          },
+          {
+            "id": "G3",
+            "x": 4.999383,
+            "y": -0.078537,
+            "dbh_cm": 30
+          },
+          {
+            "id": "G4",
+            "x": -8.0,
+            "y": -0.0,
+            "dbh_cm": 30
+          }
+        ]
+      },
+      "attendu": {
+        "numeros": {
+          "G1": "1",
+          "G3": "2",
+          "G2": "3",
+          "G4": "4"
+        },
+        "exclus": {},
+        "azimuts": {
+          "G1": 30.0,
+          "G2": 100.0,
+          "G3": 101.0,
+          "G4": 300.0
+        }
+      },
+      "source": "Groma, fixtures/numerotation/05_grades.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
+      "copie_de_groma": true
+    },
+    {
+      "id": "N-06_egalite_numero_un",
+      "description": "Deux arbres visibles à égalité pour le n° 1 (az 2,0° à 15 m et 2,7° à 6 m) : le plus proche est le n° 1, l'autre le n° 2.",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "deg",
+          "tolerance_deg": 1.0
+        },
+        "plants": [
+          {
+            "id": "TA",
+            "x": 0.523492,
+            "y": 14.990862,
+            "dbh_cm": 30
+          },
+          {
+            "id": "TB",
+            "x": 0.282639,
+            "y": 5.993339,
+            "dbh_cm": 10
+          },
+          {
+            "id": "TC",
+            "x": 0.0,
+            "y": -8.0,
+            "dbh_cm": 30
+          }
+        ]
+      },
+      "attendu": {
+        "numeros": {
+          "TB": "1",
+          "TA": "2",
+          "TC": "3"
+        },
+        "exclus": {},
+        "visibles": [
+          "TA",
+          "TB",
+          "TC"
+        ]
+      },
+      "source": "Groma, fixtures/numerotation/06_egalite_numero_un.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
+      "copie_de_groma": true
+    },
+    {
+      "id": "N-07_pas_de_bouclage_a_zero",
+      "description": "Le n° 1 est le plus petit azimut à partir de 0° : Q (0,3°) est le n° 1, P (359,6°, visible) vient en fin de tour malgré un écart de 0,7° avec Q.",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "deg",
+          "tolerance_deg": 1.0
+        },
+        "plants": [
+          {
+            "id": "P",
+            "x": -0.069813,
+            "y": 9.999756,
+            "dbh_cm": 30
+          },
+          {
+            "id": "Q",
+            "x": 0.02618,
+            "y": 4.999931,
+            "dbh_cm": 10
+          },
+          {
+            "id": "R",
+            "x": 5.0,
+            "y": 0.0,
+            "dbh_cm": 30
+          }
+        ]
+      },
+      "attendu": {
+        "numeros": {
+          "Q": "1",
+          "R": "2",
+          "P": "3"
+        },
+        "exclus": {},
+        "visibles": [
+          "P",
+          "Q",
+          "R"
+        ]
+      },
+      "source": "Groma, fixtures/numerotation/07_pas_de_bouclage_a_zero.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
+      "copie_de_groma": true
+    },
+    {
+      "id": "N-08_vide",
+      "description": "Placette sans arbre.",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "deg",
+          "tolerance_deg": 1.0
+        },
+        "plants": []
+      },
+      "attendu": {
+        "numeros": {},
+        "exclus": {}
+      },
+      "source": "Groma, fixtures/numerotation/08_vide.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
+      "copie_de_groma": true
+    },
+    {
+      "id": "N-10_groupe_ancre",
+      "description": "Les groupes d'égalité sont ancrés sur leur premier arbre : 50,0° et 50,6° forment un groupe (le plus proche d'abord), 51,3° (à 1,3° de l'ancre) est un groupe à part même s'il est le plus proche.",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "deg",
+          "tolerance_deg": 1.0
+        },
+        "plants": [
+          {
+            "id": "N1",
+            "x": 0.868241,
+            "y": 4.924039,
+            "dbh_cm": 30
+          },
+          {
+            "id": "K500",
+            "x": 6.8944,
+            "y": 5.785088,
+            "dbh_cm": 30
+          },
+          {
+            "id": "K506",
+            "x": 3.863668,
+            "y": 3.173653,
+            "dbh_cm": 30
+          },
+          {
+            "id": "K513",
+            "x": 2.341291,
+            "y": 1.875728,
+            "dbh_cm": 30
+          }
+        ]
+      },
+      "attendu": {
+        "numeros": {
+          "N1": "1",
+          "K506": "2",
+          "K500": "3",
+          "K513": "4"
+        },
+        "exclus": {}
+      },
+      "source": "Groma, fixtures/numerotation/10_groupe_ancre.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
+      "copie_de_groma": true
+    },
+    {
+      "id": "N-sans-masquage",
+      "description": "Sans masquage : A (5°, 12 m) et B (5,5°, 4 m) sont à égalité d'azimut ; le plus proche, B, est le n° 1 et A le n° 2. Avec le masquage de Groma, A serait numéroté en dernier (n° 5).",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "deg",
+          "tolerance_deg": 1.0
+        },
+        "plants": [
+          {
+            "id": "A",
+            "x": 1.045869,
+            "y": 11.954336,
+            "dbh_cm": 30
+          },
+          {
+            "id": "B",
+            "x": 0.383383,
+            "y": 3.981585,
+            "dbh_cm": 60
+          },
+          {
+            "id": "C",
+            "x": 6.0,
+            "y": 0.0,
+            "dbh_cm": 30
+          },
+          {
+            "id": "D",
+            "x": -2.736161,
+            "y": -7.517541,
+            "dbh_cm": 30
+          },
+          {
+            "id": "E",
+            "x": -8.660254,
+            "y": 5.0,
+            "dbh_cm": 30
+          }
+        ]
+      },
+      "attendu": {
+        "numeros": {
+          "B": "1",
+          "A": "2",
+          "C": "3",
+          "D": "4",
+          "E": "5"
+        },
+        "exclus": {}
+      },
+      "source": "Groma 02 adapté + arbitrage de Pascal du 2026-10-16 (pas de masquage) ; valeur contrôlée avec groma.numerotation.numeroter, est_masque neutralisé (commit Groma 6f953e1)",
+      "adapte_de_groma": true
+    }
+  ]
+}
