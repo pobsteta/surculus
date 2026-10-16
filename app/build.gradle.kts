@@ -15,6 +15,12 @@ android {
         targetSdk = 36
         versionCode = (project.findProperty("appVersionCode") as String?)?.toIntOrNull() ?: 1
         versionName = (project.findProperty("appVersionName") as String?) ?: "0.1.0"
+
+        // ABI embarquées (arbitrage de Pascal, 2026-10-16) : téléphones 64 et 32 bits ARM, émulateur
+        // x86_64. On retire armeabi, mips, mips64 et x86, que JNA embarque encore.
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        }
     }
 
     // Signature release, distribution et clé : ADR 0010 (pas encore écrite). Seul le debug est construit.
