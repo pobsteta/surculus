@@ -1,7 +1,6 @@
 package io.github.pobsteta.surculus.core.fixtures
 
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -25,23 +24,18 @@ class RejeuReperesTest {
         }
     }
 
-    @Disabled("en attente de la mission 005")
     @TestFactory
     fun `convergence des meridiens`() = rejouer("convergence")
 
-    @Disabled("en attente de la mission 005")
     @TestFactory
     fun `declinaison WMM2025 et dates hors validite`() = rejouer("declinaison-wmm2025")
 
-    @Disabled("en attente de la mission 005")
     @TestFactory
     fun `chaine d'azimut`() = rejouer("chaine-azimut")
 
-    @Disabled("en attente de la mission 005")
     @TestFactory
     fun `unites d'azimut`() = rejouer("unites-azimut")
 
-    @Disabled("en attente de la mission 005")
     @TestFactory
     fun `distance horizontale et unite de pente`() = rejouer("distance-horizontale")
 }
