@@ -496,7 +496,7 @@
     },
     {
       "id": "T9b",
-      "description": "Les hauteurs d'un mort et d'un non observé n'entrent pas dans la moyenne.",
+      "description": "La hauteur d'un mort n'entre pas dans la moyenne, et un non observé (sans aucune mesure) n'y entre pas non plus.",
       "entree": {
         "placette": "P-001",
         "plants": [
@@ -512,8 +512,7 @@
           },
           {
             "uuid": "n1",
-            "etat": "non_observe",
-            "hauteur_cm": 300
+            "etat": "non_observe"
           },
           {
             "uuid": "s2",
@@ -530,7 +529,96 @@
         "nb_abroutis": 0,
         "h_moy_cm": 50.0
       },
-      "source": "Q10 : vivants seulement"
+      "source": "Q10 : vivants seulement ; spec § 6, arbitrage de Pascal du 2026-10-16 (un non observé ne porte aucune mesure)"
+    },
+    {
+      "id": "T9c",
+      "description": "Arrondi de h_moy_cm au demi : 40 et 45 cm donnent 42,5, arrondi à 43 (demi vers le haut ; round() de R arrondirait au pair, donc 42).",
+      "entree": {
+        "placette": "P-001",
+        "plants": [
+          {
+            "uuid": "s1",
+            "etat": "sain",
+            "hauteur_cm": 40
+          },
+          {
+            "uuid": "a1",
+            "etat": "atteint",
+            "hauteur_cm": 45
+          }
+        ],
+        "regarnis": [],
+        "controle_calcule": 1
+      },
+      "attendu": {
+        "nb_total": 2,
+        "nb_vivants": 2,
+        "nb_abroutis": 0,
+        "h_moy_cm": 43
+      },
+      "source": "spec § 6 (h_moy_cm arrondie à l'entier le plus proche) ; demi vers le haut selon le relecteur de la 004, arbitrage de Pascal du 2026-10-16"
+    },
+    {
+      "id": "T9d",
+      "description": "Arrondi au demi : 41 et 42 cm donnent 41,5, arrondi à 42 (demi vers le haut ; round() de R donnerait 42 aussi, cas témoin).",
+      "entree": {
+        "placette": "P-001",
+        "plants": [
+          {
+            "uuid": "s1",
+            "etat": "sain",
+            "hauteur_cm": 41
+          },
+          {
+            "uuid": "a1",
+            "etat": "atteint",
+            "hauteur_cm": 42
+          }
+        ],
+        "regarnis": [],
+        "controle_calcule": 1
+      },
+      "attendu": {
+        "nb_total": 2,
+        "nb_vivants": 2,
+        "nb_abroutis": 0,
+        "h_moy_cm": 42
+      },
+      "source": "spec § 6 (h_moy_cm arrondie à l'entier le plus proche) ; demi vers le haut selon le relecteur de la 004, arbitrage de Pascal du 2026-10-16"
+    },
+    {
+      "id": "T9e",
+      "description": "Hors demi : 40, 41 et 41 cm donnent 40,67, arrondi à 41.",
+      "entree": {
+        "placette": "P-001",
+        "plants": [
+          {
+            "uuid": "s1",
+            "etat": "sain",
+            "hauteur_cm": 40
+          },
+          {
+            "uuid": "s2",
+            "etat": "sain",
+            "hauteur_cm": 41
+          },
+          {
+            "uuid": "a1",
+            "etat": "atteint",
+            "hauteur_cm": 41
+          }
+        ],
+        "regarnis": [],
+        "controle_calcule": 1
+      },
+      "attendu": {
+        "nb_total": 3,
+        "nb_vivants": 3,
+        "nb_abroutis": 0,
+        "h_moy_cm": 41
+      },
+      "source": "spec § 6 (h_moy_cm arrondie à l'entier le plus proche) ; 122 / 3 = 40,667"
     },
     {
       "id": "T10",
@@ -676,6 +764,29 @@
       },
       "source": "docs/spec.md § 6 (nb_vivants ≤ nb_total)",
       "note": "Invariant à vérifier sur le résultat : nb_vivants <= nb_total."
+    },
+    {
+      "id": "T15",
+      "description": "Même plant présent deux fois dans les états d'un contrôle : refusé.",
+      "entree": {
+        "placette": "P-001",
+        "plants": [
+          {
+            "uuid": "s1",
+            "etat": "sain"
+          },
+          {
+            "uuid": "s1",
+            "etat": "mort"
+          }
+        ],
+        "regarnis": [],
+        "controle_calcule": 1
+      },
+      "attendu": {
+        "refuse": true
+      },
+      "source": "spec § 6, arbitrage de Pascal du 2026-10-16 (un plant, un état par contrôle)"
     }
   ]
 }

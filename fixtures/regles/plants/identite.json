@@ -190,6 +190,28 @@
         }
       },
       "source": "arbitrage de Pascal 2026-10-16 (I4)"
+    },
+    {
+      "id": "I5",
+      "description": "Numéro déjà pris dans la placette : refusé.",
+      "entree": {
+        "plants": [
+          {
+            "uuid": "u1",
+            "placette": "P-001",
+            "numero": 1
+          }
+        ],
+        "ajout": {
+          "uuid": "u2",
+          "placette": "P-001",
+          "numero": 1
+        }
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "spec § 6, arbitrage de Pascal du 2026-10-16 (règle de sommieR, sommier_pointer_plant)"
     }
   ]
 }
