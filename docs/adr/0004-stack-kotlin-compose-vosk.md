@@ -12,7 +12,7 @@ Surculus est écrit en Kotlin pour Android (minSdk 26, identifiant
 lecture et l'écriture du `travaux.gpkg` vivent dans un module JVM `:gpkg`
 (geopackage-java) testé sans appareil ; la dictée passe par une interface `MoteurDictee`
 implémentée avec Vosk 0.3.75 et le modèle `vosk-model-small-fr-0.22` ; la commande de
-tests du projet est `./gradlew :core:test :gpkg:test :app:assembleDebug`.
+tests du projet est `./gradlew :core:test :gpkg:test :app:assembleDebug :app:lintDebug` (lint ajouté le 2026-10-16, arbitrage de Pascal).
 
 ## Contexte
 
@@ -47,7 +47,7 @@ d'où le module **`:gpkg` en JVM** (arbitrage de Pascal), plutôt que Robolectri
 | Sujet | Règle |
 |---|---|
 | Modules | `:core` (Kotlin pur), `:gpkg` (JVM : geopackage-java MIT + sqlite-jdbc), `:data` (Room, journal), `:app` (Compose, services GNSS et dictée) |
-| Tests | JUnit Jupiter, aligné sur `groma-core` ; la CI joue `./gradlew :core:test :gpkg:test :app:assembleDebug` et rejoue l'import R de sommieR (`sommier_importer_qfield_travaux()`) sur l'export de la démo Couchey |
+| Tests | JUnit Jupiter, aligné sur `groma-core` ; la CI joue `./gradlew :core:test :gpkg:test :app:assembleDebug :app:lintDebug` (lint ajouté le 2026-10-16, arbitrage de Pascal) et rejoue l'import R de sommieR (`sommier_importer_qfield_travaux()`) sur l'export de la démo Couchey |
 | Vosk | `vosk-android` **0.3.75** ; contrôle d'alignement des bibliothèques natives sur **16 Ko** (`zipalign -P 16`) en CI |
 | Modèle | `vosk-model-small-fr-0.22` (41 Mo, Apache-2.0), **nom exact et somme SHA-256** inscrits dans `docs/dependances.md` ; les modèles français NC (`small-fr-pguyot`) et AGPL (`fr-linto`) sont exclus ; modèle **republié** dans les releases de Surculus (NOTICE conservé) et **importable par fichier**, sans réseau |
 | Grammaire | un test `:core` vérifie que chaque mot de la grammaire figure dans la liste de mots du modèle (fixture versionnée) ; la grammaire est neutre vis-à-vis du moteur, ce que le test rend vérifiable |
@@ -75,7 +75,7 @@ d'où le module **`:gpkg` en JVM** (arbitrage de Pascal), plutôt que Robolectri
 
 ## Conséquences
 
-- `.claude/test-command` : `./gradlew :core:test :gpkg:test :app:assembleDebug`.
+- `.claude/test-command` : `./gradlew :core:test :gpkg:test :app:assembleDebug :app:lintDebug` (lint ajouté le 2026-10-16, arbitrage de Pascal).
 - `docs/architecture.md` et `docs/dependances.md` mis à jour (module `:gpkg`,
   geopackage-java, sqlite-jdbc, Vosk 0.3.75, proj4j retiré).
 

@@ -1,1 +1,1 @@
-./gradlew :core:test :gpkg:test :app:assembleDebug
+./gradlew :core:test :gpkg:test :app:assembleDebug :app:lintDebug
