@@ -276,7 +276,11 @@ dans Surculus.
 | Un plant appartient à une seule placette et garde son UUID ; un UUID de plant en double est refusé | Surculus | 1 |
 | Numérotation de Groma sans masquage (les plants n'ont pas de diamètre) ; un plant pointé après coup prend le numéro suivant le plus grand déjà donné, sans renuméroter ; pente ≥ 90° refusée ; date hors validité du WMM2025 (après le 31/12/2029) refusée | Surculus | 1 |
 | États et causes uniquement ceux de `etats-plants.yaml` ; une cause sur un plant sain ou absent est refusée | Surculus | 1 |
-| `h_moy_cm` = moyenne des hauteurs des plants vivants (sains + atteints) mesurés ; absent si aucune hauteur | Surculus | 1 |
+| `h_moy_cm` = moyenne des hauteurs des plants vivants (sains + atteints) mesurés, arrondie à l'entier le plus proche (sommieR exige un entier, `R/registre6.R` l. 174) ; absent si aucune hauteur ; `hauteur_cm` entier strictement positif | Surculus | 1 |
+| `cause_detail` libre, seule constante reconnue « abroutissement » ; détail refusé sur un plant absent, permis seul sur un atteint ou un mort | Surculus | 1 |
+| Plant pointé au-delà du rayon de sa placette (+ 0,10 m) : alerte et confirmation de l'agent, non refusé | Surculus | 1 |
+| Numéros provisoires pendant le premier contrôle, figés à sa clôture ; « un contrôle par jour » = (placette, jour civil Europe/Paris) dans une tournée ; le code lu l'emporte sur le GNSS, « rattaché par identité » seulement au-delà de 15 m | Surculus | 1 |
+| Pente acceptée dans ]−90°, 90°[ ; pas de correction du facteur d'échelle Lambert-93 (erreur < 3 cm à 30 m) | Surculus | 1 |
 | Unités de la boussole (degrés ou grades) et de la pente (% ou degrés) déclarées à l'ouverture de la tournée ; azimut saisi refusé hors [0, 360[ ou [0, 400[ avant normalisation | ADR 0003 | 1 |
 | Tout point écrit tombe dans l'emprise de la forêt et en France ; azimut dans [0, 360[ ; déclinaison et convergence enregistrées | `CLAUDE.md` | 1 |
 | Alerte de reprise quand le seuil (80 % ou 90 % selon l'essence) est au-dessus de l'intervalle de confiance | brief | 2 |
