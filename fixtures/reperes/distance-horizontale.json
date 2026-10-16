@@ -1,0 +1,163 @@
+{
+  "fichier": "distance-horizontale.json",
+  "regle": "Distance ramenée à l'horizontale ; unité de pente déclarée par tournée",
+  "format": "voir fixtures/README.md",
+  "cas": [
+    {
+      "id": "D1",
+      "description": "Pente nulle en %.",
+      "entree": {
+        "tournee": {
+          "unite_pente": "pct",
+          "unite_azimut": "deg"
+        },
+        "distance_mesuree_m": 10,
+        "pente": 0
+      },
+      "attendu": {
+        "distance_horizontale_m": 10.0,
+        "tolerance_m": 0.001
+      },
+      "source": "arbitrage de Pascal 2026-10-16 (Q9) : unité de la pente déclarée une fois par tournée ; docs/spec.md § 3 (distance ramenée à l'horizontale) ; d·cos(α)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "D2",
+      "description": "Pente nulle en degrés.",
+      "entree": {
+        "tournee": {
+          "unite_pente": "deg",
+          "unite_azimut": "deg"
+        },
+        "distance_mesuree_m": 10,
+        "pente": 0
+      },
+      "attendu": {
+        "distance_horizontale_m": 10.0,
+        "tolerance_m": 0.001
+      },
+      "source": "arbitrage de Pascal 2026-10-16 (Q9) : unité de la pente déclarée une fois par tournée ; docs/spec.md § 3 (distance ramenée à l'horizontale) ; d·cos(α)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "D3",
+      "description": "20 % : 10·cos(atan 0,2).",
+      "entree": {
+        "tournee": {
+          "unite_pente": "pct",
+          "unite_azimut": "deg"
+        },
+        "distance_mesuree_m": 10,
+        "pente": 20
+      },
+      "attendu": {
+        "distance_horizontale_m": 9.8058,
+        "tolerance_m": 0.001
+      },
+      "source": "arbitrage de Pascal 2026-10-16 (Q9) : unité de la pente déclarée une fois par tournée ; docs/spec.md § 3 (distance ramenée à l'horizontale) ; d·cos(α), α = atan(p/100)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "D4",
+      "description": "20° : 10·cos(20°).",
+      "entree": {
+        "tournee": {
+          "unite_pente": "deg",
+          "unite_azimut": "deg"
+        },
+        "distance_mesuree_m": 10,
+        "pente": 20
+      },
+      "attendu": {
+        "distance_horizontale_m": 9.3969,
+        "tolerance_m": 0.001
+      },
+      "source": "arbitrage de Pascal 2026-10-16 (Q9) : unité de la pente déclarée une fois par tournée ; docs/spec.md § 3 (distance ramenée à l'horizontale) ; d·cos(α)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "D5",
+      "description": "100 % égale 45°.",
+      "entree": {
+        "tournee": {
+          "unite_pente": "pct",
+          "unite_azimut": "deg"
+        },
+        "distance_mesuree_m": 10,
+        "pente": 100
+      },
+      "attendu": {
+        "distance_horizontale_m": 7.0711,
+        "tolerance_m": 0.001
+      },
+      "source": "arbitrage de Pascal 2026-10-16 (Q9) : unité de la pente déclarée une fois par tournée ; docs/spec.md § 3 (distance ramenée à l'horizontale) ; d·cos(α) ; 100 % = 45°",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "D6",
+      "description": "45° : même résultat que 100 %.",
+      "entree": {
+        "tournee": {
+          "unite_pente": "deg",
+          "unite_azimut": "deg"
+        },
+        "distance_mesuree_m": 10,
+        "pente": 45
+      },
+      "attendu": {
+        "distance_horizontale_m": 7.0711,
+        "tolerance_m": 0.001
+      },
+      "source": "arbitrage de Pascal 2026-10-16 (Q9) : unité de la pente déclarée une fois par tournée ; docs/spec.md § 3 (distance ramenée à l'horizontale) ; d·cos(α)",
+      "tolerance_proposee": true
+    },
+    {
+      "id": "D7",
+      "description": "Pente absente (non saisie) : distance inchangée.",
+      "entree": {
+        "tournee": {
+          "unite_pente": "pct"
+        },
+        "distance_mesuree_m": 10,
+        "pente": null
+      },
+      "attendu": {
+        "distance_horizontale_m": 10.0
+      },
+      "source": "docs/spec.md § 3 : « si la pente est saisie »"
+    },
+    {
+      "id": "D8",
+      "description": "Ouverture sans unité de pente déclarée : refus.",
+      "entree": {
+        "tournee": {
+          "unite_azimut": "deg",
+          "unite_pente": null
+        }
+      },
+      "attendu": {
+        "ouverture_refusee": true,
+        "motif": "unite_pente_non_declaree"
+      },
+      "source": "arbitrage de Pascal 2026-10-16 (Q9) ; déduit par symétrie avec Q6, à faire confirmer",
+      "question_ouverte": "Le refus d'une unité de pente absente est une déduction du testeur, non tranchée."
+    },
+    {
+      "id": "D9",
+      "description": "Pente de 90° : distance horizontale nulle ou refus.",
+      "entree": {
+        "tournee": {
+          "unite_pente": "deg"
+        },
+        "distance_mesuree_m": 10,
+        "pente": 90
+      },
+      "attendu": {
+        "distance_horizontale_m": 0.0,
+        "ou_refus": true
+      },
+      "source": "cos(90°) = 0 ; la spec est muette sur la pente limite",
+      "question_ouverte": "comportement à 90° non spécifié"
+    }
+  ]
+}

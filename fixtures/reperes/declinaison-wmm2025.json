@@ -1,0 +1,158 @@
+{
+  "fichier": "declinaison-wmm2025.json",
+  "regle": "Déclinaison magnétique par WMM2025 hors ligne ; dates hors validité refusées",
+  "format": "voir fixtures/README.md",
+  "tolerance_proposee_deg": 0.01,
+  "note": "Tolérance de 0,01° proposée par l'acquéreur, à confirmer par Pascal.",
+  "cas": [
+    {
+      "id": "C5",
+      "description": "Déclinaison WMM2025, Brest.",
+      "entree": {
+        "lat": 48.39,
+        "lon": -4.49,
+        "date": "2026-10-15",
+        "altitude_km": 0
+      },
+      "attendu": {
+        "declinaison_deg": 0.0444,
+        "tolerance_deg": 0.01,
+        "positive_vers_l_est": true
+      },
+      "source": "docs/referentiels/modele-geomagnetique.md, tableau « Déclinaison en France au 2026-10-15 », calculateur NOAA WMM2025, altitude 0 km, date 2026-10-15 (année décimale 2026,7863) ; contrôle croisé BGS +0,045",
+      "tolerance_proposee": true,
+      "limite": "valeur reprise de la table de l'acquéreur ; non recalculée par le testeur (pas d'accès au calculateur)"
+    },
+    {
+      "id": "C6",
+      "description": "Déclinaison WMM2025, Strasbourg.",
+      "entree": {
+        "lat": 48.58,
+        "lon": 7.75,
+        "date": "2026-10-15",
+        "altitude_km": 0
+      },
+      "attendu": {
+        "declinaison_deg": 3.4997,
+        "tolerance_deg": 0.01,
+        "positive_vers_l_est": true
+      },
+      "source": "docs/referentiels/modele-geomagnetique.md, tableau « Déclinaison en France au 2026-10-15 », calculateur NOAA WMM2025, altitude 0 km, date 2026-10-15 (année décimale 2026,7863) ; contrôle croisé BGS +3,500",
+      "tolerance_proposee": true,
+      "limite": "valeur reprise de la table de l'acquéreur ; non recalculée par le testeur (pas d'accès au calculateur)"
+    },
+    {
+      "id": "C7",
+      "description": "Déclinaison WMM2025, Paris.",
+      "entree": {
+        "lat": 48.86,
+        "lon": 2.35,
+        "date": "2026-10-15",
+        "altitude_km": 0
+      },
+      "attendu": {
+        "declinaison_deg": 2.0863,
+        "tolerance_deg": 0.01,
+        "positive_vers_l_est": true
+      },
+      "source": "docs/referentiels/modele-geomagnetique.md, tableau « Déclinaison en France au 2026-10-15 », calculateur NOAA WMM2025, altitude 0 km, date 2026-10-15 (année décimale 2026,7863)",
+      "tolerance_proposee": true,
+      "limite": "valeur reprise de la table de l'acquéreur ; non recalculée par le testeur (pas d'accès au calculateur)"
+    },
+    {
+      "id": "C8",
+      "description": "Déclinaison WMM2025, Couchey.",
+      "entree": {
+        "lat": 47.26,
+        "lon": 4.99,
+        "date": "2026-10-15",
+        "altitude_km": 0
+      },
+      "attendu": {
+        "declinaison_deg": 2.8004,
+        "tolerance_deg": 0.01,
+        "positive_vers_l_est": true
+      },
+      "source": "docs/referentiels/modele-geomagnetique.md, tableau « Déclinaison en France au 2026-10-15 », calculateur NOAA WMM2025, altitude 0 km, date 2026-10-15 (année décimale 2026,7863)",
+      "tolerance_proposee": true,
+      "limite": "valeur reprise de la table de l'acquéreur ; non recalculée par le testeur (pas d'accès au calculateur)"
+    },
+    {
+      "id": "C9",
+      "description": "Déclinaison WMM2025, Bordeaux.",
+      "entree": {
+        "lat": 44.84,
+        "lon": -0.58,
+        "date": "2026-10-15",
+        "altitude_km": 0
+      },
+      "attendu": {
+        "declinaison_deg": 1.403,
+        "tolerance_deg": 0.01,
+        "positive_vers_l_est": true
+      },
+      "source": "docs/referentiels/modele-geomagnetique.md, tableau « Déclinaison en France au 2026-10-15 », calculateur NOAA WMM2025, altitude 0 km, date 2026-10-15 (année décimale 2026,7863)",
+      "tolerance_proposee": true,
+      "limite": "valeur reprise de la table de l'acquéreur ; non recalculée par le testeur (pas d'accès au calculateur)"
+    },
+    {
+      "id": "C10",
+      "description": "Déclinaison WMM2025, Marseille.",
+      "entree": {
+        "lat": 43.3,
+        "lon": 5.37,
+        "date": "2026-10-15",
+        "altitude_km": 0
+      },
+      "attendu": {
+        "declinaison_deg": 2.8265,
+        "tolerance_deg": 0.01,
+        "positive_vers_l_est": true
+      },
+      "source": "docs/referentiels/modele-geomagnetique.md, tableau « Déclinaison en France au 2026-10-15 », calculateur NOAA WMM2025, altitude 0 km, date 2026-10-15 (année décimale 2026,7863)",
+      "tolerance_proposee": true,
+      "limite": "valeur reprise de la table de l'acquéreur ; non recalculée par le testeur (pas d'accès au calculateur)"
+    },
+    {
+      "id": "C11a",
+      "description": "Date juste après la fin de validité.",
+      "entree": {
+        "lat": 48.58,
+        "lon": 7.75,
+        "date": "2030-01-01"
+      },
+      "attendu": {
+        "hors_validite": true,
+        "extrapolation_silencieuse": false
+      },
+      "source": "docs/spec.md § 9 (dates hors validité refusées) ; docs/referentiels/modele-geomagnetique.md (validité 2025.0 à fin 2029)",
+      "question_ouverte": "Q4 : NCEI donne fin 2029, BGS 2030.0"
+    },
+    {
+      "id": "C11b",
+      "description": "Dernier jour de validité.",
+      "entree": {
+        "lat": 48.58,
+        "lon": 7.75,
+        "date": "2029-12-31"
+      },
+      "attendu": {
+        "hors_validite": false
+      },
+      "source": "docs/spec.md § 9 ; NCEI : « expires on December 31, 2029 »"
+    },
+    {
+      "id": "C11c",
+      "description": "Date antérieure à 2025.0.",
+      "entree": {
+        "lat": 48.58,
+        "lon": 7.75,
+        "date": "2024-12-31"
+      },
+      "attendu": {
+        "hors_validite": true
+      },
+      "source": "docs/referentiels/modele-geomagnetique.md (WMM2025 valable à partir de 2025.0)"
+    }
+  ]
+}

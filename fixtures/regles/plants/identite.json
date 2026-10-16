@@ -1,0 +1,132 @@
+{
+  "fichier": "identite.json",
+  "regle": "Un plant appartient à une seule placette et garde son UUID",
+  "format": "voir fixtures/README.md",
+  "cas": [
+    {
+      "id": "I1",
+      "description": "Même UUID de plant dans deux placettes.",
+      "entree": {
+        "plants": [
+          {
+            "uuid": "u1",
+            "placette": "P-001",
+            "numero": 1
+          },
+          {
+            "uuid": "u1",
+            "placette": "P-002",
+            "numero": 1
+          }
+        ]
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (un plant appartient à une seule placette et garde son UUID)"
+    },
+    {
+      "id": "I2",
+      "description": "Plant relu au passage suivant : même UUID, même numéro.",
+      "entree": {
+        "passage_1": [
+          {
+            "uuid": "u1",
+            "placette": "P-001",
+            "numero": 3
+          }
+        ],
+        "passage_2": [
+          {
+            "uuid": "u1",
+            "placette": "P-001",
+            "numero": 3
+          }
+        ]
+      },
+      "attendu": {
+        "accepte": true,
+        "uuid_conserve": true,
+        "numero_conserve": true
+      },
+      "source": "docs/spec.md § 6 (un plant appartient à une seule placette et garde son UUID) ; tranche 5 (docs/spec.md § 7)"
+    },
+    {
+      "id": "I2b",
+      "description": "Plant relu avec un autre numéro : refus.",
+      "entree": {
+        "passage_1": [
+          {
+            "uuid": "u1",
+            "placette": "P-001",
+            "numero": 3
+          }
+        ],
+        "passage_2": [
+          {
+            "uuid": "u1",
+            "placette": "P-001",
+            "numero": 4
+          }
+        ]
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (un plant appartient à une seule placette et garde son UUID) (déduit : le numéro est stable)"
+    },
+    {
+      "id": "I3",
+      "description": "Deux plants avec le même UUID dans la même placette.",
+      "entree": {
+        "plants": [
+          {
+            "uuid": "u1",
+            "placette": "P-001",
+            "numero": 1
+          },
+          {
+            "uuid": "u1",
+            "placette": "P-001",
+            "numero": 2
+          }
+        ]
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "arbitrage de Pascal 2026-10-16 (Q14) : UUID en double refusé"
+    },
+    {
+      "id": "I4",
+      "description": "Plant ajouté après coup : les numéros existants ne changent pas.",
+      "entree": {
+        "plants": [
+          {
+            "uuid": "u1",
+            "placette": "P-001",
+            "numero": 1
+          },
+          {
+            "uuid": "u2",
+            "placette": "P-001",
+            "numero": 2
+          }
+        ],
+        "ajout": {
+          "uuid": "u3",
+          "placette": "P-001",
+          "azimut_geo_deg": 5.0
+        }
+      },
+      "attendu": {
+        "numeros_existants_inchanges": {
+          "u1": 1,
+          "u2": 2
+        }
+      },
+      "source": "docs/spec.md § 6 (un plant appartient à une seule placette et garde son UUID) ; tranche 5",
+      "question_ouverte": "Le numéro du plant ajouté n'est pas spécifié (il ne renumérote pas les autres)."
+    }
+  ]
+}

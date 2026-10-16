@@ -1,0 +1,227 @@
+{
+  "fichier": "unites-azimut.json",
+  "regle": "Unités d'azimut : degrés [0, 360[, grades [0, 400[, refus avant normalisation",
+  "format": "voir fixtures/README.md",
+  "cas": [
+    {
+      "id": "U1",
+      "description": "Borne basse incluse.",
+      "entree": {
+        "valeur": 0,
+        "unite": "deg"
+      },
+      "attendu": {
+        "accepte": true
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U2",
+      "description": "Juste sous la borne haute.",
+      "entree": {
+        "valeur": 359.999,
+        "unite": "deg"
+      },
+      "attendu": {
+        "accepte": true
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U3",
+      "description": "Borne haute exclue.",
+      "entree": {
+        "valeur": 360,
+        "unite": "deg"
+      },
+      "attendu": {
+        "accepte": false,
+        "normalise_en_silence": false
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U4",
+      "description": "Négatif.",
+      "entree": {
+        "valeur": -0.001,
+        "unite": "deg"
+      },
+      "attendu": {
+        "accepte": false,
+        "normalise_en_silence": false
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U5",
+      "description": "Pas ramené à 0 (groma-core normalise, pas Surculus).",
+      "entree": {
+        "valeur": 720,
+        "unite": "deg"
+      },
+      "attendu": {
+        "accepte": false,
+        "normalise_en_silence": false
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U6",
+      "description": "Borne basse incluse.",
+      "entree": {
+        "valeur": 0,
+        "unite": "gr"
+      },
+      "attendu": {
+        "accepte": true
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U7",
+      "description": "Juste sous la borne haute.",
+      "entree": {
+        "valeur": 399.999,
+        "unite": "gr"
+      },
+      "attendu": {
+        "accepte": true
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U8",
+      "description": "Borne haute exclue.",
+      "entree": {
+        "valeur": 400,
+        "unite": "gr"
+      },
+      "attendu": {
+        "accepte": false,
+        "normalise_en_silence": false
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U9",
+      "description": "Négatif.",
+      "entree": {
+        "valeur": -1,
+        "unite": "gr"
+      },
+      "attendu": {
+        "accepte": false,
+        "normalise_en_silence": false
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U10",
+      "description": "Hors plage.",
+      "entree": {
+        "valeur": 800,
+        "unite": "gr"
+      },
+      "attendu": {
+        "accepte": false,
+        "normalise_en_silence": false
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U11",
+      "description": "100 gr = 90°.",
+      "entree": {
+        "valeur": 100,
+        "unite": "gr"
+      },
+      "attendu": {
+        "accepte": true,
+        "azimut_deg": 90.0
+      },
+      "source": "1 gr = 0,9° (définition du grade)"
+    },
+    {
+      "id": "U12",
+      "description": "200 gr = 180°.",
+      "entree": {
+        "valeur": 200,
+        "unite": "gr"
+      },
+      "attendu": {
+        "accepte": true,
+        "azimut_deg": 180.0
+      },
+      "source": "1 gr = 0,9°"
+    },
+    {
+      "id": "U13",
+      "description": "399,5 gr = 359,55°.",
+      "entree": {
+        "valeur": 399.5,
+        "unite": "gr"
+      },
+      "attendu": {
+        "accepte": true,
+        "azimut_deg": 359.55
+      },
+      "source": "1 gr = 0,9°"
+    },
+    {
+      "id": "U14a",
+      "description": "380 est valide en grades.",
+      "entree": {
+        "valeur": 380,
+        "unite": "gr"
+      },
+      "attendu": {
+        "accepte": true,
+        "azimut_deg": 342.0
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades) ; 1 gr = 0,9°"
+    },
+    {
+      "id": "U14b",
+      "description": "380 est hors plage en degrés.",
+      "entree": {
+        "valeur": 380,
+        "unite": "deg"
+      },
+      "attendu": {
+        "accepte": false,
+        "normalise_en_silence": false
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md (refus avant normalisation, hors [0, 360[ en degrés et [0, 400[ en grades)"
+    },
+    {
+      "id": "U15",
+      "description": "Ouverture de tournée sans unité de boussole déclarée : refus.",
+      "entree": {
+        "tournee": {
+          "unite_azimut": null,
+          "unite_pente": "pct"
+        }
+      },
+      "attendu": {
+        "ouverture_refusee": true,
+        "motif": "unite_azimut_non_declaree"
+      },
+      "source": "arbitrage de Pascal 2026-10-16 (Q6) ; docs/adr/0003 : unité déclarée à l'ouverture de la tournée"
+    },
+    {
+      "id": "U15b",
+      "description": "Unité de boussole hors {deg, gr} à l'ouverture : refus.",
+      "entree": {
+        "tournee": {
+          "unite_azimut": "mil",
+          "unite_pente": "pct"
+        }
+      },
+      "attendu": {
+        "ouverture_refusee": true
+      },
+      "source": "docs/spec.md § 3 (degrés ou grades)"
+    }
+  ]
+}
