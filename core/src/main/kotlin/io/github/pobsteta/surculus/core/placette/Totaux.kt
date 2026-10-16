@@ -35,17 +35,25 @@ data class Totaux(
          * - `nb_vivants` = sains + atteints ;
          * - `nb_abroutis` = vivants dont le détail est « abroutissement » ;
          * - `h_moy_cm` = moyenne arithmétique des hauteurs des vivants mesurés, arrondie à l'entier le plus
-         *   proche, demi vers le haut (sommieR exige un entier, `R/registre6.R` l. 174 ; arbitrage Q7).
+         *   proche, demi vers le haut (sommieR exige un entier, `R/registre6.R` l. 174 ; arbitrage de Pascal du
+         *   2026-10-16 (spec § 6)).
+         *
+         * Refusé si un même plant a deux états dans le contrôle : il serait compté deux fois.
          */
-        fun deduire(etats: List<EtatPlant>, remplaces: Set<UuidPlant> = emptySet()): Totaux {
+        fun deduire(etats: List<EtatPlant>, remplaces: Set<UuidPlant> = emptySet()): Verdict<Totaux> {
+            etats.groupBy { it.plant }.entries.firstOrNull { it.value.size > 1 }?.let {
+                return Verdict.Refuse(RefusPlacette.PlantEnDoubleDansControle(it.key))
+            }
             val comptes = etats.filter { it.plant !in remplaces }.mapNotNull { it.observation as? Observation.Observe }
             val vivants = comptes.filter { it.etat.vivant }
             val hauteurs = vivants.mapNotNull { it.hauteurCm }
-            return Totaux(
-                nbTotal = comptes.size,
-                nbVivants = vivants.size,
-                nbAbroutis = vivants.count { it.abrouti },
-                hMoyCm = if (hauteurs.isEmpty()) null else arrondiDemiVersLeHaut(hauteurs.sum().toDouble() / hauteurs.size),
+            return Verdict.Accepte(
+                Totaux(
+                    nbTotal = comptes.size,
+                    nbVivants = vivants.size,
+                    nbAbroutis = vivants.count { it.abrouti },
+                    hMoyCm = if (hauteurs.isEmpty()) null else arrondiDemiVersLeHaut(hauteurs.sum().toDouble() / hauteurs.size),
+                ),
             )
         }
 

@@ -84,7 +84,8 @@ object AdaptateurReglesPlacette : ReglesPlacette {
     private fun rattachement(e: JsonObject): JsonObject {
         val mesuree = e.getAsJsonObject("position_mesuree")
         check(mesuree.texte("crs") == "EPSG:2154") { "position mesurée attendue en EPSG:2154" }
-        val piquets = e.objets("piquets_stockes").map { Piquet(it.texte("code")!!, xy(it)) }
+        // Les fixtures ne donnent que le code du piquet : l'UUID de la placette en est tiré, pour le test seulement.
+        val piquets = e.objets("piquets_stockes").map { Piquet(UuidPlacette("uuid-${it.texte("code")}"), it.texte("code")!!, xy(it)) }
         val codeLu = if (e["identite_confirmee"].asBoolean) e.texte("code_lu") else null
         return JsonObject().apply {
             when (val r = Rattachement.rattacher(piquets, xy(mesuree), codeLu)) {
@@ -158,21 +159,20 @@ object AdaptateurReglesPlacette : ReglesPlacette {
     }
 
     private fun totaux(e: JsonObject): JsonObject {
-        // Un « non observé » est une absence de mesure : la fixture T9b lui donne une hauteur, que le domaine
-        // refuserait à la saisie (Observations.valider) ; ici seule la déduction des totaux est testée.
-        val etats = e.objets("plants").map { p ->
-            val obs = if (p.texte("etat") == Observations.CODE_NON_OBSERVE) Observation.NonObserve else observation(p)
-            EtatPlant(UuidPlant(p.texte("uuid")!!), obs)
-        }
+        val etats = e.objets("plants").map { EtatPlant(UuidPlant(it.texte("uuid")!!), observation(it)) }
         val regarnis = e.objets("regarnis").map {
             RegarniPose(UuidPlant(it.texte("uuid")!!), UuidPlant(it.texte("remplace_uuid")!!), jour(it.entier("pose_au_controle")!!))
         }
-        val t = Totaux.deduire(etats, Regarnis.remplacesAvant(regarnis, jour(e.entier("controle_calcule")!!)))
+        val v = Totaux.deduire(etats, Regarnis.remplacesAvant(regarnis, jour(e.entier("controle_calcule")!!)))
         return JsonObject().apply {
-            addProperty("nb_total", t.nbTotal)
-            addProperty("nb_vivants", t.nbVivants)
-            addProperty("nb_abroutis", t.nbAbroutis)
-            addProperty("h_moy_cm", t.hMoyCm)
+            addProperty("refuse", v is Verdict.Refuse)
+            (v as? Verdict.Refuse)?.let { addProperty("motif", it.refus.motif) }
+            v.valeurOuNull()?.let { t ->
+                addProperty("nb_total", t.nbTotal)
+                addProperty("nb_vivants", t.nbVivants)
+                addProperty("nb_abroutis", t.nbAbroutis)
+                addProperty("h_moy_cm", t.hMoyCm)
+            }
             addProperty("etat_accepte", e.objets("plants").all { Observations.valider(it.texte("etat")!!).estAccepte })
         }
     }
@@ -197,8 +197,13 @@ object AdaptateurReglesPlacette : ReglesPlacette {
                 val poses = e.objets("regarnis").map {
                     RegarniPose(UuidPlant(it.texte("uuid")!!), UuidPlant(it.texte("remplace_uuid")!!), jour(it.entier("pose_au_controle")!!))
                 }
-                for (pose in poses) for (k in 1..2) {
-                    addProperty("${pose.remplace}_compte_au_controle_$k", pose.remplace !in Regarnis.remplacesAvant(poses, jour(k)))
+                // Contrôles de la fixture : chaque contrôle de pose et le contrôle qui le suit (« sort des
+                // contrôles suivants »), de 1 au dernier.
+                val dernier = (poses.maxOfOrNull { it.poseLe } ?: JOUR_0).plusDays(1)
+                val controles = generateSequence(jour(1)) { it.plusDays(1) }.takeWhile { !it.isAfter(dernier) }.toList()
+                for (pose in poses) for (j in controles) {
+                    val k = JOUR_0.until(j).days
+                    addProperty("${pose.remplace}_compte_au_controle_$k", pose.remplace !in Regarnis.remplacesAvant(poses, j))
                 }
             }
         }
@@ -216,7 +221,11 @@ object AdaptateurReglesPlacette : ReglesPlacette {
         } else {
             val plants = identites(e.objets("plants"))
             addProperty("accepte", Identite.verifier(plants).estAccepte)
-            e.getAsJsonObject("ajout")?.let { a ->
+            e.getAsJsonObject("ajout")?.takeIf { it.has("numero") }?.let { a ->
+                // Plant ajouté avec un numéro donné : refusé si ce numéro est déjà pris dans la placette.
+                addProperty("accepte", Identite.verifier(plants + identites(listOf(a))).estAccepte)
+            }
+            e.getAsJsonObject("ajout")?.takeUnless { it.has("numero") }?.let { a ->
                 val figes = NumerosPlacette.Figes(plants.associate { it.uuid to it.numero })
                 val uuid = UuidPlant(a.texte("uuid")!!)
                 val apres = Numerotation.ajouter(figes, uuid).valeurOuEchec()

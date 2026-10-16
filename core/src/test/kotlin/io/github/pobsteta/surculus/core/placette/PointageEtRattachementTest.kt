@@ -1,5 +1,6 @@
 package io.github.pobsteta.surculus.core.placette
 
+import io.github.pobsteta.surculus.core.geo.EmpriseDegres
 import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.geo.UniteAzimut
 import io.github.pobsteta.surculus.core.reperes.AzimutSaisi
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate
 
-/** Rayon de placette (Q3), rattachement par le code (Q6), état du plant remplacé (Q9), points en France. */
+/** Rayon de placette, rattachement par le code, état du plant remplacé, points en France ; arbitrage de Pascal du 2026-10-16 (spec § 6). */
 class PointageEtRattachementTest {
 
     /** Piquet à Couchey, EPSG:2154 (x = E, y = N, m) : place de dépôt PD-01, voir PlacetteEnFranceTest. */
@@ -30,27 +31,27 @@ class PointageEtRattachementTest {
     private fun pointer(distanceM: Double, rayon: Placette = placette, confirme: Boolean = false) =
         Pointage.pointer(UuidPlant("u1"), rayon, derive(distanceM), Instant.parse("2026-10-15T09:00:00Z"), confirmeHorsRayon = confirme)
 
-    // Q3 : au-delà du rayon + 0,10 m, alerte et confirmation, jamais de refus.
+    // Au-delà du rayon + 0,10 m, alerte et confirmation, jamais de refus.
 
     @Test
-    fun `Q3a 3,99 m pas d'alerte`() {
+    fun `3,99 m pas d'alerte`() {
         assertNull(ControleRayon.verifier(3.99, 3.99))
         assertTrue(pointer(3.99).estAccepte)
     }
 
     @Test
-    fun `Q3b 4,09 m a la borne exacte pas d'alerte`() {
+    fun `4,09 m a la borne exacte pas d'alerte`() {
         assertNull(ControleRayon.verifier(4.09, 3.99))
         assertTrue(pointer(4.09).estAccepte)
     }
 
     @Test
-    fun `Q3c 4,10 m alerte`() {
+    fun `4,10 m alerte`() {
         assertNotNull(ControleRayon.verifier(4.10, 3.99))
     }
 
     @Test
-    fun `Q3d 4,10 m sans confirmation reste a confirmer, plant non enregistre`() {
+    fun `4,10 m sans confirmation reste a confirmer, plant non enregistre`() {
         val v = pointer(4.10)
         assertTrue(v is Verdict.AConfirmer)
         assertEquals("plant_hors_rayon", (v as Verdict.AConfirmer).alerte.motif)
@@ -58,7 +59,7 @@ class PointageEtRattachementTest {
     }
 
     @Test
-    fun `Q3e 4,10 m avec confirmation le plant est enregistre`() {
+    fun `4,10 m avec confirmation le plant est enregistre`() {
         val p = pointer(4.10, confirme = true).valeurOuEchec()
         assertEquals(UuidPlant("u1"), p.uuid)
         assertEquals(4.10, p.derive.distanceHorizontaleM, 1e-12)
@@ -66,7 +67,7 @@ class PointageEtRattachementTest {
     }
 
     @Test
-    fun `Q3f le rayon est lu sur la placette`() {
+    fun `le rayon est lu sur la placette`() {
         val grande = Placette(UuidPlacette("P-002"), rayonM = 5.64)
         assertTrue(pointer(5.70, grande).estAccepte)
         assertTrue(pointer(5.80, grande) is Verdict.AConfirmer)
@@ -83,6 +84,20 @@ class PointageEtRattachementTest {
     }
 
     @Test
+    fun `le domaine en degres est celui d'EPSG 2154, Couchey dedans, la Somalie dehors`() {
+        val france = EmpriseDegres.FRANCE_METROPOLITAINE
+        assertTrue(france.contient(latitudeDeg = 47.26, longitudeDeg = 4.93))
+        assertFalse(france.contient(latitudeDeg = 4.99, longitudeDeg = 47.26))
+    }
+
+    @Test
+    fun `le rattachement rend l'UUID de la placette et son code`() {
+        val r = Rattachement.rattacher(listOf(p1), p1.position).valeurOuEchec()
+        assertEquals(UuidPlacette("uuid-1"), r.piquet.placette)
+        assertEquals("P-001", r.piquet.code)
+    }
+
+    @Test
     fun `Couchey saisi en (lon, lat) au lieu de (lat, lon) est detecte`() {
         val inverse = PointGeographique.de(latitudeDeg = 4.93, longitudeDeg = 47.26).valeurOuEchec()
         val c = EmpriseEtFrance.controler(inverse)
@@ -91,14 +106,14 @@ class PointageEtRattachementTest {
         assertTrue(c.refuse)
     }
 
-    // Q6 : le code lu l'emporte sur le GNSS ; par identité seulement au-delà de 15 m ; égalité par le code.
+    // Le code lu l'emporte sur le GNSS ; par identité seulement au-delà de 15 m ; égalité par le code.
 
-    private val p1 = Piquet("P-001", PointLambert93(850_469.0, 6_686_306.0))
-    private val p2 = Piquet("P-002", PointLambert93(850_479.0, 6_686_306.0))
+    private val p1 = Piquet(UuidPlacette("uuid-1"), "P-001", PointLambert93(850_469.0, 6_686_306.0))
+    private val p2 = Piquet(UuidPlacette("uuid-2"), "P-002", PointLambert93(850_479.0, 6_686_306.0))
 
     @Test
-    fun `Q6a code lu P-002 a 10 m alors que P-001 est a 5 m`() {
-        val nord = Piquet("P-002", PointLambert93(850_469.0, 6_686_321.0)) // 15 m au nord de P-001
+    fun `code lu P-002 a 10 m alors que P-001 est a 5 m`() {
+        val nord = Piquet(UuidPlacette("uuid-2"), "P-002", PointLambert93(850_469.0, 6_686_321.0)) // 15 m au nord de P-001
         val mesuree = PointLambert93(850_469.0, 6_686_311.0) // 5 m de P-001, 10 m de P-002
         assertEquals("P-001", Rattachement.rattacher(listOf(p1, nord), mesuree).valeurOuEchec().piquet.code)
         val r = Rattachement.rattacher(listOf(p1, nord), mesuree, codeLu = "P-002").valeurOuEchec()
@@ -109,7 +124,7 @@ class PointageEtRattachementTest {
     }
 
     @Test
-    fun `Q6b egalite de distance sans code, le plus petit code`() {
+    fun `egalite de distance sans code, le plus petit code`() {
         val milieu = PointLambert93(850_474.0, 6_686_306.0)
         assertEquals("P-001", Rattachement.rattacher(listOf(p2, p1), milieu).valeurOuEchec().piquet.code)
     }
@@ -123,7 +138,7 @@ class PointageEtRattachementTest {
         assertEquals(loin, r.positionMesuree)
     }
 
-    // Q9 : dernier état observé au plus tard le jour de la pose, non observés ignorés.
+    // Dernier état observé au plus tard le jour de la pose, non observés ignorés.
 
     private val j1 = LocalDate.of(2026, 10, 1)
     private val j2 = LocalDate.of(2026, 10, 2)
@@ -134,13 +149,13 @@ class PointageEtRattachementTest {
         Regarnis.verifier(listOf(m1), { Regarnis.dernierEtatObserve(historique, pose) }, r1)
 
     @Test
-    fun `Q9a sain au controle 1, non observe au controle 2, regarni pose au controle 2 refuse`() {
+    fun `sain au controle 1, non observe au controle 2, regarni pose au controle 2 refuse`() {
         val h = listOf(ObservationDatee(j1, Observation.Observe(EtatDsf.SAIN)), ObservationDatee(j2, Observation.NonObserve))
         assertEquals("plant_remplace_ni_mort_ni_absent", (verifier(h, j2) as Verdict.Refuse).refus.motif)
     }
 
     @Test
-    fun `Q9b mort au controle 1, non observe au controle 2, regarni pose au controle 2 accepte`() {
+    fun `mort au controle 1, non observe au controle 2, regarni pose au controle 2 accepte`() {
         val h = listOf(ObservationDatee(j1, Observation.Observe(EtatDsf.MORT)), ObservationDatee(j2, Observation.NonObserve))
         assertTrue(verifier(h, j2).estAccepte)
     }

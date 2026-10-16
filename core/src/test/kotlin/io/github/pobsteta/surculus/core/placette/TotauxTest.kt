@@ -5,29 +5,29 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-/** Totaux déduits des plants (spec § 4.3 et § 6) ; arrondi de h_moy_cm (arbitrage de Pascal 2026-10-16, Q7). */
+/** Totaux déduits des plants (spec § 4.3 et § 6) ; arrondi de h_moy_cm (demi vers le haut, arbitrage de Pascal du 2026-10-16 (spec § 6)). */
 class TotauxTest {
 
     private var n = 0
     private fun sain(h: Int? = null) = EtatPlant(UuidPlant("p${n++}"), Observation.Observe(EtatDsf.SAIN, hauteurCm = h))
 
-    private fun hMoy(vararg h: Int) = Totaux.deduire(h.map { sain(it) }).hMoyCm
+    private fun hMoy(vararg h: Int) = Totaux.deduire(h.map { sain(it) }).valeurOuEchec().hMoyCm
 
     @Test
-    fun `Q7a moyenne 42,5 arrondie a 43`() = assertEquals(43, hMoy(40, 45))
+    fun `moyenne 42,5 arrondie a 43`() = assertEquals(43, hMoy(40, 45))
 
     @Test
-    fun `Q7b moyenne 40,67 arrondie a 41`() = assertEquals(41, hMoy(40, 41, 41))
+    fun `moyenne 40,67 arrondie a 41`() = assertEquals(41, hMoy(40, 41, 41))
 
     @Test
-    fun `Q7c moyenne 40,33 arrondie a 40`() = assertEquals(40, hMoy(40, 40, 41))
+    fun `moyenne 40,33 arrondie a 40`() = assertEquals(40, hMoy(40, 40, 41))
 
     @Test
-    fun `Q7d aucune hauteur donne null`() = assertNull(Totaux.deduire(listOf(sain(), sain())).hMoyCm)
+    fun `aucune hauteur donne null`() = assertNull(Totaux.deduire(listOf(sain(), sain())).valeurOuEchec().hMoyCm)
 
     @Test
-    fun `Q7e la hauteur moyenne est un entier`() {
-        val h: Int? = Totaux.deduire(listOf(sain(41), sain(42))).hMoyCm
+    fun `la hauteur moyenne est un entier`() {
+        val h: Int? = Totaux.deduire(listOf(sain(41), sain(42))).valeurOuEchec().hMoyCm
         assertEquals(42, h) // 41,5 → 42, demi vers le haut
     }
 
@@ -49,8 +49,19 @@ class TotauxTest {
         val m1 = EtatPlant(UuidPlant("m1"), Observation.Observe(EtatDsf.MORT))
         val r1 = EtatPlant(UuidPlant("r1"), Observation.Observe(EtatDsf.SAIN))
         val n1 = EtatPlant(UuidPlant("n1"), Observation.NonObserve)
-        val t = Totaux.deduire(listOf(m1, r1, n1), remplaces = setOf(UuidPlant("m1")))
+        val t = Totaux.deduire(listOf(m1, r1, n1), remplaces = setOf(UuidPlant("m1"))).valeurOuEchec()
         assertEquals(Totaux(nbTotal = 1, nbVivants = 1, nbAbroutis = 0, hMoyCm = null), t)
+    }
+
+    @Test
+    fun `un meme plant deux fois dans les etats d'un controle est refuse, pas compte deux fois`() {
+        val v = Totaux.deduire(
+            listOf(
+                EtatPlant(UuidPlant("s1"), Observation.Observe(EtatDsf.SAIN)),
+                EtatPlant(UuidPlant("s1"), Observation.Observe(EtatDsf.MORT)),
+            ),
+        )
+        assertEquals(Verdict.Refuse(RefusPlacette.PlantEnDoubleDansControle(UuidPlant("s1"))), v)
     }
 
     @Test
@@ -72,6 +83,6 @@ class TotauxTest {
             Observation.NonObserve,
         ).mapIndexed { k, o -> EtatPlant(UuidPlant("p$k"), o) }
         // (35 + 48 + 52) / 3 = 45
-        assertEquals(Totaux(nbTotal = 11, nbVivants = 8, nbAbroutis = 2, hMoyCm = 45), Totaux.deduire(etats))
+        assertEquals(Totaux(nbTotal = 11, nbVivants = 8, nbAbroutis = 2, hMoyCm = 45), Totaux.deduire(etats).valeurOuEchec())
     }
 }

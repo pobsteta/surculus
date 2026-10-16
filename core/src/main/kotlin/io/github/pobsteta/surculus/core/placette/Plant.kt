@@ -50,7 +50,7 @@ data class IdentitePlant(
 /** Un plant appartient à une seule placette et garde son UUID (spec § 6). */
 object Identite {
     /**
-     * Refuse un UUID en double (dans la même placette, arbitrage Q14) ou présent dans deux placettes, et un
+     * Refuse un UUID en double (dans la même placette : refusé, fixture I3) ou présent dans deux placettes, et un
      * numéro déjà pris dans la placette (sommieR `sommier_pointer_plant`, brief `travaux-2-plants`).
      */
     fun verifier(plants: List<IdentitePlant>): Verdict<Unit> {
@@ -90,13 +90,13 @@ data class RegarniPose(val regarni: UuidPlant, val remplace: UuidPlant, val pose
 
 /**
  * Un regarni remplace exactement un plant mort ou absent de la même placette (`remplace_uuid` obligatoire) ;
- * le plant remplacé compte dans le contrôle où il est vu, puis sort des contrôles suivants (spec § 6, Q13).
+ * le plant remplacé compte dans le contrôle où il est vu, puis sort des contrôles suivants (spec § 6 ; fixtures G10 et T3).
  * Comme il y a un contrôle par placette et par jour, « contrôle suivant » = contrôle d'un jour postérieur.
  */
 object Regarnis {
     /**
      * Dernier état observé d'un plant au plus tard le jour [jusquAu] inclus, les « non observé » ignorés
-     * (arbitrage de Pascal 2026-10-16, Q9). `null` si le plant n'a jamais été vu.
+     * (dernier état observé au plus tard au contrôle de la pose, non observés ignorés ; arbitrage de Pascal du 2026-10-16 (spec § 6)). `null` si le plant n'a jamais été vu.
      */
     fun dernierEtatObserve(historique: List<ObservationDatee>, jusquAu: LocalDate): EtatDsf? =
         historique.filter { !it.jour.isAfter(jusquAu) && it.observation is Observation.Observe }
@@ -126,7 +126,7 @@ object Regarnis {
 
 /**
  * Plant pointé au-delà du rayon de sa placette plus [TOLERANCE_M] : alerte qui exige une confirmation
- * explicite de l'agent, jamais un refus (spec § 6, arbitrage de Pascal 2026-10-16, Q3). La borne est incluse.
+ * explicite de l'agent, jamais un refus (alerte et confirmation, non refusé ; arbitrage de Pascal du 2026-10-16 (spec § 6)). La borne est incluse.
  */
 object ControleRayon {
     const val TOLERANCE_M = 0.10

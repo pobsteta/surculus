@@ -38,7 +38,7 @@ data class PlantANumeroter(val id: String, val azimutGeoDeg: Double, val distanc
 sealed interface NumerosPlacette {
     val numeros: Map<UuidPlant, Int>
 
-    /** Pendant le premier contrôle : recalculés à chaque pointage (arbitrage Q4). */
+    /** Pendant le premier contrôle : recalculés à chaque pointage (numéros provisoires pendant le premier contrôle, figés à sa clôture ; arbitrage de Pascal du 2026-10-16 (spec § 6)). */
     data class Provisoires(override val numeros: Map<UuidPlant, Int>) : NumerosPlacette
 
     /** Après la clôture du premier contrôle : un numéro ne change plus jamais. */

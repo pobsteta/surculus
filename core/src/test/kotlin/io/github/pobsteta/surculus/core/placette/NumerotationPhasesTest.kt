@@ -7,7 +7,7 @@ import org.junit.jupiter.api.assertThrows
 
 /**
  * Numéros provisoires pendant le premier contrôle, figés à sa clôture, puis numéro suivant le plus grand
- * (spec § 6, arbitrage de Pascal 2026-10-16, Q4). Azimuts géographiques en degrés, distances horizontales en m.
+ * (arbitrage de Pascal du 2026-10-16 (spec § 6)). Azimuts géographiques en degrés, distances horizontales en m.
  */
 class NumerotationPhasesTest {
 
@@ -16,20 +16,22 @@ class NumerotationPhasesTest {
     private val c = UuidPlant("C")
 
     @Test
-    fun `Q4a les numeros provisoires sont recalcules a chaque pointage`() {
+    fun `les numeros provisoires sont recalcules a chaque pointage`() {
         assertEquals(mapOf(UuidPlant("A") to 1), Numerotation.provisoires(listOf(a)).numeros)
         assertEquals(mapOf(UuidPlant("B") to 1, UuidPlant("A") to 2), Numerotation.provisoires(listOf(a, b)).numeros)
     }
 
     @Test
-    fun `Q4b a la cloture du premier controle les numeros sont figes`() {
-        val figes = Numerotation.figer(Numerotation.provisoires(listOf(a, b))).valeurOuEchec()
+    fun `a la cloture du premier controle les numeros sont figes`() {
+        val provisoires: NumerosPlacette = Numerotation.provisoires(listOf(a, b))
+        assertTrue(provisoires is NumerosPlacette.Provisoires)
+        val figes: NumerosPlacette = Numerotation.figer(provisoires).valeurOuEchec()
         assertTrue(figes is NumerosPlacette.Figes)
         assertEquals(mapOf(UuidPlant("B") to 1, UuidPlant("A") to 2), figes.numeros)
     }
 
     @Test
-    fun `Q4c au controle suivant un plant ajoute prend le numero suivant, les autres ne changent pas`() {
+    fun `au controle suivant un plant ajoute prend le numero suivant, les autres ne changent pas`() {
         val figes = Numerotation.figer(Numerotation.provisoires(listOf(a, b))).valeurOuEchec()
         // C serait le n° 1 à 5° s'il était numéroté par azimut : il prend le n° 3.
         val apres = Numerotation.ajouter(figes, c).valeurOuEchec()
@@ -37,13 +39,13 @@ class NumerotationPhasesTest {
     }
 
     @Test
-    fun `Q4d placette vide, cloture, puis premier ajout n° 1`() {
+    fun `placette vide, cloture, puis premier ajout n° 1`() {
         val figes = Numerotation.figer(Numerotation.provisoires(emptyList())).valeurOuEchec()
         assertEquals(1, Numerotation.ajouter(figes, c).valeurOuEchec().numeros.getValue(c))
     }
 
     @Test
-    fun `Q4e figer une placette deja figee est refuse`() {
+    fun `figer une placette deja figee est refuse`() {
         val figes = Numerotation.figer(Numerotation.provisoires(listOf(a))).valeurOuEchec()
         assertEquals(Verdict.Refuse(RefusPlacette.NumerosDejaFiges), Numerotation.figer(figes))
     }

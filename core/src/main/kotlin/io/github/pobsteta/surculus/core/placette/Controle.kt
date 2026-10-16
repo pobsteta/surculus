@@ -7,6 +7,7 @@
  */
 package io.github.pobsteta.surculus.core.placette
 
+import io.github.pobsteta.surculus.core.geo.EmpriseDegres
 import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
 import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.geo.Projections
@@ -16,15 +17,18 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlin.math.hypot
 
-/** Piquet d'une placette de la tournée : code lu sur le piquet et position stockée (EPSG:2154, x = E, y = N, m). */
-data class Piquet(val code: String, val position: PointLambert93)
+/**
+ * Piquet d'une placette de la tournée : UUID de la placette (`placettes.uuid`), code lu sur le piquet
+ * (`placettes.code_placette`) et position stockée (EPSG:2154, x = E, y = N, mètres).
+ */
+data class Piquet(val placette: UuidPlacette, val code: String, val position: PointLambert93)
 
 /** Contrôle rattaché à une placette (ADR 0003, spec § 4.3). */
 data class Rattache(
     val piquet: Piquet,
     /** Distance horizontale, en mètres de Lambert-93, entre la position mesurée et le piquet. */
     val distanceM: Double,
-    /** Vrai seulement si le code lu a rattaché le contrôle à un piquet à plus de 15 m (arbitrage Q6). */
+    /** Vrai seulement si le code lu a rattaché le contrôle à un piquet à plus de 15 m (le code lu l'emporte sur le GNSS ; arbitrage de Pascal du 2026-10-16 (spec § 6)). */
     val parIdentite: Boolean,
     /** Position portée par le contrôle : celle du piquet si rattaché par identité, la position mesurée sinon. */
     val positionControle: PointLambert93,
@@ -79,7 +83,7 @@ sealed interface EcritureControle {
     data class Corrige(val premier: ControleEcrit) : EcritureControle
 }
 
-/** Un contrôle par placette et par jour civil Europe/Paris, dans une tournée (spec § 6, arbitrage Q5). */
+/** Un contrôle par placette et par jour civil Europe/Paris, dans une tournée (clé : placette et jour civil Europe/Paris ; arbitrage de Pascal du 2026-10-16 (spec § 6)). */
 object UnControleParJour {
     fun ecrire(existants: List<ControleEcrit>, uuid: UuidControle, placette: UuidPlacette, saisiLe: Instant): EcritureControle {
         val jour = JourCivil.de(saisiLe)
@@ -101,16 +105,8 @@ data class ControlePoint(
 
 /** Tout point écrit tombe dans l'emprise de la forêt et en France (spec § 6, `CLAUDE.md`). */
 object EmpriseEtFrance {
-    /**
-     * Domaine d'usage d'EPSG:2154 en degrés : registre EPSG via `projinfo EPSG:2154` (PROJ 9.4.0),
-     * `BBOX[41.15,-9.86,51.56,10.38]` ; c'est la même source que [EmpriseLambert93.FRANCE_METROPOLITAINE].
-     */
-    private const val LAT_MIN = 41.15
-    private const val LAT_MAX = 51.56
-    private const val LON_MIN = -9.86
-    private const val LON_MAX = 10.38
-
-    private fun dansDomaine(latDeg: Double, lonDeg: Double) = latDeg in LAT_MIN..LAT_MAX && lonDeg in LON_MIN..LON_MAX
+    /** Domaine d'usage d'EPSG:2154 en degrés (`core.geo`). */
+    private fun dansDomaine(latDeg: Double, lonDeg: Double) = EmpriseDegres.FRANCE_METROPOLITAINE.contient(latDeg, lonDeg)
 
     fun enFrance(p: PointLambert93): Boolean = EmpriseLambert93.FRANCE_METROPOLITAINE.contient(p)
 

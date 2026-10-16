@@ -14,7 +14,7 @@ value class UuidPlant(val valeur: String) {
     override fun toString() = valeur
 }
 
-/** Identifiant (UUID) d'une placette, ou son code de piquet quand seul le code est connu. */
+/** Identifiant (UUID) d'une placette (`placettes.uuid`). Le code lu sur le piquet est porté à part ([Piquet.code]). */
 @JvmInline
 value class UuidPlacette(val valeur: String) {
     init { require(valeur.isNotBlank()) { "UUID de placette vide" } }
@@ -60,7 +60,7 @@ sealed interface AlertePlacette {
     val motif: String
     val message: String
 
-    /** Plant au-delà du rayon de sa placette plus la tolérance (spec § 6, arbitrage de Pascal 2026-10-16, Q3). */
+    /** Plant au-delà du rayon de sa placette plus la tolérance (alerte et confirmation, jamais de refus ; arbitrage de Pascal du 2026-10-16 (spec § 6)). */
     data class HorsRayon(val distanceHorizontaleM: Double, val rayonM: Double, val toleranceM: Double) : AlertePlacette {
         override val motif = "plant_hors_rayon"
         override val message =
@@ -94,6 +94,16 @@ sealed interface RefusPlacette {
     data class DetailSurEtat(val etat: EtatDsf, val detail: String) : RefusPlacette {
         override val motif = "detail_sur_etat"
         override val message = "Détail « $detail » refusé sur un plant ${etat.code}."
+    }
+
+    data class HauteurSurAbsent(val hauteurCm: Int) : RefusPlacette {
+        override val motif = "hauteur_sur_absent"
+        override val message = "Hauteur $hauteurCm cm refusée : un plant absent n'a pas de hauteur."
+    }
+
+    data class PlantEnDoubleDansControle(val uuid: UuidPlant) : RefusPlacette {
+        override val motif = "plant_en_double_dans_controle"
+        override val message = "Le plant $uuid a deux états dans le même contrôle."
     }
 
     data class HauteurInvalide(val hauteurCm: Int) : RefusPlacette {

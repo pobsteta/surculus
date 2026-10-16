@@ -49,7 +49,7 @@ value class CodeEssence(val code: String) {
 
 /**
  * Codes d'essence connus, **injectés** par l'appelant (lus dans `essences.csv` embarqué) : `:core` ne lit
- * aucun fichier (arbitrage de Pascal 2026-10-16, Q10).
+ * aucun fichier (enums pour les états et les causes, essences injectées ; arbitrage de Pascal du 2026-10-16 (spec § 6)).
  */
 class Essences(connues: Set<String>) {
     private val codes = connues.toSet()
@@ -67,9 +67,9 @@ sealed interface Observation {
     data class Observe(
         val etat: EtatDsf,
         val causeGroupe: GroupeCause? = null,
-        /** Détail libre (Q1), sans espace autour, jamais vide. */
+        /** Détail libre (arbitrage de Pascal du 2026-10-16 (spec § 6)), sans espace autour, jamais vide. */
         val causeDetail: String? = null,
-        /** Hauteur en centimètres, entier strictement positif (Q8). */
+        /** Hauteur en centimètres, entier strictement positif (arbitrage de Pascal du 2026-10-16 (spec § 6)). */
         val hauteurCm: Int? = null,
     ) : Observation {
         init {
@@ -97,7 +97,7 @@ object Observations {
     const val CODE_NON_OBSERVE = "non_observe"
 
     /**
-     * Seule valeur de détail reconnue par le domaine (spec § 4.3, arbitrage de Pascal 2026-10-16, Q1) ; les
+     * Seule valeur de détail reconnue par le domaine (spec § 4.3 ; arbitrage de Pascal du 2026-10-16 (spec § 6)) ; les
      * autres détails (frottis, hylobe, gel…) sont du texte libre, sans contrôle de cohérence avec le groupe.
      */
     const val DETAIL_ABROUTISSEMENT = "abroutissement"
@@ -108,7 +108,7 @@ object Observations {
      * - groupe de cause parmi les quatre du DSF, refusé sur un sain ou un absent ;
      * - détail : refusé sur un absent ; sur un sain, seul « abroutissement » ; libre sur atteint ou mort,
      *   avec ou sans groupe ;
-     * - hauteur entière strictement positive ;
+     * - hauteur entière strictement positive, refusée sur un absent ;
      * - un non observé ne porte ni cause, ni détail, ni hauteur.
      */
     fun valider(etat: String, causeGroupe: String? = null, causeDetail: String? = null, hauteurCm: Int? = null): Verdict<Observation> {
@@ -133,6 +133,7 @@ object Observations {
             if (etat == EtatDsf.ABSENT) return RefusPlacette.DetailSurEtat(etat, detail)
             if (etat == EtatDsf.SAIN && detail != DETAIL_ABROUTISSEMENT) return RefusPlacette.DetailSurEtat(etat, detail)
         }
+        if (hauteurCm != null && etat == EtatDsf.ABSENT) return RefusPlacette.HauteurSurAbsent(hauteurCm)
         if (hauteurCm != null && hauteurCm <= 0) return RefusPlacette.HauteurInvalide(hauteurCm)
         return null
     }

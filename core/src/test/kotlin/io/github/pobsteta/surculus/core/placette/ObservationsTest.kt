@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-/** États, causes, détails et hauteurs (spec § 4.3 et § 6 ; arbitrages de Pascal 2026-10-16, Q1, Q2, Q8, Q10). */
+/** États, causes, détails et hauteurs (spec § 4.3 ; arbitrage de Pascal du 2026-10-16 (spec § 6)). */
 class ObservationsTest {
 
     private fun motif(v: Verdict<*>) = (v as Verdict.Refuse).refus.motif
@@ -27,35 +27,35 @@ class ObservationsTest {
         assertEquals(setOf(EtatDsf.SAIN, EtatDsf.ATTEINT), EtatDsf.entries.filter { it.vivant }.toSet())
     }
 
-    // Q2 : détail sur un absent refusé ; détail seul permis sur un atteint ou un mort.
+    // Détail sur un absent refusé ; détail seul permis sur un atteint ou un mort.
 
     @Test
-    fun `Q2a absent avec le detail gel refuse`() {
+    fun `absent avec le detail gel refuse`() {
         assertEquals("detail_sur_etat", motif(Observations.valider("absent", causeDetail = "gel")))
     }
 
     @Test
-    fun `Q2b absent avec le detail abroutissement refuse`() {
+    fun `absent avec le detail abroutissement refuse`() {
         assertEquals("detail_sur_etat", motif(Observations.valider("absent", causeDetail = "abroutissement")))
     }
 
     @Test
-    fun `Q2c atteint avec le detail frottis sans groupe accepte`() {
+    fun `atteint avec le detail frottis sans groupe accepte`() {
         assertTrue(Observations.valider("atteint", causeDetail = "frottis").estAccepte)
     }
 
     @Test
-    fun `Q2d mort avec le detail gel sans groupe accepte`() {
+    fun `mort avec le detail gel sans groupe accepte`() {
         assertTrue(Observations.valider("mort", causeDetail = "gel").estAccepte)
     }
 
     @Test
-    fun `Q2e pas de controle de coherence entre detail et groupe`() {
+    fun `pas de controle de coherence entre detail et groupe`() {
         assertTrue(Observations.valider("mort", causeGroupe = "animaux", causeDetail = "gel").estAccepte)
     }
 
     @Test
-    fun `Q2f detail vide ou fait d'espaces traite comme absent`() {
+    fun `detail vide ou fait d'espaces traite comme absent`() {
         val o = Observations.valider("absent", causeDetail = "   ").valeurOuEchec() as Observation.Observe
         assertEquals(null, o.causeDetail)
         assertTrue(Observations.valider("sain", causeDetail = "").estAccepte)
@@ -67,26 +67,41 @@ class ObservationsTest {
         assertEquals("hylobe", o.causeDetail)
     }
 
-    // Q8 : hauteur entière strictement positive.
+    // Hauteur entière strictement positive.
 
     @Test
-    fun `Q8a hauteur nulle refusee`() {
+    fun `hauteur nulle refusee`() {
         assertEquals("hauteur_invalide", motif(Observations.valider("sain", hauteurCm = 0)))
     }
 
     @Test
-    fun `Q8b hauteur negative refusee`() {
+    fun `hauteur negative refusee`() {
         assertEquals("hauteur_invalide", motif(Observations.valider("atteint", hauteurCm = -5)))
     }
 
     @Test
-    fun `Q8c hauteur de 1 cm acceptee`() {
+    fun `hauteur de 1 cm acceptee`() {
         assertTrue(Observations.valider("sain", hauteurCm = 1).estAccepte)
     }
 
     @Test
-    fun `Q8d un mort a 0 cm refuse`() {
+    fun `un mort a 0 cm refuse`() {
         assertEquals("hauteur_invalide", motif(Observations.valider("mort", hauteurCm = 0)))
+    }
+
+    @Test
+    fun `une hauteur sur un absent est refusee`() {
+        assertEquals("hauteur_sur_absent", motif(Observations.valider("absent", hauteurCm = 45)))
+        assertTrue(Observations.valider("mort", hauteurCm = 45).estAccepte)
+    }
+
+    @Test
+    fun `un numero deja pris dans la placette est refuse`() {
+        val u1 = IdentitePlant(UuidPlant("u1"), UuidPlacette("P-001"), 1)
+        val u2 = IdentitePlant(UuidPlant("u2"), UuidPlacette("P-001"), 1)
+        val ailleurs = IdentitePlant(UuidPlant("u3"), UuidPlacette("P-002"), 1)
+        assertEquals("numero_en_double", motif(Identite.verifier(listOf(u1, u2))))
+        assertTrue(Identite.verifier(listOf(u1, ailleurs)).estAccepte)
     }
 
     @Test
