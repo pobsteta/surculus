@@ -126,7 +126,7 @@
         "extrapolation_silencieuse": false
       },
       "source": "docs/spec.md § 9 (dates hors validité refusées) ; docs/referentiels/modele-geomagnetique.md (validité 2025.0 à fin 2029)",
-      "question_ouverte": "Q4 : NCEI donne fin 2029, BGS 2030.0"
+      "note": "Arbitrage de l'orchestrateur 2026-10-16 (Q4) : valide jusqu'au 31/12/2029 inclus, 2030-01-01 refusé"
     },
     {
       "id": "C11b",
@@ -139,7 +139,7 @@
       "attendu": {
         "hors_validite": false
       },
-      "source": "docs/spec.md § 9 ; NCEI : « expires on December 31, 2029 »"
+      "source": "docs/spec.md § 9 ; NCEI : « expires on December 31, 2029 » ; arbitrage 2026-10-16 (Q4) : 31/12/2029 inclus"
     },
     {
       "id": "C11c",

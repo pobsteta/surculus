@@ -611,8 +611,7 @@
         "h_moy_cm": null,
         "etat_accepte": true
       },
-      "source": "docs/spec.md § 5 (etats_plants) ; docs/referentiels/etats-plants.yaml ne le contient pas",
-      "question_ouverte": "non_observe absent de etats-plants.yaml"
+      "source": "docs/spec.md § 5 (etats_plants) ; arbitrage de l'orchestrateur 2026-10-16 : non_observe n'est pas un état du DSF, donc hors etats-plants.yaml, mais accepté dans etats_plants"
     },
     {
       "id": "T14",

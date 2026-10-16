@@ -139,12 +139,11 @@
         "ouverture_refusee": true,
         "motif": "unite_pente_non_declaree"
       },
-      "source": "arbitrage de Pascal 2026-10-16 (Q9) ; déduit par symétrie avec Q6, à faire confirmer",
-      "question_ouverte": "Le refus d'une unité de pente absente est une déduction du testeur, non tranchée."
+      "source": "arbitrage de Pascal 2026-10-16 (Q9) ; confirmé par l'orchestrateur 2026-10-16 (D8) : ouverture sans unité de pente refusée"
     },
     {
       "id": "D9",
-      "description": "Pente de 90° : distance horizontale nulle ou refus.",
+      "description": "Pente de 90° : refusée.",
       "entree": {
         "tournee": {
           "unite_pente": "deg"
@@ -153,11 +152,42 @@
         "pente": 90
       },
       "attendu": {
-        "distance_horizontale_m": 0.0,
-        "ou_refus": true
+        "refuse": true
       },
-      "source": "cos(90°) = 0 ; la spec est muette sur la pente limite",
-      "question_ouverte": "comportement à 90° non spécifié"
+      "source": "arbitrage de l'orchestrateur 2026-10-16 (D9) : une pente de 90° ou plus est refusée"
+    },
+    {
+      "id": "D9b",
+      "description": "Pente de 120° : refusée.",
+      "entree": {
+        "tournee": {
+          "unite_pente": "deg"
+        },
+        "distance_mesuree_m": 10,
+        "pente": 120
+      },
+      "attendu": {
+        "refuse": true
+      },
+      "source": "arbitrage de l'orchestrateur 2026-10-16 (D9)"
+    },
+    {
+      "id": "D9c",
+      "description": "Pente de 89,9° : acceptée.",
+      "entree": {
+        "tournee": {
+          "unite_pente": "deg"
+        },
+        "distance_mesuree_m": 10,
+        "pente": 89.9
+      },
+      "attendu": {
+        "refuse": false,
+        "distance_horizontale_m": 0.0175,
+        "tolerance_m": 0.001
+      },
+      "source": "arbitrage D9 (borne : 90° exclu) ; d·cos(α)",
+      "tolerance_proposee": true
     }
   ]
 }

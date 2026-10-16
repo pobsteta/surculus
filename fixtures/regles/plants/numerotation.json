@@ -3,12 +3,11 @@
   "regle": "Numérotation des plants par l'azimut géographique depuis le piquet, sens horaire (règle de Groma)",
   "format": "voir fixtures/README.md",
   "non_reprises": {
-    "02_masque_fin_de_tour": "dépend du diamètre (masquage)",
+    "02_masque_fin_de_tour": "masquage par le diamètre : pas de masquage pour les plants",
     "04_rayon_et_seuil": "rayon et seuil de diamètre propres à l'inventaire",
-    "09_gros_bois_masquant": "dépend du diamètre (masquage)",
-    "10_groupe_ancre": "à examiner"
+    "09_gros_bois_masquant": "masquage par le diamètre : pas de masquage pour les plants"
   },
-  "question_ouverte": "Les plants n'ont pas de diamètre : les cas de masquage de Groma (02, 09) ne se transposent pas sans décision de Pascal. 04 (rayon, seuil) et 10 (groupe ancré) non repris ; 10 pourrait l'être si la règle des groupes d'égalité s'applique telle quelle.",
+  "decision": "Pascal 2026-10-16 : pas de masquage de Groma pour les plants (ils n'ont pas de diamètre). Les arbres de ces cas ont un dbh_cm sans effet ici ; 10 est repris car son résultat ne dépend pas du masquage (N1, d'azimut le plus petit, est visible et n° 1).",
   "convention_xy": "x vers l'est, y vers le nord géographique, mètres depuis le piquet (README Groma)",
   "cas": [
     {
@@ -275,6 +274,55 @@
         "exclus": {}
       },
       "source": "Groma, fixtures/numerotation/08_vide.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
+      "copie_de_groma": true
+    },
+    {
+      "id": "N-10_groupe_ancre",
+      "description": "Les groupes d'égalité sont ancrés sur leur premier arbre : 50,0° et 50,6° forment un groupe (le plus proche d'abord), 51,3° (à 1,3° de l'ancre) est un groupe à part même s'il est le plus proche.",
+      "entree": {
+        "parametres": {
+          "rayon_m": 20.0,
+          "seuil_diam_cm": 7.5,
+          "unite_azimut": "deg",
+          "tolerance_deg": 1.0
+        },
+        "plants": [
+          {
+            "id": "N1",
+            "x": 0.868241,
+            "y": 4.924039,
+            "dbh_cm": 30
+          },
+          {
+            "id": "K500",
+            "x": 6.8944,
+            "y": 5.785088,
+            "dbh_cm": 30
+          },
+          {
+            "id": "K506",
+            "x": 3.863668,
+            "y": 3.173653,
+            "dbh_cm": 30
+          },
+          {
+            "id": "K513",
+            "x": 2.341291,
+            "y": 1.875728,
+            "dbh_cm": 30
+          }
+        ]
+      },
+      "attendu": {
+        "numeros": {
+          "N1": "1",
+          "K506": "2",
+          "K500": "3",
+          "K513": "4"
+        },
+        "exclus": {}
+      },
+      "source": "Groma, fixtures/numerotation/10_groupe_ancre.json (commit 6f953e1) ; règle normative dans fixtures/numerotation/README.md ; résultats écrits à la main par Groma, copiés sans modification",
       "copie_de_groma": true
     }
   ]
