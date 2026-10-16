@@ -557,7 +557,7 @@
         "nb_abroutis": 0,
         "h_moy_cm": 43
       },
-      "source": "spec § 6 (h_moy_cm arrondie à l'entier le plus proche) ; demi vers le haut selon le relecteur de la 004, arbitrage de Pascal du 2026-10-16"
+      "source": "spec § 6 (h_moy_cm arrondie à l'entier le plus proche) ; demi vers le haut (spec § 6, arbitrage de Pascal du 2026-10-16 sur le plan 004)"
     },
     {
       "id": "T9d",
@@ -585,7 +585,7 @@
         "nb_abroutis": 0,
         "h_moy_cm": 42
       },
-      "source": "spec § 6 (h_moy_cm arrondie à l'entier le plus proche) ; demi vers le haut selon le relecteur de la 004, arbitrage de Pascal du 2026-10-16"
+      "source": "spec § 6 (h_moy_cm arrondie à l'entier le plus proche) ; demi vers le haut (spec § 6, arbitrage de Pascal du 2026-10-16 sur le plan 004)"
     },
     {
       "id": "T9e",
