@@ -1,9 +1,9 @@
 {
   "fichier": "jour-civil.json",
-  "regle": "Jour civil d'un contrôle en Europe/Paris, calculé sur l'heure GNSS quand le fix a au plus 5 s, sinon sur saisi_le_utc",
+  "regle": "Jour civil d'un contrôle en Europe/Paris, calculé sur l'heure GNSS quand le fix a au plus 5000 ms (non négatif), sinon sur saisi_le_utc",
   "format": "voir fixtures/README.md, section Journal",
   "unites": {
-    "age_fix_s": "secondes entre le fix GNSS et la saisie, mesuré sur l'horloge monotone ; null si aucun fix"
+    "age_fix_ms": "millisecondes entre le fix GNSS et la saisie, mesuré sur l'horloge monotone ; null ou absent si aucun fix"
   },
   "cas": [
     {
@@ -12,7 +12,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-24T21:59:59Z",
         "heure_gnss": null,
-        "age_fix_s": null
+        "age_fix_ms": null
       },
       "attendu": {
         "jour_civil": "2026-10-24"
@@ -25,7 +25,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-24T22:00:00Z",
         "heure_gnss": null,
-        "age_fix_s": null
+        "age_fix_ms": null
       },
       "attendu": {
         "jour_civil": "2026-10-25"
@@ -38,7 +38,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-24T22:30:00Z",
         "heure_gnss": null,
-        "age_fix_s": null
+        "age_fix_ms": null
       },
       "attendu": {
         "jour_civil": "2026-10-25"
@@ -51,7 +51,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-25T00:30:00Z",
         "heure_gnss": null,
-        "age_fix_s": null
+        "age_fix_ms": null
       },
       "attendu": {
         "jour_civil": "2026-10-25"
@@ -64,7 +64,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-25T01:30:00Z",
         "heure_gnss": null,
-        "age_fix_s": null
+        "age_fix_ms": null
       },
       "attendu": {
         "jour_civil": "2026-10-25"
@@ -77,7 +77,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-25T22:59:59Z",
         "heure_gnss": null,
-        "age_fix_s": null
+        "age_fix_ms": null
       },
       "attendu": {
         "jour_civil": "2026-10-25"
@@ -90,7 +90,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-25T23:00:00Z",
         "heure_gnss": null,
-        "age_fix_s": null
+        "age_fix_ms": null
       },
       "attendu": {
         "jour_civil": "2026-10-26"
@@ -103,7 +103,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-25T22:00:00Z",
         "heure_gnss": "2026-10-25T23:00:02Z",
-        "age_fix_s": 2
+        "age_fix_ms": 2000
       },
       "attendu": {
         "jour_civil": "2026-10-26"
@@ -116,7 +116,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-25T22:00:00Z",
         "heure_gnss": "2026-10-25T23:00:02Z",
-        "age_fix_s": 5
+        "age_fix_ms": 5000
       },
       "attendu": {
         "jour_civil": "2026-10-26"
@@ -124,12 +124,38 @@
       "source": "arbitrage de Pascal du 2026-10-17 (Q7) ; tzdata Europe/Paris (zoneinfo) : fin de l'heure d'été le 2026-10-25 à 03:00 CEST = 01:00 UTC ; 23:00:02Z = 00:00:02+01:00"
     },
     {
+      "id": "JR-62",
+      "description": "Fix de 5001 ms : exclu (au plus 5000 ms), le jour vient de saisi_le_utc (le 25).",
+      "entree": {
+        "saisi_le_utc": "2026-10-25T22:00:00Z",
+        "heure_gnss": "2026-10-25T23:00:02Z",
+        "age_fix_ms": 5001
+      },
+      "attendu": {
+        "jour_civil": "2026-10-25"
+      },
+      "source": "arbitrage de Pascal du 2026-10-17 (Q7) ; tzdata Europe/Paris (zoneinfo) : fin de l'heure d'été le 2026-10-25 à 03:00 CEST = 01:00 UTC ; 22:00:00Z = 23:00:00+01:00"
+    },
+    {
+      "id": "JR-63",
+      "description": "Fix d'âge négatif (postérieur à la saisie) : ignoré, le jour vient de saisi_le_utc (le 25).",
+      "entree": {
+        "saisi_le_utc": "2026-10-25T22:00:00Z",
+        "heure_gnss": "2026-10-25T23:00:02Z",
+        "age_fix_ms": -1000
+      },
+      "attendu": {
+        "jour_civil": "2026-10-25"
+      },
+      "source": "spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 : « un fix GNSS d'âge négatif est ignoré » ; tzdata Europe/Paris (zoneinfo) : fin de l'heure d'été le 2026-10-25 à 03:00 CEST = 01:00 UTC ; 22:00:00Z = 23:00:00+01:00"
+    },
+    {
       "id": "JR-59",
       "description": "Fix de 6 s : trop vieux, le jour vient de saisi_le_utc (le 25).",
       "entree": {
         "saisi_le_utc": "2026-10-25T22:00:00Z",
         "heure_gnss": "2026-10-25T23:00:02Z",
-        "age_fix_s": 6
+        "age_fix_ms": 6000
       },
       "attendu": {
         "jour_civil": "2026-10-25"
@@ -142,7 +168,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-25T22:30:00Z",
         "heure_gnss": null,
-        "age_fix_s": null
+        "age_fix_ms": null
       },
       "attendu": {
         "jour_civil": "2026-10-25"
@@ -155,7 +181,7 @@
       "entree": {
         "saisi_le_utc": "2026-10-25T23:30:00Z",
         "heure_gnss": "2026-10-25T22:30:01Z",
-        "age_fix_s": 1
+        "age_fix_ms": 1000
       },
       "attendu": {
         "jour_civil": "2026-10-25"

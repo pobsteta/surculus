@@ -292,8 +292,7 @@
           }
         }
       },
-      "source": "spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 (déduction : rien à faire redevenir courant) ; Q11 à confirmer par Pascal",
-      "a_confirmer_par_pascal": true
+      "source": "spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 : « annuler la seule saisie d'une clé ne laisse aucune valeur courante » (confirmé par Pascal, 2026-10-17)"
     },
     {
       "id": "JR-06",
@@ -715,7 +714,7 @@
     },
     {
       "id": "JR-13",
-      "description": "Même uuid, contenu différent : la seconde est refusée et signalée, la première est gardée.",
+      "description": "Même uuid, deux contenus différents : les deux versions sont refusées et l'anomalie est signalée ; l'ordre d'arrivée est sans effet.",
       "entree": {
         "lignes": [
           {
@@ -750,15 +749,110 @@
             "monotone_ms": 1000,
             "demarrage": 1
           }
+        ],
+        "ordres_d_arrivee": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      },
+      "attendu": {
+        "projection": {},
+        "lignes_retenues": 0,
+        "lignes_ignorees": [],
+        "lignes_refusees": [
+          "U1"
+        ],
+        "anomalies": [
+          "uuid_contenu_different"
+        ]
+      },
+      "source": "spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 : « les deux versions sont refusées et l'anomalie est signalée, pour que le résultat ne dépende pas de l'ordre d'arrivée »"
+    },
+    {
+      "id": "JR-14",
+      "description": "Même uuid en deux versions, avec une ligne saine entre elles : seule la ligne saine est retenue, quel que soit l'ordre d'arrivée.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          }
+        ],
+        "ordres_d_arrivee": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            2,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            2
+          ]
         ]
       },
       "attendu": {
         "projection": {
-          "P1|etat": {
-            "courant": "U1",
+          "P2|etat": {
+            "courant": "U2",
             "conflit": false,
             "tetes": [
-              "U1"
+              "U2"
             ],
             "anomalies": []
           }
@@ -772,7 +866,7 @@
           "uuid_contenu_different"
         ]
       },
-      "source": "arbitrage de Pascal du 2026-10-17 (Q5) ; « la première est gardée » : déduction du mot « refusé »"
+      "source": "spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 (les deux versions refusées) ; docs/adr/0005-stockage-et-sauvegarde.md (Ordre total : résultat indépendant de l'ordre d'arrivée)"
     }
   ]
 }

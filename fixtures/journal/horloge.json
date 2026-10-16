@@ -60,8 +60,7 @@
         ],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone",
-      "note_format": "heure_avant, heure_apres : saisi_le_utc de la ligne précédente et de la ligne courante (Q12 à confirmer)"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     },
     {
       "id": "JR-41",
@@ -116,7 +115,7 @@
         ],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     },
     {
       "id": "JR-42",
@@ -161,7 +160,7 @@
         "sauts_notes": [],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     },
     {
       "id": "JR-43",
@@ -206,7 +205,7 @@
         "sauts_notes": [],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     },
     {
       "id": "JR-44",
@@ -261,7 +260,7 @@
         ],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     },
     {
       "id": "JR-45",
@@ -316,7 +315,7 @@
         ],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     },
     {
       "id": "JR-46",
@@ -361,7 +360,7 @@
         "sauts_notes": [],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     },
     {
       "id": "JR-47",
@@ -406,7 +405,7 @@
         "sauts_notes": [],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     },
     {
       "id": "JR-48",
@@ -477,7 +476,7 @@
         ],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     },
     {
       "id": "JR-49",
@@ -522,7 +521,7 @@
         "sauts_notes": [],
         "heures_brutes_reecrites": false
       },
-      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone ; lignes consécutives rangées par sequence dans le couple (appareil, démarrage) ; heure_avant et heure_apres = saisi_le_utc des deux lignes (orchestrateur ; spec § 5 : « note l'heure brute de la ligne précédente et de la ligne courante »)"
     }
   ]
 }
