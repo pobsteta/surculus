@@ -31,5 +31,6 @@ Aucune dépendance non commerciale ni AGPL n'est prévue.
 | JNA (`aar`) | 5.18.1 | LGPL-2.1-or-later ou Apache-2.0 | dépendance déclarée dans le POM de vosk-android 0.3.75 ; licences : POM de `net.java.dev.jna:jna:5.18.1` |
 | sqlite-jdbc | 3.53.4.0 | Apache-2.0 | `groma/android/groma-core/build.gradle.kts` l. 24 |
 | JUnit Jupiter | 6.1.3 | EPL-2.0 | `groma/android/groma-core/build.gradle.kts` l. 19 |
+| UnifrakturCook Bold (police de l'icône) | – | OFL-1.1 | `google/fonts`, `ofl/unifrakturcook` ; téléchargée par `app/icone/generer_icone.py`, non versionnée (`.gitignore`), comme Groma. Outil de génération (avec Pillow), absent de l'APK |
 
 Le catalogue complet, avec les versions reprises de Marculus, est `gradle/libs.versions.toml`.
