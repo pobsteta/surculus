@@ -21,6 +21,7 @@
             "sequence": 1,
             "saisi_le_utc": "2026-10-14T10:00:01Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 1000,
             "demarrage": 1
           },
@@ -37,6 +38,7 @@
             "sequence": 9,
             "saisi_le_utc": "2026-10-14T10:00:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 9000,
             "demarrage": 1
           }
@@ -78,6 +80,7 @@
             "sequence": 1,
             "saisi_le_utc": "2026-10-14T09:00:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 1000,
             "demarrage": 1
           },
@@ -94,6 +97,7 @@
             "sequence": 5,
             "saisi_le_utc": "2026-10-14T09:00:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 5000,
             "demarrage": 1
           }
@@ -135,6 +139,7 @@
             "sequence": 10,
             "saisi_le_utc": "2026-10-14T09:00:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 10000,
             "demarrage": 1
           },
@@ -151,6 +156,7 @@
             "sequence": 2,
             "saisi_le_utc": "2026-10-14T09:00:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 2000,
             "demarrage": 1
           }
@@ -192,6 +198,7 @@
             "sequence": 1,
             "saisi_le_utc": "2026-10-14T09:00:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 1000,
             "demarrage": 1
           },
@@ -208,6 +215,7 @@
             "sequence": 1,
             "saisi_le_utc": "2026-10-14T09:00:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 1000,
             "demarrage": 1
           }
@@ -249,6 +257,7 @@
             "sequence": 1,
             "saisi_le_utc": "2026-10-14T09:00:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 1000,
             "demarrage": 1
           },
@@ -265,6 +274,7 @@
             "sequence": 2,
             "saisi_le_utc": "2026-10-14T09:10:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 2000,
             "demarrage": 1
           },
@@ -281,6 +291,7 @@
             "sequence": 1,
             "saisi_le_utc": "2026-10-14T09:10:05Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 1000,
             "demarrage": 1
           },
@@ -297,6 +308,7 @@
             "sequence": 2,
             "saisi_le_utc": "2026-10-14T09:11:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 2000,
             "demarrage": 1
           },
@@ -311,6 +323,7 @@
             "sequence": 3,
             "saisi_le_utc": "2026-10-14T09:12:00Z",
             "heure_gnss": null,
+            "age_fix_ms": null,
             "monotone_ms": 3000,
             "demarrage": 1
           }

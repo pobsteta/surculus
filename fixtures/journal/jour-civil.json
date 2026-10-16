@@ -150,6 +150,19 @@
       "source": "spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 : « un fix GNSS d'âge négatif est ignoré » ; tzdata Europe/Paris (zoneinfo) : fin de l'heure d'été le 2026-10-25 à 03:00 CEST = 01:00 UTC ; 22:00:00Z = 23:00:00+01:00"
     },
     {
+      "id": "JR-64",
+      "description": "heure_gnss présent mais age_fix_ms nul : l'âge est inconnu, le fix est inutilisable, le jour vient de saisi_le_utc (le 25).",
+      "entree": {
+        "saisi_le_utc": "2026-10-25T22:00:00Z",
+        "heure_gnss": "2026-10-25T23:00:02Z",
+        "age_fix_ms": null
+      },
+      "attendu": {
+        "jour_civil": "2026-10-25"
+      },
+      "source": "spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 (âge enregistré avec la ligne ; absent = nul) ; tzdata Europe/Paris (zoneinfo) : fin de l'heure d'été le 2026-10-25 à 03:00 CEST = 01:00 UTC ; 22:00:00Z = 23:00:00+01:00"
+    },
+    {
       "id": "JR-59",
       "description": "Fix de 6 s : trop vieux, le jour vient de saisi_le_utc (le 25).",
       "entree": {

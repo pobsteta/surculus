@@ -65,7 +65,7 @@ Scénarios du journal en ajout seul (ADR 0005, spec § 5), écrits par le `teste
 
 ### Entrée
 
-* `entree.lignes` : lignes de journal, avec les champs de l'ADR (`uuid`, `objet_uuid`, `type`, `valeur`, `remplace_uuid`, `operateur`, `appareil`, `sequence`, `saisi_le_utc`, `heure_gnss`, `monotone_ms`, `demarrage`). Les `uuid` sont symboliques (`U1`, `U2`) ; leur ordre lexicographique tient lieu d'ordre des uuid v7. Les heures sont en ISO 8601 UTC avec `Z` (la base stocke des millisecondes).
+* `entree.lignes` : lignes de journal, avec les champs de l'ADR (`uuid`, `objet_uuid`, `type`, `valeur`, `remplace_uuid`, `operateur`, `appareil`, `sequence`, `saisi_le_utc`, `heure_gnss`, `monotone_ms`, `demarrage`, `age_fix_ms`). `age_fix_ms` est l'âge en millisecondes du fix GNSS à la saisie, mesuré sur l'horloge monotone ; son absence vaut nul (âge inconnu, fix inutilisable). Les `uuid` sont symboliques (`U1`, `U2`) ; leur ordre lexicographique tient lieu d'ordre des uuid v7. Les heures sont en ISO 8601 UTC avec `Z` (la base stocke des millisecondes).
 * `entree.ordres_d_arrivee` : permutations d'indices de `lignes` ; le résultat attendu doit être identique pour chacune. Absent, l'ordre de `lignes` est l'ordre d'arrivée.
 * **Jour civil (`jour-civil.json`), forme à plat** : l'entrée n'a pas de `lignes` mais directement `saisi_le_utc`, `heure_gnss` et `age_fix_ms`. Un `age_fix_ms` absent vaut nul (aucun fix utilisable). Le jour civil se calcule sur l'heure du fix **telle qu'enregistrée** (`heure_gnss`, non corrigée de l'âge), si l'âge est compris entre 0 et 5000 ms inclus ; un âge de 5001 ms ou négatif (fix postérieur à la saisie) est écarté et le jour se calcule sur `saisi_le_utc`.
 
@@ -76,7 +76,7 @@ Scénarios du journal en ajout seul (ADR 0005, spec § 5), écrits par le `teste
 * `ordre_total` : liste des uuid dans l'ordre (`saisi_le_utc`, `appareil`, `sequence` numérique, `uuid`).
 * `lignes_retenues` : nombre de lignes qui entrent dans la projection ; `lignes_ignorees` : uuid des doublons à l'identique ; `lignes_refusees` : uuid dont les deux versions différentes sont refusées.
 * `anomalies` (premier niveau) : anomalies **du journal**, hors clé, par exemple `uuid_contenu_different`. À ne pas confondre avec `projection[clé].anomalies`.
-* Libellés des anomalies : `remplace_inconnu` et `uuid_contenu_different` sont **fixés**, comme codes d'anomalie lus par les tests (ce sont des anomalies signalées, non des textes d'écran) ; proposition de l'orchestrateur, à confirmer par Pascal. Les messages affichés ne sont pas fixés.
+* Libellés des anomalies : `remplace_inconnu` et `uuid_contenu_different` sont **fixés**, comme codes d'anomalie lus par les tests (ce sont des anomalies signalées, non des textes d'écran) ; décision de l'orchestrateur. Les messages affichés ne sont pas fixés.
 * `sauts_notes` (horloge) : liste de `{entre, ecart_s, heure_avant, heure_apres}`. `ecart_s` est signé : variation de `saisi_le_utc` moins variation de `monotone_ms`, entre deux lignes consécutives rangées par `sequence` dans le couple (appareil, démarrage) ; noté si sa valeur absolue dépasse strictement 60 s. `heure_avant` et `heure_apres` sont le `saisi_le_utc` des deux lignes.
 * `heures_brutes_reecrites` : toujours `false` ; l'heure brute des lignes n'est jamais réécrite.
 * `jour_civil` : jour civil Europe/Paris, `AAAA-MM-JJ`.
