@@ -1,0 +1,528 @@
+{
+  "fichier": "horloge.json",
+  "regle": "Horloge : un saut de plus de 60 s sur l'horloge monotone d'un même démarrage est détecté et noté, l'heure brute n'est jamais réécrite",
+  "format": "voir fixtures/README.md, section Journal",
+  "unites": {
+    "ecart_s": "secondes, signé : variation de saisi_le_utc moins variation de monotone_ms",
+    "monotone_ms": "millisecondes"
+  },
+  "cas": [
+    {
+      "id": "JR-40",
+      "description": "Horloge reculée d'une heure (2 min monotones, mais l'heure recule de 58 min) : un saut de -3600 s est noté ; les heures brutes restent.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:02:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1120000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [
+          {
+            "entre": [
+              "U1",
+              "U2"
+            ],
+            "ecart_s": -3600,
+            "heure_avant": "2026-10-14T10:00:00Z",
+            "heure_apres": "2026-10-14T09:02:00Z"
+          }
+        ],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone",
+      "note_format": "heure_avant, heure_apres : saisi_le_utc de la ligne précédente et de la ligne courante (Q12 à confirmer)"
+    },
+    {
+      "id": "JR-41",
+      "description": "Horloge avancée d'une heure : un saut de +3600 s est noté.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T11:02:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1120000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [
+          {
+            "entre": [
+              "U1",
+              "U2"
+            ],
+            "ecart_s": 3600,
+            "heure_avant": "2026-10-14T10:00:00Z",
+            "heure_apres": "2026-10-14T11:02:00Z"
+          }
+        ],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+    },
+    {
+      "id": "JR-42",
+      "description": "Dérive de 59 s : rien n'est noté.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T10:02:59Z",
+            "heure_gnss": null,
+            "monotone_ms": 1120000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+    },
+    {
+      "id": "JR-43",
+      "description": "Dérive de 60 s tout juste : rien n'est noté (strictement supérieur à 60 s).",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T10:03:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1120000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+    },
+    {
+      "id": "JR-44",
+      "description": "Dérive de 61 s : un saut de +61 s est noté.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T10:03:01Z",
+            "heure_gnss": null,
+            "monotone_ms": 1120000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [
+          {
+            "entre": [
+              "U1",
+              "U2"
+            ],
+            "ecart_s": 61,
+            "heure_avant": "2026-10-14T10:00:00Z",
+            "heure_apres": "2026-10-14T10:03:01Z"
+          }
+        ],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+    },
+    {
+      "id": "JR-45",
+      "description": "Recul de 61 s : un saut de -61 s est noté (les deux sens).",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T10:00:59Z",
+            "heure_gnss": null,
+            "monotone_ms": 1120000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [
+          {
+            "entre": [
+              "U1",
+              "U2"
+            ],
+            "ecart_s": -61,
+            "heure_avant": "2026-10-14T10:00:00Z",
+            "heure_apres": "2026-10-14T10:00:59Z"
+          }
+        ],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+    },
+    {
+      "id": "JR-46",
+      "description": "Changement de démarrage : l'horloge monotone repart, aucune comparaison, aucun saut.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:02:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 500,
+            "demarrage": 2
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+    },
+    {
+      "id": "JR-47",
+      "description": "Deux appareils différents : on ne compare pas leurs heures entre elles.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:02:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1120000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+    },
+    {
+      "id": "JR-48",
+      "description": "Lignes d'un autre appareil intercalées : la comparaison se fait entre lignes consécutives du même appareil (A: U1 puis U3).",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T08:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 5,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "P3",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:02:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1120000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [
+          {
+            "entre": [
+              "U1",
+              "U3"
+            ],
+            "ecart_s": -3600,
+            "heure_avant": "2026-10-14T10:00:00Z",
+            "heure_apres": "2026-10-14T09:02:00Z"
+          }
+        ],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+    },
+    {
+      "id": "JR-49",
+      "description": "Pas de saut : deux lignes cohérentes avec l'horloge monotone.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T10:02:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1120000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "sauts_notes": [],
+        "heures_brutes_reecrites": false
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Temps) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 ; orchestrateur (Q6) : saut noté s'il dépasse strictement 60 s, dans les deux sens, entre deux lignes consécutives d'un même appareil et d'un même démarrage ; écart = variation de l'heure moins variation de l'horloge monotone"
+    }
+  ]
+}

@@ -1,0 +1,461 @@
+{
+  "fichier": "conflits.json",
+  "regle": "Conflits : deux têtes actives sont signalées, jamais résolues en silence",
+  "format": "voir fixtures/README.md, section Journal",
+  "cas": [
+    {
+      "id": "JR-20",
+      "description": "Deux corrections concurrentes de la même ligne (deux appareils) : conflit, valeur affichée = la dernière selon l'ordre total.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "atteint"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:10:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:10:05Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|etat": {
+            "courant": "U3",
+            "conflit": true,
+            "tetes": [
+              "U2",
+              "U3"
+            ],
+            "anomalies": []
+          }
+        }
+      },
+      "source": "arbitrage de Pascal du 2026-10-17 (Q3) ; docs/adr/0005-stockage-et-sauvegarde.md (Ordre total)"
+    },
+    {
+      "id": "JR-21",
+      "description": "Deux racines : deux saisies d'état sans lien sur la même clé, par deux appareils : conflit.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:01Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|etat": {
+            "courant": "U2",
+            "conflit": true,
+            "tetes": [
+              "U1",
+              "U2"
+            ],
+            "anomalies": []
+          }
+        }
+      },
+      "source": "arbitrage de Pascal du 2026-10-17 (Q3) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 : « deux têtes actives sont signalées comme conflit »"
+    },
+    {
+      "id": "JR-22",
+      "description": "Le conflit se résout en annulant l'une des têtes : l'autre devient seule tête, plus de conflit.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "atteint"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:10:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:10:05Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U4",
+            "objet_uuid": "P1",
+            "type": "annulation",
+            "valeur": null,
+            "remplace_uuid": "U3",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 3,
+            "saisi_le_utc": "2026-10-14T09:20:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 3000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|etat": {
+            "courant": "U2",
+            "conflit": false,
+            "tetes": [
+              "U2"
+            ],
+            "anomalies": []
+          }
+        }
+      },
+      "source": "arbitrage de Pascal du 2026-10-17 (Q4)"
+    },
+    {
+      "id": "JR-23",
+      "description": "Annuler l'annulation de la tête rétablit le conflit.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "atteint"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:10:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:10:05Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U4",
+            "objet_uuid": "P1",
+            "type": "annulation",
+            "valeur": null,
+            "remplace_uuid": "U3",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 3,
+            "saisi_le_utc": "2026-10-14T09:20:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 3000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U5",
+            "objet_uuid": "P1",
+            "type": "annulation",
+            "valeur": null,
+            "remplace_uuid": "U4",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 4,
+            "saisi_le_utc": "2026-10-14T09:21:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 4000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|etat": {
+            "courant": "U3",
+            "conflit": true,
+            "tetes": [
+              "U2",
+              "U3"
+            ],
+            "anomalies": []
+          }
+        }
+      },
+      "source": "spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17 : « annuler une annulation refait » ; arbitrage Q3 et Q4"
+    },
+    {
+      "id": "JR-24",
+      "description": "Une chaîne sans fourche (A corrige B corrige C) n'est pas un conflit.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "atteint"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U2",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 3,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 3000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|etat": {
+            "courant": "U3",
+            "conflit": false,
+            "tetes": [
+              "U3"
+            ],
+            "anomalies": []
+          }
+        }
+      },
+      "source": "spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17"
+    },
+    {
+      "id": "JR-25",
+      "description": "Conflit sur une clé seulement : l'autre clé du même objet reste sans conflit.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "pointage",
+            "valeur": {
+              "distance_m": 3.2,
+              "azimut_mag": 120,
+              "unite_azimut": "deg"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:01Z",
+            "heure_gnss": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|pointage": {
+            "courant": "U1",
+            "conflit": false,
+            "tetes": [
+              "U1"
+            ],
+            "anomalies": []
+          },
+          "P1|etat": {
+            "courant": "U3",
+            "conflit": true,
+            "tetes": [
+              "U2",
+              "U3"
+            ],
+            "anomalies": []
+          }
+        }
+      },
+      "source": "arbitrage de Pascal du 2026-10-17 (Q3) ; docs/adr/0005-stockage-et-sauvegarde.md (Projection par clé)"
+    }
+  ]
+}
