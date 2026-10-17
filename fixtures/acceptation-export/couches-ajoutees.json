@@ -11,7 +11,7 @@
           "repere_epsg": 2154,
           "placettes": [
             {
-              "uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
               "code_placette": "P-001",
               "x": 850469.39,
               "y": 6686306.33
@@ -23,8 +23,8 @@
           "operateur": "op1",
           "controles": [
             {
-              "uuid": "CT-001",
-              "placette_uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
               "visite_le": "2026-10-14T09:00:00Z",
               "jour_civil": "2026-10-14",
               "position": {
@@ -33,7 +33,7 @@
               },
               "plants": [
                 {
-                  "uuid": "PLA-01",
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
                   "numero": 1,
                   "essence": "CHS",
                   "regarni": false,
@@ -74,7 +74,7 @@
           "repere_epsg": 2154,
           "placettes": [
             {
-              "uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
               "code_placette": "P-001",
               "x": 850469.39,
               "y": 6686306.33
@@ -86,8 +86,8 @@
           "operateur": "op1",
           "controles": [
             {
-              "uuid": "CT-001",
-              "placette_uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
               "visite_le": "2026-10-14T09:00:00Z",
               "jour_civil": "2026-10-14",
               "position": {
@@ -96,7 +96,7 @@
               },
               "plants": [
                 {
-                  "uuid": "PLA-01",
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
                   "numero": 1,
                   "essence": "CHS",
                   "regarni": false,
@@ -132,7 +132,7 @@
           "repere_epsg": 2154,
           "placettes": [
             {
-              "uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
               "code_placette": "P-001",
               "x": 850469.39,
               "y": 6686306.33
@@ -144,8 +144,8 @@
           "operateur": "op1",
           "controles": [
             {
-              "uuid": "CT-001",
-              "placette_uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
               "visite_le": "2026-10-14T09:00:00Z",
               "jour_civil": "2026-10-14",
               "position": {
@@ -154,7 +154,7 @@
               },
               "plants": [
                 {
-                  "uuid": "PLA-01",
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
                   "numero": 1,
                   "essence": "CHS",
                   "regarni": false,
@@ -186,7 +186,7 @@
           "repere_epsg": 2154,
           "placettes": [
             {
-              "uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
               "code_placette": "P-001",
               "x": 850469.39,
               "y": 6686306.33
@@ -198,8 +198,8 @@
           "operateur": "op1",
           "controles": [
             {
-              "uuid": "CT-001",
-              "placette_uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
               "visite_le": "2026-10-14T09:00:00Z",
               "jour_civil": "2026-10-14",
               "position": {
@@ -208,7 +208,7 @@
               },
               "plants": [
                 {
-                  "uuid": "PLA-01",
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
                   "numero": 1,
                   "essence": "CHS",
                   "regarni": false,
@@ -247,7 +247,7 @@
           "repere_epsg": 2154,
           "placettes": [
             {
-              "uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
               "code_placette": "P-001",
               "x": 850469.39,
               "y": 6686306.33
@@ -259,8 +259,8 @@
           "operateur": "op1",
           "controles": [
             {
-              "uuid": "CT-001",
-              "placette_uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
               "visite_le": "2026-10-14T09:00:00Z",
               "jour_civil": "2026-10-14",
               "position": {
@@ -269,7 +269,7 @@
               },
               "plants": [
                 {
-                  "uuid": "PLA-01",
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
                   "numero": 1,
                   "essence": "CHS",
                   "regarni": false,
@@ -316,7 +316,7 @@
           "repere_epsg": 2154,
           "placettes": [
             {
-              "uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
               "code_placette": "P-001",
               "x": 850469.39,
               "y": 6686306.33
@@ -328,8 +328,8 @@
           "operateur": "op1",
           "controles": [
             {
-              "uuid": "CT-001",
-              "placette_uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
               "visite_le": "2026-10-14T09:00:00Z",
               "jour_civil": "2026-10-14",
               "position": {
