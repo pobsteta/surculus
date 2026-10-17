@@ -47,7 +47,7 @@ d'où le module **`:gpkg` en JVM** (arbitrage de Pascal), plutôt que Robolectri
 | Sujet | Règle |
 |---|---|
 | Modules | `:core` (Kotlin pur), `:gpkg` (JVM : sqlite-jdbc, écrivain GeoPackage maison sans geopackage-java depuis l'ADR 0011), `:data` (Room, journal), `:app` (Compose, services GNSS et dictée) |
-| Tests | JUnit Jupiter, aligné sur `groma-core` ; la CI joue `./gradlew :core:test :gpkg:test :app:assembleDebug :app:lintDebug` (lint ajouté le 2026-10-16, arbitrage de Pascal) et rejoue l'import R de sommieR (`sommier_importer_qfield_travaux()`) sur l'export de la démo Couchey ; le workflow release essaie l'APK release sur émulateur avant de publier (ADR 0011, arbitrage de Pascal du 2026-10-17) |
+| Tests | JUnit Jupiter, aligné sur `groma-core` (sauf `:data` : JUnit 4 et Robolectric, mention du 2026-10-17, mission 008) ; la CI joue `./gradlew :core:test :gpkg:test :data:testDebugUnitTest :app:assembleDebug :app:lintDebug` (`:data:testDebugUnitTest` depuis la mission 008) (lint ajouté le 2026-10-16, arbitrage de Pascal) et rejoue l'import R de sommieR (`sommier_importer_qfield_travaux()`) sur l'export de la démo Couchey ; le workflow release essaie l'APK release sur émulateur avant de publier (ADR 0011, arbitrage de Pascal du 2026-10-17) |
 | Vosk | `vosk-android` **0.3.75** ; contrôle d'alignement des bibliothèques natives sur **16 Ko** (`zipalign -P 16`) en CI |
 | Modèle | `vosk-model-small-fr-0.22` (41 Mo, Apache-2.0), **nom exact et somme SHA-256** inscrits dans `docs/dependances.md` ; les modèles français NC (`small-fr-pguyot`) et AGPL (`fr-linto`) sont exclus ; modèle **republié** dans les releases de Surculus (NOTICE conservé) et **importable par fichier**, sans réseau |
 | Grammaire | un test `:core` vérifie que chaque mot de la grammaire figure dans la liste de mots du modèle (fixture versionnée) ; la grammaire est neutre vis-à-vis du moteur, ce que le test rend vérifiable |
@@ -75,7 +75,13 @@ d'où le module **`:gpkg` en JVM** (arbitrage de Pascal), plutôt que Robolectri
 
 ## Conséquences
 
-- `.claude/test-command` : `./gradlew :core:test :gpkg:test :app:assembleDebug :app:lintDebug` (lint ajouté le 2026-10-16, arbitrage de Pascal).
+- `.claude/test-command` : `./gradlew :core:test :gpkg:test :data:testDebugUnitTest :app:assembleDebug :app:lintDebug` (lint ajouté le 2026-10-16, arbitrage de Pascal).
+- **Mention du 2026-10-17 (mission 008)** : `:data` a désormais des tests (journal Room, projection,
+  UUID v7), en JUnit 4 sous Robolectric (JUnit Jupiter n'y tourne pas). La commande de tests du
+  projet devient `./gradlew :core:test :gpkg:test :data:testDebugUnitTest :app:assembleDebug :app:lintDebug`.
+  `.claude/test-command` est mis à jour dans la PR de la 008 ; la CI joue `:data`
+  depuis la 008 (`ci.yml` lit `.claude/test-command`) ; seuls les badges de couverture
+  (`badges.yml`, `:core:test :gpkg:test`) restent sans `:data`.
 - `docs/architecture.md` et `docs/dependances.md` mis à jour (module `:gpkg`,
   geopackage-java, sqlite-jdbc, Vosk 0.3.75, proj4j retiré).
 

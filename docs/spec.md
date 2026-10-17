@@ -294,10 +294,24 @@ Chaque geste est une ligne ajoutée au journal, jamais modifiée (arbitrage de P
   `saut_horloge` note l'heure brute de la ligne précédente et de la ligne courante.
 - Un fix GNSS d'âge négatif (postérieur à la saisie) est ignoré : le jour civil se calcule
   alors sur l'heure du téléphone.
+- Une saisie dont `remplace_uuid` désigne une ligne d'un **autre objet** ne la remplace pas : la
+  ligne désignée garde sa valeur, la saisie devient tête de sa propre clé, et l'anomalie
+  `remplace_autre_objet` est rattachée à cette clé (même traitement qu'un remplacement inconnu).
+  Une annulation dont l'objet diffère de celui de la ligne qu'elle désigne n'annule rien : la ligne
+  désignée garde sa valeur, et l'anomalie `remplace_autre_objet` est rattachée à la clé (objet
+  déclaré, `annulation`). Quand l'objet et le type diffèrent tous les deux, seule
+  `remplace_autre_objet` est signalée.
+- Une saisie de type X dont `remplace_uuid` désigne une ligne de type Y du même objet ne la
+  remplace pas : la clé Y garde sa valeur, la saisie est tête de (objet, X), et l'anomalie
+  `remplace_autre_type` est rattachée à cette clé.
+- Une anomalie de remplacement (`remplace_autre_objet`, `remplace_autre_type`, `remplace_inconnu`)
+  disparaît quand la saisie anormale est corrigée par une correction normale : la nouvelle tête
+  ne porte plus d'anomalie, et l'erreur reste tracée au journal.
 - Annuler une racine, c'est-à-dire la seule saisie d'une clé, ne laisse aucune valeur
   courante (confirmé par Pascal).
 
-(Arbitrages de Pascal du 2026-10-17, mission 019 ; décisions de format de l'orchestrateur.)
+(Arbitrages de Pascal du 2026-10-17, mission 019, et décisions de Pascal du 2026-10-17 sur
+`remplace_autre_objet`, `remplace_autre_type` et la disparition des anomalies corrigées, relecture de la PR n° 35 ; décisions de format de l'orchestrateur.)
 
 ## 6. Règles vérifiées sur le téléphone
 
