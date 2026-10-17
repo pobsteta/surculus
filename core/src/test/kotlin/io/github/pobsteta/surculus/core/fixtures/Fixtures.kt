@@ -33,9 +33,9 @@ class FichierFixture(val chemin: String, val json: JsonObject) {
 }
 
 object Fixtures {
-    /** Tous les `*.json` sous `fixtures/regles/` et `fixtures/reperes/`, triés. */
+    /** Tous les `*.json` sous `fixtures/regles/`, `fixtures/reperes/` et `fixtures/journal/` (mission 008), triés. */
     fun tous(): List<FichierFixture> =
-        listOf("fixtures/regles", "fixtures/reperes").flatMap { dossier ->
+        listOf("fixtures/regles", "fixtures/reperes", "fixtures/journal").flatMap { dossier ->
             File(Depot.racine, dossier).walkTopDown().filter { it.isFile && it.extension == "json" }.toList()
         }.sortedBy { it.path }.map { f ->
             FichierFixture(f.relativeTo(Depot.racine).path, JsonParser.parseString(f.readText()).asJsonObject)

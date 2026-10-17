@@ -13,10 +13,26 @@ android {
         minSdk = 26
     }
 
+    // Tests Room sous Robolectric : les schémas exportés servent d'assets de test (ADR 0005).
+    sourceSets {
+        named("test") { assets.directories.add("$projectDir/schemas") }
+    }
+    testOptions.unitTests.isIncludeAndroidResources = true
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
+
+// Schémas Room versionnés (exportSchema = true) : base des tests de migration.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+// Les tests relisent les scénarios du testeur : les déclarer, sinon Gradle ignore leurs changements.
+tasks.withType<Test>().configureEach {
+    inputs.dir(rootProject.file("fixtures/journal")).withPropertyName("fixturesJournal")
 }
 
 kotlin {
@@ -27,8 +43,15 @@ kotlin {
 
 dependencies {
     implementation(project(":core"))
-    // Journal Room en ajout seul (ADR 0005) : les entités viendront avec la mission 008.
+    // Journal Room en ajout seul (ADR 0005, mission 008).
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+
+    testImplementation(kotlin("test-junit"))
+    testImplementation(libs.junit4)
+    testImplementation(libs.room.testing)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.gson)
 }

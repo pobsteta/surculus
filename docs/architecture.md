@@ -28,7 +28,7 @@ sommieR ── sommier_projet_qfield_travaux() ──► <tournée>/travaux.gpkg
 |---|---|---|
 | `:core` | Domaine pur : codes et formes, règles d'import, plants et états, totaux d'un contrôle, taux de reprise et densité, numérotation des plants par azimut, fusion par UUID, grammaire et analyse de la dictée | JVM, avec `fixtures/` |
 | `:gpkg` | Lecture d'une tournée et écriture du `travaux.gpkg` à l'export (écrivain GeoPackage maison sur sqlite-jdbc, JVM et appareil, ADR 0011) | JVM, et import R de sommieR rejoué en CI |
-| `:data` | Journal Room des saisies en ajout seul (une ligne par saisie, UUID v7, séquence locale, ADR 0005), projection, sauvegardes `.sursync`, photos | instrumenté |
+| `:data` | Journal Room des saisies en ajout seul (une ligne par saisie, UUID v7, séquence locale, ADR 0005), projection, sauvegardes `.sursync`, photos | JVM sous Robolectric (JUnit 4), pas instrumenté ; l'essai de coupure sur appareil reste à Pascal |
 | `:app` | Écrans Compose (Tournées, Carte, Intervention, Placette, Rendre, Paramètres), service GNSS, dictée | appareil |
 
 ## Le journal et le GeoPackage
