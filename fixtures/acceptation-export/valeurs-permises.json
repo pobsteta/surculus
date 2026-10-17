@@ -1,0 +1,64 @@
+{
+  "fichier": "valeurs-permises.json",
+  "regle": "Valeurs permises des colonnes à liste fermée, déclarées par l'extension Schema du GeoPackage",
+  "source": "ADR 0007 (ligne Conformité GeoPackage) ; spec § 5 ; docs/referentiels/etats-plants.yaml (etats_dsf, causes_dsf_groupes_bilan)",
+  "colonnes": [
+    {
+      "couche": "etats_plants",
+      "colonne": "etat",
+      "valeurs": [
+        "sain",
+        "atteint",
+        "mort",
+        "absent",
+        "non_observe"
+      ],
+      "referentiel": "docs/referentiels/etats-plants.yaml",
+      "cle_referentiel": "etats_dsf",
+      "valeurs_hors_referentiel": [
+        "non_observe"
+      ],
+      "note": "non_observe vient de la spec § 5 (absence de mesure) ; les quatre autres sont lus dans le yaml"
+    },
+    {
+      "couche": "etats_plants",
+      "colonne": "cause_groupe",
+      "valeurs": [
+        "entomologique",
+        "pathologique",
+        "animaux",
+        "abiotique_complexe_indetermine"
+      ],
+      "referentiel": "docs/referentiels/etats-plants.yaml",
+      "cle_referentiel": "causes_dsf_groupes_bilan"
+    },
+    {
+      "couche": "plants",
+      "colonne": "unite_azimut",
+      "valeurs": [
+        "deg",
+        "gr"
+      ],
+      "referentiel": null
+    },
+    {
+      "couche": "constats_reprise",
+      "colonne": "methode",
+      "valeurs": [
+        "plein",
+        "cemagref",
+        "grappes"
+      ],
+      "referentiel": null
+    },
+    {
+      "couche": "vides",
+      "colonne": "origine",
+      "valeurs": [
+        "trace",
+        "propose"
+      ],
+      "referentiel": null
+    }
+  ]
+}

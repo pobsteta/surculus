@@ -1,0 +1,552 @@
+{
+  "fichier": "schema-sommier-0.31.1.json",
+  "regle": "Schéma des couches de sommieR tel que le modèle les porte : l'export ne doit y ajouter ni renommer aucun champ",
+  "source": "sommieR 0.31.1, inst/qgis/travaux.gpkg, relevé par gpkg_contents, gpkg_geometry_columns et pragma table_info (lecture seule, 2026-10-17) ; ADR 0007 critère (b)",
+  "note": "Les types sont ceux de pragma table_info. La clé fid est la clé primaire de chaque couche. Seules ces couches sont comparées ; les couches ajoutées sont décrites dans schema-couches-ajoutees.json.",
+  "couches": {
+    "codes": {
+      "data_type": "attributes",
+      "srs_id": 0,
+      "colonne_geometrie": null,
+      "type_geometrie": null,
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "code",
+          "type": "TEXT"
+        },
+        {
+          "nom": "libelle",
+          "type": "TEXT"
+        },
+        {
+          "nom": "unites",
+          "type": "TEXT"
+        },
+        {
+          "nom": "formes",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "controles": {
+      "data_type": "features",
+      "srs_id": 2154,
+      "colonne_geometrie": "geom",
+      "type_geometrie": "POINT",
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "geom",
+          "type": "POINT"
+        },
+        {
+          "nom": "uuid",
+          "type": "TEXT"
+        },
+        {
+          "nom": "placette_uuid",
+          "type": "TEXT"
+        },
+        {
+          "nom": "nb_total",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "nb_vivants",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "h_moy_cm",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "nb_abroutis",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "concurrence",
+          "type": "TEXT"
+        },
+        {
+          "nom": "besoin",
+          "type": "TEXT"
+        },
+        {
+          "nom": "visite_le",
+          "type": "DATETIME"
+        },
+        {
+          "nom": "operateur",
+          "type": "TEXT"
+        },
+        {
+          "nom": "observations",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "foret": {
+      "data_type": "features",
+      "srs_id": 2154,
+      "colonne_geometrie": "geom",
+      "type_geometrie": "MULTIPOLYGON",
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "geom",
+          "type": "MULTIPOLYGON"
+        },
+        {
+          "nom": "nom",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "parcelles": {
+      "data_type": "features",
+      "srs_id": 2154,
+      "colonne_geometrie": "geom",
+      "type_geometrie": "MULTIPOLYGON",
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "geom",
+          "type": "MULTIPOLYGON"
+        },
+        {
+          "nom": "reference",
+          "type": "TEXT"
+        },
+        {
+          "nom": "designation",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "photos": {
+      "data_type": "attributes",
+      "srs_id": 0,
+      "colonne_geometrie": null,
+      "type_geometrie": null,
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "uuid",
+          "type": "TEXT"
+        },
+        {
+          "nom": "constat_uuid",
+          "type": "TEXT"
+        },
+        {
+          "nom": "fichier",
+          "type": "TEXT"
+        },
+        {
+          "nom": "prise_le",
+          "type": "DATETIME"
+        }
+      ]
+    },
+    "placettes": {
+      "data_type": "features",
+      "srs_id": 2154,
+      "colonne_geometrie": "geom",
+      "type_geometrie": "POINT",
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "geom",
+          "type": "POINT"
+        },
+        {
+          "nom": "uuid",
+          "type": "TEXT"
+        },
+        {
+          "nom": "code_placette",
+          "type": "TEXT"
+        },
+        {
+          "nom": "travaux_id",
+          "type": "TEXT"
+        },
+        {
+          "nom": "rayon_m",
+          "type": "REAL"
+        },
+        {
+          "nom": "materialisation",
+          "type": "TEXT"
+        },
+        {
+          "nom": "ug",
+          "type": "TEXT"
+        },
+        {
+          "nom": "etat_suivi",
+          "type": "TEXT"
+        },
+        {
+          "nom": "dernier_controle",
+          "type": "DATE"
+        },
+        {
+          "nom": "dernier_besoin",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "suivis": {
+      "data_type": "attributes",
+      "srs_id": 0,
+      "colonne_geometrie": null,
+      "type_geometrie": null,
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "id",
+          "type": "TEXT"
+        },
+        {
+          "nom": "libelle",
+          "type": "TEXT"
+        },
+        {
+          "nom": "ug",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "travaux_lin": {
+      "data_type": "features",
+      "srs_id": 2154,
+      "colonne_geometrie": "geom",
+      "type_geometrie": "LINESTRING",
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "geom",
+          "type": "LINESTRING"
+        },
+        {
+          "nom": "uuid",
+          "type": "TEXT"
+        },
+        {
+          "nom": "code_travaux",
+          "type": "TEXT"
+        },
+        {
+          "nom": "nature_travaux",
+          "type": "TEXT"
+        },
+        {
+          "nom": "annee",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "quantite",
+          "type": "REAL"
+        },
+        {
+          "nom": "unite",
+          "type": "TEXT"
+        },
+        {
+          "nom": "nb_plants",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "montant_eur",
+          "type": "REAL"
+        },
+        {
+          "nom": "modalite",
+          "type": "TEXT"
+        },
+        {
+          "nom": "essence_objectif",
+          "type": "TEXT"
+        },
+        {
+          "nom": "execution",
+          "type": "TEXT"
+        },
+        {
+          "nom": "intervenant",
+          "type": "TEXT"
+        },
+        {
+          "nom": "prevu",
+          "type": "TEXT"
+        },
+        {
+          "nom": "motif_ecart",
+          "type": "TEXT"
+        },
+        {
+          "nom": "date_reception",
+          "type": "DATE"
+        },
+        {
+          "nom": "visite_le",
+          "type": "DATETIME"
+        },
+        {
+          "nom": "operateur",
+          "type": "TEXT"
+        },
+        {
+          "nom": "precision_m",
+          "type": "REAL"
+        },
+        {
+          "nom": "source_gnss",
+          "type": "TEXT"
+        },
+        {
+          "nom": "observations",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "travaux_pt": {
+      "data_type": "features",
+      "srs_id": 2154,
+      "colonne_geometrie": "geom",
+      "type_geometrie": "POINT",
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "geom",
+          "type": "POINT"
+        },
+        {
+          "nom": "uuid",
+          "type": "TEXT"
+        },
+        {
+          "nom": "code_travaux",
+          "type": "TEXT"
+        },
+        {
+          "nom": "nature_travaux",
+          "type": "TEXT"
+        },
+        {
+          "nom": "annee",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "quantite",
+          "type": "REAL"
+        },
+        {
+          "nom": "unite",
+          "type": "TEXT"
+        },
+        {
+          "nom": "nb_plants",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "montant_eur",
+          "type": "REAL"
+        },
+        {
+          "nom": "modalite",
+          "type": "TEXT"
+        },
+        {
+          "nom": "essence_objectif",
+          "type": "TEXT"
+        },
+        {
+          "nom": "execution",
+          "type": "TEXT"
+        },
+        {
+          "nom": "intervenant",
+          "type": "TEXT"
+        },
+        {
+          "nom": "prevu",
+          "type": "TEXT"
+        },
+        {
+          "nom": "motif_ecart",
+          "type": "TEXT"
+        },
+        {
+          "nom": "date_reception",
+          "type": "DATE"
+        },
+        {
+          "nom": "visite_le",
+          "type": "DATETIME"
+        },
+        {
+          "nom": "operateur",
+          "type": "TEXT"
+        },
+        {
+          "nom": "precision_m",
+          "type": "REAL"
+        },
+        {
+          "nom": "source_gnss",
+          "type": "TEXT"
+        },
+        {
+          "nom": "observations",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "travaux_surf": {
+      "data_type": "features",
+      "srs_id": 2154,
+      "colonne_geometrie": "geom",
+      "type_geometrie": "POLYGON",
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "geom",
+          "type": "POLYGON"
+        },
+        {
+          "nom": "uuid",
+          "type": "TEXT"
+        },
+        {
+          "nom": "code_travaux",
+          "type": "TEXT"
+        },
+        {
+          "nom": "nature_travaux",
+          "type": "TEXT"
+        },
+        {
+          "nom": "annee",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "quantite",
+          "type": "REAL"
+        },
+        {
+          "nom": "unite",
+          "type": "TEXT"
+        },
+        {
+          "nom": "nb_plants",
+          "type": "MEDIUMINT"
+        },
+        {
+          "nom": "montant_eur",
+          "type": "REAL"
+        },
+        {
+          "nom": "modalite",
+          "type": "TEXT"
+        },
+        {
+          "nom": "essence_objectif",
+          "type": "TEXT"
+        },
+        {
+          "nom": "execution",
+          "type": "TEXT"
+        },
+        {
+          "nom": "intervenant",
+          "type": "TEXT"
+        },
+        {
+          "nom": "prevu",
+          "type": "TEXT"
+        },
+        {
+          "nom": "motif_ecart",
+          "type": "TEXT"
+        },
+        {
+          "nom": "date_reception",
+          "type": "DATE"
+        },
+        {
+          "nom": "visite_le",
+          "type": "DATETIME"
+        },
+        {
+          "nom": "operateur",
+          "type": "TEXT"
+        },
+        {
+          "nom": "precision_m",
+          "type": "REAL"
+        },
+        {
+          "nom": "source_gnss",
+          "type": "TEXT"
+        },
+        {
+          "nom": "observations",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "ug": {
+      "data_type": "features",
+      "srs_id": 2154,
+      "colonne_geometrie": "geom",
+      "type_geometrie": "MULTIPOLYGON",
+      "champs": [
+        {
+          "nom": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "nom": "geom",
+          "type": "MULTIPOLYGON"
+        },
+        {
+          "nom": "numero",
+          "type": "TEXT"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,353 @@
+{
+  "fichier": "couches-ajoutees.json",
+  "regle": "Six couches ajoutées présentes, typées, conformes au GeoPackage ; version unique",
+  "format": "voir fixtures/README.md, section Export (acceptation-export/)",
+  "cas": [
+    {
+      "id": "EX-05",
+      "description": "Les six couches plants, etats_plants, constats_reprise, vides, positions_controles et projet sont listées (équivalent de st_layers) avec leurs champs de la spec.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "PLA-01",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "couches_presentes": [
+          "plants",
+          "etats_plants",
+          "constats_reprise",
+          "vides",
+          "positions_controles",
+          "projet"
+        ],
+        "couches_ajoutees_conformes": "schema-couches-ajoutees.json"
+      },
+      "source": "ADR 0007 (critère de CI (c)) ; docs/spec.md § 5",
+      "hypothese": "Les classes de type des champs (schema-couches-ajoutees.json) sont une proposition du testeur : ni la spec ni l'ADR 0007 ne fixent les types SQL ; à confronter au plan de la 006 validé par Pascal."
+    },
+    {
+      "id": "EX-06",
+      "description": "Chaque table est dans gpkg_contents avec le bon data_type, clé primaire INTEGER, srs_id issu de gpkg_spatial_ref_sys.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "PLA-01",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "conformite_geopackage": {
+          "toutes_les_tables_dans_gpkg_contents": true,
+          "cle_primaire_entiere": true,
+          "srs_id_dans_gpkg_spatial_ref_sys": true
+        }
+      },
+      "source": "ADR 0007 (ligne Conformité GeoPackage ; OGC 12-128 Req. 118 et 119)"
+    },
+    {
+      "id": "EX-07",
+      "description": "Les valeurs permises sont déclarées par l'extension Schema (gpkg_data_columns et gpkg_data_column_constraints) et l'état et la cause sont celles du référentiel.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "PLA-01",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "valeurs_permises": "valeurs-permises.json"
+      },
+      "source": "ADR 0007 (extension Schema) ; docs/referentiels/etats-plants.yaml ; CLAUDE.md (on n'invente jamais un code)"
+    },
+    {
+      "id": "EX-08",
+      "description": "Géométries : plants et positions_controles en POINT, constats_reprise et vides en POLYGON, etats_plants et projet sans géométrie (data_type attributes).",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "PLA-01",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "geometries": {
+          "plants": "POINT",
+          "positions_controles": "POINT",
+          "constats_reprise": "POLYGON",
+          "vides": "POLYGON",
+          "etats_plants": null,
+          "projet": null
+        }
+      },
+      "source": "docs/spec.md § 5 ; ADR 0007 (tables sans géométrie déclarées attributes)"
+    },
+    {
+      "id": "EX-10",
+      "description": "Version unique au niveau du fichier, dans projet : une ligne ; champs de sommieR laissés vides, champs de Surculus remplis ; aucune autre table ne porte de colonne de version.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "PLA-01",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "projet": {
+          "lignes": 1,
+          "vides": [
+            "nom",
+            "foret",
+            "prepare_le",
+            "version_sommier"
+          ],
+          "non_vides": [
+            "operateur",
+            "version_surculus"
+          ],
+          "aucune_colonne_version_ailleurs": true
+        }
+      },
+      "source": "ADR 0007 (ligne Version) ; journal 2026-10-17, Pascal, mission 006 (champs de sommieR de projet laissés vides)",
+      "hypothese": "Le nom de la colonne « version du schéma » de projet n'est donné par aucune source : le cas ne l'exige pas."
+    },
+    {
+      "id": "EX-11",
+      "description": "Un lecteur de version N lit un fichier N+1 en ignorant les champs nouveaux (colonne ajoutée à projet, couche inconnue ajoutée).",
+      "entree": {
+        "operation": "lecture",
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        },
+        "modification_du_test": "sur le gpkg exporté, ajouter une colonne `nouveau` à projet et une table `inconnue` enregistrée dans gpkg_contents, puis relire avec ExportTournee.relire"
+      },
+      "attendu": {
+        "lecture_reussie": true,
+        "champs_connus_inchanges": true
+      },
+      "source": "ADR 0007 (ligne Version)",
+      "note": "Utilise la méthode `relire` de l'interface déclarée en test (ExportTournee)."
+    }
+  ]
+}

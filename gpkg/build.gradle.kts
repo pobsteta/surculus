@@ -31,7 +31,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-    // Les tests relisent les fixtures et les référentiels : les déclarer, sinon Gradle ignore leurs changements.
+    // Les cas d'acceptation de l'export (mission 020) relisent les fixtures et les référentiels.
     inputs.dir(rootProject.file("fixtures")).withPropertyName("fixtures")
     inputs.dir(rootProject.file("docs/referentiels")).withPropertyName("referentiels")
     // Rapport de couverture après chaque exécution des tests (lu par le badge, workflow badges.yml).
