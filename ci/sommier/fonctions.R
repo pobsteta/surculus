@@ -176,12 +176,19 @@ autotest_retrait <- function(dossier, travail) {
                        no.. = TRUE), copie, recursive = TRUE)
   gpkg <- file.path(copie, "travaux.gpkg")
   avant <- sf::st_layers(gpkg)$name
-  vide_pt <- sf::st_as_sf(data.frame(id = integer(0), x = numeric(0),
-                                     y = numeric(0)),
-                          coords = c("x", "y"), crs = 2154)
+  # sf calcule l'étendue d'une couche à zéro ligne avec min()/max() et en
+  # avertit ("no non-missing arguments to min; returning Inf") : on ne tait que
+  # ces avertissements-là, pas les autres.
+  vide_pt <- withCallingHandlers(
+    sf::st_as_sf(data.frame(id = integer(0), x = numeric(0), y = numeric(0)),
+                 coords = c("x", "y"), crs = 2154),
+    warning = function(w) {
+      if (grepl("no non-missing arguments to (min|max)", conditionMessage(w)))
+        invokeRestart("muffleWarning")
+    })
   for (couche in COUCHES_AJOUTEES) {
     if (couche %in% c("plants", "vides", "positions_controles")) {
-      suppressWarnings(sf::st_write(vide_pt, gpkg, layer = couche, quiet = TRUE))
+      sf::st_write(vide_pt, gpkg, layer = couche, quiet = TRUE)
     } else {
       sf::st_write(data.frame(id = integer(0)), gpkg, layer = couche,
                    quiet = TRUE)

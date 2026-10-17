@@ -58,10 +58,10 @@ jobs:
       EXPORT_SURCULUS: ci/sommier/export-surculus
 
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Configurer R
-        uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
+        uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
         with:
           r-version: 'release'
           use-public-rspm: true
@@ -79,6 +79,9 @@ jobs:
           # GitHub. Le jeton du job est en lecture seule (contents: read).
           GITHUB_PAT: ${{ github.token }}
         run: |
+          # `tibble` : sommieR l'appelle via sf::read_sf() mais ne le déclare
+          # pas (ni Imports ni Suggests) ; `dependencies = FALSE` plus bas le
+          # masque, d'où son installation explicite ici.
           install.packages(c("remotes", "DBI", "RPostgres", "RSQLite", "sf",
                              "jsonlite", "withr", "xml2", "openssl", "tibble"))
           # Les suggestions de sommieR (dont nemeton) ne servent pas ici.
@@ -115,7 +118,7 @@ jobs:
 
       - name: Publier les bilans
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: bilans-import-sommier
           path: ci/sommier/sortie/bilan-*.json
