@@ -15,6 +15,7 @@ import io.github.pobsteta.surculus.core.placette.UuidControle
 import io.github.pobsteta.surculus.core.placette.UuidPlacette
 import io.github.pobsteta.surculus.core.placette.UuidPlant
 import java.time.Instant
+import java.time.LocalDate
 
 /**
  * Ce que l'agent a saisi pendant la tournée et que l'export ajoute au `travaux.gpkg` (spec § 5). Ces classes
@@ -68,7 +69,13 @@ data class PositionMesuree(
 data class ControleSaisi(
     val uuid: UuidControle,
     val placette: UuidPlacette,
+    /** Instant du journal : l'heure GNSS si le fix a au plus 5 s, sinon l'heure du téléphone (décision de Pascal). */
     val visiteLe: Instant,
+    /**
+     * Jour civil Europe/Paris du contrôle, **calculé par le journal** (ADR 0005) et fourni par l'appelant : l'export
+     * le reprend sans le recalculer à partir de [visiteLe].
+     */
+    val jour: LocalDate,
     /** Position portée par `controles.geom` : celle du piquet si rattaché par identité, la mesurée sinon. */
     val position: PointLambert93,
     val positionMesuree: PositionMesuree? = null,

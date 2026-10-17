@@ -185,30 +185,32 @@ internal object ValidationExport {
     }
 
     /**
-     * Un contrôle par placette et par jour, deux fois :
-     * - le jour civil Europe/Paris de Surculus (ADR 0005) ;
+     * Un contrôle par placette et par jour, deux fois (décision de Pascal, 2026-10-17) :
+     * - le jour civil Europe/Paris du journal (ADR 0005), repris de [ControleSaisi.jour] pour les contrôles à écrire
+     *   et calculé depuis `visite_le` pour ceux déjà présents dans la tournée ;
      * - le jour UTC de l'import de sommieR, qui lit `visite_le` en `POSIXct` et refuse la tournée entière si deux
      *   contrôles d'une même placette tombent le même jour UTC (`R/travaux_qfield.R` l. 391-394).
      * Les deux peuvent différer entre minuit et deux heures du matin (heure d'été) : l'export refuse alors,
-     * plutôt que de laisser l'import refuser toute la tournée au bureau.
+     * plutôt que de laisser l'import refuser toute la tournée au bureau. La règle UTC tombera quand sommieR
+     * alignera son import sur le jour civil (demande au brief vers sommieR).
      */
     private fun verifierUnParJour(tournee: Tournee, nouveaux: Collection<ControleSaisi>, uuidDeja: Set<String>) {
         val aEcrire = nouveaux.filter { it.uuid.valeur !in uuidDeja }
         val parPlacetteUtc = HashMap<Pair<String, LocalDate>, String>()
+        val parPlacetteParis = HashMap<Pair<String, LocalDate>, String>()
         for (k in tournee.controles) {
             val p = k.placetteUuid?.lowercase() ?: continue
-            val jour = k.visiteLe?.take(10)?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: continue
-            parPlacetteUtc[p to jour] = k.uuid
+            val instant = k.visiteLe?.let { runCatching { Instant.parse(it) }.getOrNull() } ?: continue
+            parPlacetteUtc[p to instant.atOffset(ZoneOffset.UTC).toLocalDate()] = k.uuid
+            parPlacetteParis[p to JourCivil.de(instant)] = k.uuid
         }
-        val parPlacetteParis = HashSet<Pair<String, LocalDate>>()
         for (c in aEcrire) {
             val jourUtc = c.visiteLe.atOffset(ZoneOffset.UTC).toLocalDate()
             if (parPlacetteUtc.put(c.placette.valeur to jourUtc, c.uuid.valeur) != null) {
                 throw GpkgRefuse(RefusGpkg.DeuxControlesMemeJour(c.placette.valeur, jourUtc, "UTC"))
             }
-            val jourParis = JourCivil.de(c.visiteLe)
-            if (!parPlacetteParis.add(c.placette.valeur to jourParis)) {
-                throw GpkgRefuse(RefusGpkg.DeuxControlesMemeJour(c.placette.valeur, jourParis, JourCivil.FUSEAU.id))
+            if (parPlacetteParis.put(c.placette.valeur to c.jour, c.uuid.valeur) != null) {
+                throw GpkgRefuse(RefusGpkg.DeuxControlesMemeJour(c.placette.valeur, c.jour, JourCivil.FUSEAU.id))
             }
         }
     }

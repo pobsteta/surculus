@@ -105,7 +105,7 @@ class FumeeGeoPackageTest {
             controles = listOf(
                 ControleSaisi(
                     UuidControle("00000000-0000-4000-8000-000000003001"), UuidPlacette(placetteId),
-                    Instant.parse("2026-10-20T09:00:00Z"), piquet, etats = etats, totaux = totaux,
+                    Instant.parse("2026-10-20T09:00:00Z"), java.time.LocalDate.of(2026, 10, 20), piquet, etats = etats, totaux = totaux,
                 ),
             ),
             plants = listOf(PlantNumerote(p1, 1), PlantNumerote(p2, 2)),

@@ -6,6 +6,7 @@ import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.placette.CodeEssence
 import io.github.pobsteta.surculus.core.placette.Essences
 import io.github.pobsteta.surculus.core.placette.EtatPlant
+import io.github.pobsteta.surculus.core.placette.JourCivil
 import io.github.pobsteta.surculus.core.placette.Numerotation
 import io.github.pobsteta.surculus.core.placette.NumerosPlacette
 import io.github.pobsteta.surculus.core.placette.Observation
@@ -152,7 +153,7 @@ object ExporterScenario {
                 )
             }
             controles += ControleSaisi(
-                UuidControle(uuidDe("controle:${placette.uuid}:$visite")), domaine.uuid, visite, mesuree?.position ?: piquet, mesuree,
+                UuidControle(uuidDe("controle:${placette.uuid}:$visite")), domaine.uuid, visite, JourCivil.de(visite), mesuree?.position ?: piquet, mesuree,
                 etats, totaux = totaux, operateur = operateur, concurrence = c.texte("concurrence"), besoin = c.texte("besoin"),
                 observations = c.texte("observations"),
             )

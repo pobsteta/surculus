@@ -2,6 +2,7 @@ package io.github.pobsteta.surculus.gpkg
 
 import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.geo.Projections
+import io.github.pobsteta.surculus.core.placette.JourCivil
 import io.github.pobsteta.surculus.core.placette.CodeEssence
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.Essences
@@ -414,7 +415,7 @@ class ExportTravauxTest {
     }
 
     private fun sansEtats(n: Int, placette: Int, quand: Instant) = ControleSaisi(
-        UuidControle(v.uuid(4000 + n)), UuidPlacette(v.placetteUuid(placette)), quand, v.centre(placette), totaux = Totaux(4, 3, 1, 40),
+        UuidControle(v.uuid(4000 + n)), UuidPlacette(v.placetteUuid(placette)), quand, JourCivil.de(quand), v.centre(placette), totaux = Totaux(4, 3, 1, 40),
     )
 
     @Test
@@ -443,6 +444,26 @@ class ExportTravauxTest {
             ExportTravaux.exporter(premier, dossier.resolve("b.gpkg"), Saisies("x", controles = listOf(sansEtats(2, 0, Instant.parse("2026-10-20T15:00:00Z")))), v.VERSION, v.EXPORTE_LE)
         }
         assertEquals("deux_controles_meme_jour", r.refus.motif)
+    }
+
+    @Test
+    fun `le jour de Paris est repris de la saisie, pas recalcule`() {
+        // Même jour de Paris recalculé (le 21), mais l'appelant (le journal) a fourni deux jours différents : accepté.
+        val a = sansEtats(1, 0, Instant.parse("2026-10-20T22:30:00Z")).copy(jour = java.time.LocalDate.of(2026, 10, 21))
+        val b = sansEtats(2, 0, Instant.parse("2026-10-21T00:30:00Z")).copy(jour = java.time.LocalDate.of(2026, 10, 22))
+        exporter(depart(), Saisies("x", controles = listOf(a, b)), "jours-fournis.gpkg")
+        // Le même jour fourni deux fois : refusé, quels que soient les instants.
+        val c = b.copy(jour = a.jour)
+        assertEquals(RefusGpkg.DeuxControlesMemeJour(v.placetteUuid(0), a.jour, "Europe/Paris"), refus(depart(), Saisies("x", controles = listOf(a, c))))
+    }
+
+    @Test
+    fun `un controle du meme jour de Paris qu un controle deja dans le fichier est refuse, meme si le jour UTC differe`() {
+        val premier = exporter(depart(), Saisies("x", controles = listOf(sansEtats(1, 0, Instant.parse("2026-10-20T22:30:00Z")))))
+        val r = assertFailsWith<GpkgRefuse> {
+            ExportTravaux.exporter(premier, dossier.resolve("b.gpkg"), Saisies("x", controles = listOf(sansEtats(2, 0, Instant.parse("2026-10-21T00:30:00Z")))), v.VERSION, v.EXPORTE_LE)
+        }
+        assertEquals(RefusGpkg.DeuxControlesMemeJour(v.placetteUuid(0), java.time.LocalDate.of(2026, 10, 21), "Europe/Paris"), r.refus)
     }
 
     @Test

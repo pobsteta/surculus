@@ -3,6 +3,7 @@ package io.github.pobsteta.surculus.gpkg
 import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.geo.Projections
 import io.github.pobsteta.surculus.core.geo.UniteAzimut
+import io.github.pobsteta.surculus.core.placette.JourCivil
 import io.github.pobsteta.surculus.core.placette.CodeEssence
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.Observation
@@ -134,12 +135,12 @@ object TourneeDeTest {
         fun totaux(e: List<LigneEtat>) =
             (Totaux.deduire(e.map { io.github.pobsteta.surculus.core.placette.EtatPlant(it.plant, it.observation) }) as Verdict.Accepte).valeur
         val c1 = ControleSaisi(
-            UuidControle(uuid(3001)), UuidPlacette(placetteUuid(0)), INSTANT_CONTROLE, centre(0),
+            UuidControle(uuid(3001)), UuidPlacette(placetteUuid(0)), INSTANT_CONTROLE, JourCivil.de(INSTANT_CONTROLE), centre(0),
             PositionMesuree(centre(0), precisionM = 0.4, sourceGnss = "essai", referentielSource = "RGF93", simulee = true),
             etats1, totaux = totaux(etats1), operateur = "Agent d'essai", concurrence = "moyenne", besoin = "aucun",
         )
         val c2 = ControleSaisi(
-            UuidControle(uuid(3002)), UuidPlacette(placetteUuid(1)), INSTANT_CONTROLE.plusSeconds(3600), centre(1),
+            UuidControle(uuid(3002)), UuidPlacette(placetteUuid(1)), INSTANT_CONTROLE.plusSeconds(3600), JourCivil.de(INSTANT_CONTROLE.plusSeconds(3600)), centre(1),
             null, etats2, totaux = totaux(etats2), operateur = "Agent d'essai",
         )
         return Saisies(
