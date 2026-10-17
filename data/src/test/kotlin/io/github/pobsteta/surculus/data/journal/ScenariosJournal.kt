@@ -59,16 +59,15 @@ object ScenariosJournal {
         ageFixMs = o.longOuNull("age_fix_ms"),
     )
 
-    /** Sous-ensemble de `attendu.projection` sous forme comparable : `objet|type` -> description (`obtenu` complète les `anomalies` non dites). */
-    fun attenduProjection(attendu: JsonObject, obtenu: Map<String, EtatAttendu>): Map<String, EtatAttendu> =
+    /** Sous-ensemble de `attendu.projection` sous forme comparable : `objet|type` -> description. */
+    fun attenduProjection(attendu: JsonObject): Map<String, EtatAttendu> =
         attendu.getAsJsonObject("projection").entrySet().associate { (cle, v) ->
             val o = v.asJsonObject
             cle to EtatAttendu(
                 courant = o.texteOuNull("courant"),
                 conflit = o.get("conflit").asBoolean,
                 tetes = o.getAsJsonArray("tetes").map(JsonElement::getAsString),
-                // Clé `anomalies` absente : le cas ne dit rien, on n'affirme rien (JR-70).
-                anomalies = o.getAsJsonArray("anomalies")?.map(JsonElement::getAsString) ?: obtenu[cle]?.anomalies.orEmpty(),
+                anomalies = o.getAsJsonArray("anomalies").map(JsonElement::getAsString),
             )
         }
 

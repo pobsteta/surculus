@@ -19,7 +19,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Arbitrages de Pascal du 2026-10-17 : autre objet, annulation à cible inconnue, types, migration, horloge. */
+/** Arbitrages de Pascal du 2026-10-17 : annulation à cible inconnue, types, migration, horloge. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class JournalRobustesseTest {

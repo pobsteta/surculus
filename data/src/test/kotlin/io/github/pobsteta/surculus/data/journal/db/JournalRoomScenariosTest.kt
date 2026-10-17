@@ -43,7 +43,7 @@ class JournalRoomScenariosTest {
 
                     if (c.attendu.has("projection")) {
                         val obtenu = incrementale.entries.associate { it.key.toString() to EtatAttendu.de(it.value) }
-                        assertEquals(ScenariosJournal.attenduProjection(c.attendu, obtenu), obtenu, c.nom)
+                        assertEquals(ScenariosJournal.attenduProjection(c.attendu), obtenu, c.nom)
                     }
                     ScenariosJournal.chaines(c.attendu, "anomalies")?.let { assertEquals(it, depot.anomalies(), c.nom) }
                     c.attendu.get("lignes_retenues")?.let { assertEquals(it.asInt, pure.lignesRetenues, c.nom) }

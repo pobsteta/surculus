@@ -44,7 +44,8 @@ data class ResultatProjection(
  * - une saisie dont `remplaceUuid` désigne une ligne d'un **autre objet** (ou, dans le même objet, d'un
  *   **autre type**) ne remplace rien : la ligne désignée garde sa valeur, la saisie est tête de sa propre
  *   clé, avec l'anomalie [REMPLACE_AUTRE_OBJET] (ou [REMPLACE_AUTRE_TYPE]) rattachée à cette clé, comme
- *   pour un remplacement inconnu (décisions de Pascal, 2026-10-17) ;
+ *   pour un remplacement inconnu (décisions de Pascal, 2026-10-17) ; une correction normale de cette
+ *   saisie efface l'anomalie de la nouvelle tête (elle reste tracée au journal) ;
  * - une annulation dont l'objet diffère de celui de sa cible n'annule rien : la cible garde sa valeur,
  *   l'annulation est tête de la clé (objet déclaré, `annulation`) avec l'anomalie [REMPLACE_AUTRE_OBJET] ;
  * - si l'objet et le type diffèrent, seule [REMPLACE_AUTRE_OBJET] est signalée.
@@ -83,13 +84,12 @@ object Projection {
         if (refusees.isNotEmpty()) anomaliesJournal += UUID_CONTENU_DIFFERENT
 
         // Une annulation dont la cible connue est d'un autre objet est ignorée : la cible garde sa valeur.
-        val valides = retenues
         val annulationsAutreObjet = retenues.filter { l ->
             l.type == TypeLigne.ANNULATION &&
                 l.remplaceUuid?.let { parUuid[it] }?.let { it.objetUuid != l.objetUuid } == true
         }
 
-        val annulations = valides.filter { it.type == TypeLigne.ANNULATION && it !in annulationsAutreObjet }
+        val annulations = retenues.filter { it.type == TypeLigne.ANNULATION && it !in annulationsAutreObjet }
         val annulationsParCible = annulations.filter { it.remplaceUuid != null }.groupBy { it.remplaceUuid!! }
         annulations.filter { it.remplaceUuid == null || it.remplaceUuid !in parUuid }
             .forEach { anomaliesJournal += REMPLACE_INCONNU }
@@ -109,7 +109,7 @@ object Projection {
 
         // Les sauts d'horloge sont des événements, pas des états : ils n'ont pas de clé de projection.
         // Une annulation d'un autre objet n'annule rien : elle reste tête de la clé (objet déclaré, annulation).
-        val saisies = valides.filter {
+        val saisies = retenues.filter {
             it.type != TypeLigne.SAUT_HORLOGE && (it.type != TypeLigne.ANNULATION || it in annulationsAutreObjet)
         }
         val actives = saisies.filter { !estAnnulee(it.uuid) }
@@ -131,7 +131,11 @@ object Projection {
                     parent.type != cur.type -> REMPLACE_AUTRE_TYPE
                     else -> null
                 }
-                if (anomalie != null) { anomaliesLigne.getOrPut(l.uuid) { sortedSetOf() } += anomalie; break }
+                if (anomalie != null) {
+                    // L'anomalie est celle de la saisie elle-même : une correction normale l'efface (2026-10-17).
+                    if (cur === l) anomaliesLigne.getOrPut(l.uuid) { sortedSetOf() } += anomalie
+                    break
+                }
                 remplacees += r
                 cur = parent!!
             }

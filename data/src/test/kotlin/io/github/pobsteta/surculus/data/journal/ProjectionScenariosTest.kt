@@ -25,7 +25,7 @@ class ProjectionScenariosTest {
         val att = c.attendu
         if (att.has("projection")) {
             val obtenu = r.cles.entries.associate { it.key.toString() to EtatAttendu.de(it.value) }
-            assertEquals(ScenariosJournal.attenduProjection(att, obtenu), obtenu, c.nom)
+            assertEquals(ScenariosJournal.attenduProjection(att), obtenu, c.nom)
         }
         att.getAsJsonArray("cles")?.let { cles ->
             assertEquals(cles.map { it.asString }.toSet(), r.cles.keys.map { it.toString() }.toSet(), c.nom)

@@ -79,8 +79,9 @@ d'où le module **`:gpkg` en JVM** (arbitrage de Pascal), plutôt que Robolectri
 - **Mention du 2026-10-17 (mission 008)** : `:data` a désormais des tests (journal Room, projection,
   UUID v7), en JUnit 4 sous Robolectric (JUnit Jupiter n'y tourne pas). La commande de tests du
   projet devient `./gradlew :core:test :gpkg:test :data:testDebugUnitTest :app:assembleDebug :app:lintDebug`.
-  `.claude/test-command` est mis à jour dans la PR de la 008 ; la CI (`badges.yml` ne joue que
-  `:core:test :gpkg:test`) reste à aligner, hors périmètre de la 008.
+  `.claude/test-command` est mis à jour dans la PR de la 008 ; la CI joue `:data`
+  depuis la 008 (`ci.yml` lit `.claude/test-command`) ; seuls les badges de couverture
+  (`badges.yml`, `:core:test :gpkg:test`) restent sans `:data`.
 - `docs/architecture.md` et `docs/dependances.md` mis à jour (module `:gpkg`,
   geopackage-java, sqlite-jdbc, Vosk 0.3.75, proj4j retiré).
 

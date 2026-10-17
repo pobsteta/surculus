@@ -138,8 +138,6 @@ class JournalDurableTest {
         assertTrue(r.lignes().none { it.type == TypeLigne.SAUT_HORLOGE })
     }
 
-    // --- jour civil ---
-
     @Test
     fun `jour civil Europe-Paris au changement d'heure du 25 octobre 2026`() {
         val avant = Horloge.jourCivil(java.time.Instant.parse("2026-10-24T22:30:00Z").toEpochMilli(), null, null)
