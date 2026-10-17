@@ -94,6 +94,8 @@ data class Tournee(
     val projet: ProjetLu?,
     val plants: List<PlantLu>,
     val etats: List<EtatLu>,
+    /** Codes de la couche `codes` (nomenclature de sommieR) ; vide si la couche l'est. */
+    val codesTravaux: Set<String> = emptySet(),
 ) {
     val nomsCouches: Set<String> get() = couches.map { it.nom }.toSet()
 

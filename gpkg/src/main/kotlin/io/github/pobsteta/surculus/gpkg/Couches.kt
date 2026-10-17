@@ -188,7 +188,7 @@ object Couches {
     val NOMS = TOUTES.map { it.nom }
 
     /** Les couches de la tournée de sommieR 0.31.1 que l'import lit (`R/travaux_qfield.R`) ; Surculus n'y touche pas, sauf pour y ajouter des lignes. */
-    val COUCHES_SOMMIER_ECRITES = listOf("placettes", "controles")
+    val COUCHES_SOMMIER_ECRITES = listOf("placettes", "controles", "travaux_pt", "travaux_surf")
     val COUCHES_SOMMIER_LUES = listOf("travaux_surf", "travaux_lin", "travaux_pt", "placettes", "controles", "photos")
     val COUCHES_SOMMIER_ALLER = listOf("foret", "ug", "parcelles", "codes", "suivis")
 

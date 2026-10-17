@@ -178,6 +178,11 @@ object LecteurTournee {
         } else {
             emptyList()
         }
-        return Tournee(epsg, srsId, couches, placettes, controles, empriseForet, projet, plants, etats)
+        val codesTravaux = if (cnx.existeTable("codes")) {
+            cnx.lignes("SELECT code FROM \"codes\"").mapNotNull { it.texte("code") }.toSet()
+        } else {
+            emptySet()
+        }
+        return Tournee(epsg, srsId, couches, placettes, controles, empriseForet, projet, plants, etats, codesTravaux)
     }
 }

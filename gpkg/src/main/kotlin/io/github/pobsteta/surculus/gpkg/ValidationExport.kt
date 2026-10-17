@@ -113,12 +113,27 @@ internal object ValidationExport {
             if (id in controlesNouveaux) throw GpkgRefuse(RefusGpkg.UuidEnDouble("controles", id))
             controlesNouveaux[id] = c
             if (c.placette.valeur !in connuesPlacettes) throw GpkgRefuse(RefusGpkg.PlacetteInconnue("controles", id, c.placette.valeur))
+            val attendu = JourCivil.de(c.visiteLe)
+            if (c.jour != attendu) throw GpkgRefuse(RefusGpkg.JourIncoherent(id, c.jour, attendu))
             point(tournee, "controles", id, c.position)
             c.positionMesuree?.let { point(tournee, "positions_controles", id, it.position) }
             fini("positions_controles", "precision_m", c.positionMesuree?.precisionM)
             verifierEtats(c, tousPlants, nouveaux.keys + existants.keys)
         }
         verifierUnParJour(tournee, controlesNouveaux.values, controlesExistants.keys)
+
+        // 3 bis. Travaux : UUID, code présent dans la couche codes de la tournée, point en France.
+        val travauxVus = HashSet<String>()
+        for (t in saisies.travaux) {
+            uuid("travaux", "uuid", t.uuid)
+            if (!travauxVus.add(t.uuid)) throw GpkgRefuse(RefusGpkg.UuidEnDouble("travaux", t.uuid))
+            if (t.codeTravaux !in tournee.codesTravaux) throw GpkgRefuse(RefusGpkg.CodeTravauxHorsReferentiel(t.uuid, t.codeTravaux))
+            when (val g = t.geometrie) {
+                is Geometrie.Point -> point(tournee, "travaux_pt", t.uuid, g.position)
+                is Geometrie.Polygone -> g.points().forEach { point(tournee, "travaux_surf", t.uuid, it) }
+                else -> error("Géométrie de travail non prise en charge")
+            }
+        }
 
         // 4. Constats et vides.
         val ids = HashSet<String>()
@@ -159,6 +174,10 @@ internal object ValidationExport {
         for (pn in saisies.plants) {
             val code = pn.plant.derive.epsg.code
             if (code != tournee.epsg.code) throw GpkgRefuse(RefusGpkg.ReferentielDuPlantDifferent(pn.plant.uuid.valeur, code, tournee.epsg.code))
+        }
+        for (c in saisies.controles) {
+            val code = c.repere?.code ?: continue
+            if (code != tournee.epsg.code) throw GpkgRefuse(RefusGpkg.ReferentielDuControleDifferent(c.uuid.valeur, code, tournee.epsg.code))
         }
     }
 

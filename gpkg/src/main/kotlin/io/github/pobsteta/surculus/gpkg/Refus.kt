@@ -98,6 +98,23 @@ sealed interface RefusGpkg {
         override val message = "Le plant $plant est en EPSG:$code, la tournée en EPSG:$attendu : 2154 et 9794 ne se mêlent pas."
     }
 
+    data class ReferentielDuControleDifferent(val controle: String, val code: Int, val attendu: Int) : RefusGpkg {
+        override val motif = "referentiels_meles"
+        override val message = "La position du contrôle $controle est en EPSG:$code, la tournée en EPSG:$attendu : 2154 et 9794 ne se mêlent pas."
+    }
+
+    /** Code travaux, état, cause ou essence absents des référentiels : décision de Pascal du 2026-10-17. */
+    data class CodeTravauxHorsReferentiel(val travaux: String, val code: String) : RefusGpkg {
+        override val motif = "hors_referentiel"
+        override val message = "Le travail $travaux porte le code « $code », absent de la couche codes de la tournée."
+    }
+
+    /** Jour civil fourni qui contredit `visite_le` : l'export refuse, il ne corrige pas en silence. */
+    data class JourIncoherent(val controle: String, val fourni: LocalDate, val attendu: LocalDate) : RefusGpkg {
+        override val motif = "jour_incoherent"
+        override val message = "Le contrôle $controle porte le jour civil $fourni, mais sa visite tombe le $attendu à Paris."
+    }
+
     data class ChampInvalide(val couche: String, val champ: String, val detail: String) : RefusGpkg {
         override val motif = "champ_invalide"
         override val message = "« $couche », champ « $champ » : $detail."

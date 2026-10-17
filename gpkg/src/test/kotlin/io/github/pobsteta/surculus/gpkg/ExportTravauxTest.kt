@@ -447,14 +447,35 @@ class ExportTravauxTest {
     }
 
     @Test
-    fun `le jour de Paris est repris de la saisie, pas recalcule`() {
-        // Même jour de Paris recalculé (le 21), mais l'appelant (le journal) a fourni deux jours différents : accepté.
-        val a = sansEtats(1, 0, Instant.parse("2026-10-20T22:30:00Z")).copy(jour = java.time.LocalDate.of(2026, 10, 21))
-        val b = sansEtats(2, 0, Instant.parse("2026-10-21T00:30:00Z")).copy(jour = java.time.LocalDate.of(2026, 10, 22))
-        exporter(depart(), Saisies("x", controles = listOf(a, b)), "jours-fournis.gpkg")
-        // Le même jour fourni deux fois : refusé, quels que soient les instants.
-        val c = b.copy(jour = a.jour)
-        assertEquals(RefusGpkg.DeuxControlesMemeJour(v.placetteUuid(0), a.jour, "Europe/Paris"), refus(depart(), Saisies("x", controles = listOf(a, c))))
+    fun `un jour civil fourni qui contredit visite_le est refuse - on ne corrige pas en silence`() {
+        // 22:30Z le 20 octobre = 00:30 le 21 à Paris : le jour fourni doit être le 21.
+        val c = sansEtats(1, 0, Instant.parse("2026-10-20T22:30:00Z"))
+        assertEquals(java.time.LocalDate.of(2026, 10, 21), c.jour)
+        exporter(depart(), Saisies("x", controles = listOf(c)), "jour-coherent.gpkg")
+        val faux = c.copy(jour = java.time.LocalDate.of(2026, 10, 20))
+        assertEquals(RefusGpkg.JourIncoherent(c.uuid.valeur, faux.jour, c.jour), refus(depart(), Saisies("x", controles = listOf(faux))))
+    }
+
+    @Test
+    fun `un travail dont le code est dans la couche codes est ecrit tel quel, un code absent est refuse`() {
+        val point = Geometrie.Point(v.centre(0))
+        val bon = TravauxSaisi(v.uuid(5001), "PL", point, Instant.parse("2026-10-20T09:00:00Z"), "Agent")
+        val fichier = exporter(depart(), Saisies("x", travaux = listOf(bon)), "travaux.gpkg")
+        Sqlite.ouvrir(fichier, lectureSeule = true).use { cnx ->
+            assertEquals(listOf("PL"), cnx.lignes("SELECT code_travaux FROM travaux_pt WHERE uuid = '${bon.uuid}'").map { it["code_travaux"] })
+        }
+        val r = refus(depart(), Saisies("x", travaux = listOf(bon.copy(codeTravaux = "XX-INCONNU"))))
+        assertEquals("hors_referentiel", r.motif)
+    }
+
+    @Test
+    fun `le zip garde le dossier DCIM de l aller, meme vide`() {
+        val dossier = java.nio.file.Files.createDirectories(this.dossier.resolve("zip/DCIM"))
+        java.nio.file.Files.copy(depart(), dossier.parent.resolve("travaux.gpkg"))
+        val zip = this.dossier.resolve("e.zip")
+        ExportZip.ecrire(dossier.parent, zip)
+        val noms = java.util.zip.ZipFile(zip.toFile()).use { z -> z.entries().toList().map { it.name } }
+        assertEquals(listOf("travaux.gpkg", "DCIM/"), noms)
     }
 
     @Test

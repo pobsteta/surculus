@@ -108,6 +108,20 @@ private class Ecrivain(private val cnx: Connection, private val tournee: Tournee
             if (ecrit) compter("placettes")
         }
         for (c in saisies.controles.sortedBy { it.uuid.valeur }) ecrireControle(c)
+        for (t in saisies.travaux.sortedBy { it.uuid }) {
+            val couche = if (t.geometrie is Geometrie.Point) "travaux_pt" else "travaux_surf"
+            val ecrit = inserer(
+                couche, "uuid",
+                linkedMapOf(
+                    "geom" to blob(t.geometrie),
+                    "uuid" to t.uuid,
+                    "code_travaux" to t.codeTravaux,
+                    "visite_le" to t.visiteLe?.let(ValidationExport::datetime),
+                    "operateur" to t.operateur,
+                ),
+            )
+            if (ecrit) compter(couche)
+        }
         for (pn in saisies.plants.sortedWith(compareBy({ it.plant.placette.valeur }, { it.numero }, { it.plant.uuid.valeur }))) {
             val p = pn.plant
             val d = p.derive

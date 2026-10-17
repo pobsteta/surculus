@@ -30,7 +30,22 @@ data class Saisies(
     val plants: List<PlantNumerote> = emptyList(),
     val constats: List<ConstatReprise> = emptyList(),
     val vides: List<Vide> = emptyList(),
+    val travaux: List<TravauxSaisi> = emptyList(),
 )
+
+/**
+ * Un travail saisi (spec § 4.9) : une ligne de `travaux_pt` (point) ou de `travaux_surf` (polygone). Son
+ * [codeTravaux] doit figurer dans la couche `codes` de la tournée (Surculus n'embarque aucune liste de codes).
+ */
+data class TravauxSaisi(
+    val uuid: String,
+    val codeTravaux: String,
+    val geometrie: Geometrie,
+    val visiteLe: Instant? = null,
+    val operateur: String? = null,
+) {
+    init { require(geometrie is Geometrie.Point || geometrie is Geometrie.Polygone) { "Travail : un point ou un polygone" } }
+}
 
 /** Placette installée pendant la tournée (spec § 4.7) : une ligne de plus dans la couche `placettes`. */
 data class PlacetteInstallee(
@@ -87,6 +102,8 @@ data class ControleSaisi(
     val concurrence: String? = null,
     val besoin: String? = null,
     val observations: String? = null,
+    /** Repère de [position] ; `null` : celui de la tournée. Un repère différent de celui du fichier est refusé. */
+    val repere: io.github.pobsteta.surculus.core.reperes.CodeEpsg? = null,
 )
 
 /** Constat de reprise en cheminement (spec § 4.4) : une ligne de `constats_reprise`, géométrie = surface constatée. */

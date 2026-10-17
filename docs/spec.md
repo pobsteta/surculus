@@ -371,6 +371,9 @@ dans Surculus.
 | Pente acceptée dans ]−90°, 90°[ ; pas de correction du facteur d'échelle Lambert-93 (erreur < 3 cm à 30 m) | Surculus | 1 |
 | Unités de la boussole (degrés ou grades) et de la pente (% ou degrés) déclarées à l'ouverture de la tournée ; azimut saisi refusé hors [0, 360[ ou [0, 400[ avant normalisation | ADR 0003 | 1 |
 | Tout point écrit tombe dans l'emprise de la forêt et en France ; azimut dans [0, 360[ ; déclinaison et convergence enregistrées | `CLAUDE.md` | 1 |
+| L'export refuse (`hors_referentiel`) une saisie dont le `code_travaux` est absent de la couche `codes` de la tournée ; il n'embarque aucune liste de codes | décision de Pascal du 2026-10-17 | 1 |
+| L'export refuse (`jour_incoherent`) un contrôle dont le jour civil fourni par le journal contredit le jour de Paris de `visite_le` ; il ne corrige pas en silence | décision de Pascal du 2026-10-17 | 1 |
+| L'export ne fusionne jamais deux contrôles : deux contrôles d'une même placette qui partagent le jour de Paris **ou** le jour UTC sont refusés (`controle_en_double`) ; la correction d'un contrôle du même jour se fait en amont, dans le journal et le domaine | décision de Pascal du 2026-10-17 | 1 |
 | Alerte de reprise quand le seuil (80 % ou 90 % selon l'essence) est au-dessus de l'intervalle de confiance | brief | 2 |
 | Vide ≥ 10 ares signalé | brief | 2 |
 | Le code admet la forme tracée ; l'unité est l'une de celles du code | sommieR 0.28.0 | 3 |

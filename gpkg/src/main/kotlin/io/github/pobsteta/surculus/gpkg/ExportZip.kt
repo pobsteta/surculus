@@ -28,8 +28,9 @@ object ExportZip {
     fun ecrire(dossier: Path, zip: Path) {
         require(Files.isRegularFile(dossier.resolve(GPKG))) { "Pas de $GPKG dans $dossier" }
         val racine = dossier.toFile()
-        val fichiers = racine.walkTopDown().filter { it.isFile }
-            .map { it.relativeTo(racine).invariantSeparatorsPath }
+        // Les dossiers comptent aussi, même vides : `DCIM/` de l'aller reste dans le zip (le dossier attendu par l'import).
+        val fichiers = racine.walkTopDown().filter { it != racine && (it.isFile || it.isDirectory) }
+            .map { it.relativeTo(racine).invariantSeparatorsPath + if (it.isDirectory) "/" else "" }
             .sortedWith(compareBy<String>({ it != GPKG }, { it }))
             .toList()
         val millis = DATE_FIXE.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -39,7 +40,7 @@ object ExportZip {
                 val e = ZipEntry(nom)
                 e.time = millis
                 out.putNextEntry(e)
-                Files.copy(dossier.resolve(nom), out)
+                if (!nom.endsWith("/")) Files.copy(dossier.resolve(nom), out)
                 out.closeEntry()
             }
         }
