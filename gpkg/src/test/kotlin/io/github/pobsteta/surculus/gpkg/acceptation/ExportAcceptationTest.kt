@@ -28,7 +28,23 @@ private val DOSSIER: Path = run {
     d
 }
 private val FIXTURES = DOSSIER.resolve("fixtures/acceptation-export")
-private val MOTIFS = setOf("melange_reperes", "controle_en_double", "hors_france", "hors_referentiel", "uuid_en_double")
+private val MOTIFS = setOf("melange_reperes", "controle_en_double", "hors_france", "hors_referentiel", "uuid_en_double", "jour_incoherent")
+
+/** Clés de `attendu` que `verifier` ou `jouerLecture` contrôlent réellement. */
+private val CLES_VERIFIEES = setOf(
+    "accepte", "motif", "zip", "couches_presentes", "schema_sommier_identique", "couches_ajoutees_conformes",
+    "conformite_geopackage", "valeurs_permises", "geometries", "srs_id_couches_a_geometrie", "projet",
+    "controles_ecrits", "totaux_controles_non_nuls", "plants_ecrits", "travaux_ecrits", "rtree", "couches_vides",
+    "emprise_l93_m", "contenu_identique_apres_reexport", "contenu_identique_a_l_ordre_direct",
+    "lecture_reussie", "champs_connus_inchanges", // jouerLecture : relire ne lève rien, les champs connus sont relus
+)
+
+/** Clés purement documentaires : lues par un humain, jamais par le test. */
+private val CLES_DOCUMENTAIRES = setOf("calcul", "points_en_france") // points_en_france : le contrôle est déclenché par emprise_l93_m
+private val CLES_ZIP = setOf("contient", "dcim_present", "entrees_autorisees")
+private val CLES_PROJET = setOf("lignes", "vides", "non_vides", "aucune_colonne_version_ailleurs")
+private val CLES_CONTROLE = setOf("uuid", "placette_uuid", "nb_total", "nb_vivants", "nb_abroutis", "h_moy_cm", "visite_le_utc")
+private val CLES_PLANT = setOf("uuid", "placette_uuid", "numero", "essence")
 
 private class CasExport(val fichier: String, val json: JsonObject) {
     val id = json.get("id").asString
@@ -52,6 +68,38 @@ class FixturesExportBienFormeesTest {
         assertEquals(tous.size, tous.map { it.id }.toSet().size, "ids en double")
         tous.forEach { assertTrue(it.json.get("source")?.asString?.isNotBlank() == true, "${it.id} : source absente") }
         tous.forEach { assertTrue(it.json.get("description")?.asString?.isNotBlank() == true, "${it.id} : description absente") }
+    }
+
+    @Test
+    fun `chaque cle de attendu est verifiee ou documentaire`() {
+        tous.forEach { c ->
+            val inconnues = c.attendu.keySet() - CLES_VERIFIEES - CLES_DOCUMENTAIRES
+            assertTrue(inconnues.isEmpty(), "${c.id} : clés de attendu ignorées sans bruit par le test : $inconnues")
+            c.attendu.get("zip")?.asJsonObject?.keySet()?.let {
+                assertTrue(CLES_ZIP.containsAll(it), "${c.id} : clés de zip inconnues : ${it - CLES_ZIP}")
+            }
+            c.attendu.get("projet")?.asJsonObject?.keySet()?.let {
+                assertTrue(CLES_PROJET.containsAll(it), "${c.id} : clés de projet inconnues : ${it - CLES_PROJET}")
+            }
+            c.attendu.get("controles_ecrits")?.asJsonArray?.forEach { e ->
+                assertTrue(CLES_CONTROLE.containsAll(e.asJsonObject.keySet()), "${c.id} : clés de controles_ecrits inconnues")
+            }
+            c.attendu.get("plants_ecrits")?.asJsonArray?.forEach { e ->
+                assertTrue(CLES_PLANT.containsAll(e.asJsonObject.keySet()), "${c.id} : clés de plants_ecrits inconnues")
+            }
+        }
+    }
+
+    @Test
+    fun `le jour civil fourni est coherent avec visite_le sauf dans les cas jour_incoherent`() {
+        val paris = java.time.ZoneId.of("Europe/Paris")
+        tous.filter { it.attendu.get("motif")?.asString != "jour_incoherent" }.forEach { c ->
+            c.entree.getAsJsonObject("saisies")?.getAsJsonArray("controles")?.forEach { e ->
+                val ctl = e.asJsonObject
+                val jour = Instant.parse(ctl.get("visite_le").asString).atZone(paris).toLocalDate().toString()
+                assertEquals(jour, ctl.get("jour_civil").asString, "${c.id} / ${ctl.get("uuid").asString} : jour_civil incohérent avec visite_le")
+            }
+        }
     }
 
     @Test
@@ -189,6 +237,7 @@ class ExportAcceptationTest {
     }
 
     private fun conformite(f: Fichier) {
+        // On part de sqlite_master, non de gpkg_contents : une table absente de gpkg_contents doit être attrapée.
         f.tablesUtilisateur().forEach { t ->
             assertEquals(1, f.nombre("SELECT count(*) FROM gpkg_contents WHERE table_name='$t'"), "$t absent de gpkg_contents")
             val pk = f.colonnes(t).filter { it.third }
@@ -344,7 +393,10 @@ private class Fichier(zip: Path) : AutoCloseable {
     }
 
     fun contenus(): Set<String> = lignes("SELECT table_name FROM gpkg_contents").map { it[0] }.toSet()
-    fun tablesUtilisateur(): List<String> = contenus().sorted()
+    fun tablesUtilisateur(): List<String> = lignes(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'gpkg\\_%' ESCAPE '\\' " +
+            "AND name NOT LIKE 'rtree\\_%' ESCAPE '\\' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\'",
+    ).map { it[0] }.sorted()
 
     /** (nom, type, clé primaire) dans l'ordre des colonnes. */
     fun colonnes(t: String): List<Triple<String, String, Boolean>> =

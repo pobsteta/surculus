@@ -51,7 +51,7 @@
         "accepte": false,
         "motif": "controle_en_double"
       },
-      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J1 (la correction relève du journal et du domaine, pas de l'export)"
+      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J1 (la correction relève du journal et du domaine, pas de l'export)"
     },
     {
       "id": "EX-20",
@@ -108,7 +108,7 @@
           }
         ]
       },
-      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J2"
+      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J2"
     },
     {
       "id": "EX-21",
@@ -158,7 +158,7 @@
         "accepte": false,
         "motif": "controle_en_double"
       },
-      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6 ; exemple de la fiche 020",
+      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; exemple de la fiche 020",
       "note": "Le 20 octobre 2026 est en heure d'été (UTC+2)."
     },
     {
@@ -209,7 +209,7 @@
         "accepte": false,
         "motif": "controle_en_double"
       },
-      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6 ; tzdata Europe/Paris : fin de l'heure d'été le 2026-10-25 à 01:00 UTC (fixtures/README.md)"
+      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; tzdata Europe/Paris : fin de l'heure d'été le 2026-10-25 à 01:00 UTC (fixtures/README.md)"
     },
     {
       "id": "EX-23",
@@ -259,7 +259,7 @@
         "accepte": false,
         "motif": "controle_en_double"
       },
-      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6"
+      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6"
     },
     {
       "id": "EX-24",
@@ -322,7 +322,7 @@
           }
         ]
       },
-      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6"
+      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6"
     },
     {
       "id": "EX-25",
@@ -382,7 +382,8 @@
         ]
       },
       "source": "docs/spec.md § 5 (jour civil sur l'heure GNSS si le fix a au plus 5 s) ; ADR 0005 (ligne Temps) ; fixtures/journal/jour-civil.json ; journal 2026-10-17 (l'export reprend le jour du journal)",
-      "note": "Entrée de l'export : l'instant retenu par le journal et son jour civil. L'âge du fix est déjà jugé en amont."
+      "note": "Entrée de l'export : l'instant retenu par le journal et son jour civil. L'âge du fix est déjà jugé en amont.",
+      "hypothese": "Le format de stockage de visite_le dans le gpkg n'est fixé par aucune source : le test compare des instants (ISO 8601 avec 'T' ou espace, avec ou sans Z)."
     },
     {
       "id": "EX-26",
@@ -436,7 +437,7 @@
     },
     {
       "id": "EX-27",
-      "description": "L'export reprend le jour fourni et ne le recalcule pas : CT-001 porte visite_le 22:30Z le 20 (jour de Paris réel : 21) mais jour_civil fourni 2026-10-20 ; avec CT-002 au 21 à 08:00Z, jours fournis 20 et 21 et jours UTC 20 et 21 : accepté. Un recalcul donnerait deux fois le 21 et un refus.",
+      "description": "Jour civil fourni qui contredit visite_le : CT-001 porte visite_le 22:30Z le 20 (jour de Paris réel : 21) mais jour_civil 2026-10-20 ; l'export refuse, sans corriger ni recalculer en silence.",
       "entree": {
         "tournee_depart": {
           "repere_epsg": 2154,
@@ -479,18 +480,11 @@
         }
       },
       "attendu": {
-        "accepte": true,
-        "controles_ecrits": [
-          {
-            "uuid": "CT-001"
-          },
-          {
-            "uuid": "CT-002"
-          }
-        ]
+        "accepte": false,
+        "motif": "jour_incoherent"
       },
-      "source": "Décision de Pascal rapportée par l'orchestrateur le 2026-10-17 : l'export reprend le jour civil du journal",
-      "note": "Entrée volontairement incohérente (le journal ne la produirait pas) : elle ne sert qu'à prouver que l'export ne recalcule pas le jour de Paris."
+      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un jour civil fourni qui contredit visite_le est refusé, motif jour_incoherent)",
+      "note": "Entrée volontairement incohérente : le journal ne la produirait pas. Le jour de Paris de visite_le est calculé en Europe/Paris (tzdata)."
     }
   ]
 }

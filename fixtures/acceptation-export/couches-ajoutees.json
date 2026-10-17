@@ -63,7 +63,8 @@
         ],
         "couches_ajoutees_conformes": "schema-couches-ajoutees.json"
       },
-      "source": "ADR 0007 (critère de CI (c)) ; docs/spec.md § 5"
+      "source": "ADR 0007 (critère de CI (c)) ; docs/spec.md § 5",
+      "hypothese": "Les classes de type des champs (schema-couches-ajoutees.json) sont une proposition du testeur : ni la spec ni l'ADR 0007 ne fixent les types SQL ; à confronter au plan de la 006 validé par Pascal."
     },
     {
       "id": "EX-06",
@@ -303,7 +304,8 @@
           "aucune_colonne_version_ailleurs": true
         }
       },
-      "source": "ADR 0007 (ligne Version) ; journal 2026-10-17, Pascal, mission 006 (champs de sommieR de projet laissés vides)"
+      "source": "ADR 0007 (ligne Version) ; journal 2026-10-17, Pascal, mission 006 (champs de sommieR de projet laissés vides)",
+      "hypothese": "Le nom de la colonne « version du schéma » de projet n'est donné par aucune source : le cas ne l'exige pas."
     },
     {
       "id": "EX-11",

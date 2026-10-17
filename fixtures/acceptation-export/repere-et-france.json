@@ -249,7 +249,7 @@
             6005281.2,
             7235612.72
           ],
-          "source": "domaine d'usage d'EPSG:2154, epsg.io/2154 (W -9,86 à E 10,38, S 41,15 à N 51,56 en WGS 84) ; docs/spec.md § 10 point 9 (le test « placette en France » prend ce rectangle)"
+          "source": "Rectangle du domaine d'usage d'EPSG:2154 (epsg.io/2154 : W -9,86 à E 10,38, S 41,15 à N 51,56 en WGS 84), enveloppe de ce domaine transformé en Lambert-93 : pyproj 3.6.1 Transformer.from_crs(4326, 2154, always_xy=True).transform_bounds(-9.86, 41.15, 10.38, 51.56, densify_pts=100) donne x de -378305,81 à 1320649,57 et y de 6005281,63 à 7235612,72 ; epsg.io publie y min = 6005281,2 (écart de 0,4 m, retenu tel que publié) ; docs/spec.md § 10 point 9 (le test « placette en France » prend ce rectangle)"
         }
       },
       "source": "docs/spec.md § 6 (tout point écrit tombe en France) ; fixtures/regles/emprise-et-france.json (F-Couchey, F-Brest, F-Paris)"

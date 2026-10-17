@@ -384,7 +384,7 @@
     },
     {
       "id": "EX-09",
-      "description": "Écrire un contrôle déclenche l'index rtree de controles (fonctions ST_*) : l'index contient le contrôle écrit.",
+      "description": "Écrire des contrôles déclenche l'index rtree de controles (fonctions ST_*) : l'index contient les deux contrôles écrits.",
       "entree": {
         "tournee_depart": {
           "repere_epsg": 2154,

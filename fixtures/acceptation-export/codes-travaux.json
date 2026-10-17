@@ -45,7 +45,7 @@
         "accepte": false,
         "motif": "hors_referentiel"
       },
-      "source": "décision de Pascal du 2026-10-17 (rapportée par l'orchestrateur ; la règle sera ajoutée à la spec § 6 par la 006) et sa décision du 2026-10-15 (CLAUDE.md : les codes travaux viennent de la couche `codes` du travaux.gpkg de la tournée)",
+      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) : un code_travaux absent de la couche `codes` est refusé, règle à ajouter à la spec § 6 par la 006 ; décision du 2026-10-15 (CLAUDE.md : les codes travaux viennent de la couche `codes` du travaux.gpkg de la tournée)",
       "note": "Les codes de la fixture sont des codes de test synthétiques : Surculus n'embarque aucune liste de codes travaux (CLAUDE.md)."
     },
     {
@@ -96,7 +96,7 @@
           }
         ]
       },
-      "source": "décision de Pascal du 2026-10-17 (rapportée par l'orchestrateur ; la règle sera ajoutée à la spec § 6 par la 006) et sa décision du 2026-10-15 (CLAUDE.md : les codes travaux viennent de la couche `codes` du travaux.gpkg de la tournée)"
+      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) : un code_travaux absent de la couche `codes` est refusé, règle à ajouter à la spec § 6 par la 006 ; décision du 2026-10-15 (CLAUDE.md : les codes travaux viennent de la couche `codes` du travaux.gpkg de la tournée)"
     }
   ]
 }
