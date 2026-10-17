@@ -281,7 +281,7 @@
         "accepte": false,
         "motif": "uuid_invalide"
       },
-      "source": "sommieR 0.31.1, R/travaux_qfield.R (controler_tournee_travaux, l. 350, 382 et 401 : MOTIF_UUID testé sur la valeur brute, sans tolower ni trimws) ; R/valider.R l. 10 (MOTIF_UUID : 8-4-4-4-12 chiffres hexadécimaux minuscules) ; décision de Pascal du 2026-10-17 rapportée par l'orchestrateur (un UUID en majuscules ou entouré d'espaces est refusé à l'export)"
+      "source": "sommieR 0.31.1, R/travaux_qfield.R (controler_tournee_travaux, l. 350, 382 et 401 : MOTIF_UUID testé sur la valeur brute, sans tolower ni trimws) ; R/valider.R l. 10 (MOTIF_UUID : 8-4-4-4-12 chiffres hexadécimaux minuscules) ; docs/journal.md, 2026-10-17, Pascal, mission 020 (PR #37) (un UUID en majuscules ou entouré d'espaces est refusé à l'export)"
     }
   ]
 }
