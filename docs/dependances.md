@@ -13,6 +13,7 @@ Licence du dépôt : **GPL-3.0-or-later**, comme Groma et nemeton.
 | Modèle géomagnétique WMM2025 (`WMM.COF`, NCEI) | `:core` | domaine public selon NCEI (compatibilité GPL à confirmer) | déclinaison hors ligne, valable jusqu'à fin 2029 ; pas de bibliothèque Java établie (`docs/referentiels/modele-geomagnetique.md`) |
 | Vosk `vosk-android` 0.3.75 et modèle `vosk-model-small-fr-0.22` (41 Mo) | dictée | Apache-2.0 | modèle republié dans les releases de Surculus et importable par fichier ; SHA-256 à inscrire ; modèles fr NC et AGPL exclus (ADR 0004) |
 | JUnit Jupiter (aligné sur `groma-core`) | tests | EPL-2.0 | tests seulement |
+| JUnit 4.13.2, Robolectric 4.17, `androidx.test:core` 1.7.0, `room-testing` 2.8.1 | tests de `:data` | EPL-1.0 ; MIT ; Apache-2.0 ; Apache-2.0 | journal Room sous Robolectric (mission 008, ADR 0004) ; versions de Marculus (`gradle/libs.versions.toml`) ; aucune dépendance de production |
 | JNA 5.18.1 (`aar`) | `:app` (requise par Vosk) | LGPL-2.1-or-later ou Apache-2.0, au choix | embarquée dans l'APK (bibliothèque native `libjnidispatch.so`) |
 | Bibliothèques communes Marculus / Groma | GNSS, géodésie, GeoPackage, carte, dictée, journal | GPL-3.0-or-later | Marculus (`792b5aa`) et Groma sont sous GPL-3.0-or-later ; tranche 1 : `groma-core` provisoire (brief `vers-marculus`) |
 | Tuiles IGN Géoplateforme, OpenStreetMap | carte | Etalab 2.0, ODbL | attribution affichée, comme dans Groma |

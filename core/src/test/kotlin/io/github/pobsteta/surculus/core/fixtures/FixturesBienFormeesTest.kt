@@ -22,8 +22,34 @@ class FixturesBienFormeesTest {
             "rattachement-15m", "un-controle-par-jour", "emprise-et-france", "numerotation", "totaux-controle",
             "regarni", "identite", "etats-causes", "convergence", "declinaison-wmm2025", "chaine-azimut",
             "unites-azimut", "distance-horizontale",
+            // fixtures/journal (mission 008)
+            "projection", "conflits", "ordre-total", "horloge", "jour-civil",
         )
         assertEquals(attendus.sorted(), fichiers.map { it.famille }.sorted())
+    }
+
+    @Test
+    fun `les scenarios du journal sont couverts, bien formes, et leurs identifiants sont JR`() {
+        val journal = fichiers.filter { it.chemin.replace('\\', '/').startsWith("fixtures/journal/") }
+        assertEquals(setOf("projection", "conflits", "ordre-total", "horloge", "jour-civil"), journal.map { it.famille }.toSet())
+        val champs = listOf(
+            "uuid", "objet_uuid", "type", "valeur", "remplace_uuid", "operateur", "appareil", "sequence",
+            "saisi_le_utc", "monotone_ms", "demarrage",
+        )
+        val types = setOf("controle", "pointage", "etat", "annulation", "saut_horloge")
+        for (f in journal) for (c in f.cas) {
+            assertTrue(c.id.startsWith("JR-"), "${f.chemin} : identifiant ${c.id}")
+            c.entree.getAsJsonArray("lignes")?.forEach { l ->
+                val o = l.asJsonObject
+                champs.forEach { assertTrue(o.has(it), "${c.id} : champ « $it » absent") }
+                assertTrue(o.get("type").asString in types, "${c.id} : type ${o.get("type")}")
+            }
+            if (f.famille == "jour-civil") assertTrue(c.entree.has("saisi_le_utc"), "${c.id} : forme à plat")
+            if (f.famille == "horloge") assertTrue(c.attendu.has("sauts_notes"), "${c.id} : sauts_notes absent")
+            if (f.famille in setOf("projection", "conflits", "ordre-total")) {
+                assertTrue(c.entree.getAsJsonArray("lignes").size() > 0, "${c.id} : aucune ligne")
+            }
+        }
     }
 
     @Test

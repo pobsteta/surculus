@@ -61,7 +61,7 @@ l'unité déclarée une fois par tournée.
 
 ## Journal des saisies (`journal/`)
 
-Scénarios du journal en ajout seul (ADR 0005, spec § 5), écrits par le `testeur` sans lire le code, pour que la mission 008 ne s'auto-évalue pas. Ils ne sont pas lus par `FixturesBienFormeesTest` (qui ne parcourt que `regles/` et `reperes/`) : la 008 branche ses propres tests dessus. Identifiants `JR-NN`, uniques dans tout `fixtures/`.
+Scénarios du journal en ajout seul (ADR 0005, spec § 5), écrits par le `testeur` sans lire le code, pour que la mission 008 ne s'auto-évalue pas. `FixturesBienFormeesTest` les vérifie (forme, familles, identifiants) depuis la mission 008, dont les tests (`:data`) les rejouent. Identifiants `JR-NN`, uniques dans tout `fixtures/`.
 
 ### Entrée
 
