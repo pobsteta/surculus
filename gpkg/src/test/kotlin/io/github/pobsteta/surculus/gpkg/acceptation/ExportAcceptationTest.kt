@@ -27,7 +27,7 @@ private val DOSSIER: Path = run {
     d
 }
 private val FIXTURES = DOSSIER.resolve("fixtures/acceptation-export")
-private val MOTIFS = setOf("melange_reperes", "controle_en_double", "hors_france", "hors_referentiel", "uuid_en_double", "jour_incoherent")
+private val MOTIFS = setOf("melange_reperes", "controle_en_double", "hors_france", "hors_referentiel", "uuid_en_double", "jour_incoherent", "uuid_invalide")
 
 /** Clés de `attendu` que `verifier` ou `jouerLecture` contrôlent réellement. */
 private val CLES_VERIFIEES = setOf(
@@ -102,6 +102,19 @@ class FixturesExportBienFormeesTest {
     }
 
     @Test
+    fun `les identifiants sont des UUID en minuscules sauf dans les cas uuid_invalide`() {
+        val motifUuid = Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$") // sommieR 0.31.1, R/valider.R l. 10
+        fun parcourir(e: JsonElement, quand: (String, String) -> Unit) {
+            if (e.isJsonObject) e.asJsonObject.entrySet().forEach { (k, v) ->
+                if (v.isJsonPrimitive && (k == "uuid" || k.endsWith("_uuid"))) quand(k, v.asString) else parcourir(v, quand)
+            } else if (e.isJsonArray) e.asJsonArray.forEach { parcourir(it, quand) }
+        }
+        tous.filter { it.attendu.get("motif")?.asString != "uuid_invalide" }.forEach { c ->
+            parcourir(c.entree) { k, v -> assertTrue(motifUuid.matches(v), "${c.id} : $k = $v n'est pas un UUID en minuscules") }
+        }
+    }
+
+    @Test
     fun `un cas refuse porte un motif connu`() {
         tous.filter { it.attendu.get("accepte")?.asBoolean == false }.forEach {
             assertTrue(it.attendu.get("motif").asString in MOTIFS, "${it.id} : motif inconnu")
@@ -121,6 +134,15 @@ class ExportAcceptationTest {
 
     private fun jouer(c: CasExport) {
         if (c.entree.get("operation")?.asString == "lecture") return jouerLecture(c)
+        c.json.getAsJsonArray("entrees_variantes")?.forEach { v ->
+            // Variante : l'UUID du premier contrôle est remplacé tel quel (majuscules, espaces) ; chacune doit être refusée.
+            val entree = c.entree.deepCopy()
+            entree.getAsJsonObject("saisies").getAsJsonArray("controles")[0].asJsonObject
+                .addProperty("uuid", v.asJsonObject.get("uuid_controle").asString)
+            val refus = export.exporter(entree, Files.createTempDirectory("export-${c.id}")) as? ResultatExport.Refuse
+                ?: error("${c.id} : variante $v acceptée alors qu'elle devait être refusée")
+            assertEquals(c.attendu.get("motif").asString, refus.motif, "${c.id} : $v")
+        }
         val res = export.exporter(c.entree, Files.createTempDirectory("export-${c.id}"))
         if (c.attendu.get("accepte").asBoolean) {
             val accepte = res as? ResultatExport.Accepte ?: error("${c.id} : refusé (${res}) alors qu'il devait être accepté")

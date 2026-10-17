@@ -11,7 +11,7 @@
           "repere_epsg": 2154,
           "placettes": [
             {
-              "uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
               "code_placette": "P-001",
               "x": 850469.39,
               "y": 6686306.33
@@ -30,7 +30,7 @@
           "controles": [],
           "travaux": [
             {
-              "uuid": "TV-001",
+              "uuid": "00000000-0000-4000-8000-0000000d0001",
               "couche": "travaux_pt",
               "code_travaux": "T-TEST-INCONNU",
               "x": 850472.39,
@@ -56,7 +56,7 @@
           "repere_epsg": 2154,
           "placettes": [
             {
-              "uuid": "PL-001",
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
               "code_placette": "P-001",
               "x": 850469.39,
               "y": 6686306.33
@@ -75,7 +75,7 @@
           "controles": [],
           "travaux": [
             {
-              "uuid": "TV-001",
+              "uuid": "00000000-0000-4000-8000-0000000d0001",
               "couche": "travaux_pt",
               "code_travaux": "T-TEST-1",
               "x": 850472.39,
@@ -91,7 +91,7 @@
         "travaux_ecrits": [
           {
             "couche": "travaux_pt",
-            "uuid": "TV-001",
+            "uuid": "00000000-0000-4000-8000-0000000d0001",
             "code_travaux": "T-TEST-1"
           }
         ]
