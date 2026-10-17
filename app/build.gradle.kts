@@ -116,6 +116,12 @@ android {
         create("fumee") {
             initWith(getByName("release"))
             matchingFallbacks += "release"
+            // INDISPENSABLE : sans suffixe, l'APK de fumée (versionCode 1 en local) porte l'identifiant de l'application
+            // installée et tente de la remplacer ; refusé pour « downgrade », le nettoyage du lanceur de test la
+            // désinstalle alors, avec ses données. Avec le suffixe, il s'installe à côté et ne peut ni la remplacer
+            // ni la désinstaller.
+            applicationIdSuffix = ".fumee"
+            versionNameSuffix = "-fumee"
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -197,3 +203,17 @@ dependencies {
 
 // Les natifs doivent être là avant toute fusion de ressources JNI.
 tasks.named("preBuild") { dependsOn(extraireNativesSqlite) }
+
+// La fumée échoue quand aucun test ne tourne (Gradle rend un succès si l'instrumentation plante avant le premier test).
+// Le rapport est effacé avant l'essai, pour qu'un ancien rapport vert ne masque pas un plantage.
+val rapportsFumee = layout.buildDirectory.dir("outputs/androidTest-results/connected/fumee").get().asFile
+val verifierScriptFumee = rootProject.file("scripts/verifier-fumee.sh")
+val verifierFumee = tasks.register<Exec>("verifierFumee") {
+    description = "Vérifie que la fumée a joué au moins un test, sans échec (scripts/verifier-fumee.sh)."
+    commandLine("bash", verifierScriptFumee.path, rapportsFumee.path)
+}
+val effacerRapportFumee = tasks.register<Delete>("effacerRapportFumee") { delete(rapportsFumee) }
+tasks.matching { it.name == "connectedFumeeAndroidTest" }.configureEach {
+    dependsOn(effacerRapportFumee)
+    finalizedBy(verifierFumee)
+}
