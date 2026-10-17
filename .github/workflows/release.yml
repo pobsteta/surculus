@@ -112,7 +112,8 @@ jobs:
 
       # Essai de fumée de l'APK release (ADR 0011, arbitrage de Pascal) : l'application écrit une tournée de
       # démonstration (sqlite-jdbc, natifs Android, fonctions ST_* en Kotlin, index rtree) puis la relit, sur un
-      # émulateur x86_64, avec R8 et le désucrage de la release. La release ne part pas s'il échoue.
+      # émulateur x86_64, avec R8 et le désucrage de la release. Il tourne sur le type de build `fumee`, calqué sur la release
+      # (proguard-fumee.pro n'y ajoute que les règles du runner de test). La release ne part pas s'il échoue.
       # Limite assumée : x86_64 seulement, le chemin ARM n'est jamais exécuté ici (Pascal l'essaie sur téléphone).
       - name: Activer KVM (émulateur)
         run: |
@@ -139,8 +140,8 @@ jobs:
           # Gradle rend « réussi » une instrumentation qui plante avant le premier test (0 test joué) : on exige
           # donc au moins un test joué et aucun échec dans le rapport.
           script: |
-            ./gradlew :app:connectedReleaseAndroidTest --no-daemon "-PappVersionName=$VERSION" "-PappVersionCode=$NUMERO"
-            bash scripts/verifier-fumee.sh app/build/outputs/androidTest-results/connected/release
+            ./gradlew :app:connectedFumeeAndroidTest --no-daemon "-PappVersionName=$VERSION" "-PappVersionCode=$NUMERO"
+            bash scripts/verifier-fumee.sh app/build/outputs/androidTest-results/connected/fumee
 
       - name: Préparer l'APK, les notes et le résumé
         env:

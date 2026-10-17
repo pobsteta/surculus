@@ -110,7 +110,18 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            // L'APK de test est minifié avec la release : androidx.test cite des annotations errorprone absentes.
+        }
+        // Essai de fumée (ADR 0011) : calqué sur la release (même R8, mêmes natifs, même signature), avec en plus les
+        // règles de proguard-fumee.pro. Ces règles ne touchent jamais l'APK release distribué.
+        create("fumee") {
+            initWith(getByName("release"))
+            matchingFallbacks += "release"
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+                "proguard-fumee.pro",
+            )
+            // L'APK de test est minifié comme lui : androidx.test cite des annotations errorprone absentes.
             testProguardFiles("proguard-test-rules.pro")
         }
     }
@@ -139,8 +150,8 @@ android {
     }
 
     // Essai de fumée (ADR 0011) : les tests instrumentés jouent sur l'APK **release** (R8, natifs, désucrage), pas sur
-    // le debug. Ils tournent sur émulateur dans release.yml : `./gradlew :app:connectedReleaseAndroidTest`.
-    testBuildType = "release"
+    // le debug. Ils tournent sur émulateur dans release.yml : `./gradlew :app:connectedFumeeAndroidTest`.
+    testBuildType = "fumee"
     // La tournée de départ de l'essai est le modèle de sommieR de :gpkg (un seul exemplaire dans le dépôt).
     sourceSets.getByName("androidTest").assets.directories.add(rootProject.file("gpkg/src/test/resources/modele").path)
 

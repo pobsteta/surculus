@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Vérifie le rapport de l'essai de fumée de l'APK release (ADR 0011) : au moins un test joué, aucun échec.
 # Gradle rend un succès quand l'instrumentation plante avant le premier test (0 test) : ce cas doit faire échouer.
-# Usage : scripts/verifier-fumee.sh <dossier des rapports connectedReleaseAndroidTest>
+# Usage : scripts/verifier-fumee.sh <dossier des rapports connectedFumeeAndroidTest>
 set -euo pipefail
 dossier="${1:?dossier des rapports}"
 total=0
