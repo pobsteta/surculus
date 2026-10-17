@@ -9,7 +9,8 @@ Licence du dépôt : **GPL-3.0-or-later**, comme Groma et nemeton.
 | Kotlin, kotlinx-coroutines, kotlinx-serialization | partout | Apache-2.0 | |
 | AndroidX, Jetpack Compose, Material 3, Room, DataStore | `:app`, `:data` | Apache-2.0 | |
 | osmdroid | carte | Apache-2.0 | |
-| NGA geopackage-java + sqlite-jdbc | `:gpkg` (JVM) | MIT ; Apache-2.0 | lecture et écriture du `travaux.gpkg`, testées sans appareil (ADR 0004) |
+| sqlite-jdbc 3.53.4.0 (jar et classifieur `natives-android`) | `:gpkg` (JVM) et `:app` (natifs Android) | Apache-2.0 | lecture et écriture du `travaux.gpkg`, sur la JVM et sur l'appareil (ADR 0011) ; écrivain GeoPackage maison, sans geopackage-java ni proj4j |
+| desugar_jdk_libs 2.1.5 | `:app` | GPL-2.0 avec exception Classpath (OpenJDK) | désucrage des API Java récentes, exigé par sqlite-jdbc sur Android (USAGE.md du projet) ; taille mesurée dans le rendu de la mission 006 |
 | Modèle géomagnétique WMM2025 (`WMM.COF`, NCEI) | `:core` | domaine public selon NCEI (compatibilité GPL à confirmer) | déclinaison hors ligne, valable jusqu'à fin 2029 ; pas de bibliothèque Java établie (`docs/referentiels/modele-geomagnetique.md`) |
 | Vosk `vosk-android` 0.3.75 et modèle `vosk-model-small-fr-0.22` (41 Mo) | dictée | Apache-2.0 | modèle republié dans les releases de Surculus et importable par fichier ; SHA-256 à inscrire ; modèles fr NC et AGPL exclus (ADR 0004) |
 | JUnit Jupiter (aligné sur `groma-core`) | tests | EPL-2.0 | tests seulement |
@@ -51,6 +52,7 @@ Licences lues sur l'API GitHub (`/repos/<action>/license`) le 2026-10-16.
 | `mathieudutour/github-tag-action` | v6.2 | MIT | `release.yml` (calcul de la version, préfixe `v`) |
 | `softprops/action-gh-release` | v2.6.2, épinglée par SHA | MIT | `release.yml` (tag et release) |
 | `cicirello/jacoco-badge-generator` | v2 | MIT | `badges.yml` (badge de couverture) |
+| `reactivecircus/android-emulator-runner` | v2.38.0, épinglée par SHA (commit du tag annoté) | Apache-2.0 | `release.yml` (essai de fumée de l'APK release sur émulateur x86_64, ADR 0011) |
 
 `gradle/actions` est utilisée depuis la mission 001 : sa licence n'est pas déclarée de façon
 univoque par l'API. À confirmer par Pascal. C'est un outil de CI, non embarqué dans l'APK ;
