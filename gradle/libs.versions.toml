@@ -8,11 +8,12 @@
 #   maven-metadata.xml, publiée le 2026-09-09) ; depuis KSP 2.3.0 la version de KSP n'est plus
 #   indexée sur celle de Kotlin.
 # - Compose BOM, AndroidX, Room, DataStore, osmdroid, coroutines : marculus/gradle/libs.versions.toml.
+# - desugar_jdk_libs 2.1.5 : Google Maven, com/android/tools/desugar_jdk_libs/maven-metadata.xml (release, 2026-10-17), exigé par sqlite-jdbc sur Android (USAGE.md).
+# - androidx.test.ext:junit 1.3.0 et androidx.test:runner 1.7.0 : Google Maven, maven-metadata.xml (dernières versions stables, 2026-10-17), essai de fumée de la release.
 # - JUnit Jupiter 6.1.3 et sqlite-jdbc 3.53.4.0 : groma/android/groma-core/build.gradle.kts.
 # - vosk-android 0.3.75 : ADR 0004 ; JNA 5.18.1 : POM de vosk-android 0.3.75 (Maven Central).
 # - Gson 2.14.0 : Maven Central (com.google.code.gson:gson, release du maven-metadata.xml), lecteur JSON des tests de fixtures (mission 002).
 # - Robolectric 4.17, androidx.test:core 1.7.0, room-testing : marculus/gradle/libs.versions.toml (mission 008, tests du journal Room) ; JUnit 4.13.2 : requis par Robolectric.
-# - geopackage-java 6.6.5 : Maven Central (mil.nga.geopackage:geopackage, release), pour la mission 006.
 
 [versions]
 agp = "9.4.1"
@@ -22,8 +23,10 @@ composeBom = "2026.02.01"
 room = "2.8.1"
 datastore = "1.1.1"
 osmdroid = "6.1.20"
-geopackageJava = "6.6.5"
 sqliteJdbc = "3.53.4.0"
+desugarJdkLibs = "2.1.5"
+androidxTestExtJunit = "1.3.0"
+androidxTestRunner = "1.7.0"
 activityCompose = "1.8.2"
 lifecycle = "2.9.4"
 coreKtx = "1.16.0"
@@ -59,8 +62,10 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
-geopackage-java = { group = "mil.nga.geopackage", name = "geopackage", version.ref = "geopackageJava" }
 sqlite-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqliteJdbc" }
+desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarJdkLibs" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 vosk-android = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }

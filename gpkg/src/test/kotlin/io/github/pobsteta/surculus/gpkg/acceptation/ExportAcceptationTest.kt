@@ -7,7 +7,6 @@ import com.google.gson.JsonParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
@@ -124,7 +123,6 @@ class FixturesExportBienFormeesTest {
 }
 
 /** Cas d'acceptation de l'export (mission 020). Branchés par la mission 006 : voir [BranchementExport]. */
-@Disabled("Mission 020 : actif quand la mission 006 branche l'export dans BranchementExport.kt")
 class ExportAcceptationTest {
 
     private val export: ExportTournee by lazy { exportATester() }

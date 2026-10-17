@@ -1,0 +1,34 @@
+{
+  "fichier": "fixtures/export/scenario-couchey.json",
+  "regle": "Journée de contrôle sur la tournée de démonstration Couchey de sommieR 0.31.1 : ce que la CI de l'import (mission 007) exporte avec Surculus pour que le critère (a) mesure quelque chose.",
+  "description": "Deux contrôles (P35-01, P35-02) sur les placettes de la démo, désignées par leur code : la CI régénère la démo à chaque exécution, donc ses UUID changent, mais les codes P35-01 à P35-03 non. Les plants sont pointés depuis le piquet (distance horizontale, azimut magnétique lu), la position de chaque plant est dérivée par la chaîne des repères de :core (WMM2025, convergence, Lambert-93). Les UUID de l'export sont dérivés du scénario (UUID v3 du nom), donc identiques d'une exécution à l'autre sur une même tournée.",
+  "source": "docs/spec.md § 4.3, § 5 ; ADR 0007 ; ci/sommier/README.md (mission 007)",
+  "operateur": "Agent d'essai (scénario CI)",
+  "version_surculus": "0.0.0-scenario",
+  "exporte_le": "2026-10-20T12:00:00Z",
+  "controles": [
+    {
+      "placette": "P35-01",
+      "visite_le": "2026-10-20T09:30:00Z",
+      "concurrence": "moyenne",
+      "besoin": "aucun",
+      "position_mesuree": {"decalage_est_m": 0.6, "decalage_nord_m": -0.4, "precision_m": 0.4, "source_gnss": "scénario", "referentiel_source": "RGF93", "simulee": true},
+      "plants": [
+        {"cle": "a", "distance_m": 1.2, "azimut": 10.0,  "unite_azimut": "deg", "essence": "CHS", "etat": "sain",    "hauteur_cm": 35},
+        {"cle": "b", "distance_m": 2.0, "azimut": 100.0, "unite_azimut": "deg", "essence": "CHS", "etat": "atteint", "cause_detail": "abroutissement", "hauteur_cm": 40},
+        {"cle": "c", "distance_m": 2.6, "azimut": 200.0, "unite_azimut": "deg", "essence": "CHS", "etat": "mort",    "cause_groupe": "animaux", "cause_detail": "cervides"},
+        {"cle": "d", "distance_m": 3.1, "azimut": 300.0, "unite_azimut": "deg", "essence": "CHS", "etat": "absent"},
+        {"cle": "e", "distance_m": 1.8, "azimut": 250.0, "unite_azimut": "deg", "essence": "CHS", "etat": "sain",    "hauteur_cm": 42}
+      ]
+    },
+    {
+      "placette": "P35-02",
+      "visite_le": "2026-10-20T10:15:00Z",
+      "plants": [
+        {"cle": "a", "distance_m": 1.5, "azimut": 45.0,  "unite_azimut": "deg", "essence": "CHS", "etat": "sain",         "hauteur_cm": 50},
+        {"cle": "b", "distance_m": 2.2, "azimut": 250.0, "unite_azimut": "gr",  "essence": "CHS", "etat": "atteint", "cause_groupe": "pathologique", "hauteur_cm": 30},
+        {"cle": "c", "distance_m": 3.0, "azimut": 330.0, "unite_azimut": "deg", "essence": "CHS", "etat": "non_observe"}
+      ]
+    }
+  ]
+}

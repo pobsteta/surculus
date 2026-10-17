@@ -9,7 +9,7 @@ sommieR ── sommier_projet_qfield_travaux() ──► <tournée>/travaux.gpkg
    │        Surculus (Android, hors ligne, copie privée de la tournée)
    │          :app   Compose : Tournées, Carte, Intervention, Placette, Rendre
    │          :data  Room (journal append-only), photos
-   │          :gpkg  JVM : lecture/écriture du travaux.gpkg (geopackage-java)
+   │          :gpkg  JVM : lecture/écriture du travaux.gpkg (sqlite-jdbc, ADR 0011)
    │          :core  Kotlin pur : règles du registre 6, plants, totaux,
    │                 numérotation, fusion par UUID, grammaire de dictée
    │          ── tranche 1 : groma-core provisoire ; ensuite bibliothèques
@@ -27,7 +27,7 @@ sommieR ── sommier_projet_qfield_travaux() ──► <tournée>/travaux.gpkg
 | Module | Rôle | Testé |
 |---|---|---|
 | `:core` | Domaine pur : codes et formes, règles d'import, plants et états, totaux d'un contrôle, taux de reprise et densité, numérotation des plants par azimut, fusion par UUID, grammaire et analyse de la dictée | JVM, avec `fixtures/` |
-| `:gpkg` | Lecture d'une tournée et écriture du `travaux.gpkg` à l'export (geopackage-java, JVM) | JVM, et import R de sommieR rejoué en CI |
+| `:gpkg` | Lecture d'une tournée et écriture du `travaux.gpkg` à l'export (écrivain GeoPackage maison sur sqlite-jdbc, JVM et appareil, ADR 0011) | JVM, et import R de sommieR rejoué en CI |
 | `:data` | Journal Room des saisies en ajout seul (une ligne par saisie, UUID v7, séquence locale, ADR 0005), projection, sauvegardes `.sursync`, photos | JVM sous Robolectric (JUnit 4), pas instrumenté ; l'essai de coupure sur appareil reste à Pascal |
 | `:app` | Écrans Compose (Tournées, Carte, Intervention, Placette, Rendre, Paramètres), service GNSS, dictée | appareil |
 

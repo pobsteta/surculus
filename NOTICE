@@ -40,3 +40,18 @@ repris porte en en-tête son chemin d'origine, le commit et les modifications.
   - core/.../core/geo/{Azimut,Projections,Geodesie}.kt, core/.../core/gnss/ (mission 003)
   - core/.../core/reperes/wmm/Declinaison.kt (mission 005), depuis
     android/groma-core/src/main/kotlin/groma/core/Declinaison.kt, commit 2909744
+
+Modèle de tournée de sommieR (GPL-3, Pascal Obstétar), copié dans les tests
+----------------------------------------------------------------------------
+
+Fichier : gpkg/src/test/resources/modele/travaux-sommier-0.31.1.gpkg
+Origine : sommieR, inst/qgis/travaux.gpkg, commit fd92078e9f538aefbf1181cae7e88f64a5f8961d (sommieR 0.31.1),
+  copié sans modification (sha256 3bcda06d692c6becd965241f9ec78a74c7f5bcc63c8b828f79519f355b377014).
+Usage : tournée de départ vide des tests de :gpkg et de l'essai de fumée de l'APK release (tests seulement,
+  jamais dans l'APK de production). Ses tables sont celles que l'export de Surculus doit laisser intactes.
+
+sqlite-jdbc (Apache-2.0, xerial) et ses bibliothèques natives Android
+---------------------------------------------------------------------
+
+sqlite-jdbc 3.53.4.0 est tiré de Maven Central ; son classifieur `natives-android` (libsqlitejdbc.so, par ABI)
+est extrait à la compilation vers le jniLibs de l'application (ADR 0011). SQLite est dans le domaine public.

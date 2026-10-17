@@ -7,7 +7,10 @@
 
 **En une phrase (quoi, et pourquoi) :** Écrire le module JVM `:gpkg` qui lit une tournée sommieR 0.31.1 et écrit l'export `travaux.gpkg` complété (couches de sommieR intactes, couches de plants conformes au standard et à l'extension Schema, version unique, repère lu dans le fichier, export déterministe), pour tenir le contrat avec sommieR.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent (2026-10-17) :** écrire le module JVM `:gpkg`, qui lit une tournée sommieR 0.31.1 et rend le même
+`travaux.gpkg` complété des six couches de Surculus (sans toucher à celles de sommieR, conformes à OGC 12-128 et à
+l'extension Schema, une seule version, repère lu dans le fichier, contenu déterministe), avec sqlite-jdbc sur l'appareil
+comme en CI (ADR 0011), pour que l'import de sommieR relise la tournée sans écart et que Pascal l'ouvre dans QGIS.
 
 ## Les trois questions (règle de staffing)
 
@@ -27,7 +30,7 @@
 
 ## Harnais
 
-- **Peut :** utiliser geopackage-java et sqlite-jdbc ; lire `inst/qgis/travaux.gpkg` et la démo Couchey de sommieR.
+- **Peut :** utiliser sqlite-jdbc (ADR 0011, sans geopackage-java) ; lire `inst/qgis/travaux.gpkg` et la démo Couchey de sommieR.
 - **Ne doit pas :** sortir du périmètre de cette phrase ; inventer un code (travaux, essence, état) ; toucher à `main` ; modifier sommieR, Marculus ou Groma ; trancher une question de sens (la remonter à l'orchestrateur).
 - **Sources autorisées :** ADR 0004, 0007 ; `docs/spec.md` § 5 ; OGC 12-128 Req. 118-119 ; sommieR en lecture seule.
 

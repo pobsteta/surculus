@@ -252,14 +252,68 @@ rien.
 | `etats_plants` | — | `uuid`, `controle_uuid`, `plant_uuid`, `etat` (sain, atteint, mort, absent, ou `non_observe` : absence de mesure, hors totaux), `cause_groupe` (entomologique, pathologique, animaux, abiotique_complexe_indetermine), `cause_detail`, `hauteur_cm` |
 | `constats_reprise` | POLYGON (surface constatée) | `uuid`, `methode` (plein, cemagref, grappes), `pas_lignes`, `departs` (les deux départs tirés), `essence`, `nb_plants_chantier`, `nb_sains`, `nb_atteints`, `nb_morts`, `nb_absents`, `taux_brut_pct`, `ic_bas_pct`, `ic_haut_pct`, `seuil_pct`, `seuil_source`, `alerte` (bool), `visite_le`, `operateur` |
 | `vides` | POLYGON | `uuid`, `constat_uuid` ou `placette_uuid`, `surface_are`, `origine` (trace, propose), `visite_le`, `operateur` |
+| `projet` | — | `nom`, `foret`, `operateur`, `prepare_le`, `version_sommier`, `version_surculus` |
 
 En aller, la tournée 0.31.1 ne porte ni le contour des plantations à constater, ni leur
 nombre de plants, leurs lignes, leur date de réception ou leurs cloisonnements
 (`travaux_surf` est en retour seulement) : voir § 4.4 et § 10.
-| `projet` | — | `nom`, `foret`, `operateur`, `prepare_le`, `version_sommier`, `version_surculus` |
 
 Les totaux de `controles` restent écrits : un import 0.31.1 relit la tournée comme
 aujourd'hui.
+
+### Écriture de l'export (mission 006, ADR 0007 et 0011)
+
+Décisions de Pascal du 2026-10-17 (plan de la mission 006, ADR 0011 et relecture de la PR n° 34),
+reportées dans `briefs/vers-sommier/2026-10-15-travaux-2-plants.md` : les types, `departs`,
+`modele_geomagnetique`, `projet`, le zip à plat, la double règle du jour et `visite_le`.
+Les choix **techniques du `dev`** (non tranchés par Pascal, à relire) sont signalés « (choix du
+`dev`) » : valeurs permises, liste des refus, déterminisme, rejouabilité.
+
+- **Types** des couches ajoutées, par anticipation sur sommieR : `TEXT` (identifiants, codes,
+  textes), `INTEGER` (numéros, effectifs, hauteurs), `REAL` (mesures en mètres, degrés,
+  pourcents, ares), `BOOLEAN` (0 ou 1), `DATETIME` (ISO 8601 en UTC, millisecondes, « Z », comme
+  GDAL). Clé primaire `fid INTEGER PRIMARY KEY AUTOINCREMENT`, géométrie dans `geom`, repère
+  du fichier. Tout identifiant est un UUID **en minuscules** (décision de Pascal : l'import de sommieR teste
+  `MOTIF_UUID` sur la valeur brute, `R/travaux_qfield.R` l. 350, 382 et 401).
+- **`departs`** : un tableau JSON dans un `TEXT` (le contenu des éléments reste à fixer avec le
+  protocole du constat de reprise, § 4.4 et ADR 0002).
+- **`modele_geomagnetique`** : `WMM2025`, écrit avec chaque plant.
+- **`projet`** : une seule ligne, qui porte la **version unique** du fichier. Les champs que
+  sommieR doit écrire (`nom`, `foret`, `prepare_le`, `version_sommier`) sont **laissés vides**
+  par Surculus tant que la tournée 0.31.1 ne les porte pas, et ne sont jamais écrasés ensuite ;
+  Surculus écrit `operateur` et `version_surculus` (la version unique). Un lecteur lit par nom
+  de colonne : un fichier plus récent, qui a des champs en plus, se lit en les ignorant.
+- **Valeurs permises** (choix du `dev`) (`etat`, `cause_groupe`, `unite_azimut`, `methode`, `origine`) : extension
+  Schema de GeoPackage (`gpkg_data_columns`, `gpkg_data_column_constraints`, type `enum`),
+  tirées des enums de `:core` et de `docs/referentiels/etats-plants.yaml`, jamais recopiées.
+- **Repère** (décision de Pascal, ADR 0003 et 0011) : lu dans `gpkg_spatial_ref_sys` (code EPSG de `organization_coordsys_id`), pour
+  `gpkg_contents` comme pour `gpkg_geometry_columns` ; un fichier qui mêle 2154 et 9794 est
+  refusé, et un plant dérivé dans l'autre repère que le fichier aussi.
+- **Tout ou rien** (choix du `dev`) : un export refusé n'écrit aucun fichier. Les motifs sont des codes
+  stables, les mêmes dans le code, la spec et `fixtures/acceptation-export/` (choix du `dev`) : `uuid_invalide`,
+  `uuid_en_double`, `melange_reperes`, `hors_france`, `hors_referentiel`, `controle_en_double`, `jour_incoherent`.
+  Sont des **décisions de Pascal du 2026-10-17** (journal, PR n° 37) : `uuid_invalide` (UUID refusé tel quel,
+  majuscules et espaces compris, sans normalisation), `controle_en_double`, `jour_incoherent` et `hors_referentiel`
+  (état, cause ou essence hors référentiel, **et code travaux absent de la couche `codes` de la tournée**). Refus : point hors de France (avec
+  signalement d'axes inversés), hors de l'emprise de la forêt, placette inconnue, totaux qui ne
+  concordent pas avec les états, UUID en double ou en majuscules, numéro de plant déjà pris,
+  essence absente de `essences.csv`, deux contrôles d'une même placette le même jour.
+- **Un contrôle par placette et par jour, deux fois** (décision de Pascal) : le jour civil
+  Europe/Paris (ADR 0005) **et** le jour UTC, parce que `sommier_importer_qfield_travaux()` lit `visite_le` en UTC et
+  refuse la tournée entière si deux contrôles d'une même placette tombent le même jour UTC.
+  Entre minuit et 2 h du matin à Paris, les deux jours diffèrent : l'export refuse plutôt que
+  de laisser l'import refuser toute la tournée au bureau. La règle UTC tombera quand sommieR
+  alignera son import sur le jour civil (demande au brief vers sommieR). Le jour civil est
+  **calculé par le journal** (mission 008) et fourni par l'appelant (`ControleSaisi.jour`) :
+  l'export le reprend sans le recalculer ; les contrôles déjà présents dans la tournée sont
+  confrontés aux deux jours.
+- **`visite_le`** (décision de Pascal) : l'instant du journal, soit l'heure GNSS si le fix a au
+  plus 5 s, sinon l'heure du téléphone. L'export l'écrit tel quel.
+- **Déterministe** (choix du `dev`) : à état égal, deux exports ont le même contenu (lignes rangées par
+  identifiant, jamais par ordre de saisie ; horloge injectée dans `gpkg_contents.last_change`).
+  Les tests comparent par le contenu, jamais par empreinte du fichier (ADR 0011).
+- **Rejouable** (choix du `dev`) : exporter à partir d'un export déjà fait ignore les lignes présentes à
+  l'identique ; un même UUID avec un contenu différent est refusé.
 
 ### Journal des saisies (sur l'appareil, ADR 0005)
 
@@ -336,6 +390,10 @@ dans Surculus.
 | Pente acceptée dans ]−90°, 90°[ ; pas de correction du facteur d'échelle Lambert-93 (erreur < 3 cm à 30 m) | Surculus | 1 |
 | Unités de la boussole (degrés ou grades) et de la pente (% ou degrés) déclarées à l'ouverture de la tournée ; azimut saisi refusé hors [0, 360[ ou [0, 400[ avant normalisation | ADR 0003 | 1 |
 | Tout point écrit tombe dans l'emprise de la forêt et en France ; azimut dans [0, 360[ ; déclinaison et convergence enregistrées | `CLAUDE.md` | 1 |
+| L'export refuse (`uuid_invalide`) tout identifiant (contrôle, plant, placette, travail) qui n'est pas un UUID en minuscules, **tel quel** : majuscules ou espaces autour sont refusés, jamais normalisés (l'import de sommieR teste la valeur brute) | décision de Pascal du 2026-10-17 | 1 |
+| L'export refuse (`hors_referentiel`) une saisie dont le `code_travaux` est absent de la couche `codes` de la tournée ; il n'embarque aucune liste de codes | décision de Pascal du 2026-10-17 | 1 |
+| L'export refuse (`jour_incoherent`) un contrôle dont le jour civil fourni par le journal contredit le jour de Paris de `visite_le` ; il ne corrige pas en silence | décision de Pascal du 2026-10-17 | 1 |
+| L'export ne fusionne jamais deux contrôles : deux contrôles d'une même placette qui partagent le jour de Paris **ou** le jour UTC sont refusés (`controle_en_double`) ; la correction d'un contrôle du même jour se fait en amont, dans le journal et le domaine | décision de Pascal du 2026-10-17 | 1 |
 | Alerte de reprise quand le seuil (80 % ou 90 % selon l'essence) est au-dessus de l'intervalle de confiance | brief | 2 |
 | Vide ≥ 10 ares signalé | brief | 2 |
 | Le code admet la forme tracée ; l'unité est l'une de celles du code | sommieR 0.28.0 | 3 |

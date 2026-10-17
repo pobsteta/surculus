@@ -90,6 +90,10 @@ Décisions de Pascal du 2026-10-17 (mission 021). Une saisie dont `remplace_uuid
 * `a_confirmer_par_pascal` : cas qui repose sur une déduction non écrite dans la spec (aucun pour l'instant).
 * Sources des heures : tzdata Europe/Paris, fin de l'heure d'été le 2026-10-25 à 01:00 UTC.
 
+## Scénario d'export (`export/`)
+
+`export/scenario-couchey.json` (mission 006) est un **scénario de saisies**, non un cas d'acceptation : il est rejoué par l'outil `:gpkg:exporterScenario` (classes de test de `:gpkg`, jamais dans l'APK) sur la tournée de départ de sommieR, pour que l'export de Surculus contienne des contrôles, des plants et des états. La CI de l'import (mission 007) le joue sur la démo Couchey qu'elle régénère à chaque exécution : les placettes y sont désignées **par leur code** (`P35-01`), jamais par un UUID. Les plants sont donnés par leur observation brute (`distance_m` horizontale, `azimut` et `unite_azimut`) ; leur position est dérivée par la chaîne des repères de `:core`. Les UUID de l'export dérivent du scénario (UUID v3 du nom). Les codes d'essence sont validés contre `docs/referentiels/essences.csv`. Les valeurs de `concurrence` et de `besoin` sont celles que l'import de sommieR 0.31.1 accepte (`faible`, `moyenne`, `forte` ; `aucun`).
+
 ## Export du GeoPackage (`acceptation-export/`)
 
 Cas d'acceptation de l'export `travaux.gpkg`, écrits par le `testeur` (mission 020) à partir des ADR 0007 et 0011, de la spec (§ 5 et § 6) et des arbitrages du 2026-10-17, sans lire le code de la mission 006. Ils ne sont pas lus par `FixturesBienFormeesTest` ; `ExportAcceptationTest` (`gpkg/src/test/`) les joue, `@Disabled` jusqu'à ce que la 006 branche l'export dans `BranchementExport.kt`. Identifiants `EX-NN`.

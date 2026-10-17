@@ -107,6 +107,35 @@ ou saisis dans QField.
   `surculus` (résultats attendus écrits à la main), pour que R et Kotlin
   appliquent les mêmes règles.
 
+## Ce que Surculus écrit déjà, à reprendre tel quel (mission 006, 2026-10-17)
+
+Surculus écrit ces couches dans son export dès maintenant, par anticipation (ADR 0007) ; la
+définition de sommieR fait foi dès qu'elle existe, mais autant partir de celle-ci. Décisions de
+Pascal du 2026-10-17, vérifiées contre `sommier_importer_qfield_travaux()` 0.31.1 (l'import
+ignore ces couches, l'export est relu sans écart avec et sans elles) :
+
+- **Types** : `TEXT`, `INTEGER`, `REAL`, `BOOLEAN` (0 ou 1), `DATETIME` (ISO 8601 UTC,
+  millisecondes, « Z », comme GDAL) ; clé `fid INTEGER PRIMARY KEY AUTOINCREMENT`, géométrie
+  dans `geom`. Les UUID sont en minuscules (l'import de sommieR n'accepte que `[0-9a-f]`).
+- **`constats_reprise.departs`** : un tableau JSON dans un `TEXT`.
+- **`plants.modele_geomagnetique`** : `WMM2025`.
+- **`projet`** : une ligne, qui porte la **version unique** du fichier. Les champs qui reviennent
+  à sommieR (`nom`, `foret`, `prepare_le`, `version_sommier`) sont **laissés vides** par
+  Surculus, et jamais écrasés : sommieR les remplira à l'aller (`sommier_projet_qfield_travaux()`)
+  quand il aura le schéma ; Surculus écrit `operateur` et `version_surculus`.
+- **Valeurs permises** par l'extension Schema de GeoPackage (`gpkg_data_column_constraints`,
+  type `enum`) : `etat_plant`, `cause_groupe`, `unite_azimut`, `methode_constat`,
+  `origine_vide` ; GDAL (≥ 3.3) les lit comme domaines de champ (vérifié avec `ogrinfo` 3.11.4) ;
+  QGIS et QField reposent sur GDAL, mais ne sont pas essayés ici (voir « Terrain »).
+- **Un contrôle par placette et par jour UTC** : l'import refuse la tournée entière si deux
+  contrôles d'une même placette tombent le même jour UTC (`visite_le` est lu en `POSIXct`), alors
+  que Surculus compte en jour civil Europe/Paris. Les deux diffèrent entre minuit et 2 h du matin
+  à Paris : Surculus refuse l'export dans ce cas (double règle, décision de Pascal du 2026-10-17).
+  **Demande à sommieR : aligner l'import sur le jour civil** (Europe/Paris) ; la règle UTC de
+  Surculus tombera quand sommieR suivra.
+- **`visite_le`** : l'instant du journal de Surculus, c'est-à-dire l'heure GNSS si le fix a au plus
+  5 s, sinon l'heure du téléphone ; toujours écrit en UTC.
+
 ## Demandes complémentaires (porte n° 1 de Surculus)
 
 À trancher par sommieR, dans ce lot ou un suivant :
