@@ -76,10 +76,14 @@ Scénarios du journal en ajout seul (ADR 0005, spec § 5), écrits par le `teste
 * `ordre_total` : liste des uuid dans l'ordre (`saisi_le_utc`, `appareil`, `sequence` numérique, `uuid`).
 * `lignes_retenues` : nombre de lignes qui entrent dans la projection ; `lignes_ignorees` : uuid des doublons à l'identique ; `lignes_refusees` : uuid dont les deux versions différentes sont refusées.
 * `anomalies` (premier niveau) : anomalies **du journal**, hors clé, par exemple `uuid_contenu_different`. À ne pas confondre avec `projection[clé].anomalies`.
-* Libellés des anomalies : `remplace_inconnu` et `uuid_contenu_different` sont **fixés**, comme codes d'anomalie lus par les tests (ce sont des anomalies signalées, non des textes d'écran) ; décision de l'orchestrateur. Les messages affichés ne sont pas fixés.
+* Libellés des anomalies : `remplace_inconnu`, `remplace_autre_objet`, `remplace_autre_type` et `uuid_contenu_different` sont **fixés**, comme codes d'anomalie lus par les tests (ce sont des anomalies signalées, non des textes d'écran) ; décision de l'orchestrateur. Les messages affichés ne sont pas fixés.
 * `sauts_notes` (horloge) : liste de `{entre, ecart_s, heure_avant, heure_apres}`. `ecart_s` est signé : variation de `saisi_le_utc` moins variation de `monotone_ms`, entre deux lignes consécutives rangées par `sequence` dans le couple (appareil, démarrage) ; noté si sa valeur absolue dépasse strictement 60 s. `heure_avant` et `heure_apres` sont le `saisi_le_utc` des deux lignes.
 * `heures_brutes_reecrites` : toujours `false` ; l'heure brute des lignes n'est jamais réécrite.
 * `jour_civil` : jour civil Europe/Paris, `AAAA-MM-JJ`.
+
+### Remplacements anormaux (`remplacements-anormaux.json`, JR-65 à JR-73)
+
+Décisions de Pascal du 2026-10-17 (mission 021). Une saisie dont `remplace_uuid` désigne une ligne **connue** d'un autre objet (`remplace_autre_objet`), ou d'un autre type du même objet (`remplace_autre_type`) : la ligne désignée garde sa valeur, la saisie est tête de sa propre clé, l'anomalie est rattachée à cette clé (comme `remplace_inconnu`). Une annulation qui désigne la ligne d'un autre objet n'annule rien ; elle reste au journal, tête de la clé (objet de l'annulation, `annulation`). Si l'objet et le type diffèrent, seule `remplace_autre_objet` est signalée. JR-70 n'attend pas d'anomalies (clé `anomalies` absente) : la spec ne dit pas si l'anomalie reste attachée après correction. JR-71 et JR-72 reprennent la combinaison de JR-08 (même objet pour `pointage` et `etat`), peu réaliste d'après la spec § 5.
 
 ### Divers
 

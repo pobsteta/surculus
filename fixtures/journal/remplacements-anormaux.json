@@ -1,0 +1,708 @@
+{
+  "fichier": "remplacements-anormaux.json",
+  "regle": "Remplacements anormaux : remplace_uuid désigne une ligne d'un autre objet ou d'un autre type ; la ligne désignée garde sa valeur, la saisie est tête de sa propre clé, une anomalie est rattachée à cette clé",
+  "format": "voir fixtures/README.md, section Journal",
+  "unites": {
+    "temps": "ISO 8601 UTC avec Z",
+    "uuid": "identifiants symboliques U1, U2... ; l'ordre lexicographique tient lieu d'ordre des uuid v7"
+  },
+  "cas": [
+    {
+      "id": "JR-65",
+      "description": "Correction d'un état qui désigne la ligne d'état d'un autre objet : la ligne désignée garde sa valeur, la saisie est tête de sa propre clé avec l'anomalie remplace_autre_objet.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "E1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "E2",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "E1|etat": {
+            "courant": "U1",
+            "conflit": false,
+            "tetes": [
+              "U1"
+            ],
+            "anomalies": []
+          },
+          "E2|etat": {
+            "courant": "U2",
+            "conflit": false,
+            "tetes": [
+              "U2"
+            ],
+            "anomalies": [
+              "remplace_autre_objet"
+            ]
+          }
+        }
+      },
+      "source": "décision de Pascal du 2026-10-17 (fiche 021) (1) ; même traitement que remplace_inconnu (JR-10)"
+    },
+    {
+      "id": "JR-66",
+      "description": "Même cas que JR-65, la ligne anormale arrive avant la ligne qu'elle désigne : résultat identique.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "E1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "E2",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          }
+        ],
+        "ordres_d_arrivee": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "E1|etat": {
+            "courant": "U1",
+            "conflit": false,
+            "tetes": [
+              "U1"
+            ],
+            "anomalies": []
+          },
+          "E2|etat": {
+            "courant": "U2",
+            "conflit": false,
+            "tetes": [
+              "U2"
+            ],
+            "anomalies": [
+              "remplace_autre_objet"
+            ]
+          }
+        }
+      },
+      "source": "décision de Pascal du 2026-10-17 (fiche 021) (1) ; docs/adr/0005-stockage-et-sauvegarde.md (le résultat ne dépend pas de l'ordre d'arrivée)"
+    },
+    {
+      "id": "JR-67",
+      "description": "Une annulation qui désigne la ligne d'un autre objet n'annule rien : la ligne désignée garde sa valeur, l'annulation reste au journal, tête de la clé (E2, annulation) avec l'anomalie remplace_autre_objet.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "E1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "E2",
+            "type": "annulation",
+            "valeur": null,
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "E1|etat": {
+            "courant": "U1",
+            "conflit": false,
+            "tetes": [
+              "U1"
+            ],
+            "anomalies": []
+          },
+          "E2|annulation": {
+            "courant": "U2",
+            "conflit": false,
+            "tetes": [
+              "U2"
+            ],
+            "anomalies": [
+              "remplace_autre_objet"
+            ]
+          }
+        }
+      },
+      "source": "décision de Pascal du 2026-10-17 (fiche 021) (1) ; réponse de Pascal à Q1 relayée par l'orchestrateur"
+    },
+    {
+      "id": "JR-68",
+      "description": "Autre objet et autre type à la fois (état de E2 qui désigne le pointage de P1) : seule remplace_autre_objet est signalée.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "pointage",
+            "valeur": {
+              "distance_m": 3.2,
+              "azimut_mag": 120,
+              "unite_azimut": "deg"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "E2",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|pointage": {
+            "courant": "U1",
+            "conflit": false,
+            "tetes": [
+              "U1"
+            ],
+            "anomalies": []
+          },
+          "E2|etat": {
+            "courant": "U2",
+            "conflit": false,
+            "tetes": [
+              "U2"
+            ],
+            "anomalies": [
+              "remplace_autre_objet"
+            ]
+          }
+        }
+      },
+      "source": "décision de Pascal du 2026-10-17 (fiche 021) (1) ; réponse de Pascal à Q2 relayée par l'orchestrateur"
+    },
+    {
+      "id": "JR-69",
+      "description": "Pas de faux positif : une correction du même objet et du même type, sur une ligne connue, ne produit aucune anomalie.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "E1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "E1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "E1|etat": {
+            "courant": "U2",
+            "conflit": false,
+            "tetes": [
+              "U2"
+            ],
+            "anomalies": []
+          }
+        }
+      },
+      "source": "docs/spec.md § 5 (l'état courant suit remplace_uuid)"
+    },
+    {
+      "id": "JR-70",
+      "description": "La saisie anormale reste corrigeable : une correction du même objet qui la remplace devient la tête de la clé.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "E1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "E2",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "E2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": "U2",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 3,
+            "saisi_le_utc": "2026-10-14T09:10:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 3000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "E1|etat": {
+            "courant": "U1",
+            "conflit": false,
+            "tetes": [
+              "U1"
+            ],
+            "anomalies": []
+          },
+          "E2|etat": {
+            "courant": "U3",
+            "conflit": false,
+            "tetes": [
+              "U3"
+            ]
+          }
+        }
+      },
+      "source": "docs/spec.md § 5 (l'état courant suit remplace_uuid)",
+      "note": "Les anomalies de E2|etat ne sont pas attendues ici : la spec ne dit pas si l'anomalie de U2 reste attachée à la clé une fois U2 remplacée. Le test ne les vérifie pas pour ce cas."
+    },
+    {
+      "id": "JR-71",
+      "description": "Une saisie de type etat dont remplace_uuid désigne un pointage du même objet : la clé du pointage garde sa valeur, l'état est tête de sa propre clé avec l'anomalie remplace_autre_type.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "pointage",
+            "valeur": {
+              "distance_m": 3.2,
+              "azimut_mag": 120,
+              "unite_azimut": "deg"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|pointage": {
+            "courant": "U1",
+            "conflit": false,
+            "tetes": [
+              "U1"
+            ],
+            "anomalies": []
+          },
+          "P1|etat": {
+            "courant": "U2",
+            "conflit": false,
+            "tetes": [
+              "U2"
+            ],
+            "anomalies": [
+              "remplace_autre_type"
+            ]
+          }
+        }
+      },
+      "source": "décision de Pascal du 2026-10-17 (fiche 021) (2)",
+      "limite": "La spec § 5 donne au pointage le plant pour objet et à l'état la ligne de etats_plants : un même objet pour les deux types n'est pas réaliste. Le cas reprend la combinaison de JR-08 (P1, pointage et etat)."
+    },
+    {
+      "id": "JR-72",
+      "description": "Même cas que JR-71, la ligne anormale arrive avant la ligne désignée : résultat identique.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "pointage",
+            "valeur": {
+              "distance_m": 3.2,
+              "azimut_mag": 120,
+              "unite_azimut": "deg"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          }
+        ],
+        "ordres_d_arrivee": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|pointage": {
+            "courant": "U1",
+            "conflit": false,
+            "tetes": [
+              "U1"
+            ],
+            "anomalies": []
+          },
+          "P1|etat": {
+            "courant": "U2",
+            "conflit": false,
+            "tetes": [
+              "U2"
+            ],
+            "anomalies": [
+              "remplace_autre_type"
+            ]
+          }
+        }
+      },
+      "source": "décision de Pascal du 2026-10-17 (fiche 021) (2) ; docs/adr/0005-stockage-et-sauvegarde.md (ordre d'arrivée sans effet)",
+      "limite": "Voir JR-71."
+    },
+    {
+      "id": "JR-73",
+      "description": "Les anomalies restent chacune sur leur clé : un remplacement inconnu, un autre objet et un autre type dans le même journal.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "E1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U0",
+            "objet_uuid": "P1",
+            "type": "pointage",
+            "valeur": {
+              "distance_m": 3.2,
+              "azimut_mag": 120,
+              "unite_azimut": "deg"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 5,
+            "saisi_le_utc": "2026-10-14T09:20:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 5000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "E2",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U0",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 3,
+            "saisi_le_utc": "2026-10-14T09:10:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 3000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U4",
+            "objet_uuid": "E3",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U9",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 4,
+            "saisi_le_utc": "2026-10-14T09:15:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 4000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "E1|etat": {
+            "courant": "U1",
+            "conflit": false,
+            "tetes": [
+              "U1"
+            ],
+            "anomalies": []
+          },
+          "P1|pointage": {
+            "courant": "U0",
+            "conflit": false,
+            "tetes": [
+              "U0"
+            ],
+            "anomalies": []
+          },
+          "E2|etat": {
+            "courant": "U2",
+            "conflit": false,
+            "tetes": [
+              "U2"
+            ],
+            "anomalies": [
+              "remplace_autre_objet"
+            ]
+          },
+          "P1|etat": {
+            "courant": "U3",
+            "conflit": false,
+            "tetes": [
+              "U3"
+            ],
+            "anomalies": [
+              "remplace_autre_type"
+            ]
+          },
+          "E3|etat": {
+            "courant": "U4",
+            "conflit": false,
+            "tetes": [
+              "U4"
+            ],
+            "anomalies": [
+              "remplace_inconnu"
+            ]
+          }
+        }
+      },
+      "source": "décision de Pascal du 2026-10-17 (fiche 021) (1 et 2) ; arbitrage de Pascal du 2026-10-17 (Q2) pour remplace_inconnu"
+    }
+  ]
+}
