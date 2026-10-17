@@ -110,6 +110,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            // L'APK de test est minifié avec la release : androidx.test cite des annotations errorprone absentes.
+            testProguardFiles("proguard-test-rules.pro")
         }
     }
 

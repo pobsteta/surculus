@@ -136,7 +136,11 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: ./gradlew :app:connectedReleaseAndroidTest --no-daemon "-PappVersionName=$VERSION" "-PappVersionCode=$NUMERO"
+          # Gradle rend « réussi » une instrumentation qui plante avant le premier test (0 test joué) : on exige
+          # donc au moins un test joué et aucun échec dans le rapport.
+          script: |
+            ./gradlew :app:connectedReleaseAndroidTest --no-daemon "-PappVersionName=$VERSION" "-PappVersionCode=$NUMERO"
+            bash scripts/verifier-fumee.sh app/build/outputs/androidTest-results/connected/release
 
       - name: Préparer l'APK, les notes et le résumé
         env:

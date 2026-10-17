@@ -15,3 +15,18 @@
 # java.sql.JDBCType n'existe pas dans l'API Android : seul JDBC3PreparedStatement.getParameterTypeName() la cite,
 # et Surculus ne l'appelle jamais (rapport de R8, missing_rules.txt, 2026-10-17).
 -dontwarn java.sql.JDBCType
+
+# :gpkg (mission 006) : l'application n'appelle pas encore le module, donc R8 retire toutes ses classes de l'APK
+# release, et l'essai de fumée n'éprouverait plus les natifs de sqlite-jdbc (le vrai risque de l'ADR 0011).
+# On garde les points d'entrée publics. À retirer quand l'app appelle :gpkg.
+-keep class io.github.pobsteta.surculus.gpkg.** { public *; }
+# Idem pour :core, que l'essai de fumée emploie (repères, états, totaux) : sans cela R8 le renomme dans l'application.
+-keep class io.github.pobsteta.surculus.core.** { public *; }
+
+# Essai de fumée (mission 006) : le runner androidx.test de l'APK de test charge androidx.tracing.Trace depuis
+# l'APK de l'application (les classes déjà présentes dans l'application ne sont pas reprises dans l'APK de test), ainsi que
+# la bibliothèque standard de Kotlin.
+# R8 la retirait de la release, car l'application ne l'appelle pas : le runner plantait avant le premier test.
+-keep class androidx.tracing.** { *; }
+-keep class kotlin.** { *; }
+-keep class kotlinx.** { *; }
