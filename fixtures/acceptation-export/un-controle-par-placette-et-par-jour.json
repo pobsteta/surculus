@@ -1,0 +1,496 @@
+{
+  "fichier": "un-controle-par-placette-et-par-jour.json",
+  "regle": "L'export refuse (`controle_en_double`) deux contrôles d'une même placette qui partagent le jour de Paris OU le jour UTC ; il ne fusionne jamais. Le jour de Paris est celui que fournit l'appelant (`jour_civil`) ; le jour UTC est celui de `visite_le`.",
+  "format": "voir fixtures/README.md, section Export (acceptation-export/)",
+  "cas": [
+    {
+      "id": "EX-19",
+      "description": "Deux contrôles le même jour (11:00 et 15:00 à Paris, 09:00Z et 13:00Z) : refusé, jamais fusionné.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T13:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "controle_en_double"
+      },
+      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J1 (la correction relève du journal et du domaine, pas de l'export)"
+    },
+    {
+      "id": "EX-20",
+      "description": "Deux jours consécutifs (Paris 14 et 15, UTC 14 et 15) : acceptés tous les deux.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-15T09:00:00Z",
+              "jour_civil": "2026-10-15",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "controles_ecrits": [
+          {
+            "uuid": "CT-001"
+          },
+          {
+            "uuid": "CT-002"
+          }
+        ]
+      },
+      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J2"
+    },
+    {
+      "id": "EX-21",
+      "description": "Exemple de Pascal : 23 h 30 le 20 et 00 h 30 le 21, heure de Paris (21:30Z et 22:30Z le 20) : jours Paris différents, même jour UTC, refusé.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-20T21:30:00Z",
+              "jour_civil": "2026-10-20",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-20T22:30:00Z",
+              "jour_civil": "2026-10-21",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "controle_en_double"
+      },
+      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6 ; exemple de la fiche 020",
+      "note": "Le 20 octobre 2026 est en heure d'été (UTC+2)."
+    },
+    {
+      "id": "EX-22",
+      "description": "Après le changement d'heure du 25 octobre 2026 : 02:30 CET le 25 (01:30Z) et 00:30 CET le 26 (23:30Z le 25) : jours Paris différents, même jour UTC, refusé.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-25T01:30:00Z",
+              "jour_civil": "2026-10-25",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-25T23:30:00Z",
+              "jour_civil": "2026-10-26",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "controle_en_double"
+      },
+      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6 ; tzdata Europe/Paris : fin de l'heure d'été le 2026-10-25 à 01:00 UTC (fixtures/README.md)"
+    },
+    {
+      "id": "EX-23",
+      "description": "Même jour de Paris, jours UTC différents : 00 h 30 et 14 h 00 le 20 à Paris (22:30Z le 19 et 12:00Z le 20) : refusé.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-19T22:30:00Z",
+              "jour_civil": "2026-10-20",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-20T12:00:00Z",
+              "jour_civil": "2026-10-20",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "controle_en_double"
+      },
+      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6"
+    },
+    {
+      "id": "EX-24",
+      "description": "Deux placettes différentes le même jour : acceptées (la clé est la paire placette-jour).",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            },
+            {
+              "uuid": "PL-002",
+              "code_placette": "P-002",
+              "x": 850489.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-002",
+              "visite_le": "2026-10-14T13:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850489.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "controles_ecrits": [
+          {
+            "uuid": "CT-001"
+          },
+          {
+            "uuid": "CT-002"
+          }
+        ]
+      },
+      "source": "docs/journal.md, 2026-10-17 (arbitrage de Pascal : un contrôle par placette et par jour civil Europe/Paris, et par jour UTC) ; docs/spec.md § 6"
+    },
+    {
+      "id": "EX-25",
+      "description": "Jour civil repris du journal, fix GNSS à 2 s : visite_le porte l'instant GNSS (21:59:59Z, 23:59:59 à Paris, jour 20) et non l'heure du téléphone (22:00:01Z, jour 21). Un contrôle du 21 à 08:00Z n'est pas un doublon.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-20T21:59:59Z",
+              "jour_civil": "2026-10-20",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-21T08:00:00Z",
+              "jour_civil": "2026-10-21",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "controles_ecrits": [
+          {
+            "uuid": "CT-001",
+            "visite_le_utc": "2026-10-20T21:59:59Z"
+          },
+          {
+            "uuid": "CT-002",
+            "visite_le_utc": "2026-10-21T08:00:00Z"
+          }
+        ]
+      },
+      "source": "docs/spec.md § 5 (jour civil sur l'heure GNSS si le fix a au plus 5 s) ; ADR 0005 (ligne Temps) ; fixtures/journal/jour-civil.json ; journal 2026-10-17 (l'export reprend le jour du journal)",
+      "note": "Entrée de l'export : l'instant retenu par le journal et son jour civil. L'âge du fix est déjà jugé en amont."
+    },
+    {
+      "id": "EX-26",
+      "description": "Fix de plus de 5 s (5001 ms) : le journal retient l'heure du téléphone, 22:00:01Z, jour 21 à Paris. Un autre contrôle du 21 à 08:00Z est un doublon (même jour de Paris).",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-20T22:00:01Z",
+              "jour_civil": "2026-10-21",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-21T08:00:00Z",
+              "jour_civil": "2026-10-21",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "controle_en_double"
+      },
+      "source": "docs/spec.md § 5 ; ADR 0005 (ligne Temps) ; fixtures/journal/jour-civil.json (fix à 5001 ms écarté)"
+    },
+    {
+      "id": "EX-27",
+      "description": "L'export reprend le jour fourni et ne le recalcule pas : CT-001 porte visite_le 22:30Z le 20 (jour de Paris réel : 21) mais jour_civil fourni 2026-10-20 ; avec CT-002 au 21 à 08:00Z, jours fournis 20 et 21 et jours UTC 20 et 21 : accepté. Un recalcul donnerait deux fois le 21 et un refus.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-20T22:30:00Z",
+              "jour_civil": "2026-10-20",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-21T08:00:00Z",
+              "jour_civil": "2026-10-21",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "controles_ecrits": [
+          {
+            "uuid": "CT-001"
+          },
+          {
+            "uuid": "CT-002"
+          }
+        ]
+      },
+      "source": "Décision de Pascal rapportée par l'orchestrateur le 2026-10-17 : l'export reprend le jour civil du journal",
+      "note": "Entrée volontairement incohérente (le journal ne la produirait pas) : elle ne sert qu'à prouver que l'export ne recalcule pas le jour de Paris."
+    }
+  ]
+}

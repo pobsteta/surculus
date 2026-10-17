@@ -1,0 +1,300 @@
+{
+  "fichier": "schema-couches-ajoutees.json",
+  "regle": "Noms de couches et de champs des six couches ajoutées ; les champs sont exigés par leur nom, leur type par sa classe",
+  "source": "docs/spec.md § 5 (noms de couches, noms de champs, géométries) ; ADR 0007 (six couches, tables sans géométrie en `attributes`)",
+  "types_proposes": true,
+  "note": "Les CLASSES de type (TEXT, INTEGER, REAL, BOOLEAN, DATETIME) sont une PROPOSITION du testeur : ni la spec ni l'ADR 0007 ne fixent les types SQL ; le journal du 2026-10-17 dit seulement que Pascal les a validés par anticipation dans le plan de la 006 (non lu). `departs` est un tableau JSON stocké en TEXT. La colonne de version du schéma, évoquée par l'ADR 0007 pour `projet`, n'a pas de nom dans les sources : elle n'est pas exigée ici. Les champs en plus sont tolérés (ADR 0007 : un lecteur ignore les champs nouveaux), seuls les manquants échouent. Un champ `fid` (clé primaire entière) est toléré ; la clé n'est pas exigée sous ce nom.",
+  "classes_acceptees": {
+    "TEXT": [
+      "TEXT"
+    ],
+    "INTEGER": [
+      "INTEGER",
+      "INT",
+      "MEDIUMINT",
+      "SMALLINT"
+    ],
+    "REAL": [
+      "REAL",
+      "DOUBLE",
+      "FLOAT"
+    ],
+    "BOOLEAN": [
+      "BOOLEAN"
+    ],
+    "DATETIME": [
+      "DATETIME",
+      "TEXT"
+    ]
+  },
+  "couches": {
+    "plants": {
+      "data_type": "features",
+      "type_geometrie": "POINT",
+      "champs": [
+        {
+          "nom": "uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "placette_uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "numero",
+          "classe": "INTEGER"
+        },
+        {
+          "nom": "essence",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "regarni",
+          "classe": "BOOLEAN"
+        },
+        {
+          "nom": "remplace_uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "pointe_le",
+          "classe": "DATETIME"
+        },
+        {
+          "nom": "distance_m",
+          "classe": "REAL"
+        },
+        {
+          "nom": "azimut_mag",
+          "classe": "REAL"
+        },
+        {
+          "nom": "unite_azimut",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "declinaison_deg",
+          "classe": "REAL"
+        },
+        {
+          "nom": "convergence_deg",
+          "classe": "REAL"
+        },
+        {
+          "nom": "azimut_geo_deg",
+          "classe": "REAL"
+        },
+        {
+          "nom": "modele_geomagnetique",
+          "classe": "TEXT"
+        }
+      ]
+    },
+    "positions_controles": {
+      "data_type": "features",
+      "type_geometrie": "POINT",
+      "champs": [
+        {
+          "nom": "controle_uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "precision_m",
+          "classe": "REAL"
+        },
+        {
+          "nom": "source_gnss",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "referentiel_source",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "simulee",
+          "classe": "BOOLEAN"
+        },
+        {
+          "nom": "rattache_par_identite",
+          "classe": "BOOLEAN"
+        }
+      ]
+    },
+    "etats_plants": {
+      "data_type": "attributes",
+      "type_geometrie": null,
+      "champs": [
+        {
+          "nom": "uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "controle_uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "plant_uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "etat",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "cause_groupe",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "cause_detail",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "hauteur_cm",
+          "classe": "INTEGER"
+        }
+      ]
+    },
+    "constats_reprise": {
+      "data_type": "features",
+      "type_geometrie": "POLYGON",
+      "champs": [
+        {
+          "nom": "uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "methode",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "pas_lignes",
+          "classe": "REAL"
+        },
+        {
+          "nom": "departs",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "essence",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "nb_plants_chantier",
+          "classe": "INTEGER"
+        },
+        {
+          "nom": "nb_sains",
+          "classe": "INTEGER"
+        },
+        {
+          "nom": "nb_atteints",
+          "classe": "INTEGER"
+        },
+        {
+          "nom": "nb_morts",
+          "classe": "INTEGER"
+        },
+        {
+          "nom": "nb_absents",
+          "classe": "INTEGER"
+        },
+        {
+          "nom": "taux_brut_pct",
+          "classe": "REAL"
+        },
+        {
+          "nom": "ic_bas_pct",
+          "classe": "REAL"
+        },
+        {
+          "nom": "ic_haut_pct",
+          "classe": "REAL"
+        },
+        {
+          "nom": "seuil_pct",
+          "classe": "REAL"
+        },
+        {
+          "nom": "seuil_source",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "alerte",
+          "classe": "BOOLEAN"
+        },
+        {
+          "nom": "visite_le",
+          "classe": "DATETIME"
+        },
+        {
+          "nom": "operateur",
+          "classe": "TEXT"
+        }
+      ]
+    },
+    "vides": {
+      "data_type": "features",
+      "type_geometrie": "POLYGON",
+      "champs": [
+        {
+          "nom": "uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "constat_uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "placette_uuid",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "surface_are",
+          "classe": "REAL"
+        },
+        {
+          "nom": "origine",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "visite_le",
+          "classe": "DATETIME"
+        },
+        {
+          "nom": "operateur",
+          "classe": "TEXT"
+        }
+      ]
+    },
+    "projet": {
+      "data_type": "attributes",
+      "type_geometrie": null,
+      "champs": [
+        {
+          "nom": "nom",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "foret",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "operateur",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "prepare_le",
+          "classe": "DATETIME"
+        },
+        {
+          "nom": "version_sommier",
+          "classe": "TEXT"
+        },
+        {
+          "nom": "version_surculus",
+          "classe": "TEXT"
+        }
+      ]
+    }
+  }
+}

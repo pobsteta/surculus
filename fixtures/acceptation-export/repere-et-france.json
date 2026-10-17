@@ -1,0 +1,298 @@
+{
+  "fichier": "repere-et-france.json",
+  "regle": "Repère lu dans la tournée, jamais codé en dur ; 2154 et 9794 ne se mêlent pas ; une placette française tombe en France",
+  "format": "voir fixtures/README.md, section Export (acceptation-export/)",
+  "cas": [
+    {
+      "id": "EX-12",
+      "description": "Tournée en 2154 : toutes les couches à géométrie, de sommieR comme ajoutées, sont en srs_id 2154.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "srs_id_couches_a_geometrie": 2154
+      },
+      "source": "ADR 0007 (ligne Repère : EPSG:2154 tant que sommieR n'est pas passé à 9794)"
+    },
+    {
+      "id": "EX-13",
+      "description": "Tournée synthétique en 9794 : l'export écrit 9794 partout, il ne recode pas 2154 en dur.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 9794,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33,
+                "repere_epsg": 9794
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "srs_id_couches_a_geometrie": 9794
+      },
+      "source": "ADR 0007 (repère lu dans gpkg_spatial_ref_sys, jamais codé en dur)",
+      "note": "Aucun modèle 9794 de sommieR n'existe encore : la tournée est synthétique, le cas est de principe. Les coordonnées reprises de Couchey sont celles de 2154 (la différence 2154/9794 est de l'ordre de quelques millimètres)."
+    },
+    {
+      "id": "EX-14",
+      "description": "Tournée en 2154 dont une saisie arrive en 9794 : le fichier mêlerait 2154 et 9794, l'export est refusé.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33,
+                "repere_epsg": 9794
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "melange_reperes"
+      },
+      "source": "ADR 0007 (« un fichier qui mêle 2154 et 9794 est refusé »)"
+    },
+    {
+      "id": "EX-14b",
+      "description": "Tournée de départ en 2154 qui reprend des plants de la tournée précédente rendue en 9794 : mélange refusé.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": [
+            {
+              "uuid": "PLA-08",
+              "placette_uuid": "PL-001",
+              "numero": 8,
+              "essence": "CHS",
+              "repere_epsg": 9794
+            }
+          ]
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "melange_reperes"
+      },
+      "source": "ADR 0007 (repère ; plants à l'aller repris de la tournée précédente)",
+      "hypothese": "Le repère d'une tournée précédente est connu de l'export (couche plants de son .zip)."
+    },
+    {
+      "id": "EX-15",
+      "description": "Placette française (Couchey, Brest, Paris) : chaque point écrit tombe en France.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            },
+            {
+              "uuid": "PL-002",
+              "code_placette": "P-002",
+              "x": 146341.35,
+              "y": 6836245.4
+            },
+            {
+              "uuid": "PL-003",
+              "code_placette": "P-003",
+              "x": 652310.72,
+              "y": 6862414.64
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-002",
+              "placette_uuid": "PL-002",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 146341.35,
+                "y": 6836245.4
+              },
+              "plants": []
+            },
+            {
+              "uuid": "CT-003",
+              "placette_uuid": "PL-003",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 652310.72,
+                "y": 6862414.64
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "points_en_france": true,
+        "emprise_l93_m": {
+          "x": [
+            99217,
+            1242375
+          ],
+          "y": [
+            6049647,
+            7110480
+          ],
+          "a_verifier": "bornes de la zone d'utilisation d'EPSG:2154, relevées de mémoire ; à confirmer sur epsg.io avant la validation"
+        }
+      },
+      "source": "docs/spec.md § 6 (tout point écrit tombe en France) ; fixtures/regles/emprise-et-france.json (F-Couchey, F-Brest, F-Paris)"
+    },
+    {
+      "id": "EX-15b",
+      "description": "Piège de la Somalie : x et y inversés (x = 6 686 306,33 ; y = 850 469,39) : refusé, rien n'est écrit hors de France.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 6686306.33,
+              "y": 850469.39
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 6686306.33,
+                "y": 850469.39
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "hors_france"
+      },
+      "source": "CLAUDE.md (placette en Somalie) ; fixtures/regles/emprise-et-france.json (C15 : latitude et longitude inversées) ; docs/spec.md § 6"
+    }
+  ]
+}
