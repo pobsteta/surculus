@@ -405,12 +405,13 @@
             "conflit": false,
             "tetes": [
               "U3"
-            ]
+            ],
+            "anomalies": []
           }
         }
       },
-      "source": "docs/spec.md § 5 (l'état courant suit remplace_uuid)",
-      "note": "Les anomalies de E2|etat ne sont pas attendues ici : la spec ne dit pas si l'anomalie de U2 reste attachée à la clé une fois U2 remplacée. Le test ne les vérifie pas pour ce cas."
+      "source": "décision de Pascal du 2026-10-17, relecture de la PR #35 ; docs/spec.md § 5 (l'état courant suit remplace_uuid)",
+      "note": "L'anomalie disparaît de la clé : la nouvelle tête n'est plus douteuse, l'erreur reste tracée au journal (ajout seul)."
     },
     {
       "id": "JR-71",
@@ -703,6 +704,62 @@
         }
       },
       "source": "décision de Pascal du 2026-10-17 (fiche 021) (1 et 2) ; arbitrage de Pascal du 2026-10-17 (Q2) pour remplace_inconnu"
+    },
+    {
+      "id": "JR-74",
+      "description": "Un remplacement inconnu corrigé par une correction normale : la nouvelle tête n'a plus d'anomalie.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U9",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:05:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": "U2",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 3,
+            "saisi_le_utc": "2026-10-14T09:10:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 3000,
+            "demarrage": 1
+          }
+        ]
+      },
+      "attendu": {
+        "projection": {
+          "P1|etat": {
+            "courant": "U3",
+            "conflit": false,
+            "tetes": [
+              "U3"
+            ],
+            "anomalies": []
+          }
+        }
+      },
+      "source": "décision de Pascal du 2026-10-17, relecture de la PR #35 ; docs/spec.md § 5 (un remplace_uuid inconnu : ligne gardée avec une anomalie)",
+      "note": "Le cas JR-11 est différent : la ligne désignée finit par arriver."
     }
   ]
 }

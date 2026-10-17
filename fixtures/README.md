@@ -81,9 +81,9 @@ Scénarios du journal en ajout seul (ADR 0005, spec § 5), écrits par le `teste
 * `heures_brutes_reecrites` : toujours `false` ; l'heure brute des lignes n'est jamais réécrite.
 * `jour_civil` : jour civil Europe/Paris, `AAAA-MM-JJ`.
 
-### Remplacements anormaux (`remplacements-anormaux.json`, JR-65 à JR-73)
+### Remplacements anormaux (`remplacements-anormaux.json`, JR-65 à JR-74)
 
-Décisions de Pascal du 2026-10-17 (mission 021). Une saisie dont `remplace_uuid` désigne une ligne **connue** d'un autre objet (`remplace_autre_objet`), ou d'un autre type du même objet (`remplace_autre_type`) : la ligne désignée garde sa valeur, la saisie est tête de sa propre clé, l'anomalie est rattachée à cette clé (comme `remplace_inconnu`). Une annulation qui désigne la ligne d'un autre objet n'annule rien ; elle reste au journal, tête de la clé (objet de l'annulation, `annulation`). Si l'objet et le type diffèrent, seule `remplace_autre_objet` est signalée. JR-70 n'attend pas d'anomalies (clé `anomalies` absente) : la spec ne dit pas si l'anomalie reste attachée après correction. JR-71 et JR-72 reprennent la combinaison de JR-08 (même objet pour `pointage` et `etat`), peu réaliste d'après la spec § 5.
+Décisions de Pascal du 2026-10-17 (mission 021). Une saisie dont `remplace_uuid` désigne une ligne **connue** d'un autre objet (`remplace_autre_objet`), ou d'un autre type du même objet (`remplace_autre_type`) : la ligne désignée garde sa valeur, la saisie est tête de sa propre clé, l'anomalie est rattachée à cette clé (comme `remplace_inconnu`). Une annulation qui désigne la ligne d'un autre objet n'annule rien ; elle reste au journal, tête de la clé (objet de l'annulation, `annulation`). Si l'objet et le type diffèrent, seule `remplace_autre_objet` est signalée. Une anomalie de remplacement disparaît quand la saisie anormale est corrigée par une correction normale (JR-70, JR-74) : la nouvelle tête n'est plus douteuse, l'erreur reste tracée au journal (décision de Pascal du 2026-10-17, relecture de la PR #35). JR-71 et JR-72 reprennent la combinaison de JR-08 (même objet pour `pointage` et `etat`), peu réaliste d'après la spec § 5.
 
 ### Divers
 
