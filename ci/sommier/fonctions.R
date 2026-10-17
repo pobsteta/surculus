@@ -104,8 +104,13 @@ comparer_schema <- function(tournee_gpkg, modele_gpkg) {
 # Copie `dossier` dans `destination` privée des `couches` données : tables,
 # lignes de gpkg_contents, gpkg_geometry_columns, gpkg_data_columns et
 # gpkg_extensions. Une couche absente est ignorée. C'est le témoin « sans »
-# du critère (a) : le même export, sans ce que Surculus a ajouté. Vérifie
-# qu'il ne reste aucune trace.
+# du critère (a) : le même export, sans ce que Surculus a ajouté.
+#
+# `sf::st_delete()` passe par GDAL, qui retire lui-même la table, l'index
+# spatial (`rtree_<couche>_<geom>` et ses triggers) et la ligne de
+# `gpkg_ogr_contents` ; le DELETE ci-dessous ne fait que balayer ce que GDAL
+# aurait laissé dans les tables du standard. Puis `traces_restantes()` vérifie
+# qu'il ne reste plus rien, et la fonction s'arrête sinon.
 retirer_couches <- function(dossier, destination, couches = COUCHES_AJOUTEES) {
   unlink(destination, recursive = TRUE)
   dir.create(destination, recursive = TRUE)
@@ -117,19 +122,96 @@ retirer_couches <- function(dossier, destination, couches = COUCHES_AJOUTEES) {
   db <- DBI::dbConnect(RSQLite::SQLite(), gpkg)
   on.exit(DBI::dbDisconnect(db))
   for (couche in couches) {
-    for (t in c("gpkg_contents", "gpkg_geometry_columns",
-                "gpkg_data_columns", "gpkg_extensions")) {
+    for (t in TABLES_STANDARD_PAR_COUCHE) {
       if (DBI::dbExistsTable(db, t))
         DBI::dbExecute(db, sprintf("DELETE FROM %s WHERE table_name = ?", t),
                        params = list(couche))
     }
   }
-  restes <- intersect(couches, c(DBI::dbListTables(db),
-                                 sf::st_layers(gpkg)$name))
+  restes <- traces_restantes(db, couches)
   if (length(restes))
-    stop("Couches non retirées : ", paste(restes, collapse = ", "),
+    stop("Traces non retirées : ", paste(restes, collapse = " ; "),
          call. = FALSE)
   invisible(destination)
+}
+
+# Tables du standard GeoPackage (et de GDAL) qui portent une ligne par couche.
+TABLES_STANDARD_PAR_COUCHE <- c(
+  "gpkg_contents", "gpkg_geometry_columns", "gpkg_data_columns",
+  "gpkg_extensions", "gpkg_metadata_reference", "gpkg_ogr_contents")
+
+# Ce qu'il reste des `couches` dans le GeoPackage ouvert `db` : objets de
+# sqlite_master (tables, vues, triggers, index) dont le nom est celui de la
+# couche ou `rtree_<couche>_*`, et lignes des tables du standard. Vecteur
+# vide : plus rien.
+traces_restantes <- function(db, couches) {
+  restes <- character(0)
+  maitre <- DBI::dbGetQuery(db, "SELECT type, name FROM sqlite_master")
+  for (couche in couches) {
+    noms <- maitre$name[maitre$name == couche |
+                          startsWith(maitre$name, paste0("rtree_", couche, "_"))]
+    if (length(noms))
+      restes <- c(restes, paste0("sqlite_master : ", paste(noms, collapse = ", ")))
+    for (t in TABLES_STANDARD_PAR_COUCHE) {
+      if (!DBI::dbExistsTable(db, t)) next
+      n <- DBI::dbGetQuery(
+        db, sprintf("SELECT count(*) AS n FROM %s WHERE table_name = ?", t),
+        params = list(couche))$n
+      if (n > 0L) restes <- c(restes, paste0(t, " : ", couche))
+    }
+  }
+  restes
+}
+
+# Auto-test du retrait (décision de Pascal) : pose les six couches, vides, sur
+# une copie de `dossier` -- dont trois géométriques, donc avec index spatial,
+# et des lignes dans gpkg_data_columns --, les retire, et vérifie que le
+# résultat ne contient plus rien d'elles et garde les couches de départ.
+# Rend un vecteur de fautes, vide si tout va bien.
+autotest_retrait <- function(dossier, travail) {
+  copie <- file.path(travail, "autotest-pose")
+  unlink(copie, recursive = TRUE)
+  dir.create(copie, recursive = TRUE)
+  file.copy(list.files(dossier, full.names = TRUE, all.files = TRUE,
+                       no.. = TRUE), copie, recursive = TRUE)
+  gpkg <- file.path(copie, "travaux.gpkg")
+  avant <- sf::st_layers(gpkg)$name
+  vide_pt <- sf::st_as_sf(data.frame(id = integer(0), x = numeric(0),
+                                     y = numeric(0)),
+                          coords = c("x", "y"), crs = 2154)
+  for (couche in COUCHES_AJOUTEES) {
+    if (couche %in% c("plants", "vides", "positions_controles")) {
+      suppressWarnings(sf::st_write(vide_pt, gpkg, layer = couche, quiet = TRUE))
+    } else {
+      sf::st_write(data.frame(id = integer(0)), gpkg, layer = couche,
+                   quiet = TRUE)
+    }
+  }
+  db <- DBI::dbConnect(RSQLite::SQLite(), gpkg)
+  if (!DBI::dbExistsTable(db, "gpkg_data_columns"))
+    DBI::dbExecute(db, "CREATE TABLE gpkg_data_columns (
+      table_name TEXT NOT NULL, column_name TEXT NOT NULL, name TEXT,
+      title TEXT, description TEXT, mime_type TEXT, constraint_name TEXT,
+      CONSTRAINT pk_gdc PRIMARY KEY (table_name, column_name))")
+  for (couche in COUCHES_AJOUTEES)
+    DBI::dbExecute(db, "INSERT INTO gpkg_data_columns (table_name, column_name)
+                         VALUES (?, 'id')", params = list(couche))
+  poses <- traces_restantes(db, COUCHES_AJOUTEES)
+  DBI::dbDisconnect(db)
+  fautes <- character(0)
+  if (!any(grepl("^sqlite_master : .*rtree_", poses)))
+    fautes <- c(fautes, "autotest : la pose n'a créé aucun index spatial")
+  if (!all(COUCHES_AJOUTEES %in% sf::st_layers(gpkg)$name))
+    fautes <- c(fautes, "autotest : les six couches ne sont pas toutes posées")
+  retire <- retirer_couches(copie, file.path(travail, "autotest-retire"))
+  db <- DBI::dbConnect(RSQLite::SQLite(), file.path(retire, "travaux.gpkg"))
+  on.exit(DBI::dbDisconnect(db))
+  fautes <- c(fautes, traces_restantes(db, COUCHES_AJOUTEES))
+  apres <- sf::st_layers(file.path(retire, "travaux.gpkg"))$name
+  if (!setequal(apres, avant))
+    fautes <- c(fautes, paste0("autotest : couches de départ ", length(avant),
+                               " -> ", length(apres), " après retrait"))
+  fautes
 }
 
 # (c) Toutes les couches ajoutées sont listées par sf::st_layers().

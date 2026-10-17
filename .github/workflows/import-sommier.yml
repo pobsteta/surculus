@@ -58,10 +58,10 @@ jobs:
       EXPORT_SURCULUS: ci/sommier/export-surculus
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Configurer R
-        uses: r-lib/actions/setup-r@v2
+        uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
         with:
           r-version: 'release'
           use-public-rspm: true
@@ -74,6 +74,10 @@ jobs:
             libcurl4-openssl-dev libxml2-dev
 
       - name: Paquets R
+        env:
+          # Sans jeton, remotes utilise son PAT intégré, refusé par l'API
+          # GitHub. Le jeton du job est en lecture seule (contents: read).
+          GITHUB_PAT: ${{ github.token }}
         run: |
           install.packages(c("remotes", "DBI", "RPostgres", "RSQLite", "sf",
                              "jsonlite", "withr", "xml2", "openssl"))
@@ -89,10 +93,10 @@ jobs:
         run: |
           Rscript -e 'con <- DBI::dbConnect(RPostgres::Postgres(), host = "localhost", dbname = "postgres", user = "postgres", password = Sys.getenv("SOMMIER_CI_PASSWORD")); DBI::dbExecute(con, "CREATE EXTENSION IF NOT EXISTS postgis"); print(DBI::dbGetQuery(con, "SELECT postgis_version()"))'
 
-      - name: Préparer la démo Couchey et la tournée sans couches ajoutées
+      - name: Préparer la démo Couchey et la tournée de départ
         run: Rscript ci/sommier/verifier.R --sortie ci/sommier/sortie --etape preparer
 
-      # Mission 006 : ici, Surculus part de ci/sommier/sortie/tournee-sans (la
+      # Mission 006 : ici, Surculus part de ci/sommier/sortie/tournee-depart (la
       # tournée de CE job : ses UUID de forêt et de placettes sont propres à
       # cette exécution) et écrit son export décompressé dans
       # $EXPORT_SURCULUS. Voir ci/sommier/README.md.
@@ -104,14 +108,14 @@ jobs:
             Rscript ci/sommier/verifier.R --sortie ci/sommier/sortie \
               --etape comparer --avec "$EXPORT_SURCULUS"
           else
-            echo "::warning title=Critère (a) non mesuré::Pas d'export Surculus (mission 006) : le travail est vert, mais seul le mécanisme de retrait des couches est éprouvé, pas la comparaison."
+            echo "::warning title=Critère (a) non mesuré::Pas d'export Surculus (mission 006) : le retrait des couches est éprouvé (auto-test), le critère (a) n'est pas mesuré."
             Rscript ci/sommier/verifier.R --sortie ci/sommier/sortie \
               --etape comparer
           fi
 
       - name: Publier les bilans
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: bilans-import-sommier
           path: ci/sommier/sortie/bilan-*.json

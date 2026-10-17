@@ -6,7 +6,7 @@
 #       [--modele <travaux.gpkg>] [--avec <export Surculus décompressé>]
 #
 # --etape preparer : crée la base de démo et la tournée de départ de Surculus
-#   (<sortie>/tournee-sans, <sortie>/foret_id.txt), puis s'arrête. Surculus
+#   (<sortie>/tournee-depart, <sortie>/foret_id.txt), puis s'arrête. Surculus
 #   (mission 006) part de cette tournée pour écrire son export.
 # --etape comparer : reprend là. Défaut : « tout ».
 # --modele : par défaut inst/qgis/travaux.gpkg du sommieR installé.
@@ -17,9 +17,11 @@
 #       du modèle et leurs bilans doivent être identiques ;
 #   (b) le schéma des couches de sommieR de l'export égale le modèle ;
 #   (c) sf::st_layers() liste toutes les couches ajoutées.
-# Sans --avec : le mécanisme de retrait est éprouvé sur la tournée de
-#   départ, qui n'a aucune couche ajoutée (le bilan doit être identique) ;
-#   le critère (a) n'est PAS mesuré, et le script le dit.
+#   Si l'import n'écrit rien (travaux + placettes + contrôles = 0), c'est un
+#   écart : un vert qui ne mesure rien doit le dire.
+# Toujours : auto-test du retrait (six couches vides posées sur une copie de
+#   la tournée de départ, retirées, plus aucune trace).
+# Sans --avec : le critère (a) n'est PAS mesuré, et le script le dit.
 #
 # Connexion : SOMMIER_CI_HOST (localhost), SOMMIER_CI_PORT (5432),
 # SOMMIER_CI_USER (postgres), SOMMIER_CI_PASSWORD (obligatoire).
@@ -39,6 +41,9 @@ noms <- args[seq_along(args) %% 2L == 1L]
 if (length(args) %% 2L != 0L || !all(noms %in% connues))
   usage(paste0("Option inconnue ou valeur absente : ",
                paste(args, collapse = " ")))
+if (anyDuplicated(noms))
+  usage(paste0("Option donnée deux fois : ",
+               paste(unique(noms[duplicated(noms)]), collapse = ", ")))
 option <- function(nom, defaut = NULL) {
   i <- match(nom, noms)
   if (is.na(i)) defaut else args[[2L * i]]
@@ -66,7 +71,7 @@ signaler <- function(...) {
 # Étape « preparer » à part : chaque démo a ses propres UUID de forêt et de
 # placettes, et l'export de Surculus doit partir de CETTE tournée.
 fichier_foret <- file.path(sortie, "foret_id.txt")
-depart <- file.path(sortie, "tournee-sans")
+depart <- file.path(sortie, "tournee-depart")
 if (etape %in% c("tout", "preparer")) {
   admin <- connecter("postgres")
   DBI::dbExecute(admin, 'DROP DATABASE IF EXISTS "sommier_modele"')
@@ -91,7 +96,15 @@ if (etape %in% c("tout", "preparer")) {
 }
 foret_id <- readLines(fichier_foret, n = 1L)
 
-# 2. Entrée, témoin, bilans.
+# 2. Auto-test du retrait : six couches vides posées sur une copie de la
+# tournée de départ, retirées, rien ne doit rester.
+for (x in autotest_retrait(depart, file.path(sortie, "autotest")))
+  signaler("retrait : ", x)
+message("Auto-test du retrait : ",
+        if (length(ecarts)) "ÉCHEC" else "réussi",
+        " (six couches posées puis retirées).")
+
+# 3. Entrée, témoin, bilans.
 if (!is.null(avec)) {
   if (!file.exists(file.path(avec, "travaux.gpkg")))
     usage(paste0("Pas de travaux.gpkg dans ", avec))
@@ -120,13 +133,18 @@ for (x in comparer_schema(file.path(entree, "travaux.gpkg"), modele))
   signaler("schéma : ", x)
 
 if (!is.null(avec)) {
+  # Un vert qui ne mesure rien doit le dire.
+  if (bilan_entree$travaux + bilan_entree$placettes +
+      bilan_entree$controles == 0L)
+    signaler("l'import n'a rien écrit (travaux + placettes + contrôles = 0) : ",
+             "le critère (a) ne mesure rien")
   # (c) couches ajoutées listées.
   for (x in couches_manquantes(file.path(avec, "travaux.gpkg")))
     signaler("couche ajoutée absente de st_layers : ", x)
 } else {
   message("CRITÈRE (a) NON MESURÉ : pas d'export Surculus (--avec). ",
-          "Seul le mécanisme de retrait est éprouvé, sur une tournée sans ",
-          "couche ajoutée.")
+          "Le retrait des couches est éprouvé (auto-test), pas la ",
+          "comparaison des bilans.")
 }
 
 if (length(ecarts) > 0L) {

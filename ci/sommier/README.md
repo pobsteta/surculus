@@ -8,7 +8,7 @@ monte un service PostGIS éphémère et lance `verifier.R`.
 
 1. **`--etape preparer`** : base `sommier_modele` (schéma de sommieR, démo Couchey
    par `sommier_demo_couchey()`), puis la tournée de départ telle que sommieR la
-   produit (`sommier_projet_qfield_travaux()`) dans `<sortie>/tournee-sans`.
+   produit (`sommier_projet_qfield_travaux()`) dans `<sortie>/tournee-depart`.
    C'est l'entrée de Surculus (mission 006), pas le témoin.
 2. **`--etape comparer`** :
    - L'entrée est l'export décompressé de Surculus (`--avec`). Le **témoin
@@ -24,13 +24,24 @@ monte un service PostGIS éphémère et lance `verifier.R`.
    - (a) les deux bilans sont identiques ; (b) le schéma des couches de sommieR de
      l'export (type, notnull, pk, géométrie, z/m, `srs_id`) égale
      `inst/qgis/travaux.gpkg` ; (c) `sf::st_layers()` liste les six couches.
-3. **Sans `--avec`** (006 absente) : le critère (a) n'est **pas mesuré**. Le script
-   éprouve seulement le mécanisme de retrait sur la tournée de départ, qui n'a
-   aucune couche ajoutée : le bilan doit être identique. Le travail reste vert et
-   l'annonce par un `::warning::` visible sur la PR.
+3. **Auto-test du retrait**, toujours : six couches vides (dont trois
+   géométriques, donc avec index spatial) et des lignes de `gpkg_data_columns`
+   sont posées sur une copie de la tournée de départ, puis retirées ; il ne doit
+   rester aucune trace (`sqlite_master`, y compris `rtree_<couche>_*`,
+   `gpkg_contents`, `gpkg_geometry_columns`, `gpkg_data_columns`,
+   `gpkg_extensions`, `gpkg_metadata_reference`, `gpkg_ogr_contents`).
+4. **Sans `--avec`** (006 absente) : le retrait est éprouvé, le critère (a) n'est
+   **pas mesuré**. Le travail reste vert et l'annonce par un `::warning::`
+   visible sur la PR. **Avec `--avec`**, un import qui n'écrit rien
+   (travaux + placettes + contrôles = 0) est un écart : un vert qui ne mesure
+   rien doit le dire.
 
-Codes de retour : 0 conforme, 1 écart, 2 mauvais usage (option inconnue,
-étape `preparer` manquante). Mot de passe de base : `SOMMIER_CI_PASSWORD`
+**Critère (b) resserré par rapport à l'ADR 0007** : l'ADR parle de champs, types,
+géométrie et `srs_id` ; la comparaison porte aussi sur `notnull`, `pk` et les
+drapeaux z/m de `gpkg_geometry_columns`.
+
+Codes de retour : 0 conforme, 1 écart, 2 mauvais usage (option inconnue ou donnée
+deux fois, étape `preparer` manquante). Mot de passe de base : `SOMMIER_CI_PASSWORD`
 (celui du service éphémère de la CI, défini une seule fois dans le workflow).
 
 ## Limite de la tournée de démo
@@ -44,7 +55,7 @@ de la 006 doit contenir au moins un contrôle ou une placette saisis.
 - L'export `.zip` **décompressé** dans `ci/sommier/export-surculus/` (variable
   `EXPORT_SURCULUS` du workflow) : un dossier contenant `travaux.gpkg` (et
   `DCIM/` si des photos sont jointes).
-- Cet export **part de `ci/sommier/sortie/tournee-sans`** du même job. Chaque
+- Cet export **part de `ci/sommier/sortie/tournee-depart`** du même job. Chaque
   exécution engendre sa démo, donc ses propres UUID de forêt et de placettes ; un
   export issu d'une autre exécution est refusé par l'import (« travaux suivis
   inconnus »). Surculus y ajoute les six couches, et ne touche à aucune couche ni
