@@ -304,7 +304,7 @@
         "calcul": "nb_total = 4 sains/atteints + mort + absent + regarni sain = 7 ; PLA-07 non observé et PLA-08 remplacé exclus ; vivants = 2 sains + 2 atteints + regarni = 5 ; abroutis = PLA-03 ; h_moy = (40+45+30+50+20)/5 = 37"
       },
       "source": "docs/spec.md § 4.3 (totaux déduits des plants) et § 6 (totaux du contrôle, h_moy_cm) ; ADR 0007 (totaux toujours écrits)",
-      "hypothese": "L'export reçoit les états des plants et écrit les totaux déduits ; si les totaux viennent du domaine, ce cas passe à la 004."
+      "note": "Qui calcule les totaux ne compte pas : le résultat de l'export est vérifié (spec § 6 : totaux toujours déduits des plants ; ADR 0007 : toujours écrits)."
     },
     {
       "id": "EX-04b",

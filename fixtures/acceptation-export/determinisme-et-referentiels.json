@@ -139,8 +139,7 @@
         "accepte": true,
         "contenu_identique_a_l_ordre_direct": true
       },
-      "source": "ADR 0005 (déterminisme par le contenu)",
-      "hypothese": "Le déterminisme s'étend à l'ordre d'arrivée des saisies ; à confirmer par Pascal."
+      "source": "ADR 0005 (déterminisme par le contenu : l'ordre d'arrivée est sans effet)"
     },
     {
       "id": "EX-17",
@@ -689,8 +688,7 @@
           "lignes": 1
         }
       },
-      "source": "ADR 0007 (critère (c) : st_layers liste toutes les couches ajoutées)",
-      "hypothese": "Une tournée sans contrôle s'exporte (rien dans les sources ne la refuse) ; à confirmer par Pascal."
+      "source": "ADR 0007 (critère (c) : st_layers liste toutes les couches ajoutées, même vides)"
     }
   ]
 }

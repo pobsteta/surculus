@@ -168,8 +168,7 @@
         "accepte": false,
         "motif": "melange_reperes"
       },
-      "source": "ADR 0007 (repère ; plants à l'aller repris de la tournée précédente)",
-      "hypothese": "Le repère d'une tournée précédente est connu de l'export (couche plants de son .zip)."
+      "source": "ADR 0007 (ligne Repère : un fichier qui mêle 2154 et 9794 est refusé ; ligne Plants à l'aller : plants repris de la tournée précédente)"
     },
     {
       "id": "EX-15",
@@ -243,14 +242,14 @@
         "points_en_france": true,
         "emprise_l93_m": {
           "x": [
-            99217,
-            1242375
+            -378305.81,
+            1320649.57
           ],
           "y": [
-            6049647,
-            7110480
+            6005281.2,
+            7235612.72
           ],
-          "a_verifier": "bornes de la zone d'utilisation d'EPSG:2154, relevées de mémoire ; à confirmer sur epsg.io avant la validation"
+          "source": "domaine d'usage d'EPSG:2154, epsg.io/2154 (W -9,86 à E 10,38, S 41,15 à N 51,56 en WGS 84) ; docs/spec.md § 10 point 9 (le test « placette en France » prend ce rectangle)"
         }
       },
       "source": "docs/spec.md § 6 (tout point écrit tombe en France) ; fixtures/regles/emprise-et-france.json (F-Couchey, F-Brest, F-Paris)"

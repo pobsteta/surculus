@@ -310,14 +310,42 @@
       "description": "Un lecteur de version N lit un fichier N+1 en ignorant les champs nouveaux (colonne ajoutée à projet, couche inconnue ajoutée).",
       "entree": {
         "operation": "lecture",
-        "fichier_source": "gpkg exporté par EX-05 auquel le test ajoute une colonne `nouveau` à projet et une table `inconnue`"
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "PL-001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "CT-001",
+              "placette_uuid": "PL-001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        },
+        "modification_du_test": "sur le gpkg exporté, ajouter une colonne `nouveau` à projet et une table `inconnue` enregistrée dans gpkg_contents, puis relire avec ExportTournee.relire"
       },
       "attendu": {
         "lecture_reussie": true,
         "champs_connus_inchanges": true
       },
       "source": "ADR 0007 (ligne Version)",
-      "hypothese": "Demande une interface de relecture, absente de l'interface d'export : non exécuté par le test Kotlin tant que l'orchestrateur ne l'a pas décidé."
+      "note": "Utilise la méthode `relire` de l'interface déclarée en test (ExportTournee)."
     }
   ]
 }

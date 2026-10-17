@@ -7,7 +7,6 @@ import com.google.gson.JsonParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
@@ -40,7 +39,7 @@ private class CasExport(val fichier: String, val json: JsonObject) {
 private fun lire(nom: String): JsonObject = JsonParser.parseString(Files.readString(FIXTURES.resolve(nom))).asJsonObject
 
 private fun cas(): List<CasExport> = Files.list(FIXTURES).use { s -> s.map { it.fileName.toString() }.toList() }
-    .filter { lire(it).has("cas") }.sorted()
+    .filter { it.endsWith(".json") && lire(it).has("cas") }.sorted()
     .flatMap { f -> lire(f).getAsJsonArray("cas").map { CasExport(f, it.asJsonObject) } }
 
 /** Cas bien formés : actif dès maintenant, il ne dépend d'aucun export. */
@@ -75,7 +74,7 @@ class ExportAcceptationTest {
     }
 
     private fun jouer(c: CasExport) {
-        assumeTrue(c.entree.get("operation")?.asString != "lecture", "${c.id} : relecture, interface non décidée")
+        if (c.entree.get("operation")?.asString == "lecture") return jouerLecture(c)
         val res = export.exporter(c.entree, Files.createTempDirectory("export-${c.id}"))
         if (c.attendu.get("accepte").asBoolean) {
             val accepte = res as? ResultatExport.Accepte ?: error("${c.id} : refusé (${res}) alors qu'il devait être accepté")
@@ -83,6 +82,38 @@ class ExportAcceptationTest {
         } else {
             val refus = res as? ResultatExport.Refuse ?: error("${c.id} : accepté alors qu'il devait être refusé")
             assertEquals(c.attendu.get("motif").asString, refus.motif, c.id)
+        }
+    }
+
+    /** Relecture : un fichier N+1 (colonne et table en plus) se lit en ignorant le nouveau. */
+    private fun jouerLecture(c: CasExport) {
+        val res = export.exporter(c.entree, Files.createTempDirectory("export-${c.id}")) as? ResultatExport.Accepte
+            ?: error("${c.id} : l'export de départ est refusé")
+        val dir = Files.createTempDirectory("lecture-${c.id}")
+        val gpkg = dir.resolve("travaux.gpkg")
+        ZipFile(res.zip.toFile()).use { z -> z.getInputStream(z.getEntry("travaux.gpkg")).use { Files.copy(it, gpkg) } }
+        DriverManager.getConnection("jdbc:sqlite:$gpkg").use { cnx ->
+            cnx.createStatement().use { st ->
+                st.executeUpdate("ALTER TABLE projet ADD COLUMN nouveau TEXT")
+                st.executeUpdate("CREATE TABLE inconnue (id INTEGER PRIMARY KEY, v TEXT)")
+                st.executeUpdate("INSERT INTO gpkg_contents (table_name, data_type, identifier) VALUES ('inconnue', 'attributes', 'inconnue')")
+            }
+        }
+        val lue = export.relire(gpkg)
+        assertTrue("inconnue" !in lue.champsParCouche, "couche inconnue retenue")
+        assertTrue("nouveau" !in (lue.champsParCouche["projet"] ?: emptySet()), "champ inconnu retenu")
+        val ref = lire("schema-couches-ajoutees.json").getAsJsonObject("couches")
+        ref.entrySet().forEach { (nom, v) ->
+            val champs = v.asJsonObject.getAsJsonArray("champs").map { it.asJsonObject.get("nom").asString }.toSet()
+            assertTrue(lue.champsParCouche[nom].orEmpty().containsAll(champs), "$nom : champs connus non relus")
+        }
+    }
+
+    private fun travaux(f: Fichier, attendus: JsonArray) {
+        attendus.map { it.asJsonObject }.forEach { t ->
+            val couche = t.get("couche").asString
+            val u = t.get("uuid").asString
+            assertEquals(t.get("code_travaux").asString, f.texte("SELECT code_travaux FROM $couche WHERE uuid='$u'"), "$u : code_travaux")
         }
     }
 
@@ -112,6 +143,7 @@ class ExportAcceptationTest {
             assertEquals(0, f.nombre("SELECT count(*) FROM controles WHERE ${col.asString} IS NULL"), "total nul : ${col.asString}")
         }
         a.get("plants_ecrits")?.asJsonArray?.let { plants(f, it) }
+        a.get("travaux_ecrits")?.asJsonArray?.let { travaux(f, it) }
         a.get("rtree")?.asJsonObject?.let { r ->
             assertEquals(r.get("lignes").asInt, f.nombre("SELECT count(*) FROM ${r.get("table").asString}"))
         }
