@@ -80,7 +80,7 @@ jobs:
           GITHUB_PAT: ${{ github.token }}
         run: |
           install.packages(c("remotes", "DBI", "RPostgres", "RSQLite", "sf",
-                             "jsonlite", "withr", "xml2", "openssl"))
+                             "jsonlite", "withr", "xml2", "openssl", "tibble"))
           # Les suggestions de sommieR (dont nemeton) ne servent pas ici.
           remotes::install_github(
             "pobsteta/sommieR", ref = Sys.getenv("SOMMIER_COMMIT"),
