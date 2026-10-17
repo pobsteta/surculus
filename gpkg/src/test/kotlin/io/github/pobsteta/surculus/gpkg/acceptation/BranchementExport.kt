@@ -30,7 +30,6 @@ import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import io.github.pobsteta.surculus.gpkg.LecteurTournee
 import io.github.pobsteta.surculus.gpkg.LigneEtat
 import io.github.pobsteta.surculus.gpkg.PlantNumerote
-import io.github.pobsteta.surculus.gpkg.RefusGpkg
 import io.github.pobsteta.surculus.gpkg.Saisies
 import io.github.pobsteta.surculus.gpkg.Sqlite
 import io.github.pobsteta.surculus.gpkg.TourneeDeTest
@@ -52,11 +51,11 @@ import java.util.UUID
  *    (`gpkg_spatial_ref_sys`, `gpkg_contents`) et que l'export le lit, au lieu de recevoir `repere_epsg` ;
  * 2. il traduit les saisies en objets du domaine (`:core`), comme l'application : la chaîne des repères dérive la
  *    position des plants, les totaux sont déduits des états ;
- * 3. il appelle [ExportTravaux.exporter] puis [ExportZip.ecrire], et traduit le motif du refus en code stable.
+ * 3. il appelle [ExportTravaux.exporter] puis [ExportZip.ecrire] ; le motif du refus est celui, stable, de l'export.
  *
- * Les refus que l'export ne peut pas voir sont ceux que le domaine rend avant lui : un état ou une cause hors
- * référentiel ne se construit pas (`Observations.valider`), donc c'est ce refus que le branchement traduit
- * (`hors_referentiel`). Tous les autres sont rendus par [ExportTravaux].
+ * Seuls deux refus sont rendus par le domaine avant l'export, parce que l'objet ne se construit pas : un état ou une
+ * cause hors référentiel (`Observations.valider`, rendu `hors_referentiel`) et deux plants de même UUID dans un
+ * contrôle (`Totaux.deduire`, rendu `uuid_en_double`). Tous les autres sont rendus par [ExportTravaux], avec ses codes.
  */
 fun exportATester(): ExportTournee = ExportReel
 
@@ -83,7 +82,7 @@ private object ExportReel : ExportTournee {
             ExportZip.ecrire(sortie, zip)
             ResultatExport.Accepte(zip)
         } catch (e: GpkgRefuse) {
-            ResultatExport.Refuse(traduire(e.refus))
+            ResultatExport.Refuse(e.refus.motif)
         } catch (e: RefusAvantExport) {
             ResultatExport.Refuse(e.motif)
         }
@@ -105,19 +104,6 @@ private object ExportReel : ExportTournee {
                 },
             )
         }
-    }
-
-    private fun traduire(r: RefusGpkg): String = when (r) {
-        is RefusGpkg.DeuxControlesMemeJour -> "controle_en_double"
-        is RefusGpkg.Referentiel, is RefusGpkg.ReferentielDuPlantDifferent, is RefusGpkg.ReferentielDuControleDifferent -> "melange_reperes"
-        is RefusGpkg.PointHorsFrance -> "hors_france"
-        is RefusGpkg.EssenceInconnue, is RefusGpkg.CodeTravauxHorsReferentiel -> "hors_referentiel"
-        is RefusGpkg.Identite -> when (r.refus) {
-            // Même UUID de plant redonné dans une autre placette : un UUID en double pour l'export.
-            is RefusPlacette.PlacetteChangee -> "uuid_en_double"
-            else -> r.motif
-        }
-        else -> r.motif
     }
 
     // ---- la tournée de départ, en vrai fichier gpkg

@@ -34,7 +34,7 @@ internal object ValidationExport {
 
     fun uuid(couche: String, champ: String, valeur: String) {
         if (!MOTIF_UUID.matches(valeur)) {
-            throw GpkgRefuse(RefusGpkg.ChampInvalide(couche, champ, "identifiant « $valeur » invalide (UUID en minuscules attendu, comme l'import de sommieR)"))
+            throw GpkgRefuse(RefusGpkg.UuidInvalide(couche, champ, valeur))
         }
     }
 

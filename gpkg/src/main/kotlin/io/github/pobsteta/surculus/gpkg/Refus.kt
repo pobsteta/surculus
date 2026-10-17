@@ -37,12 +37,12 @@ sealed interface RefusGpkg {
 
     /** Refus de la chaîne des repères (ex. 2154 et 9794 mêlés, code hors Lambert-93). */
     data class Referentiel(val refus: RefusRepere) : RefusGpkg {
-        override val motif = refus.motif
+        override val motif = if (refus.motif == "referentiels_meles") "melange_reperes" else refus.motif
         override val message = refus.message
     }
 
     data class PointHorsFrance(val couche: String, val uuid: String, val x: Double, val y: Double, val axesInverses: Boolean) : RefusGpkg {
-        override val motif = "point_hors_france"
+        override val motif = "hors_france"
         override val message = "Point de « $couche » ($uuid) hors de France : x = $x, y = $y (Lambert-93, x = Est, y = Nord)." +
             if (axesInverses) " Une fois les axes permutés, il tombe en France : x et y sont inversés." else ""
     }
@@ -63,7 +63,7 @@ sealed interface RefusGpkg {
     }
 
     data class DeuxControlesMemeJour(val placette: String, val jour: LocalDate, val fuseau: String) : RefusGpkg {
-        override val motif = "deux_controles_meme_jour"
+        override val motif = "controle_en_double"
         override val message = "Deux contrôles de la placette $placette le même jour ($jour, $fuseau) : sommieR refuse la tournée entière."
     }
 
@@ -83,23 +83,24 @@ sealed interface RefusGpkg {
     }
 
     data class EssenceInconnue(val plant: String, val essence: String) : RefusGpkg {
-        override val motif = "essence_inconnue"
+        override val motif = "hors_referentiel"
         override val message = "Le plant $plant porte l'essence « $essence », absente des essences connues."
     }
 
     /** Un refus des règles d'identité des plants (UUID, numéro, placette). */
     data class Identite(val refus: RefusPlacette) : RefusGpkg {
-        override val motif = refus.motif
+        // Même UUID de plant redonné dans une autre placette : un UUID en double pour l'export.
+        override val motif = if (refus is RefusPlacette.PlacetteChangee) "uuid_en_double" else refus.motif
         override val message = refus.message
     }
 
     data class ReferentielDuPlantDifferent(val plant: String, val code: Int, val attendu: Int) : RefusGpkg {
-        override val motif = "referentiels_meles"
+        override val motif = "melange_reperes"
         override val message = "Le plant $plant est en EPSG:$code, la tournée en EPSG:$attendu : 2154 et 9794 ne se mêlent pas."
     }
 
     data class ReferentielDuControleDifferent(val controle: String, val code: Int, val attendu: Int) : RefusGpkg {
-        override val motif = "referentiels_meles"
+        override val motif = "melange_reperes"
         override val message = "La position du contrôle $controle est en EPSG:$code, la tournée en EPSG:$attendu : 2154 et 9794 ne se mêlent pas."
     }
 
@@ -113,6 +114,12 @@ sealed interface RefusGpkg {
     data class JourIncoherent(val controle: String, val fourni: LocalDate, val attendu: LocalDate) : RefusGpkg {
         override val motif = "jour_incoherent"
         override val message = "Le contrôle $controle porte le jour civil $fourni, mais sa visite tombe le $attendu à Paris."
+    }
+
+    /** Identifiant qui n'est pas un UUID en minuscules, tel quel : l'import de sommieR ne normalise rien (décision de Pascal). */
+    data class UuidInvalide(val couche: String, val champ: String, val valeur: String) : RefusGpkg {
+        override val motif = "uuid_invalide"
+        override val message = "« $couche », champ « $champ » : identifiant « $valeur » invalide (UUID en minuscules attendu, sans espace, comme l'import de sommieR)."
     }
 
     data class ChampInvalide(val couche: String, val champ: String, val detail: String) : RefusGpkg {

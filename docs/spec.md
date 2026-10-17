@@ -267,14 +267,14 @@ Décisions de Pascal du 2026-10-17 (plan de la mission 006, ADR 0011 et relectur
 reportées dans `briefs/vers-sommier/2026-10-15-travaux-2-plants.md` : les types, `departs`,
 `modele_geomagnetique`, `projet`, le zip à plat, la double règle du jour et `visite_le`.
 Les choix **techniques du `dev`** (non tranchés par Pascal, à relire) sont signalés « (choix du
-`dev`) » : UUID en minuscules, valeurs permises, liste des refus, déterminisme, rejouabilité.
+`dev`) » : valeurs permises, liste des refus, déterminisme, rejouabilité.
 
 - **Types** des couches ajoutées, par anticipation sur sommieR : `TEXT` (identifiants, codes,
   textes), `INTEGER` (numéros, effectifs, hauteurs), `REAL` (mesures en mètres, degrés,
   pourcents, ares), `BOOLEAN` (0 ou 1), `DATETIME` (ISO 8601 en UTC, millisecondes, « Z », comme
   GDAL). Clé primaire `fid INTEGER PRIMARY KEY AUTOINCREMENT`, géométrie dans `geom`, repère
-  du fichier. Tout identifiant est un UUID **en minuscules** (choix du `dev` : l'import de sommieR n'accepte pas
-  les majuscules).
+  du fichier. Tout identifiant est un UUID **en minuscules** (décision de Pascal : l'import de sommieR teste
+  `MOTIF_UUID` sur la valeur brute, `R/travaux_qfield.R` l. 350, 382 et 401).
 - **`departs`** : un tableau JSON dans un `TEXT` (le contenu des éléments reste à fixer avec le
   protocole du constat de reprise, § 4.4 et ADR 0002).
 - **`modele_geomagnetique`** : `WMM2025`, écrit avec chaque plant.
@@ -289,7 +289,7 @@ Les choix **techniques du `dev`** (non tranchés par Pascal, à relire) sont sig
 - **Repère** : lu dans `gpkg_spatial_ref_sys` (code EPSG de `organization_coordsys_id`), pour
   `gpkg_contents` comme pour `gpkg_geometry_columns` ; un fichier qui mêle 2154 et 9794 est
   refusé, et un plant dérivé dans l'autre repère que le fichier aussi.
-- **Tout ou rien** (choix du `dev`) : un export refusé n'écrit aucun fichier. Refus : point hors de France (avec
+- **Tout ou rien** (choix du `dev`) : un export refusé n'écrit aucun fichier. Les motifs sont des codes stables, les mêmes dans le code, la spec et `fixtures/acceptation-export/` : `uuid_invalide`, `uuid_en_double`, `melange_reperes`, `hors_france`, `hors_referentiel`, `controle_en_double`, `jour_incoherent`. Refus : point hors de France (avec
   signalement d'axes inversés), hors de l'emprise de la forêt, placette inconnue, totaux qui ne
   concordent pas avec les états, UUID en double ou en majuscules, numéro de plant déjà pris,
   essence absente de `essences.csv`, deux contrôles d'une même placette le même jour.
@@ -371,6 +371,7 @@ dans Surculus.
 | Pente acceptée dans ]−90°, 90°[ ; pas de correction du facteur d'échelle Lambert-93 (erreur < 3 cm à 30 m) | Surculus | 1 |
 | Unités de la boussole (degrés ou grades) et de la pente (% ou degrés) déclarées à l'ouverture de la tournée ; azimut saisi refusé hors [0, 360[ ou [0, 400[ avant normalisation | ADR 0003 | 1 |
 | Tout point écrit tombe dans l'emprise de la forêt et en France ; azimut dans [0, 360[ ; déclinaison et convergence enregistrées | `CLAUDE.md` | 1 |
+| L'export refuse (`uuid_invalide`) tout identifiant (contrôle, plant, placette, travail) qui n'est pas un UUID en minuscules, **tel quel** : majuscules ou espaces autour sont refusés, jamais normalisés (l'import de sommieR teste la valeur brute) | décision de Pascal du 2026-10-17 | 1 |
 | L'export refuse (`hors_referentiel`) une saisie dont le `code_travaux` est absent de la couche `codes` de la tournée ; il n'embarque aucune liste de codes | décision de Pascal du 2026-10-17 | 1 |
 | L'export refuse (`jour_incoherent`) un contrôle dont le jour civil fourni par le journal contredit le jour de Paris de `visite_le` ; il ne corrige pas en silence | décision de Pascal du 2026-10-17 | 1 |
 | L'export ne fusionne jamais deux contrôles : deux contrôles d'une même placette qui partagent le jour de Paris **ou** le jour UTC sont refusés (`controle_en_double`) ; la correction d'un contrôle du même jour se fait en amont, dans le journal et le domaine | décision de Pascal du 2026-10-17 | 1 |

@@ -81,7 +81,7 @@ class LecteurTourneeTest {
             }
         }
         val r = refus { LecteurTournee.lire(f) }
-        assertEquals("referentiels_meles", r.motif)
+        assertEquals("melange_reperes", r.motif)
     }
 
     @Test

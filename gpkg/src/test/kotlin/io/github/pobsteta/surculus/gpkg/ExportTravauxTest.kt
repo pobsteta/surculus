@@ -343,7 +343,7 @@ class ExportTravauxTest {
     fun `un plant en 9794 dans une tournee en 2154 est refuse - les deux ne se melent pas`() {
         val s = v.saisiesDeLaJournee(epsg = CodeEpsg.RGF93_V2B_LAMBERT93)
         val r = refus(depart(), s)
-        assertEquals("referentiels_meles", r.motif)
+        assertEquals("melange_reperes", r.motif)
         assertTrue(r is RefusGpkg.ReferentielDuPlantDifferent)
     }
 
@@ -367,7 +367,7 @@ class ExportTravauxTest {
                 st.executeUpdate("UPDATE gpkg_geometry_columns SET srs_id = 9794 WHERE table_name = 'placettes'")
             }
         }
-        assertEquals("referentiels_meles", refus(source, v.saisiesDeLaJournee()).motif)
+        assertEquals("melange_reperes", refus(source, v.saisiesDeLaJournee()).motif)
     }
 
     // -------------------------------------------------------------- France, forêt
@@ -381,7 +381,7 @@ class ExportTravauxTest {
         val (x, y) = Projections.versLambert93(lon = 45.34, lat = 2.04) // Mogadiscio
         val r = refus(depart(), controleA(PointLambert93(x, y)))
         assertTrue(r is RefusGpkg.PointHorsFrance, r.toString())
-        assertEquals("point_hors_france", r.motif)
+        assertEquals("hors_france", r.motif)
     }
 
     @Test
@@ -402,7 +402,7 @@ class ExportTravauxTest {
         val s = v.saisiesDeLaJournee()
         val mauvais = s.plants[0].plant.let { p -> p.copy(derive = p.derive.copy(position = PointLambert93(1.0, 2.0))) }
         val r = refus(depart(), s.copy(plants = listOf(PlantNumerote(mauvais, 1)) + s.plants.drop(1)))
-        assertEquals("point_hors_france", r.motif)
+        assertEquals("hors_france", r.motif)
     }
 
     // -------------------------------------------------------------- règles de l'import
@@ -422,7 +422,7 @@ class ExportTravauxTest {
     fun `deux controles de la meme placette le meme jour civil sont refuses`() {
         val a = sansEtats(1, 0, Instant.parse("2026-10-20T08:00:00Z"))
         val b = sansEtats(2, 0, Instant.parse("2026-10-20T14:00:00Z"))
-        assertEquals("deux_controles_meme_jour", refus(depart(), Saisies("x", controles = listOf(a, b))).motif)
+        assertEquals("controle_en_double", refus(depart(), Saisies("x", controles = listOf(a, b))).motif)
         // Deux placettes différentes le même jour : accepté.
         exporter(depart(), Saisies("x", controles = listOf(a, sansEtats(3, 1, Instant.parse("2026-10-20T08:00:00Z")))), "ok.gpkg")
     }
@@ -443,7 +443,7 @@ class ExportTravauxTest {
         val r = assertFailsWith<GpkgRefuse> {
             ExportTravaux.exporter(premier, dossier.resolve("b.gpkg"), Saisies("x", controles = listOf(sansEtats(2, 0, Instant.parse("2026-10-20T15:00:00Z")))), v.VERSION, v.EXPORTE_LE)
         }
-        assertEquals("deux_controles_meme_jour", r.refus.motif)
+        assertEquals("controle_en_double", r.refus.motif)
     }
 
     @Test
@@ -490,7 +490,7 @@ class ExportTravauxTest {
     @Test
     fun `un identifiant en majuscules est refuse - l import de sommieR ne lit que des minuscules`() {
         val c = sansEtats(1, 0, Instant.parse("2026-10-20T08:00:00Z")).copy(uuid = UuidControle("AAAAAAAA-0000-4000-8000-000000000001"))
-        assertEquals("champ_invalide", refus(depart(), Saisies("x", controles = listOf(c))).motif)
+        assertEquals("uuid_invalide", refus(depart(), Saisies("x", controles = listOf(c))).motif)
     }
 
     @Test
