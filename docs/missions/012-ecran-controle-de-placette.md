@@ -34,6 +34,7 @@
 ## Tests
 
 - **Comment saura-t-on que c'est juste :** table des boutons ; annulation par double appui sur volume bas ; mode poche ignore l'écran tactile. Commande du projet : `.claude/test-command`.
+- **Codes de refus (décision de Pascal, 2026-10-17, relecture de la PR #34) :** un refus montré à l'agent porte les codes stables de la spec § 6 (`hors_referentiel`, `uuid_en_double`, `hors_france`, …), y compris pour les refus rendus par le domaine (`Observations.valider`, `Totaux.deduire`, `PointDerive.deriver`) ; la correspondance, aujourd'hui écrite seulement dans `gpkg/src/test/.../acceptation/BranchementExport.kt`, passe en code de production.
 
 ## Terrain
 
