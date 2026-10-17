@@ -252,14 +252,55 @@ rien.
 | `etats_plants` | — | `uuid`, `controle_uuid`, `plant_uuid`, `etat` (sain, atteint, mort, absent, ou `non_observe` : absence de mesure, hors totaux), `cause_groupe` (entomologique, pathologique, animaux, abiotique_complexe_indetermine), `cause_detail`, `hauteur_cm` |
 | `constats_reprise` | POLYGON (surface constatée) | `uuid`, `methode` (plein, cemagref, grappes), `pas_lignes`, `departs` (les deux départs tirés), `essence`, `nb_plants_chantier`, `nb_sains`, `nb_atteints`, `nb_morts`, `nb_absents`, `taux_brut_pct`, `ic_bas_pct`, `ic_haut_pct`, `seuil_pct`, `seuil_source`, `alerte` (bool), `visite_le`, `operateur` |
 | `vides` | POLYGON | `uuid`, `constat_uuid` ou `placette_uuid`, `surface_are`, `origine` (trace, propose), `visite_le`, `operateur` |
+| `projet` | — | `nom`, `foret`, `operateur`, `prepare_le`, `version_sommier`, `version_surculus` |
 
 En aller, la tournée 0.31.1 ne porte ni le contour des plantations à constater, ni leur
 nombre de plants, leurs lignes, leur date de réception ou leurs cloisonnements
 (`travaux_surf` est en retour seulement) : voir § 4.4 et § 10.
-| `projet` | — | `nom`, `foret`, `operateur`, `prepare_le`, `version_sommier`, `version_surculus` |
 
 Les totaux de `controles` restent écrits : un import 0.31.1 relit la tournée comme
 aujourd'hui.
+
+### Écriture de l'export (mission 006, ADR 0007 et 0011)
+
+Arbitrages de Pascal du 2026-10-17 (plan de la mission 006), reportés tels quels dans
+`briefs/vers-sommier/2026-10-15-travaux-2-plants.md` :
+
+- **Types** des couches ajoutées, par anticipation sur sommieR : `TEXT` (identifiants, codes,
+  textes), `INTEGER` (numéros, effectifs, hauteurs), `REAL` (mesures en mètres, degrés,
+  pourcents, ares), `BOOLEAN` (0 ou 1), `DATETIME` (ISO 8601 en UTC, millisecondes, « Z », comme
+  GDAL). Clé primaire `fid INTEGER PRIMARY KEY AUTOINCREMENT`, géométrie dans `geom`, repère
+  du fichier. Tout identifiant est un UUID **en minuscules** (l'import de sommieR n'accepte pas
+  les majuscules).
+- **`departs`** : un tableau JSON dans un `TEXT` (le contenu des éléments reste à fixer avec le
+  protocole du constat de reprise, § 4.4 et ADR 0002).
+- **`modele_geomagnetique`** : `WMM2025`, écrit avec chaque plant.
+- **`projet`** : une seule ligne, qui porte la **version unique** du fichier. Les champs que
+  sommieR doit écrire (`nom`, `foret`, `prepare_le`, `version_sommier`) sont **laissés vides**
+  par Surculus tant que la tournée 0.31.1 ne les porte pas, et ne sont jamais écrasés ensuite ;
+  Surculus écrit `operateur` et `version_surculus` (la version unique). Un lecteur lit par nom
+  de colonne : un fichier plus récent, qui a des champs en plus, se lit en les ignorant.
+- **Valeurs permises** (`etat`, `cause_groupe`, `unite_azimut`, `methode`, `origine`) : extension
+  Schema de GeoPackage (`gpkg_data_columns`, `gpkg_data_column_constraints`, type `enum`),
+  tirées des enums de `:core` et de `docs/referentiels/etats-plants.yaml`, jamais recopiées.
+- **Repère** : lu dans `gpkg_spatial_ref_sys` (code EPSG de `organization_coordsys_id`), pour
+  `gpkg_contents` comme pour `gpkg_geometry_columns` ; un fichier qui mêle 2154 et 9794 est
+  refusé, et un plant dérivé dans l'autre repère que le fichier aussi.
+- **Tout ou rien** : un export refusé n'écrit aucun fichier. Refus : point hors de France (avec
+  signalement d'axes inversés), hors de l'emprise de la forêt, placette inconnue, totaux qui ne
+  concordent pas avec les états, UUID en double ou en majuscules, numéro de plant déjà pris,
+  essence absente de `essences.csv`, deux contrôles d'une même placette le même jour.
+- **Un contrôle par placette et par jour, deux fois** : le jour civil Europe/Paris (ADR 0005)
+  **et** le jour UTC, parce que `sommier_importer_qfield_travaux()` lit `visite_le` en UTC et
+  refuse la tournée entière si deux contrôles d'une même placette tombent le même jour UTC.
+  Entre minuit et 2 h du matin à Paris, les deux jours diffèrent : l'export refuse plutôt que
+  de laisser l'import refuser toute la tournée au bureau. **À trancher par Pascal** (voir le
+  rendu de la mission 006).
+- **Déterministe** : à état égal, deux exports ont le même contenu (lignes rangées par
+  identifiant, jamais par ordre de saisie ; horloge injectée dans `gpkg_contents.last_change`).
+  Les tests comparent par le contenu, jamais par empreinte du fichier (ADR 0011).
+- **Rejouable** : exporter à partir d'un export déjà fait ignore les lignes présentes à
+  l'identique ; un même UUID avec un contenu différent est refusé.
 
 ### Journal des saisies (sur l'appareil, ADR 0005)
 
