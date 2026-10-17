@@ -113,7 +113,8 @@ jobs:
       # Essai de fumée de l'APK release (ADR 0011, arbitrage de Pascal) : l'application écrit une tournée de
       # démonstration (sqlite-jdbc, natifs Android, fonctions ST_* en Kotlin, index rtree) puis la relit, sur un
       # émulateur x86_64, avec R8 et le désucrage de la release. Il tourne sur le type de build `fumee`, calqué sur la release
-      # (proguard-fumee.pro n'y ajoute que les règles du runner de test). La release ne part pas s'il échoue.
+      # (proguard-fumee.pro y ajoute des règles : il garde aussi :gpkg, :core, kotlin.** et kotlinx.**, donc la fumée
+      # n'éprouve pas R8 sur ces classes ni sur la bibliothèque standard Kotlin). La release ne part pas s'il échoue.
       # Limite assumée : x86_64 seulement, le chemin ARM n'est jamais exécuté ici (Pascal l'essaie sur téléphone).
       - name: Activer KVM (émulateur)
         run: |

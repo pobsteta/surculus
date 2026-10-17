@@ -53,9 +53,10 @@ import java.util.UUID
  *    position des plants, les totaux sont déduits des états ;
  * 3. il appelle [ExportTravaux.exporter] puis [ExportZip.ecrire] ; le motif du refus est celui, stable, de l'export.
  *
- * Seuls deux refus sont rendus par le domaine avant l'export, parce que l'objet ne se construit pas : un état ou une
- * cause hors référentiel (`Observations.valider`, rendu `hors_referentiel`) et deux plants de même UUID dans un
- * contrôle (`Totaux.deduire`, rendu `uuid_en_double`). Tous les autres sont rendus par [ExportTravaux], avec ses codes.
+ * Seuls trois refus sont rendus par le domaine avant l'export, parce que l'objet ne se construit pas : un état ou une
+ * cause hors référentiel (`Observations.valider`, rendu `hors_referentiel`), deux plants de même UUID dans un
+ * contrôle (`Totaux.deduire`, rendu `uuid_en_double`) et un piquet hors de France (`PointDerive.deriver`, rendu
+ * `hors_france`). Tous les autres sont rendus par [ExportTravaux], avec ses codes.
  */
 fun exportATester(): ExportTournee = ExportReel
 

@@ -286,10 +286,15 @@ Les choix **techniques du `dev`** (non tranchés par Pascal, à relire) sont sig
 - **Valeurs permises** (choix du `dev`) (`etat`, `cause_groupe`, `unite_azimut`, `methode`, `origine`) : extension
   Schema de GeoPackage (`gpkg_data_columns`, `gpkg_data_column_constraints`, type `enum`),
   tirées des enums de `:core` et de `docs/referentiels/etats-plants.yaml`, jamais recopiées.
-- **Repère** : lu dans `gpkg_spatial_ref_sys` (code EPSG de `organization_coordsys_id`), pour
+- **Repère** (décision de Pascal, ADR 0003 et 0011) : lu dans `gpkg_spatial_ref_sys` (code EPSG de `organization_coordsys_id`), pour
   `gpkg_contents` comme pour `gpkg_geometry_columns` ; un fichier qui mêle 2154 et 9794 est
   refusé, et un plant dérivé dans l'autre repère que le fichier aussi.
-- **Tout ou rien** (choix du `dev`) : un export refusé n'écrit aucun fichier. Les motifs sont des codes stables, les mêmes dans le code, la spec et `fixtures/acceptation-export/` : `uuid_invalide`, `uuid_en_double`, `melange_reperes`, `hors_france`, `hors_referentiel`, `controle_en_double`, `jour_incoherent`. Refus : point hors de France (avec
+- **Tout ou rien** (choix du `dev`) : un export refusé n'écrit aucun fichier. Les motifs sont des codes
+  stables, les mêmes dans le code, la spec et `fixtures/acceptation-export/` (choix du `dev`) : `uuid_invalide`,
+  `uuid_en_double`, `melange_reperes`, `hors_france`, `hors_referentiel`, `controle_en_double`, `jour_incoherent`.
+  Sont des **décisions de Pascal du 2026-10-17** (journal, PR n° 37) : `uuid_invalide` (UUID refusé tel quel,
+  majuscules et espaces compris, sans normalisation), `controle_en_double`, `jour_incoherent` et `hors_referentiel`
+  (état, cause ou essence hors référentiel, **et code travaux absent de la couche `codes` de la tournée**). Refus : point hors de France (avec
   signalement d'axes inversés), hors de l'emprise de la forêt, placette inconnue, totaux qui ne
   concordent pas avec les états, UUID en double ou en majuscules, numéro de plant déjà pris,
   essence absente de `essences.csv`, deux contrôles d'une même placette le même jour.
