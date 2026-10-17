@@ -112,6 +112,11 @@ jobs:
               --etape comparer --avec "$EXPORT_SURCULUS"
           else
             echo "::warning title=Critère (a) non mesuré::Pas d'export Surculus (mission 006) : le retrait des couches est éprouvé (auto-test), le critère (a) n'est pas mesuré."
+            {
+              echo "## Critère (a) non mesuré"
+              echo
+              echo "Pas d'export Surculus (mission 006) : le retrait des couches est éprouvé (auto-test), le critère (a) n'est pas mesuré. Le vert de ce travail est partiel."
+            } >> "$GITHUB_STEP_SUMMARY"
             Rscript ci/sommier/verifier.R --sortie ci/sommier/sortie \
               --etape comparer
           fi
