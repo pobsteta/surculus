@@ -1,0 +1,384 @@
+{
+  "fichier": "ordre-total.json",
+  "regle": "Ordre total déterministe par (saisi_le_utc, appareil, sequence, uuid), indépendant de l'ordre d'arrivée",
+  "format": "voir fixtures/README.md, section Journal",
+  "cas": [
+    {
+      "id": "JR-30",
+      "description": "Le temps prime sur l'appareil et la séquence.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T10:00:01Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 9,
+            "saisi_le_utc": "2026-10-14T10:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 9000,
+            "demarrage": 1
+          }
+        ],
+        "ordres_d_arrivee": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      },
+      "attendu": {
+        "ordre_total": [
+          "U2",
+          "U1"
+        ]
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Ordre total : saisi_le_utc, appareil, sequence, uuid)"
+    },
+    {
+      "id": "JR-31",
+      "description": "À temps égal, l'appareil départage.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 5,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 5000,
+            "demarrage": 1
+          }
+        ],
+        "ordres_d_arrivee": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      },
+      "attendu": {
+        "ordre_total": [
+          "U2",
+          "U1"
+        ]
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Ordre total : saisi_le_utc, appareil, sequence, uuid)"
+    },
+    {
+      "id": "JR-32",
+      "description": "À temps et appareil égaux, la séquence départage, comparée comme un nombre (2 avant 10).",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 10,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 10000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          }
+        ],
+        "ordres_d_arrivee": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      },
+      "attendu": {
+        "ordre_total": [
+          "U2",
+          "U1"
+        ]
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Ordre total : saisi_le_utc, appareil, sequence, uuid)"
+    },
+    {
+      "id": "JR-33",
+      "description": "À temps, appareil et séquence égaux, l'uuid départage.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U2",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          }
+        ],
+        "ordres_d_arrivee": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      },
+      "attendu": {
+        "ordre_total": [
+          "U1",
+          "U2"
+        ]
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Ordre total : saisi_le_utc, appareil, sequence, uuid)"
+    },
+    {
+      "id": "JR-34",
+      "description": "Même ensemble de lignes, trois ordres d'arrivée : même ordre total, même projection, même conflit.",
+      "entree": {
+        "lignes": [
+          {
+            "uuid": "U1",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:00:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U2",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "atteint"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "A",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:10:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U3",
+            "objet_uuid": "P1",
+            "type": "etat",
+            "valeur": {
+              "etat": "mort"
+            },
+            "remplace_uuid": "U1",
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 1,
+            "saisi_le_utc": "2026-10-14T09:10:05Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 1000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U4",
+            "objet_uuid": "P2",
+            "type": "etat",
+            "valeur": {
+              "etat": "sain"
+            },
+            "remplace_uuid": null,
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 2,
+            "saisi_le_utc": "2026-10-14T09:11:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 2000,
+            "demarrage": 1
+          },
+          {
+            "uuid": "U5",
+            "objet_uuid": "P2",
+            "type": "annulation",
+            "valeur": null,
+            "remplace_uuid": "U4",
+            "operateur": "op1",
+            "appareil": "B",
+            "sequence": 3,
+            "saisi_le_utc": "2026-10-14T09:12:00Z",
+            "heure_gnss": null,
+            "age_fix_ms": null,
+            "monotone_ms": 3000,
+            "demarrage": 1
+          }
+        ],
+        "ordres_d_arrivee": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          [
+            4,
+            3,
+            2,
+            1,
+            0
+          ],
+          [
+            2,
+            4,
+            0,
+            3,
+            1
+          ]
+        ]
+      },
+      "attendu": {
+        "ordre_total": [
+          "U1",
+          "U2",
+          "U3",
+          "U4",
+          "U5"
+        ],
+        "projection": {
+          "P1|etat": {
+            "courant": "U3",
+            "conflit": true,
+            "tetes": [
+              "U2",
+              "U3"
+            ],
+            "anomalies": []
+          },
+          "P2|etat": {
+            "courant": null,
+            "conflit": false,
+            "tetes": [],
+            "anomalies": []
+          }
+        }
+      },
+      "source": "docs/adr/0005-stockage-et-sauvegarde.md (Ordre total : saisi_le_utc, appareil, sequence, uuid) ; spec § 5, Journal des saisies ; arbitrage de Pascal du 2026-10-17"
+    }
+  ]
+}
