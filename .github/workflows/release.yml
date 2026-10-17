@@ -28,7 +28,7 @@ jobs:
       new_tag: ${{ steps.version.outputs.new_tag }}
       signe: ${{ steps.cle.outputs.signe }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -47,7 +47,7 @@ jobs:
       # feat: -> mineur · fix: -> patch · ! ou BREAKING CHANGE -> majeur · sinon -> patch.
       - name: Calculer la version (sans poser le tag)
         id: version
-        uses: mathieudutour/github-tag-action@v6.2
+        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: patch
@@ -57,19 +57,19 @@ jobs:
           dry_run: true
 
       - name: Configurer JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
         with:
           distribution: temurin
           java-version: '21'
 
       - name: Configurer le SDK Android
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
         with:
           # build-tools fournit zipalign pour le contrôle 16 Ko.
           packages: platform-tools build-tools;36.0.0
 
       - name: Configurer Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
 
       # La release ne part que si les tests et le contrôle 16 Ko sont verts.
       - name: Commande de tests du projet (.claude/test-command)
@@ -165,7 +165,7 @@ jobs:
             echo "**Release $TAG sans APK** : les secrets de signature sont absents." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release
           path: dist/
