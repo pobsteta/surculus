@@ -27,9 +27,16 @@ class HorlogeScenariosTest {
                 assertEquals(ScenariosJournal.instantMs(o.get("heure_avant").asString), s.heureAvantMs, c.nom)
                 assertEquals(ScenariosJournal.instantMs(o.get("heure_apres").asString), s.heureApresMs, c.nom)
             }
-            // L'heure brute n'est jamais réécrite.
+            // L'heure brute n'est jamais réécrite : les heures rendues par le code sont exactement les
+            // `saisiLeUtcMs` des lignes d'entrée (retrouvées par uuid), et les lignes ne sont pas touchées.
             assertEquals(false, c.attendu.get("heures_brutes_reecrites").asBoolean)
+            val parUuid = lignes.associateBy { it.uuid }
+            obtenus.forEach { s ->
+                assertEquals(parUuid.getValue(s.avantUuid).saisiLeUtcMs, s.heureAvantMs, c.nom)
+                assertEquals(parUuid.getValue(s.apresUuid).saisiLeUtcMs, s.heureApresMs, c.nom)
+            }
             assertEquals(avant, lignes, "${c.nom} : lignes modifiées")
+            // (La conservation en base est vérifiée par JournalRoomScenariosTest.)
         }
     }
 

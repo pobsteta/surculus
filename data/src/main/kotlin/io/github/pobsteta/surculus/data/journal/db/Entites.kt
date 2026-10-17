@@ -17,6 +17,8 @@ import io.github.pobsteta.surculus.data.journal.LigneJournal
         Index(value = ["objet_uuid", "type"]),
         Index(value = ["remplace_uuid"]),
         Index(value = ["appareil", "sequence"]),
+        // Version 2 : l'ordre total range d'abord par `saisi_le_utc` (MIGRATION_1_2).
+        Index(value = ["saisi_le_utc"]),
     ],
 )
 data class LigneJournalEntity(

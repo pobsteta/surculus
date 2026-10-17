@@ -39,11 +39,17 @@ data class ResultatProjection(
  * - une ligne est **tête** de sa clé si elle est active (non annulée) et qu'aucune autre ligne active ne la
  *   remplace, directement ou par une chaîne de `remplaceUuid` ; deux têtes ou plus = **conflit** ;
  * - la valeur courante est la dernière tête selon l'ordre total ;
- * - un `remplaceUuid` inconnu : la ligne reste tête, anomalie [REMPLACE_INCONNU].
+ * - un `remplaceUuid` inconnu : la ligne reste tête, anomalie [REMPLACE_INCONNU] ; une annulation à cible
+ *   inconnue est ignorée (même anomalie) et s'applique quand la cible arrive ;
+ * - une ligne (correction ou annulation) dont la cible est une ligne d'un **autre objet** n'agit sur aucun
+ *   objet : elle reste au journal, hors projection, avec l'anomalie [REMPLACE_AUTRE_OBJET].
  */
 object Projection {
     const val UUID_CONTENU_DIFFERENT = "uuid_contenu_different"
     const val REMPLACE_INCONNU = "remplace_inconnu"
+
+    /** Une ligne qui remplace ou annule une ligne d'un autre objet : gardée, mais sans effet (2026-10-17). */
+    const val REMPLACE_AUTRE_OBJET = "remplace_autre_objet"
 
     /** Ordre total : (`saisiLeUtcMs`, `appareil`, `sequence` numérique, `uuid`). */
     val ORDRE_TOTAL: Comparator<LigneJournal> =
@@ -68,7 +74,13 @@ object Projection {
         val anomaliesJournal = sortedSetOf<String>()
         if (refusees.isNotEmpty()) anomaliesJournal += UUID_CONTENU_DIFFERENT
 
-        val annulations = retenues.filter { it.type == TypeLigne.ANNULATION }
+        // Cible connue d'un autre objet : la ligne n'agit sur rien (ni tête, ni annulation).
+        val (horsObjet, valides) = retenues.partition { l ->
+            l.remplaceUuid?.let { parUuid[it] }?.let { it.objetUuid != l.objetUuid } == true
+        }
+        if (horsObjet.isNotEmpty()) anomaliesJournal += REMPLACE_AUTRE_OBJET
+
+        val annulations = valides.filter { it.type == TypeLigne.ANNULATION }
         val annulationsParCible = annulations.filter { it.remplaceUuid != null }.groupBy { it.remplaceUuid!! }
         annulations.filter { it.remplaceUuid == null || it.remplaceUuid !in parUuid }
             .forEach { anomaliesJournal += REMPLACE_INCONNU }
@@ -87,7 +99,7 @@ object Projection {
         }
 
         // Les sauts d'horloge sont des événements, pas des états : ils n'ont pas de clé de projection.
-        val saisies = retenues.filter { it.type != TypeLigne.ANNULATION && it.type != TypeLigne.SAUT_HORLOGE }
+        val saisies = valides.filter { it.type != TypeLigne.ANNULATION && it.type != TypeLigne.SAUT_HORLOGE }
         val actives = saisies.filter { !estAnnulee(it.uuid) }
 
         // Ascendants (par remplaceUuid, à travers toutes les lignes connues) de chaque ligne active.

@@ -6,7 +6,7 @@ import com.google.gson.JsonParser
 import java.io.File
 import java.time.Instant
 
-/** Cas de les fichiers de `fixtures/journal/` (écrits par le testeur, jamais modifiés ici : voir fixtures/README.md). */
+/** Cas des fichiers de `fixtures/journal/` (écrits par le testeur, jamais modifiés ici : voir fixtures/README.md). */
 class CasJournal(val fichier: String, val json: JsonObject) {
     val id: String get() = json.get("id").asString
     val entree: JsonObject get() = json.getAsJsonObject("entree")

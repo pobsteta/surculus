@@ -37,8 +37,15 @@ interface JournalDao {
     @Query("SELECT * FROM refus_journal ORDER BY id")
     fun tousLesRefus(): List<RefusJournalEntity>
 
-    /** Lignes des objets donnés, plus celles dont l'`uuid` a une version refusée. */
-    @Query("SELECT * FROM journal WHERE objet_uuid IN (:objets) OR uuid IN (SELECT uuid FROM refus_journal)")
+    /**
+     * Lignes des objets donnés, plus celles dont l'`uuid` a une version refusée, plus les cibles
+     * (`remplace_uuid`) des lignes de ces objets, même d'un autre objet (pour reconnaître un remplacement
+     * d'un autre objet comme la reconstruction complète).
+     */
+    @Query(
+        "SELECT * FROM journal WHERE objet_uuid IN (:objets) OR uuid IN (SELECT uuid FROM refus_journal) " +
+            "OR uuid IN (SELECT remplace_uuid FROM journal WHERE objet_uuid IN (:objets) AND remplace_uuid IS NOT NULL)",
+    )
     fun lignesPourObjets(objets: Collection<String>): List<LigneJournalEntity>
 
     @Query("SELECT COUNT(*) FROM journal")

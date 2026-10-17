@@ -260,7 +260,7 @@ class JournalDurableTest {
         val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
         db!!.close(); db = null
         SQLiteDatabase.openDatabase(contexte.getDatabasePath("t.db").path, null, SQLiteDatabase.OPEN_READWRITE).use {
-            it.execSQL("PRAGMA user_version = 2")
+            it.execSQL("PRAGMA user_version = 3")
         }
         assertFailsWith<Exception> { ouvrir("t.db").openHelper.writableDatabase }
         db = null
@@ -281,7 +281,7 @@ class JournalDurableTest {
                     "VALUES ('U1','P1','etat','{}',NULL,'op1','A',1,1760000000000,NULL,1000,1,NULL)",
             )
         }
-        // Aucune migration n'existe encore (version 1) ; la validation compare le schéma à celui des entités.
+        // Le schéma 1 reste exporté (data/schemas/1.json) : la validation le compare aux entités de l'époque.
         helper.runMigrationsAndValidate("migration.db", 1, true).use { sql ->
             sql.query("SELECT COUNT(*) FROM journal").use { c -> c.moveToFirst(); assertEquals(1, c.getInt(0)) }
         }

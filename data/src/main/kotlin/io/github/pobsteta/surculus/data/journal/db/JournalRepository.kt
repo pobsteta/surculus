@@ -28,6 +28,9 @@ sealed interface Reception {
     data object Ajoutee : Reception
     data object Doublon : Reception
     data object Refusee : Reception
+
+    /** Type hors de la liste fermée de la spec § 5 : la ligne n'est pas écrite. */
+    data object TypeInvalide : Reception
 }
 
 /**
@@ -35,8 +38,10 @@ sealed interface Reception {
  * principal. Chaque ajout est **une transaction** (ligne, éventuel saut d'horloge, projection des clés
  * touchées) : tout ou rien.
  *
- * Contrainte : un `remplace_uuid` désigne une ligne du **même objet**, et une `annulation` porte l'objet
- * de la ligne annulée (spec § 5). La projection incrémentale en dépend.
+ * Un `remplace_uuid` doit désigner une ligne du **même objet**, et une `annulation` porte l'objet de la
+ * ligne annulée (spec § 5). Une ligne qui y déroge est **gardée** (aucune saisie n'est perdue) mais
+ * n'agit sur aucun objet et porte l'anomalie `remplace_autre_objet`, aussi bien par `saisir` que par
+ * `recevoir` : le contrôle est dans la projection, donc identique incrémentale et reconstruite.
  */
 class JournalRepository(
     private val db: JournalDatabase,
@@ -58,6 +63,18 @@ class JournalRepository(
         operateur: String,
         remplaceUuid: String? = null,
         fix: FixGnss? = null,
+    ): LigneJournal {
+        require(type in TypeLigne.TOUS) { "type de ligne inconnu : $type" }
+        return saisirDansTransaction(objetUuid, type, valeur, operateur, remplaceUuid, fix)
+    }
+
+    private fun saisirDansTransaction(
+        objetUuid: String,
+        type: String,
+        valeur: String?,
+        operateur: String,
+        remplaceUuid: String?,
+        fix: FixGnss?,
     ): LigneJournal = db.runInTransaction(Callable {
         val sequence = (dao.derniereSequence(appareil) ?: 0L) + 1
         val maintenant = horloge.maintenantUtcMs()
@@ -95,7 +112,8 @@ class JournalRepository(
      * d'arrivée. Doublon à l'identique : ignoré. Même `uuid`, contenu différent : refusée, et la version
      * déjà présente est aussi écartée de la projection, avec l'anomalie `uuid_contenu_different`.
      */
-    fun recevoir(ligne: LigneJournal): Reception = db.runInTransaction(Callable { ajouter(ligne) })
+    fun recevoir(ligne: LigneJournal): Reception =
+        if (ligne.type !in TypeLigne.TOUS) Reception.TypeInvalide else db.runInTransaction(Callable { ajouter(ligne) })
 
     /** Toutes les lignes du journal, dans l'ordre total. */
     fun lignes(): List<LigneJournal> = dao.toutes().map { it.versLigne() }

@@ -7,6 +7,9 @@ object TypeLigne {
     const val ETAT = "etat"
     const val ANNULATION = "annulation"
     const val SAUT_HORLOGE = "saut_horloge"
+
+    /** Liste fermée des cinq types de la spec § 5 : tout autre type est refusé. */
+    val TOUS: Set<String> = setOf(CONTROLE, POINTAGE, ETAT, ANNULATION, SAUT_HORLOGE)
 }
 
 /**
