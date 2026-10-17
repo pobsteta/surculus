@@ -24,10 +24,14 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.sqlite.jdbc)
+    testImplementation(libs.gson)
 }
 
 tasks.test {
     useJUnitPlatform()
+    // Les cas d'acceptation de l'export (mission 020) relisent les fixtures et les référentiels.
+    inputs.dir(rootProject.file("fixtures")).withPropertyName("fixtures")
+    inputs.dir(rootProject.file("docs/referentiels")).withPropertyName("referentiels")
     // Rapport de couverture après chaque exécution des tests (lu par le badge, workflow badges.yml).
     finalizedBy("jacocoTestReport")
 }

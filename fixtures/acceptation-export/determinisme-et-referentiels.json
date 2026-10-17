@@ -1,0 +1,694 @@
+{
+  "fichier": "determinisme-et-referentiels.json",
+  "regle": "Export déterministe par le contenu ; plants repris ; zip à plat ; doublons, codes hors référentiel, tournée vide",
+  "format": "voir fixtures/README.md, section Export (acceptation-export/)",
+  "cas": [
+    {
+      "id": "EX-16",
+      "description": "Même entrée exportée deux fois : même contenu table par table (jamais comparé par empreinte du fichier).",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0002",
+                  "numero": 2,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "mort",
+                  "cause_groupe": "animaux"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "contenu_identique_apres_reexport": true
+      },
+      "source": "ADR 0005 et ADR 0011 (ligne Comparaison : par le contenu, jamais par empreinte)",
+      "note": "La comparaison ignore la clé fid et l'ordre des lignes ; elle porte sur toutes les tables, y compris gpkg_contents et gpkg_geometry_columns, sauf les colonnes de date de modification."
+    },
+    {
+      "id": "EX-16b",
+      "description": "Mêmes saisies fournies dans l'ordre inverse : même contenu.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0002",
+                  "numero": 2,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "mort",
+                  "cause_groupe": "animaux"
+                }
+              ]
+            }
+          ]
+        },
+        "saisies_ordre_inverse": true
+      },
+      "attendu": {
+        "accepte": true,
+        "contenu_identique_a_l_ordre_direct": true
+      },
+      "source": "ADR 0005 (déterminisme par le contenu : l'ordre d'arrivée est sans effet)"
+    },
+    {
+      "id": "EX-17",
+      "description": "Plants repris de la tournée rendue précédente, rattachés par placette_uuid, UUID et numéro conservés.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000b0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "numero": 1,
+              "essence": "CHS"
+            },
+            {
+              "uuid": "00000000-0000-4000-8000-0000000b0002",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "numero": 2,
+              "essence": "HET"
+            }
+          ]
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": []
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "plants_ecrits": [
+          {
+            "uuid": "00000000-0000-4000-8000-0000000b0001",
+            "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+            "numero": 1,
+            "essence": "CHS"
+          },
+          {
+            "uuid": "00000000-0000-4000-8000-0000000b0002",
+            "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+            "numero": 2,
+            "essence": "HET"
+          }
+        ]
+      },
+      "source": "ADR 0007 (ligne Plants à l'aller) ; docs/spec.md § 7 tranche 5 (UUID et numéro gardés)"
+    },
+    {
+      "id": "EX-18",
+      "description": "Zip à plat : toute entrée est travaux.gpkg ou sous DCIM/ ; aucun dossier de tournée en tête.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0002",
+                  "numero": 2,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "mort",
+                  "cause_groupe": "animaux"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "zip": {
+          "entrees_autorisees": [
+            "travaux.gpkg",
+            "DCIM/*"
+          ]
+        }
+      },
+      "source": "ADR 0007 (décompressé, c'est le dossier que lit l'import) ; journal 2026-10-17, Pascal, mission 006 (zip à plat)"
+    },
+    {
+      "id": "EX-29",
+      "description": "État hors référentiel (`vivant`, état du constat de reprise, non de la fiche DSF) : refusé.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "vivant",
+                  "hauteur_cm": 40
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "hors_referentiel"
+      },
+      "source": "docs/spec.md § 6 (états et causes uniquement ceux de etats-plants.yaml) ; docs/referentiels/etats-plants.yaml (etats_dsf : sain, atteint, mort, absent)"
+    },
+    {
+      "id": "EX-29b",
+      "description": "Code d'essence inventé (`XXX`) : refusé.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "XXX",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "hors_referentiel"
+      },
+      "source": "CLAUDE.md (on n'invente jamais un code) ; docs/referentiels/essences.csv",
+      "verifier_que_XXX_est_absent_de": "docs/referentiels/essences.csv"
+    },
+    {
+      "id": "EX-29c",
+      "description": "Groupe de cause qui n'est pas un des quatre du DSF (`insectes`, mot de dictée) : refusé.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "atteint",
+                  "hauteur_cm": 40,
+                  "cause_groupe": "insectes"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "hors_referentiel"
+      },
+      "source": "docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan : entomologique, pathologique, animaux, abiotique_complexe_indetermine)",
+      "verifier_que_insectes_est_absent_de": "docs/referentiels/etats-plants.yaml#causes_dsf_groupes_bilan"
+    },
+    {
+      "id": "EX-29d",
+      "description": "Essences valides du référentiel, dont le sapin pectiné `S.P` (et non `SAP`) : acceptées.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "S.P",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0002",
+                  "numero": 2,
+                  "essence": "DOU",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 41
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "plants_ecrits": [
+          {
+            "uuid": "00000000-0000-4000-8000-0000000b0001",
+            "essence": "S.P"
+          },
+          {
+            "uuid": "00000000-0000-4000-8000-0000000b0002",
+            "essence": "DOU"
+          }
+        ]
+      },
+      "source": "docs/referentiels/essences.csv (S.P, DOU) ; briefs/vers-sommier/2026-10-15-travaux-2-plants.md (SAP = sapin autre que pectiné)"
+    },
+    {
+      "id": "EX-30",
+      "description": "Deux plants de même UUID : refusé.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 2,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 41
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "uuid_en_double"
+      },
+      "source": "docs/spec.md § 6 (un UUID de plant en double est refusé)"
+    },
+    {
+      "id": "EX-30b",
+      "description": "Un plant de la tournée précédente redonné avec le même UUID dans une autre placette : refusé (un plant appartient à une seule placette).",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            },
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0002",
+              "code_placette": "P-002",
+              "x": 850489.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000b0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "numero": 1,
+              "essence": "CHS"
+            }
+          ]
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0002",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0002",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850489.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": false,
+        "motif": "uuid_en_double"
+      },
+      "source": "docs/spec.md § 6 (un plant appartient à une seule placette et garde son UUID)"
+    },
+    {
+      "id": "EX-31",
+      "description": "Saisie incomplète : tournée sans aucun contrôle ; export accepté, les six couches ajoutées et controles présentes et vides, projet à une ligne.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": []
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "couches_presentes": [
+          "plants",
+          "etats_plants",
+          "constats_reprise",
+          "vides",
+          "positions_controles",
+          "projet",
+          "controles"
+        ],
+        "couches_vides": [
+          "plants",
+          "etats_plants",
+          "constats_reprise",
+          "vides",
+          "positions_controles",
+          "controles"
+        ],
+        "projet": {
+          "lignes": 1
+        }
+      },
+      "source": "ADR 0007 (critère (c) : st_layers liste toutes les couches ajoutées, même vides)"
+    }
+  ]
+}

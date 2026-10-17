@@ -1,0 +1,439 @@
+{
+  "fichier": "couches-sommier.json",
+  "regle": "Les couches de sommieR sont écrites comme en 0.31.1, sans champ ajouté ni renommé, totaux de controles toujours écrits",
+  "format": "voir fixtures/README.md, section Export (acceptation-export/)",
+  "cas": [
+    {
+      "id": "EX-01",
+      "description": "Nominal : une tournée Couchey minimale avec un contrôle s'exporte en un .zip qui contient travaux.gpkg et DCIM/.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "zip": {
+          "contient": [
+            "travaux.gpkg"
+          ],
+          "dcim_present": true
+        },
+        "controles_ecrits": [
+          {
+            "uuid": "00000000-0000-4000-8000-0000000c0001",
+            "placette_uuid": "00000000-0000-4000-8000-0000000a0001"
+          }
+        ]
+      },
+      "source": "docs/spec.md § 4.8 (export <tournée>.zip : travaux.gpkg complété, DCIM/) ; ADR 0007 (ligne Export)"
+    },
+    {
+      "id": "EX-02",
+      "description": "Les onze couches de sommieR gardent champs, types, géométrie, srs_id et type de contenu du modèle 0.31.1.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "schema_sommier_identique": "schema-sommier-0.31.1.json"
+      },
+      "source": "ADR 0007 (ligne Couches de sommieR ; critère de CI (b)) ; modèle sommieR 0.31.1 relevé dans schema-sommier-0.31.1.json"
+    },
+    {
+      "id": "EX-03",
+      "description": "Les totaux de controles sont toujours écrits, même pour un contrôle sans plant.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "totaux_controles_non_nuls": [
+          "nb_total",
+          "nb_vivants",
+          "nb_abroutis"
+        ]
+      },
+      "source": "ADR 0007 (« totaux de controles toujours écrits ») ; docs/spec.md § 5 (dernier paragraphe)",
+      "note": "h_moy_cm est absent (NULL) quand aucune hauteur n'est mesurée (spec § 6) : le cas ne l'exige donc pas. nb_total vaut 0 ici."
+    },
+    {
+      "id": "EX-04",
+      "description": "Totaux déduits des plants : non observé et plant remplacé exclus, atteint compte vivant, h_moy_cm des vivants mesurés.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000b0008",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "numero": 8,
+              "essence": "CHS"
+            }
+          ]
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0002",
+                  "numero": 2,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 45
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0003",
+                  "numero": 3,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "atteint",
+                  "hauteur_cm": 30,
+                  "cause_groupe": "animaux",
+                  "cause_detail": "abroutissement"
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0004",
+                  "numero": 4,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "atteint",
+                  "hauteur_cm": 50,
+                  "cause_groupe": "pathologique"
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0005",
+                  "numero": 5,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "mort",
+                  "cause_groupe": "entomologique"
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0006",
+                  "numero": 6,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "absent"
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0007",
+                  "numero": 7,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "non_observe"
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0009",
+                  "numero": 9,
+                  "essence": "CHS",
+                  "regarni": true,
+                  "remplace_uuid": "00000000-0000-4000-8000-0000000b0008",
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 20
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "controles_ecrits": [
+          {
+            "uuid": "00000000-0000-4000-8000-0000000c0001",
+            "nb_total": 7,
+            "nb_vivants": 5,
+            "nb_abroutis": 1,
+            "h_moy_cm": 37
+          }
+        ],
+        "calcul": "nb_total = 4 sains/atteints + mort + absent + regarni sain = 7 ; PLA-07 non observé et PLA-08 remplacé exclus ; vivants = 2 sains + 2 atteints + regarni = 5 ; abroutis = PLA-03 ; h_moy = (40+45+30+50+20)/5 = 37"
+      },
+      "source": "docs/spec.md § 4.3 (totaux déduits des plants) et § 6 (totaux du contrôle, h_moy_cm) ; ADR 0007 (totaux toujours écrits)",
+      "note": "Qui calcule les totaux ne compte pas : le résultat de l'export est vérifié (spec § 6 : totaux toujours déduits des plants ; ADR 0007 : toujours écrits)."
+    },
+    {
+      "id": "EX-04b",
+      "description": "h_moy_cm arrondie demi vers le haut : 40 et 45 cm donnent 43.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0002",
+                  "numero": 2,
+                  "essence": "CHS",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 45
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "controles_ecrits": [
+          {
+            "uuid": "00000000-0000-4000-8000-0000000c0001",
+            "nb_total": 2,
+            "nb_vivants": 2,
+            "nb_abroutis": 0,
+            "h_moy_cm": 43
+          }
+        ]
+      },
+      "source": "docs/spec.md § 6 (h_moy_cm demi vers le haut) ; fixtures/README.md (T9c : 40 et 45 cm donnent 43)"
+    },
+    {
+      "id": "EX-09",
+      "description": "Écrire des contrôles déclenche l'index rtree de controles (fonctions ST_*) : l'index contient les deux contrôles écrits.",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            },
+            {
+              "uuid": "00000000-0000-4000-8000-0000000c0002",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-15T09:00:00Z",
+              "jour_civil": "2026-10-15",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": []
+            }
+          ]
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "rtree": {
+          "table": "rtree_controles_geom",
+          "lignes": 2
+        }
+      },
+      "source": "ADR 0011 (contraintes connues : déclencheurs rtree de sommieR) ; modèle sommieR 0.31.1 (rtree_controles_geom)"
+    }
+  ]
+}

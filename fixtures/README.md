@@ -89,3 +89,18 @@ Décisions de Pascal du 2026-10-17 (mission 021). Une saisie dont `remplace_uuid
 
 * `a_confirmer_par_pascal` : cas qui repose sur une déduction non écrite dans la spec (aucun pour l'instant).
 * Sources des heures : tzdata Europe/Paris, fin de l'heure d'été le 2026-10-25 à 01:00 UTC.
+
+## Export du GeoPackage (`acceptation-export/`)
+
+Cas d'acceptation de l'export `travaux.gpkg`, écrits par le `testeur` (mission 020) à partir des ADR 0007 et 0011, de la spec (§ 5 et § 6) et des arbitrages du 2026-10-17, sans lire le code de la mission 006. Ils ne sont pas lus par `FixturesBienFormeesTest` ; `ExportAcceptationTest` (`gpkg/src/test/`) les joue, `@Disabled` jusqu'à ce que la 006 branche l'export dans `BranchementExport.kt`. Identifiants `EX-NN`.
+
+* **Entrée** : `tournee_depart` (`repere_epsg`, `placettes` avec `x` et `y` dans le repère, `plants_tournee_precedente`) et `saisies` (`controles`, chacun avec `uuid`, `placette_uuid`, `visite_le` UTC, `jour_civil`, `position`, `plants`). Pas de gpkg binaire : la tournée est décrite par son contenu minimal.
+* **`visite_le` et `jour_civil`** : l'instant retenu par le journal et son jour civil Europe/Paris, fournis par l'appelant. L'export ne les corrige pas : un jour civil qui contredit `visite_le` est refusé (`jour_incoherent`, EX-27) ; le jour UTC se lit dans `visite_le`.
+* **Identifiants** : tous les `uuid` sont de vrais UUID en minuscules (`00000000-0000-4000-8000-0000000XNNNN`, X = a placette, b plant, c contrôle, d travaux ; NNNN = numéro). Dans les descriptions et notes, `CT-001`, `PLA-01`, `PL-001`, `TV-001` désignent ces UUID par leur lettre et leur numéro (`c0001`, `b0001`…) ; seul EX-34 emploie un identifiant invalide.
+* **Attendu** : `{"accepte": true, ...}` avec le contenu attendu, ou `{"accepte": false, "motif": "<code>"}`. Le test compare le contenu, jamais une empreinte du fichier (ADR 0011).
+* **Codes de refus** (fixés, comme les codes d'anomalie du journal ; les messages affichés ne le sont pas) : `melange_reperes` (2154 et 9794 dans un même fichier), `controle_en_double` (deux contrôles d'une même placette qui partagent le jour de Paris **ou** le jour UTC ; l'export ne fusionne jamais), `hors_france`, `hors_referentiel` (état, cause ou essence absents de `docs/referentiels/`, ou `code_travaux` absent de la couche `codes` de la tournée), `uuid_en_double` (UUID de plant en double), `uuid_invalide` (identifiant qui n'est pas un UUID, sommieR 0.31.1 `R/valider.R` l. 10), `jour_incoherent` (jour civil fourni qui contredit le jour de Paris de `visite_le` : l'export refuse, il ne corrige pas en silence).
+* **Fichiers de référence** : `schema-sommier-0.31.1.json` (relevé du modèle de sommieR), `schema-couches-ajoutees.json` (spec § 5 ; classes de type proposées), `valeurs-permises.json`.
+* **Variantes** : `entrees_variantes` (liste de `{"uuid_controle": ...}`) rejoue l'`entree` avec l'UUID du premier contrôle remplacé tel quel ; chaque variante doit être refusée avec le motif attendu (EX-34d : majuscules, espaces).
+* **Champs facultatifs d'un cas** : `hypothese` (le cas suppose une règle non écrite, à confirmer par Pascal) ; `operation: "lecture"` (cas de relecture, joué par `ExportTournee.relire` : EX-11) ; `saisies.travaux` (travaux saisis, avec leur `code_travaux`, contrôlés contre la couche `codes` de `tournee_depart.codes` : EX-33).
+* **Trous voulus dans la numérotation** : EX-28 (date de travaux antérieure à la plantation) et EX-32 (export sans réseau) ont été retirés par Pascal le 2026-10-17 ; ne pas les réattribuer.
+* **Non couverts** : critère de CI (a) de l'ADR 0007 (import R, CI de la 007) ; fumée de l'APK sur émulateur ; essai sur ARM.
