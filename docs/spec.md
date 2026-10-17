@@ -263,14 +263,17 @@ aujourd'hui.
 
 ### Écriture de l'export (mission 006, ADR 0007 et 0011)
 
-Arbitrages de Pascal du 2026-10-17 (plan de la mission 006), reportés tels quels dans
-`briefs/vers-sommier/2026-10-15-travaux-2-plants.md` :
+Décisions de Pascal du 2026-10-17 (plan de la mission 006, ADR 0011 et relecture de la PR n° 34),
+reportées dans `briefs/vers-sommier/2026-10-15-travaux-2-plants.md` : les types, `departs`,
+`modele_geomagnetique`, `projet`, le zip à plat, la double règle du jour et `visite_le`.
+Les choix **techniques du `dev`** (non tranchés par Pascal, à relire) sont signalés « (choix du
+`dev`) » : UUID en minuscules, valeurs permises, liste des refus, déterminisme, rejouabilité.
 
 - **Types** des couches ajoutées, par anticipation sur sommieR : `TEXT` (identifiants, codes,
   textes), `INTEGER` (numéros, effectifs, hauteurs), `REAL` (mesures en mètres, degrés,
   pourcents, ares), `BOOLEAN` (0 ou 1), `DATETIME` (ISO 8601 en UTC, millisecondes, « Z », comme
   GDAL). Clé primaire `fid INTEGER PRIMARY KEY AUTOINCREMENT`, géométrie dans `geom`, repère
-  du fichier. Tout identifiant est un UUID **en minuscules** (l'import de sommieR n'accepte pas
+  du fichier. Tout identifiant est un UUID **en minuscules** (choix du `dev` : l'import de sommieR n'accepte pas
   les majuscules).
 - **`departs`** : un tableau JSON dans un `TEXT` (le contenu des éléments reste à fixer avec le
   protocole du constat de reprise, § 4.4 et ADR 0002).
@@ -280,26 +283,31 @@ Arbitrages de Pascal du 2026-10-17 (plan de la mission 006), reportés tels quel
   par Surculus tant que la tournée 0.31.1 ne les porte pas, et ne sont jamais écrasés ensuite ;
   Surculus écrit `operateur` et `version_surculus` (la version unique). Un lecteur lit par nom
   de colonne : un fichier plus récent, qui a des champs en plus, se lit en les ignorant.
-- **Valeurs permises** (`etat`, `cause_groupe`, `unite_azimut`, `methode`, `origine`) : extension
+- **Valeurs permises** (choix du `dev`) (`etat`, `cause_groupe`, `unite_azimut`, `methode`, `origine`) : extension
   Schema de GeoPackage (`gpkg_data_columns`, `gpkg_data_column_constraints`, type `enum`),
   tirées des enums de `:core` et de `docs/referentiels/etats-plants.yaml`, jamais recopiées.
 - **Repère** : lu dans `gpkg_spatial_ref_sys` (code EPSG de `organization_coordsys_id`), pour
   `gpkg_contents` comme pour `gpkg_geometry_columns` ; un fichier qui mêle 2154 et 9794 est
   refusé, et un plant dérivé dans l'autre repère que le fichier aussi.
-- **Tout ou rien** : un export refusé n'écrit aucun fichier. Refus : point hors de France (avec
+- **Tout ou rien** (choix du `dev`) : un export refusé n'écrit aucun fichier. Refus : point hors de France (avec
   signalement d'axes inversés), hors de l'emprise de la forêt, placette inconnue, totaux qui ne
   concordent pas avec les états, UUID en double ou en majuscules, numéro de plant déjà pris,
   essence absente de `essences.csv`, deux contrôles d'une même placette le même jour.
-- **Un contrôle par placette et par jour, deux fois** : le jour civil Europe/Paris (ADR 0005)
-  **et** le jour UTC, parce que `sommier_importer_qfield_travaux()` lit `visite_le` en UTC et
+- **Un contrôle par placette et par jour, deux fois** (décision de Pascal) : le jour civil
+  Europe/Paris (ADR 0005) **et** le jour UTC, parce que `sommier_importer_qfield_travaux()` lit `visite_le` en UTC et
   refuse la tournée entière si deux contrôles d'une même placette tombent le même jour UTC.
   Entre minuit et 2 h du matin à Paris, les deux jours diffèrent : l'export refuse plutôt que
-  de laisser l'import refuser toute la tournée au bureau. **À trancher par Pascal** (voir le
-  rendu de la mission 006).
-- **Déterministe** : à état égal, deux exports ont le même contenu (lignes rangées par
+  de laisser l'import refuser toute la tournée au bureau. La règle UTC tombera quand sommieR
+  alignera son import sur le jour civil (demande au brief vers sommieR). Le jour civil est
+  **calculé par le journal** (mission 008) et fourni par l'appelant (`ControleSaisi.jour`) :
+  l'export le reprend sans le recalculer ; les contrôles déjà présents dans la tournée sont
+  confrontés aux deux jours.
+- **`visite_le`** (décision de Pascal) : l'instant du journal, soit l'heure GNSS si le fix a au
+  plus 5 s, sinon l'heure du téléphone. L'export l'écrit tel quel.
+- **Déterministe** (choix du `dev`) : à état égal, deux exports ont le même contenu (lignes rangées par
   identifiant, jamais par ordre de saisie ; horloge injectée dans `gpkg_contents.last_change`).
   Les tests comparent par le contenu, jamais par empreinte du fichier (ADR 0011).
-- **Rejouable** : exporter à partir d'un export déjà fait ignore les lignes présentes à
+- **Rejouable** (choix du `dev`) : exporter à partir d'un export déjà fait ignore les lignes présentes à
   l'identique ; un même UUID avec un contenu différent est refusé.
 
 ### Journal des saisies (sur l'appareil, ADR 0005)

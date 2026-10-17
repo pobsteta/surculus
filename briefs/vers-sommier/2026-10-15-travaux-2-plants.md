@@ -130,8 +130,11 @@ ignore ces couches, l'export est relu sans écart avec et sans elles) :
 - **Un contrôle par placette et par jour UTC** : l'import refuse la tournée entière si deux
   contrôles d'une même placette tombent le même jour UTC (`visite_le` est lu en `POSIXct`), alors
   que Surculus compte en jour civil Europe/Paris. Les deux diffèrent entre minuit et 2 h du matin
-  à Paris : Surculus refuse l'export dans ce cas. Si sommieR préfère le jour de Paris, c'est à
-  lui de le dire.
+  à Paris : Surculus refuse l'export dans ce cas (double règle, décision de Pascal du 2026-10-17).
+  **Demande à sommieR : aligner l'import sur le jour civil** (Europe/Paris) ; la règle UTC de
+  Surculus tombera quand sommieR suivra.
+- **`visite_le`** : l'instant du journal de Surculus, c'est-à-dire l'heure GNSS si le fix a au plus
+  5 s, sinon l'heure du téléphone ; toujours écrit en UTC.
 
 ## Demandes complémentaires (porte n° 1 de Surculus)
 

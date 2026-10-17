@@ -30,7 +30,7 @@ comme en CI (ADR 0011), pour que l'import de sommieR relise la tournée sans éc
 
 ## Harnais
 
-- **Peut :** utiliser geopackage-java et sqlite-jdbc ; lire `inst/qgis/travaux.gpkg` et la démo Couchey de sommieR.
+- **Peut :** utiliser sqlite-jdbc (ADR 0011, sans geopackage-java) ; lire `inst/qgis/travaux.gpkg` et la démo Couchey de sommieR.
 - **Ne doit pas :** sortir du périmètre de cette phrase ; inventer un code (travaux, essence, état) ; toucher à `main` ; modifier sommieR, Marculus ou Groma ; trancher une question de sens (la remonter à l'orchestrateur).
 - **Sources autorisées :** ADR 0004, 0007 ; `docs/spec.md` § 5 ; OGC 12-128 Req. 118-119 ; sommieR en lecture seule.
 
