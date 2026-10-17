@@ -110,6 +110,34 @@ jobs:
         if: steps.cle.outputs.signe == 'true'
         run: bash scripts/verifier-16ko.sh app/build/outputs/apk/release/app-release.apk
 
+      # Essai de fumée de l'APK release (ADR 0011, arbitrage de Pascal) : l'application écrit une tournée de
+      # démonstration (sqlite-jdbc, natifs Android, fonctions ST_* en Kotlin, index rtree) puis la relit, sur un
+      # émulateur x86_64, avec R8 et le désucrage de la release. La release ne part pas s'il échoue.
+      # Limite assumée : x86_64 seulement, le chemin ARM n'est jamais exécuté ici (Pascal l'essaie sur téléphone).
+      - name: Activer KVM (émulateur)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Essai de fumée de l'APK release sur émulateur (écrire puis relire une tournée)
+        # v2.38.0, épinglée par SHA (commit du tag annoté).
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        env:
+          # Mêmes variables que l'étape de compilation : sans elles, la signature release ne se configurerait pas.
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          VERSION: ${{ steps.version.outputs.new_version }}
+          NUMERO: ${{ github.run_number }}
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: ./gradlew :app:connectedReleaseAndroidTest --no-daemon "-PappVersionName=$VERSION" "-PappVersionCode=$NUMERO"
+
       - name: Préparer l'APK, les notes et le résumé
         env:
           TAG: ${{ steps.version.outputs.new_tag }}
