@@ -41,15 +41,23 @@ data class ResultatProjection(
  * - la valeur courante est la dernière tête selon l'ordre total ;
  * - un `remplaceUuid` inconnu : la ligne reste tête, anomalie [REMPLACE_INCONNU] ; une annulation à cible
  *   inconnue est ignorée (même anomalie) et s'applique quand la cible arrive ;
- * - une ligne (correction ou annulation) dont la cible est une ligne d'un **autre objet** n'agit sur aucun
- *   objet : elle reste au journal, hors projection, avec l'anomalie [REMPLACE_AUTRE_OBJET].
+ * - une saisie dont `remplaceUuid` désigne une ligne d'un **autre objet** (ou, dans le même objet, d'un
+ *   **autre type**) ne remplace rien : la ligne désignée garde sa valeur, la saisie est tête de sa propre
+ *   clé, avec l'anomalie [REMPLACE_AUTRE_OBJET] (ou [REMPLACE_AUTRE_TYPE]) rattachée à cette clé, comme
+ *   pour un remplacement inconnu (décisions de Pascal, 2026-10-17) ;
+ * - une annulation dont l'objet diffère de celui de sa cible n'annule rien : la cible garde sa valeur,
+ *   l'annulation est tête de la clé (objet déclaré, `annulation`) avec l'anomalie [REMPLACE_AUTRE_OBJET] ;
+ * - si l'objet et le type diffèrent, seule [REMPLACE_AUTRE_OBJET] est signalée.
  */
 object Projection {
     const val UUID_CONTENU_DIFFERENT = "uuid_contenu_different"
     const val REMPLACE_INCONNU = "remplace_inconnu"
 
-    /** Une ligne qui remplace ou annule une ligne d'un autre objet : gardée, mais sans effet (2026-10-17). */
+    /** Une saisie qui désigne une ligne d'un autre objet : elle ne la remplace pas (2026-10-17). */
     const val REMPLACE_AUTRE_OBJET = "remplace_autre_objet"
+
+    /** Une saisie qui désigne une ligne d'un autre type du même objet : elle ne la remplace pas (2026-10-17). */
+    const val REMPLACE_AUTRE_TYPE = "remplace_autre_type"
 
     /** Ordre total : (`saisiLeUtcMs`, `appareil`, `sequence` numérique, `uuid`). */
     val ORDRE_TOTAL: Comparator<LigneJournal> =
@@ -74,13 +82,14 @@ object Projection {
         val anomaliesJournal = sortedSetOf<String>()
         if (refusees.isNotEmpty()) anomaliesJournal += UUID_CONTENU_DIFFERENT
 
-        // Cible connue d'un autre objet : la ligne n'agit sur rien (ni tête, ni annulation).
-        val (horsObjet, valides) = retenues.partition { l ->
-            l.remplaceUuid?.let { parUuid[it] }?.let { it.objetUuid != l.objetUuid } == true
+        // Une annulation dont la cible connue est d'un autre objet est ignorée : la cible garde sa valeur.
+        val valides = retenues
+        val annulationsAutreObjet = retenues.filter { l ->
+            l.type == TypeLigne.ANNULATION &&
+                l.remplaceUuid?.let { parUuid[it] }?.let { it.objetUuid != l.objetUuid } == true
         }
-        if (horsObjet.isNotEmpty()) anomaliesJournal += REMPLACE_AUTRE_OBJET
 
-        val annulations = valides.filter { it.type == TypeLigne.ANNULATION }
+        val annulations = valides.filter { it.type == TypeLigne.ANNULATION && it !in annulationsAutreObjet }
         val annulationsParCible = annulations.filter { it.remplaceUuid != null }.groupBy { it.remplaceUuid!! }
         annulations.filter { it.remplaceUuid == null || it.remplaceUuid !in parUuid }
             .forEach { anomaliesJournal += REMPLACE_INCONNU }
@@ -99,20 +108,32 @@ object Projection {
         }
 
         // Les sauts d'horloge sont des événements, pas des états : ils n'ont pas de clé de projection.
-        val saisies = valides.filter { it.type != TypeLigne.ANNULATION && it.type != TypeLigne.SAUT_HORLOGE }
+        // Une annulation d'un autre objet n'annule rien : elle reste tête de la clé (objet déclaré, annulation).
+        val saisies = valides.filter {
+            it.type != TypeLigne.SAUT_HORLOGE && (it.type != TypeLigne.ANNULATION || it in annulationsAutreObjet)
+        }
         val actives = saisies.filter { !estAnnulee(it.uuid) }
 
-        // Ascendants (par remplaceUuid, à travers toutes les lignes connues) de chaque ligne active.
+        // Ascendants de chaque ligne active, par les liens `remplaceUuid` valides (même objet, même type).
+        // Un lien inconnu, d'un autre objet ou d'un autre type ne remplace rien et signale une anomalie.
         val remplacees = HashSet<String>()
-        val inconnu = HashSet<String>()
+        val anomaliesLigne = HashMap<String, MutableSet<String>>()
         for (l in actives) {
             val vus = HashSet<String>()
-            var r = l.remplaceUuid
-            while (r != null && vus.add(r)) {
+            var cur = l
+            while (true) {
+                val r = cur.remplaceUuid ?: break
+                if (!vus.add(r)) break
                 val parent = parUuid[r]
-                if (parent == null) { inconnu += l.uuid; break }
+                val anomalie = when {
+                    parent == null -> REMPLACE_INCONNU
+                    parent.objetUuid != cur.objetUuid -> REMPLACE_AUTRE_OBJET
+                    parent.type != cur.type -> REMPLACE_AUTRE_TYPE
+                    else -> null
+                }
+                if (anomalie != null) { anomaliesLigne.getOrPut(l.uuid) { sortedSetOf() } += anomalie; break }
                 remplacees += r
-                r = parent.remplaceUuid
+                cur = parent!!
             }
         }
 
@@ -125,7 +146,7 @@ object Projection {
                 courant = tetes.lastOrNull()?.uuid,
                 conflit = tetes.size > 1,
                 tetes = tetes.map { it.uuid },
-                anomalies = if (tetes.any { it.uuid in inconnu }) listOf(REMPLACE_INCONNU) else emptyList(),
+                anomalies = tetes.flatMap { anomaliesLigne[it.uuid].orEmpty() }.distinct().sorted(),
             )
         }
         return ResultatProjection(

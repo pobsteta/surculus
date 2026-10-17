@@ -27,7 +27,7 @@ class JournalRoomScenariosTest {
     @Test
     fun `chaque cas est rejoue dans la base, dans chaque ordre d'arrivee`() {
         var rejoues = 0
-        for (f in listOf("projection", "conflits", "ordre-total")) for (c in ScenariosJournal.cas(f)) {
+        for (f in listOf("projection", "conflits", "ordre-total", "remplacements-anormaux")) for (c in ScenariosJournal.cas(f)) {
             for (ordre in c.ordresDArrivee) {
                 val db = JournalDatabase.construire(contexte, null).allowMainThreadQueries().build()
                 try {
@@ -43,7 +43,7 @@ class JournalRoomScenariosTest {
 
                     if (c.attendu.has("projection")) {
                         val obtenu = incrementale.entries.associate { it.key.toString() to EtatAttendu.de(it.value) }
-                        assertEquals(ScenariosJournal.attenduProjection(c.attendu), obtenu, c.nom)
+                        assertEquals(ScenariosJournal.attenduProjection(c.attendu, obtenu), obtenu, c.nom)
                     }
                     ScenariosJournal.chaines(c.attendu, "anomalies")?.let { assertEquals(it, depot.anomalies(), c.nom) }
                     c.attendu.get("lignes_retenues")?.let { assertEquals(it.asInt, pure.lignesRetenues, c.nom) }

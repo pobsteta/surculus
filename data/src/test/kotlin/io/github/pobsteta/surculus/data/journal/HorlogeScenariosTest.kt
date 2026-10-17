@@ -36,7 +36,7 @@ class HorlogeScenariosTest {
                 assertEquals(parUuid.getValue(s.apresUuid).saisiLeUtcMs, s.heureApresMs, c.nom)
             }
             assertEquals(avant, lignes, "${c.nom} : lignes modifiées")
-            // (La conservation en base est vérifiée par JournalRoomScenariosTest.)
+            // (La conservation en base est vérifiée par JournalRobustesseTest, « scénarios d'horloge ».)
         }
     }
 

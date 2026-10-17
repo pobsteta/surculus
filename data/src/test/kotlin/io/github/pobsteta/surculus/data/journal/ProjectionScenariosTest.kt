@@ -7,7 +7,7 @@ import kotlin.test.assertTrue
 /** Rejeu pur (sans base) de `fixtures/journal/{projection,conflits,ordre-total}.json`, chaque ordre d'arrivée. */
 class ProjectionScenariosTest {
 
-    private val fichiers = listOf("projection", "conflits", "ordre-total")
+    private val fichiers = listOf("projection", "conflits", "ordre-total", "remplacements-anormaux")
 
     @Test
     fun `chaque cas des scenarios de projection est rejoue dans chaque ordre d'arrivee`() {
@@ -25,7 +25,7 @@ class ProjectionScenariosTest {
         val att = c.attendu
         if (att.has("projection")) {
             val obtenu = r.cles.entries.associate { it.key.toString() to EtatAttendu.de(it.value) }
-            assertEquals(ScenariosJournal.attenduProjection(att), obtenu, c.nom)
+            assertEquals(ScenariosJournal.attenduProjection(att, obtenu), obtenu, c.nom)
         }
         att.getAsJsonArray("cles")?.let { cles ->
             assertEquals(cles.map { it.asString }.toSet(), r.cles.keys.map { it.toString() }.toSet(), c.nom)

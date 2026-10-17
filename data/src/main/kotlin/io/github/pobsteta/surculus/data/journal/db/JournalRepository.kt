@@ -38,10 +38,11 @@ sealed interface Reception {
  * principal. Chaque ajout est **une transaction** (ligne, éventuel saut d'horloge, projection des clés
  * touchées) : tout ou rien.
  *
- * Un `remplace_uuid` doit désigner une ligne du **même objet**, et une `annulation` porte l'objet de la
- * ligne annulée (spec § 5). Une ligne qui y déroge est **gardée** (aucune saisie n'est perdue) mais
- * n'agit sur aucun objet et porte l'anomalie `remplace_autre_objet`, aussi bien par `saisir` que par
- * `recevoir` : le contrôle est dans la projection, donc identique incrémentale et reconstruite.
+ * Un `remplace_uuid` doit désigner une ligne du **même objet** et du **même type**, et une `annulation`
+ * porte l'objet de la ligne annulée (spec § 5). Une saisie qui y déroge est **gardée** (aucune saisie n'est
+ * perdue), tête de sa propre clé, avec l'anomalie `remplace_autre_objet` ou `remplace_autre_type`
+ * rattachée à cette clé ; la ligne désignée garde sa valeur. Aussi bien par `saisir` que par `recevoir` :
+ * le contrôle est dans la projection, donc identique incrémentale et reconstruite.
  */
 class JournalRepository(
     private val db: JournalDatabase,

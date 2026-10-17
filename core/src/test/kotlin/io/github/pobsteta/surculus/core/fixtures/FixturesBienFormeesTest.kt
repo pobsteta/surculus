@@ -23,7 +23,7 @@ class FixturesBienFormeesTest {
             "regarni", "identite", "etats-causes", "convergence", "declinaison-wmm2025", "chaine-azimut",
             "unites-azimut", "distance-horizontale",
             // fixtures/journal (mission 008)
-            "projection", "conflits", "ordre-total", "horloge", "jour-civil",
+            "projection", "conflits", "ordre-total", "horloge", "jour-civil", "remplacements-anormaux",
         )
         assertEquals(attendus.sorted(), fichiers.map { it.famille }.sorted())
     }
@@ -31,7 +31,7 @@ class FixturesBienFormeesTest {
     @Test
     fun `les scenarios du journal sont couverts, bien formes, et leurs identifiants sont JR`() {
         val journal = fichiers.filter { it.chemin.replace('\\', '/').startsWith("fixtures/journal/") }
-        assertEquals(setOf("projection", "conflits", "ordre-total", "horloge", "jour-civil"), journal.map { it.famille }.toSet())
+        assertEquals(setOf("projection", "conflits", "ordre-total", "horloge", "jour-civil", "remplacements-anormaux"), journal.map { it.famille }.toSet())
         val champs = listOf(
             "uuid", "objet_uuid", "type", "valeur", "remplace_uuid", "operateur", "appareil", "sequence",
             "saisi_le_utc", "monotone_ms", "demarrage",

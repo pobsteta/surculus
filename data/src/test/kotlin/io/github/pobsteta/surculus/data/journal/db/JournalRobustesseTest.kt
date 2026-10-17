@@ -52,50 +52,6 @@ class JournalRobustesseTest {
         assertEquals(incrementale, r.projection(), "$nom : reconstruction ≠ incrémentale")
     }
 
-    // --- remplacement ou annulation d'un AUTRE objet ---
-
-    @Test
-    fun `une correction d'un autre objet est gardee, sans effet, avec anomalie - dans les deux ordres`() {
-        val u1 = ligne("U1", "P1", TypeLigne.ETAT, seq = 1, valeur = """{"etat":"sain"}""")
-        val u2 = ligne("U2", "P2", TypeLigne.ETAT, remplace = "U1", seq = 2, valeur = """{"etat":"mort"}""")
-        for (ordre in listOf(listOf(u1, u2), listOf(u2, u1))) {
-            val r = depot()
-            ordre.forEach { assertEquals(Reception.Ajoutee, r.recevoir(it)) }
-            assertEquals("U1", r.etat("P1", "etat")?.courant, "la valeur de P1 ne doit pas être effacée")
-            assertNull(r.etat("P2", "etat"), "la ligne d'un autre objet n'agit sur aucun objet")
-            assertEquals(listOf("remplace_autre_objet"), r.anomalies())
-            assertEquals(2, r.lignes().size, "gardée au journal")
-            verifierTroisVoies(r, ordre, "correction autre objet")
-        }
-    }
-
-    @Test
-    fun `une annulation dont l'objet differe de celui de sa cible est gardee, sans effet, avec anomalie`() {
-        val u1 = ligne("U1", "P1", TypeLigne.ETAT, seq = 1, valeur = """{"etat":"sain"}""")
-        val u2 = ligne("U2", "P2", TypeLigne.ANNULATION, remplace = "U1", seq = 2)
-        for (ordre in listOf(listOf(u1, u2), listOf(u2, u1))) {
-            val r = depot()
-            ordre.forEach { r.recevoir(it) }
-            assertEquals("U1", r.etat("P1", "etat")?.courant)
-            assertEquals(listOf("remplace_autre_objet"), r.anomalies())
-            assertEquals(2, r.lignes().size)
-            verifierTroisVoies(r, ordre, "annulation autre objet")
-        }
-    }
-
-    @Test
-    fun `saisir contrôle aussi l'autre objet - ligne gardee, sans effet, avec anomalie`() {
-        val r = depot()
-        val a = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
-        r.saisir("P2", TypeLigne.ETAT, """{"etat":"mort"}""", "op1", remplaceUuid = a.uuid)
-        r.saisir("P3", TypeLigne.ANNULATION, null, "op1", remplaceUuid = a.uuid)
-        assertEquals(a.uuid, r.etat("P1", "etat")?.courant)
-        assertNull(r.etat("P2", "etat"))
-        assertEquals(listOf("remplace_autre_objet"), r.anomalies())
-        assertEquals(3, r.lignes().size)
-        verifierTroisVoies(r, r.lignes(), "saisir autre objet")
-    }
-
     // --- annulation à cible inconnue ---
 
     @Test
