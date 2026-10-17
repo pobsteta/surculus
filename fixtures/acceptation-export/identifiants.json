@@ -69,7 +69,7 @@
         "accepte": false,
         "motif": "uuid_invalide"
       },
-      "source": "sommieR 0.31.1, R/valider.R l. 10 (MOTIF_UUID : l'import n'accepte que des UUID à 8-4-4-4-12 chiffres hexadécimaux)"
+      "source": "sommieR 0.31.1, R/travaux_qfield.R (controler_tournee_travaux, l. 350, 382 et 401 : MOTIF_UUID testé sur la valeur brute, sans tolower ni trimws) ; R/valider.R l. 10 (MOTIF_UUID : 8-4-4-4-12 chiffres hexadécimaux minuscules)"
     },
     {
       "id": "EX-34b",
@@ -137,7 +137,7 @@
         "accepte": false,
         "motif": "uuid_invalide"
       },
-      "source": "sommieR 0.31.1, R/valider.R l. 10 (MOTIF_UUID : l'import n'accepte que des UUID à 8-4-4-4-12 chiffres hexadécimaux)"
+      "source": "sommieR 0.31.1, R/travaux_qfield.R (controler_tournee_travaux, l. 350, 382 et 401 : MOTIF_UUID testé sur la valeur brute, sans tolower ni trimws) ; R/valider.R l. 10 (MOTIF_UUID : 8-4-4-4-12 chiffres hexadécimaux minuscules)"
     },
     {
       "id": "EX-34c",
@@ -205,8 +205,83 @@
         "accepte": false,
         "motif": "uuid_invalide"
       },
-      "source": "sommieR 0.31.1, R/valider.R l. 10 (MOTIF_UUID : l'import n'accepte que des UUID à 8-4-4-4-12 chiffres hexadécimaux)",
-      "note": "Le cas écarte volontairement les majuscules : valider_uuid de sommieR met en minuscules avant de tester, une majuscule n'est donc pas refusée par l'import."
+      "source": "sommieR 0.31.1, R/travaux_qfield.R (controler_tournee_travaux, l. 350, 382 et 401 : MOTIF_UUID testé sur la valeur brute, sans tolower ni trimws) ; R/valider.R l. 10 (MOTIF_UUID : 8-4-4-4-12 chiffres hexadécimaux minuscules)"
+    },
+    {
+      "id": "EX-34d",
+      "description": "UUID de contrôle valide mais en majuscules, puis entouré d'espaces : refusé dans les deux cas (la mise en minuscules et la suppression des espaces ne se font pas à l'export).",
+      "entree": {
+        "tournee_depart": {
+          "repere_epsg": 2154,
+          "placettes": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000a0001",
+              "code_placette": "P-001",
+              "x": 850469.39,
+              "y": 6686306.33
+            }
+          ],
+          "plants_tournee_precedente": []
+        },
+        "saisies": {
+          "operateur": "op1",
+          "controles": [
+            {
+              "uuid": "00000000-0000-4000-8000-0000000C0001",
+              "placette_uuid": "00000000-0000-4000-8000-0000000a0001",
+              "visite_le": "2026-10-14T09:00:00Z",
+              "jour_civil": "2026-10-14",
+              "position": {
+                "x": 850469.39,
+                "y": 6686306.33
+              },
+              "plants": [
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0001",
+                  "numero": 1,
+                  "essence": "S.P",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 40
+                },
+                {
+                  "uuid": "00000000-0000-4000-8000-0000000b0002",
+                  "numero": 2,
+                  "essence": "DOU",
+                  "regarni": false,
+                  "remplace_uuid": null,
+                  "x": 850470.39,
+                  "y": 6686307.33,
+                  "distance_m": 1.4,
+                  "azimut_mag": 45.0,
+                  "unite_azimut": "deg",
+                  "etat": "sain",
+                  "hauteur_cm": 41
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "entrees_variantes": [
+        {
+          "uuid_controle": "00000000-0000-4000-8000-0000000C0001"
+        },
+        {
+          "uuid_controle": " 00000000-0000-4000-8000-0000000c0001 "
+        }
+      ],
+      "attendu": {
+        "accepte": false,
+        "motif": "uuid_invalide"
+      },
+      "source": "sommieR 0.31.1, R/travaux_qfield.R (controler_tournee_travaux, l. 350, 382 et 401 : MOTIF_UUID testé sur la valeur brute, sans tolower ni trimws) ; R/valider.R l. 10 (MOTIF_UUID : 8-4-4-4-12 chiffres hexadécimaux minuscules) ; décision de Pascal du 2026-10-17 rapportée par l'orchestrateur (un UUID en majuscules ou entouré d'espaces est refusé à l'export)"
     }
   ]
 }

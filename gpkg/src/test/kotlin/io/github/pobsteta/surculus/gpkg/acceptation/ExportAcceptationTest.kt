@@ -136,6 +136,15 @@ class ExportAcceptationTest {
 
     private fun jouer(c: CasExport) {
         if (c.entree.get("operation")?.asString == "lecture") return jouerLecture(c)
+        c.json.getAsJsonArray("entrees_variantes")?.forEach { v ->
+            // Variante : l'UUID du premier contrôle est remplacé tel quel (majuscules, espaces) ; chacune doit être refusée.
+            val entree = c.entree.deepCopy()
+            entree.getAsJsonObject("saisies").getAsJsonArray("controles")[0].asJsonObject
+                .addProperty("uuid", v.asJsonObject.get("uuid_controle").asString)
+            val refus = export.exporter(entree, Files.createTempDirectory("export-${c.id}")) as? ResultatExport.Refuse
+                ?: error("${c.id} : variante $v acceptée alors qu'elle devait être refusée")
+            assertEquals(c.attendu.get("motif").asString, refus.motif, "${c.id} : $v")
+        }
         val res = export.exporter(c.entree, Files.createTempDirectory("export-${c.id}"))
         if (c.attendu.get("accepte").asBoolean) {
             val accepte = res as? ResultatExport.Accepte ?: error("${c.id} : refusé (${res}) alors qu'il devait être accepté")
