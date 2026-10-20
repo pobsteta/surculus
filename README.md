@@ -8,6 +8,7 @@
 ![Android](https://img.shields.io/badge/Android-min%2026%20%C2%B7%20cible%2036-3DDC84?logo=android&logoColor=white)
 ![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue)](LICENSE)
+[![Méthode](https://img.shields.io/github/v/release/pobsteta/methode-imperatrice?sort=semver&label=m%C3%A9thode%20imperatrice)](https://github.com/pobsteta/methode-imperatrice/releases)
 
 Application Android de **suivi des travaux de plantation en forêt**, hors ligne :
 elle suit **plant par plant**, sur des placettes fixes, ce qui a repris d'un passage à

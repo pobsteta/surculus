@@ -29,13 +29,13 @@ Missions 006 à 014 validées par Pascal le 2026-10-15 (`pilotage/equipe.md`, PR
 Cycle 3 proposé : **006** module GeoPackage, lecture et export (tenir), **007** CI qui
 rejoue l'import de sommieR, **008** journal en ajout seul (tenir).
 
-- **023** la méthode en plugin `imperatrice`, le pilotage dans `pilotage/` — orchestrateur,
-  décidée par Pascal le 2026-10-20 ; en revue : PR #1 de `methode-imperatrice` à fusionner
-  d'abord, puis la PR de Surculus.
-
 ## Planifié
 
 ## Terminé
+
+- 2026-10-20 : **023** la méthode passe au plugin `imperatrice` v0.1.0 (GPL-3.0, CI et
+  releases automatiques, pobsteta/methode-imperatrice#1), le pilotage dans `pilotage/`,
+  README centré sur l'application (PR #38) — Pascal.
 
 - Cycle 2, 2026-10-16 : **003** GNSS de Groma, fraîcheur du fix, lint dans la commande de
   tests (PR #24) ; **005** chaîne des repères, WMM2025 copié de Groma (PR #25) ; **018**
