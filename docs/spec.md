@@ -264,7 +264,7 @@ aujourd'hui.
 ### Écriture de l'export (mission 006, ADR 0007 et 0011)
 
 Décisions de Pascal du 2026-10-17 (plan de la mission 006, ADR 0011 et relecture de la PR n° 34),
-reportées dans `briefs/vers-sommier/2026-10-15-travaux-2-plants.md` : les types, `departs`,
+reportées dans `pilotage/briefs/vers-sommier/2026-10-15-travaux-2-plants.md` : les types, `departs`,
 `modele_geomagnetique`, `projet`, le zip à plat, la double règle du jour et `visite_le`.
 Les choix **techniques du `dev`** (non tranchés par Pascal, à relire) sont signalés « (choix du
 `dev`) » : valeurs permises, liste des refus, déterminisme, rejouabilité.

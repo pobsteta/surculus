@@ -51,7 +51,7 @@
         "accepte": false,
         "motif": "controle_en_double"
       },
-      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J1 (la correction relève du journal et du domaine, pas de l'export)"
+      "source": "pilotage/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J1 (la correction relève du journal et du domaine, pas de l'export)"
     },
     {
       "id": "EX-20",
@@ -108,7 +108,7 @@
           }
         ]
       },
-      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J2"
+      "source": "pilotage/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; regles/un-controle-par-jour.json J2"
     },
     {
       "id": "EX-21",
@@ -158,7 +158,7 @@
         "accepte": false,
         "motif": "controle_en_double"
       },
-      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; exemple de la fiche 020",
+      "source": "pilotage/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; exemple de la fiche 020",
       "note": "Le 20 octobre 2026 est en heure d'été (UTC+2)."
     },
     {
@@ -209,7 +209,7 @@
         "accepte": false,
         "motif": "controle_en_double"
       },
-      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; tzdata Europe/Paris : fin de l'heure d'été le 2026-10-25 à 01:00 UTC (fixtures/README.md)"
+      "source": "pilotage/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6 ; tzdata Europe/Paris : fin de l'heure d'été le 2026-10-25 à 01:00 UTC (fixtures/README.md)"
     },
     {
       "id": "EX-23",
@@ -259,7 +259,7 @@
         "accepte": false,
         "motif": "controle_en_double"
       },
-      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6"
+      "source": "pilotage/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6"
     },
     {
       "id": "EX-24",
@@ -322,7 +322,7 @@
           }
         ]
       },
-      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6"
+      "source": "pilotage/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un contrôle par placette et par jour civil Europe/Paris et par jour UTC) ; docs/spec.md § 6"
     },
     {
       "id": "EX-25",
@@ -483,7 +483,7 @@
         "accepte": false,
         "motif": "jour_incoherent"
       },
-      "source": "docs/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un jour civil fourni qui contredit visite_le est refusé, motif jour_incoherent)",
+      "source": "pilotage/journal.md, 2026-10-17, Pascal, missions 006 et 020 (PR #37) (un jour civil fourni qui contredit visite_le est refusé, motif jour_incoherent)",
       "note": "Entrée volontairement incohérente : le journal ne la produirait pas. Le jour de Paris de visite_le est calculé en Europe/Paris (tzdata)."
     }
   ]

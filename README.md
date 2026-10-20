@@ -9,40 +9,74 @@
 ![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue)](LICENSE)
 
-Application de **suivi des travaux de plantation en forêt**.
+Application Android de **suivi des travaux de plantation en forêt**, hors ligne :
+elle suit **plant par plant**, sur des placettes fixes, ce qui a repris d'un passage à
+l'autre, et relève les travaux faits, pour les rendre au sommier forestier (sommieR).
 
-Surculus est développée par une équipe d'agents IA orchestrée dans Claude Code selon
-**la méthode de l'Impératrice** (Pascal Obstétar) : *l'IA propose, l'homme tranche et
-assume.*
+> **État : en développement (tranche 1).** Le domaine (contrôle de placette, repères,
+> journal des saisies) et l'export GeoPackage sont faits et testés ; les écrans de
+> tournée et de contrôle sont à venir. L'APK publié contient un écran d'essai GNSS.
+> L'avancement est dans [`pilotage/kanban.md`](pilotage/kanban.md).
 
-## Démarrer
+## Pour qui, pour quoi
 
-Ouvrir le dépôt dans Claude Code : `CLAUDE.md` fait de la session principale
-l'orchestrateur de l'équipe. Puis, dans l'ordre :
+- **Le gestionnaire forestier** qui tient le sommier et décide des regarnis,
+  dégagements et protections : savoir quel plant est mort, abrouti ou regarni, et
+  pourquoi, d'un passage à l'autre.
+- **Le propriétaire**, qui paie ces travaux et doit parfois justifier une aide : taux de
+  reprise et densité de vivants par essence objectif, toujours avec leur effectif.
 
-| Commande | Étape | Ce qui se passe | Porte humaine |
-|---|---|---|---|
-| `/brief` | Abstraction | Le `contradicteur` critique `docs/brief.md` ; spec et ADR au crible FRANCE | Pascal valide brief et spec |
-| `/mission` | Accompagnement | Découpage en missions d'une phrase, règle « un Homme, une mission, des moyens », équipe proposée | Pascal valide l'équipe |
-| `/boucle` | OODA | Un cycle de missions, un worktree et un contexte neuf par agent, relecture de chaque PR | Pascal valide chaque PR |
-| `/bilan` | PDCA | Pareto, test du successeur, réglage ambition / rythme, ajustement de l'équipe | Pascal tranche les changements |
+Sur le terrain : l'agent ouvre la tournée préparée par sommieR, il est guidé jusqu'au
+piquet de chaque placette puis d'un plant au suivant, il dit l'état de chaque plant à la
+voix ou aux boutons de volume, sans regarder l'écran et sans réseau, et il trace au GNSS
+l'intervention faite. La tournée complétée retourne à sommieR, qui l'importe.
 
-Première chose à faire : **remplir `docs/brief.md`**, puis lancer `/brief`.
+Le détail : [`docs/brief.md`](docs/brief.md), puis [`docs/spec.md`](docs/spec.md).
 
-## Où trouver quoi
+## Installer
 
-- La méthode et la règle de staffing : [`docs/methode-imperatrice.md`](docs/methode-imperatrice.md)
-- Les consignes de l'orchestrateur : [`CLAUDE.md`](CLAUDE.md)
-- Les agents : [`.claude/agents/`](.claude/agents/) — `contradicteur`, `acquereur`, `archiviste`, `analyste`, `afficheur`, `dev`, `testeur`, `relecteur`
-- L'équipe validée et le plafond humain : [`docs/equipe.md`](docs/equipe.md)
-- L'avancement : [`docs/kanban.md`](docs/kanban.md) · la mémoire : [`docs/journal.md`](docs/journal.md)
+Télécharger l'APK de la dernière [release](https://github.com/pobsteta/surculus/releases)
+(Android 8.0 ou plus récent) et l'installer. Les versions et la signature sont décrites
+dans [`docs/publier.md`](docs/publier.md).
 
-## Garde-fous
+## Construire et tester
 
-- Aucun commit ni push direct sur `main` ; pas de push forcé.
-- `docs/journal.md` est en ajout seul (règle du sommier : on n'efface pas, on ajoute).
-- Un agent ne peut pas déclarer une mission terminée si les tests échouent
-  (commande définie dans `.claude/test-command` dès que la stack est choisie).
-- Les hooks sont écrits en Python 3 (`.claude/hooks/`).
+JDK 17 et SDK Android requis.
 
-Versions et APK : [`docs/publier.md`](docs/publier.md).
+```sh
+./gradlew :core:test :gpkg:test :data:testDebugUnitTest :app:assembleDebug :app:lintDebug
+```
+
+C'est la commande de tests du projet (`.claude/test-command`), rejouée par la CI.
+
+| Module | Rôle |
+|---|---|
+| `:core` | Domaine en Kotlin pur : plants et états, totaux d'un contrôle, numérotation, repères et déclinaison magnétique (WMM2025), GNSS (NMEA, NTRIP) |
+| `:gpkg` | Lecture d'une tournée et écriture du `travaux.gpkg` de sommieR (sqlite-jdbc) |
+| `:data` | Journal des saisies en ajout seul (Room) |
+| `:app` | Écrans Jetpack Compose, service GNSS |
+
+Architecture : [`docs/architecture.md`](docs/architecture.md) · décisions :
+[`docs/adr/`](docs/adr/) · référentiels sourcés : [`docs/referentiels/`](docs/referentiels/) ·
+cas de test partagés avec sommieR : [`fixtures/`](fixtures/).
+
+## Comment ce projet est développé
+
+Surculus est développé par une équipe d'agents IA orchestrée dans Claude Code, selon
+**la méthode de l'Impératrice** de Pascal Obstétar : *l'IA propose, l'homme tranche et
+assume.* La méthode, les agents, les commandes et les garde-fous viennent du plugin
+[`imperatrice`](https://github.com/pobsteta/methode-imperatrice), déclaré dans
+[`.claude/settings.json`](.claude/settings.json) ; Claude Code propose de l'installer à
+l'ouverture du dépôt.
+
+La trace de ce pilotage est dans [`pilotage/`](pilotage/) : l'équipe
+([`equipe.md`](pilotage/equipe.md)), les missions ([`missions/`](pilotage/missions/)),
+l'avancement ([`kanban.md`](pilotage/kanban.md)), la mémoire en ajout seul
+([`journal.md`](pilotage/journal.md)) et les messages aux autres dépôts
+([`briefs/`](pilotage/briefs/)). Les consignes de l'orchestrateur sont dans
+[`CLAUDE.md`](CLAUDE.md).
+
+## Licence
+
+GPL-3.0-or-later ([`LICENSE`](LICENSE)) ; provenance des éléments repris de tiers :
+[`NOTICE`](NOTICE).

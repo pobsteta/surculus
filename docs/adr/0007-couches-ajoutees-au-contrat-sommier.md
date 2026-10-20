@@ -70,7 +70,7 @@ Options envisagées :
 - sommieR : `R/travaux_qfield.R` (l. 59-102, 162-177, 216, 299, 309-314, 465, 472-474),
   `data-raw/qfield_modele.py` (l. 58, 139, 164-169, 825-832, 864, 869),
   `tests/testthat/test-travaux-qfield-db.R`.
-- `briefs/vers-sommier/2026-10-15-travaux-2-plants.md` (réaligné le 2026-10-15).
+- `pilotage/briefs/vers-sommier/2026-10-15-travaux-2-plants.md` (réaligné le 2026-10-15).
 - `docs/spec.md` § 4.3, 4.4, 5, 10 ; ADR 0001, 0002, 0003, 0004.
 - OGC GeoPackage 1.4 (OGC 12-128r19), Req. 118 et 119, annexes F.8 et F.9 :
   https://www.geopackage.org/spec/ ; extension Schema :

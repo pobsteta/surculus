@@ -52,7 +52,7 @@ Le `travaux.gpkg` de sommieR 0.31.1 (Lambert-93) est la seule interface ;
 le détail des couches, y compris celles qu'ajoute Surculus, est dans la
 spécification (`docs/spec.md`, § 5) : elles sont ignorées par l'import
 actuel, la tournée reste importable avant que sommieR ne les lise (brief
-`briefs/vers-sommier/2026-10-15-travaux-2-plants.md`).
+`pilotage/briefs/vers-sommier/2026-10-15-travaux-2-plants.md`).
 
 ## Une règle, deux langages
 
