@@ -30,7 +30,7 @@ monte un service PostGIS éphémère et lance `verifier.R`.
    rester aucune trace (`sqlite_master`, y compris `rtree_<couche>_*`,
    `gpkg_contents`, `gpkg_geometry_columns`, `gpkg_data_columns`,
    `gpkg_extensions`, `gpkg_metadata_reference`, `gpkg_ogr_contents`).
-4. **Sans `--avec`** (006 absente) : le retrait est éprouvé, le critère (a) n'est
+4. **Sans `--avec`** (usage local seulement ; la CI le fournit toujours) : le retrait est éprouvé, le critère (a) n'est
    **pas mesuré**. Le travail reste vert et l'annonce par un `::warning::`
    visible sur la PR. **Avec `--avec`**, un import qui n'écrit rien
    (travaux + placettes + contrôles = 0) est un écart : un vert qui ne mesure
@@ -50,16 +50,13 @@ Elle ne porte aucune saisie nouvelle : ses trois placettes sont déjà au regist
 Le bilan est `0 écrits, 3 déjà présents`. Pour que (a) mesure quelque chose, l'export
 de la 006 doit contenir au moins un contrôle ou une placette saisis.
 
-## Ce que la mission 006 doit fournir
+## Ce que la CI fournit à `verifier.R` (missions 006 et 022)
 
-- L'export `.zip` **décompressé** dans `ci/sommier/export-surculus/` (variable
-  `EXPORT_SURCULUS` du workflow) : un dossier contenant `travaux.gpkg` (et
-  `DCIM/` si des photos sont jointes).
-- Cet export **part de `ci/sommier/sortie/tournee-depart`** du même job. Chaque
-  exécution engendre sa démo, donc ses propres UUID de forêt et de placettes ; un
-  export issu d'une autre exécution est refusé par l'import (« travaux suivis
-  inconnus »). Surculus y ajoute les six couches, et ne touche à aucune couche ni
-  aucun champ de sommieR.
-- L'étape de la 006 s'insère dans le workflow entre « Préparer » et « Rejouer ».
-- La 006 doit **rendre l'export obligatoire** (supprimer le test `[ -f ... ]` de
-  l'étape « Rejouer »), sinon l'absence reste un vert avec avertissement.
+Le workflow, entre « Préparer » et « Rejouer », installe le JDK 21 et lance
+`./gradlew :gpkg:exporterScenario -Ptournee=ci/sommier/sortie/tournee-depart
+-Pscenario=fixtures/export/scenario-couchey.json -Psortie=ci/sommier` : l'outil
+(classes de test de `:gpkg`, jamais dans l'APK) rejoue deux contrôles sur la tournée
+**de ce job** (UUID propres à l'exécution ; placettes désignées par leur code) et
+écrit `ci/sommier/export-surculus/travaux.gpkg` (variable `EXPORT_SURCULUS`) et
+`export-surculus.zip`. L'étape « Rejouer » exige cet export : s'il manque, le travail
+échoue. Le résumé du job affiche « Critère (a) mesuré » et le bilan d'entrée.
