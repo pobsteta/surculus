@@ -1,7 +1,7 @@
 # Surculus — brief
 
 > **Brief amendé le 15 octobre 2026**, après la critique du `contradicteur` (porte n° 1),
-> d'après les arbitrages de Pascal (voir `docs/journal.md`). Rédigé par l'orchestrateur,
+> d'après les arbitrages de Pascal (voir `pilotage/journal.md`). Rédigé par l'orchestrateur,
 > à valider par Pascal. Le détail technique est dans `docs/spec.md` ; ce brief n'en
 > recopie rien.
 
