@@ -46,10 +46,14 @@ fixtures sans l'accord de Pascal.
 - `saisir` avec un code vide est refusé en production.
 - Tous les tests existants restent verts. Commande du projet : `.claude/test-command`.
 
+## Terrain
+
+- **Échantillon que Pascal vérifiera à la fusion :** la sortie du test « même `objet_uuid` dans deux tournées » (états distincts affichés dans le rapport de test), et un appel de `saisir` sans tournée refusé. La vérification au téléphone (marquer un plant mort dans A, le voir intact dans B) passe à la 012, qui apporte l'écran.
+
 ## Qui veille, qui tranche
 
 - **Relecteur :** `relecteur`, puis Pascal. **Qui tranche :** Pascal.
 
 ## Comment saura-t-on que ça marche ?
 
-Sur un téléphone avec deux tournées qui partagent un plant, marquer ce plant mort dans A ne change pas son état dans B.
+À la 012, sur un téléphone avec deux tournées qui partagent un plant, marquer ce plant mort dans A ne change pas son état dans B.
