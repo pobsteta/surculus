@@ -160,6 +160,6 @@ du 2026-10-21 (`pilotage/journal.md`), **sans lire de code**. Identifiants `DI-N
 `nb_total`, `nb_vivants`, `nb_abroutis`, `h_moy_cm`, `visite_le`, la placette par son code
 et le point en WGS 84 (`lon`, `lat`, `tolerance_m` = 0,5 m, décision de Pascal du
 2026-10-21). Les valeurs sont écrites à la main depuis la spec, chacune avec son calcul ;
-les coordonnées des placettes viennent de sommieR (`R/demo.R` l. 363-365, commit fd92078),
-hypothèse : la CI importe cette version. Chaque point doit tomber en France métropolitaine.
+les coordonnées des placettes viennent de sommieR (`R/demo.R` l. 363-364, commit fd92078, sommieR 0.31.1 (DESCRIPTION)),
+hypothèse : la CI importe cette version. Chaque point doit tomber dans le rectangle de `docs/spec.md` § 10, point 9 (domaine d'usage d'EPSG:2154).
 La comparaison à l'export relève de la mission 028.

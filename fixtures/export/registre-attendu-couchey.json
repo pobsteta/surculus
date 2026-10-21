@@ -1,7 +1,7 @@
 {
   "fichier": "fixtures/export/registre-attendu-couchey.json",
   "regle": "Registre attendu après import du scénario fixtures/export/scenario-couchey.json : valeurs écrites à la main par le testeur, depuis la spec, sans lire le code de :gpkg ni ci/sommier, pour que l'export ne se compare pas à lui-même (mission 027, critère F4, décision de Pascal du 2026-10-21).",
-  "source": "docs/spec.md § 4.3 (totaux déduits des plants), § 6 (règles des totaux et de h_moy_cm) ; coordonnées des placettes : sommieR, R/demo.R l. 363-365, commit fd92078 (v0.31.0-1), fonction sommier_demo_couchey, points GeoJSON WGS 84 (R/geometrie.R l. 77, geom_point(lon, lat)).",
+  "source": "docs/spec.md § 4.3 (totaux déduits des plants), § 6 (règles des totaux et de h_moy_cm) ; coordonnées des placettes : sommieR 0.31.1 (DESCRIPTION), commit fd92078, R/demo.R l. 363-364, fonction sommier_demo_couchey, points GeoJSON WGS 84 (R/geometrie.R l. 77, geom_point(lon, lat)).",
   "hypothese": "La CI importe une version de sommieR dont la démo Couchey a les mêmes coordonnées que le commit fd92078 (v0.31.0-1) ; si la version change, revérifier les coordonnées de la placette.",
   "unites": {"lon": "degrés décimaux WGS 84 (EPSG:4326)", "lat": "degrés décimaux WGS 84 (EPSG:4326)", "tolerance_m": "mètres", "ordre_du_point": "(lon, lat), comme GeoJSON ; les noms lon et lat sont toujours explicites", "visite_le": "ISO 8601 UTC, repris du scénario"},
   "placettes_demo": {
@@ -14,9 +14,9 @@
     "approximation": "locale (plan tangent à la placette) : dlon = decalage_est / (N cos(lat)), dlat = decalage_nord / M, en radians puis degrés ; le décalage est lu comme est et nord géographiques (le scénario le nomme decalage_est_m, decalage_nord_m).",
     "rayons": "ellipsoïde WGS 84 (a = 6 378 137 m, f = 1/298,257223563, e² = f(2 - f)) ; N = a / sqrt(1 - e² sin²lat) = 6 389 683,58 m ; M = a(1 - e²) / (1 - e² sin²lat)^1,5 = 6 369 909,51 m, à lat 47,25910.",
     "calcul_P35-01": "dlon = 0,6 / (6 389 683,58 × cos 47,25910°) rad = 7,9273e-6 degrés ; dlat = -0,4 / 6 369 909,51 rad = -3,5979e-6 degrés ; lon = 4,93250 + 0,0000079273 = 4,9325079273 ; lat = 47,25910 - 0,0000035979 = 47,2590964021.",
-    "ecart_avec_la_sphere": "un rayon sphérique de 6 371 008,8 m (IUGG) donnerait des écarts de l'ordre de 1e-8 degré, soit moins d'un millimètre : sans effet devant la tolérance de 0,5 m."
+    "ecart_avec_la_sphere": "un rayon sphérique de 6 371 008,8 m (IUGG) donnerait des écarts d'environ 2,3e-8 degré en longitude, soit à peu près 1,7 mm : sans effet devant la tolérance de 0,5 m."
   },
-  "france_metropolitaine": {"lat_min": 41.3, "lat_max": 51.1, "lon_min": -5.2, "lon_max": 9.6, "note": "boîte englobante grossière de la France métropolitaine (Corse comprise) ; à confirmer par Pascal. Chaque point attendu doit y tomber (piège de la Somalie : latitude et longitude non inversées)."},
+  "france_metropolitaine": {"lat_min": 41.15, "lat_max": 51.56, "lon_min": -9.86, "lon_max": 10.38, "note": "rectangle du domaine d'usage d'EPSG:2154 (PROJ 9.4.0), docs/spec.md § 10, point 9 (la spec désigne le rectangle sans en donner les bornes ; bornes données par l'orchestrateur, source PROJ 9.4.0), utilisé par le test « placette en France ». Chaque point attendu doit y tomber (piège de la Somalie : latitude et longitude non inversées)."},
   "controles": [
     {
       "placette": "P35-01",
