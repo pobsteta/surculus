@@ -134,10 +134,11 @@ jobs:
             echo
             echo "Export Surculus (scénario Couchey) importé avec et sans ses six couches : bilans comparés."
             echo
-            echo '```json'
-            cat ci/sommier/sortie/bilan-avec.json
+            echo "| Compteur | Valeur |"
+            echo "|---|---|"
+            jq -r '"| travaux | \(.travaux) |", "| placettes | \(.placettes) |", "| contrôles | \(.controles) |", "| déjà présents | \(.deja_presents) |", "| entrées écrites | \([.entrees_ecrites] | flatten | length) |"' ci/sommier/sortie/bilan-avec.json
             echo
-            echo '```'
+            echo "Le bilan entier est dans l'artefact bilans-import-sommier."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publier les bilans

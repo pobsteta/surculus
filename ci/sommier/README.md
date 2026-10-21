@@ -30,11 +30,10 @@ monte un service PostGIS éphémère et lance `verifier.R`.
    rester aucune trace (`sqlite_master`, y compris `rtree_<couche>_*`,
    `gpkg_contents`, `gpkg_geometry_columns`, `gpkg_data_columns`,
    `gpkg_extensions`, `gpkg_metadata_reference`, `gpkg_ogr_contents`).
-4. **Sans `--avec`** (usage local seulement ; la CI le fournit toujours) : le retrait est éprouvé, le critère (a) n'est
-   **pas mesuré**. Le travail reste vert et l'annonce par un `::warning::`
-   visible sur la PR. **Avec `--avec`**, un import qui n'écrit rien
-   (travaux + placettes + contrôles = 0) est un écart : un vert qui ne mesure
-   rien doit le dire.
+4. **Sans `--avec`** (usage local seulement ; la CI le fournit toujours) : le retrait
+   est éprouvé, le critère (a) n'est **pas mesuré**, et le script le dit dans son
+   message. **Avec `--avec`**, un import qui n'écrit rien (travaux + placettes +
+   contrôles = 0) est un écart : un vert qui ne mesure rien doit le dire.
 
 **Critère (b) resserré par rapport à l'ADR 0007** : l'ADR parle de champs, types,
 géométrie et `srs_id` ; la comparaison porte aussi sur `notnull`, `pk` et les
@@ -59,4 +58,4 @@ Le workflow, entre « Préparer » et « Rejouer », installe le JDK 21 et lance
 **de ce job** (UUID propres à l'exécution ; placettes désignées par leur code) et
 écrit `ci/sommier/export-surculus/travaux.gpkg` (variable `EXPORT_SURCULUS`) et
 `export-surculus.zip`. L'étape « Rejouer » exige cet export : s'il manque, le travail
-échoue. Le résumé du job affiche « Critère (a) mesuré » et le bilan d'entrée.
+échoue. Le résumé du job affiche « Critère (a) mesuré » et les seuls compteurs du bilan d'entrée (travaux, placettes, contrôles, déjà présents, entrées écrites) ; le bilan entier reste dans l'artefact `bilans-import-sommier`.
