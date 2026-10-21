@@ -45,3 +45,5 @@
 ## Comment saura-t-on que ça marche ?
 
 Le résumé du job sur `main` montre F1, F2 et F3 verts, et chacun a été vu rouge une fois.
+
+> **Note du 2026-10-21 (orchestrateur) :** F2 est comparé en R (RSQLite) et non avec `sqldiff`, absent du runner. Choix de moyen accepté, voir `pilotage/journal.md` à cette date.

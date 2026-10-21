@@ -43,15 +43,15 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 **Cycle 5, lancé le 2026-10-21 :**
 
-- **009** sauvegarde `.sursync` et restauration (`dev`, appuyer) — cas de la 024.
 - **029** `:gpkg` lit les géométries de `foret`, `ug`, `parcelles` (`dev`, appuyer) —
-  préalable à la 011, décidé par Pascal le 2026-10-21.
-- **026** CI d'import, F1 + F2 + F3 (`dev`, appuyer).
+  préalable à la 011, décidé par Pascal le 2026-10-21 ; en revue, PR #47.
+- **026** CI d'import, F1 + F2 + F3 (`dev`, appuyer) ; en revue, PR #46.
+- **031** tournée dans chaque ligne du journal (`dev`, appuyer) : plan tranché par Pascal,
+  en réalisation ; PR ouverte quand une place se libère ; avant la 011.
 
 **Attendent le plafond :**
 
 - **011** écrans (`afficheur`) : arrêtée sur son prérequis, reprend après la 029 et la 031.
-- **031** tournée dans chaque ligne du journal (`dev`, appuyer), après la 009, avant la 011.
 - **030** référentiels de la PR #4, revérifiés (`acquereur`, appuyer).
 
 - Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
@@ -59,6 +59,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **028** registre attendu et sabotage en CI (`dev`, appuyer), après 026 et 027.
 
 ## Terminé
+
+- Cycle 5, 2026-10-21 : **009** sauvegarde `.sursync` et restauration (PR #45) ;
+  décisions du cycle et fiche 031 (PR #44) — Pascal.
 
 - Cycle 4, 2026-10-21 : **022** critère (a) mesuré en CI, deux échecs montrés (PR #39) ;
   **024** cas de la sauvegarde `.sursync` (PR #40) ; **025** cas de la dictée et
