@@ -2,7 +2,7 @@
   "fichier": "fixtures/export/registre-attendu-couchey.json",
   "regle": "Registre attendu après import du scénario fixtures/export/scenario-couchey.json : valeurs écrites à la main par le testeur, depuis la spec, sans lire le code de :gpkg ni ci/sommier, pour que l'export ne se compare pas à lui-même (mission 027, critère F4, décision de Pascal du 2026-10-21).",
   "source": "docs/spec.md § 4.3 (totaux déduits des plants), § 6 (règles des totaux et de h_moy_cm) ; coordonnées des placettes : sommieR 0.31.1 (DESCRIPTION), commit fd92078, R/demo.R l. 363-364, fonction sommier_demo_couchey, points GeoJSON WGS 84 (R/geometrie.R l. 77, geom_point(lon, lat)).",
-  "hypothese": "La CI importe une version de sommieR dont la démo Couchey a les mêmes coordonnées que le commit fd92078 (v0.31.0-1) ; si la version change, revérifier les coordonnées de la placette.",
+  "hypothese": "La CI importe une version de sommieR dont la démo Couchey a les mêmes coordonnées que le sommieR 0.31.1, commit fd92078 ; si la version change, revérifier les coordonnées de la placette.",
   "unites": {"lon": "degrés décimaux WGS 84 (EPSG:4326)", "lat": "degrés décimaux WGS 84 (EPSG:4326)", "tolerance_m": "mètres", "ordre_du_point": "(lon, lat), comme GeoJSON ; les noms lon et lat sont toujours explicites", "visite_le": "ISO 8601 UTC, repris du scénario"},
   "placettes_demo": {
     "P35-01": {"lon": 4.93250, "lat": 47.25910},
