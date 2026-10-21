@@ -334,7 +334,7 @@ une ligne **non rattachée** : celles qui existaient avant la version 3 de la ba
 perte, ne sont rattachées à aucune tournée par supposition et n'entrent dans aucune sauvegarde. Une ligne reçue dont
 l'`uuid` existe déjà avec une autre tournée est un contenu différent (`uuid_contenu_different`). La projection
 ne change pas : sa clé reste (`objet_uuid`, `type`). La sauvegarde et la restauration (§ 4.8) ne portent que sur une
-tournée.
+tournée. Dans le fichier `.sursync`, la tournée n'est écrite qu'une fois, dans l'en-tête ; les saisies n'en portent pas (`docs/formats/sursync-v1.md`).
 
 | `type` | Objet (`objet_uuid`) | Ce que porte `valeur` |
 |---|---|---|
