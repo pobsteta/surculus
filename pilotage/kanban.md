@@ -12,6 +12,11 @@ _Idées, à trier au prochain `/mission`._
 - **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0008
   (bibliothèques communes), 0010 (distribution et clé de signature) ; réexamen de l'ADR
   0004 (osmdroid archivé depuis le 2024-11-20, ADR 0009).
+- **Dettes de la 009** : demander `WRITE_EXTERNAL_STORAGE` à l'exécution (Android 8-9)
+  et brancher le déclenchement de la sauvegarde sur les saisies (011, 012) ; essai de
+  restauration sur deux téléphones après la 011 et la 012.
+- **Pascal (spec § 5)** : l'empreinte des photos au journal exige un type de ligne qui
+  n'existe pas ; à trancher avant la mission photo.
 - **Pascal (dans sommieR)** : brief vers sommieR, un seul fichier d'ortho tuilé en
   EPSG:3857 à la place d'`ortho.tif` (ADR 0009, cible f).
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
@@ -23,6 +28,11 @@ _Idées, à trier au prochain `/mission`._
   d'essai d'automne 2026 ; successeur ;
   coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
   fascicule 34 ; URL du guide des chênaies continentales.
+- **Dettes de la 009** : demander `WRITE_EXTERNAL_STORAGE` à l'exécution (Android 8-9)
+  et brancher le déclenchement de la sauvegarde sur les saisies (011, 012) ; essai de
+  restauration sur deux téléphones après la 011 et la 012.
+- **Pascal (spec § 5)** : l'empreinte des photos au journal exige un type de ligne qui
+  n'existe pas ; à trancher avant la mission photo.
 - **Pascal (dans sommieR)** : mettre à jour les briefs `vers-sommier` (couches
   ajoutées, données des plantations à constater, décision « hors entreprise », table de
   correspondance des codes, `montant_eur` facultatif).
@@ -39,10 +49,15 @@ _En attente sous le plafond humain (3 PR en revue)._
 **Cycle 5, lancé le 2026-10-21 :**
 
 - **009** sauvegarde `.sursync` et restauration (`dev`, appuyer) — cas de la 024.
-- **011** écrans tournées, carte, guidage (`afficheur`, appuyer) — ADR 0009.
+- **029** `:gpkg` lit les géométries de `foret`, `ug`, `parcelles` (`dev`, appuyer) —
+  préalable à la 011, décidé par Pascal le 2026-10-21.
 - **026** CI d'import, F1 + F2 + F3 (`dev`, appuyer).
 
 **Attendent le plafond :**
+
+- **011** écrans (`afficheur`) : arrêtée sur son prérequis, reprend après la 029 et la 031.
+- **031** tournée dans chaque ligne du journal (`dev`, appuyer), après la 009, avant la 011.
+- **030** référentiels de la PR #4, revérifiés (`acquereur`, appuyer).
 
 - Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
 - **027** registre attendu du scénario Couchey (`testeur`, appuyer).
@@ -79,3 +94,7 @@ _En attente sous le plafond humain (3 PR en revue)._
 ## Abandonné
 
 _Avec la raison, en une ligne._
+
+- 2026-10-21 : PR #4 (ébauche des référentiels, 2026-10-15) fermée : antérieure à la porte
+  n° 1, codes travaux contraires à la décision du 2026-10-15 ; ses cinq documents utiles
+  passent à la mission 030.
