@@ -124,3 +124,9 @@ La spec § 6 est alignée par l'orchestrateur sur cette branche : le détail
 - Mettre à jour la description de la PR #41 avec
   `gh api -X PATCH repos/pobsteta/surculus/pulls/41 -F body=@fichier`, car `gh pr edit`
   échoue.
+
+**Redite de la seconde reprise (`testeur`, 2026-10-21) :** rendre traçables les cas de la dictée
+(chaque source cite l'inscription du journal ou la spec § 6 alignée, `hypothese` est un texte),
+inverser DI-108 et fixer DI-130 selon les décisions 9 et 10 de Pascal, et versionner le script
+qui extrait la liste de mots du modèle, pour que la 013 et le relecteur retrouvent chaque cas
+et chaque octet de la liste sans nous croire sur parole.

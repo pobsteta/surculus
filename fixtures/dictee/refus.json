@@ -24,7 +24,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21 (décision de l'orchestrateur : texte de Vosk en minuscules sans ponctuation, tout le reste refusé)"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique, omis à l'inscription précédente » de l'orchestrateur : la grammaire reçoit le texte tel que Vosk le rend, en minuscules et sans ponctuation ; espaces en tête, en queue ou doublés normalisés ; toute autre forme refusée"
     },
     {
       "id": "DI-62",
@@ -35,7 +35,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21 (décision de l'orchestrateur : texte de Vosk en minuscules sans ponctuation, tout le reste refusé)"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique, omis à l'inscription précédente » de l'orchestrateur : la grammaire reçoit le texte tel que Vosk le rend, en minuscules et sans ponctuation ; espaces en tête, en queue ou doublés normalisés ; toute autre forme refusée"
     },
     {
       "id": "DI-63",
@@ -101,7 +101,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21 (décision de l'orchestrateur : texte de Vosk en minuscules sans ponctuation, tout le reste refusé)"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique, omis à l'inscription précédente » de l'orchestrateur : la grammaire reçoit le texte tel que Vosk le rend, en minuscules et sans ponctuation ; espaces en tête, en queue ou doublés normalisés ; toute autre forme refusée"
     },
     {
       "id": "DI-69",
@@ -112,7 +112,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21 (décision de l'orchestrateur : texte de Vosk en minuscules sans ponctuation, tout le reste refusé)"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique, omis à l'inscription précédente » de l'orchestrateur : la grammaire reçoit le texte tel que Vosk le rend, en minuscules et sans ponctuation ; espaces en tête, en queue ou doublés normalisés ; toute autre forme refusée"
     },
     {
       "id": "DI-70",
@@ -123,7 +123,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21 (décision de l'orchestrateur : texte de Vosk en minuscules sans ponctuation, tout le reste refusé)"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique, omis à l'inscription précédente » de l'orchestrateur : la grammaire reçoit le texte tel que Vosk le rend, en minuscules et sans ponctuation ; espaces en tête, en queue ou doublés normalisés ; toute autre forme refusée"
     },
     {
       "id": "DI-71",
@@ -134,7 +134,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21 (décision de l'orchestrateur : texte de Vosk en minuscules sans ponctuation, tout le reste refusé)"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique, omis à l'inscription précédente » de l'orchestrateur : la grammaire reçoit le texte tel que Vosk le rend, en minuscules et sans ponctuation ; espaces en tête, en queue ou doublés normalisés ; toute autre forme refusée"
     },
     {
       "id": "DI-72",
@@ -233,7 +233,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "pilotage/journal.md, 2026-10-21 (décision n° 3 : seul « abrouti » se dicte)"
+      "source": "pilotage/journal.md, 2026-10-21, décision n° 3 de Pascal (frottis, hylobe, gel, sécheresse et concurrence hors grammaire) ; docs/spec.md § 4.3 (grammaire fermée)"
     },
     {
       "id": "DI-81",
@@ -288,7 +288,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "pilotage/journal.md, 2026-10-21 (décision n° 3 : seul « abrouti » se dit)"
+      "source": "pilotage/journal.md, 2026-10-21, décision n° 3 de Pascal (détails hors grammaire) et décision n° 5 (le mot du détail est « mangé ») ; docs/spec.md § 4.3 (grammaire fermée)"
     },
     {
       "id": "DI-86",

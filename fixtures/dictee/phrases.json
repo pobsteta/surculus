@@ -93,7 +93,7 @@
           "cause_groupe": "entomologique"
         }
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique de l'orchestrateur » : mots vers cause_groupe selon docs/referentiels/etats-plants.yaml (climat et indéterminé vers abiotique_complexe_indetermine)"
     },
     {
       "id": "DI-07",
@@ -108,7 +108,7 @@
           "cause_groupe": "pathologique"
         }
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique de l'orchestrateur » : mots vers cause_groupe selon docs/referentiels/etats-plants.yaml (climat et indéterminé vers abiotique_complexe_indetermine)"
     },
     {
       "id": "DI-08",
@@ -123,7 +123,7 @@
           "cause_groupe": "animaux"
         }
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique de l'orchestrateur » : mots vers cause_groupe selon docs/referentiels/etats-plants.yaml (climat et indéterminé vers abiotique_complexe_indetermine)"
     },
     {
       "id": "DI-09",
@@ -153,7 +153,7 @@
           "cause_groupe": "abiotique_complexe_indetermine"
         }
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal ; décision n° 5 : « climat » et « indéterminé » mènent au même groupe"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; pilotage/journal.md, 2026-10-21, inscription « Choix technique de l'orchestrateur » : mots vers cause_groupe selon docs/referentiels/etats-plants.yaml (climat et indéterminé vers abiotique_complexe_indetermine)"
     },
     {
       "id": "DI-11",

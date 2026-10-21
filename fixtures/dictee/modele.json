@@ -54,7 +54,8 @@
       "attendu": {
         "accepte": true
       },
-      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3 ; casse proposée par le testeur, à confirmer"
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3",
+      "hypothese": "Règle supposée, non écrite dans l'ADR 0004 : la comparaison de l'empreinte ignore la casse (l'hexadécimal n'y est pas sensible). À confirmer par Pascal."
     },
     {
       "id": "DI-304",

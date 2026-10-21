@@ -3,7 +3,7 @@
   "regle": "La commande dictée est confrontée à l'état courant du plant : certaines combinaisons sont refusées par l'application",
   "format": "voir fixtures/README.md (section Dictée)",
   "entree": "etat_courant : sain, atteint, mort, absent, non_observe ou null (aucun état saisi) ; phrase : texte de Vosk",
-  "note": "Ces cas pilotent l'analyseur ET la règle d'application (mission 013 avec 012). La phrase refusée ici est une phrase de la grammaire, refusée pour le contexte seulement. « mangé » : détail « abroutissement » accepté sur sain, atteint ou mort ; refusé sur absent, non observé ou sans état (spec § 6, décision n° 4 corrigée).",
+  "note": "Ces cas pilotent l'analyseur ET la règle d'application (mission 013 avec 012). La phrase refusée ici est une phrase de la grammaire, refusée pour le contexte seulement. « mangé » : détail « abroutissement » accepté sur sain, atteint ou mort ; refusé sur absent, non observé ou sans état (spec § 6, décision n° 4 corrigée). « remplace » : accepté seulement sur un plant mort ou absent (décision n° 9). Un état dicté sur un plant qui en a déjà un est une correction du journal (`remplace_uuid`), annoncée par la voix (décision n° 10) : l'attendu porte `correction` et `annonce_vocale`.",
   "cas": [
     {
       "id": "DI-100",
@@ -19,7 +19,7 @@
           "cause_detail": "abroutissement"
         }
       },
-      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
+      "source": "docs/spec.md § 6 (alignée le 2026-10-21 : détail « abroutissement » permis sur un plant sain, atteint ou mort, refusé sur un absent ou un non observé ; arbitrage du 2026-10-16, mission 002) ; docs/spec.md § 4.3 ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-101",
@@ -35,7 +35,7 @@
           "cause_detail": "abroutissement"
         }
       },
-      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
+      "source": "docs/spec.md § 6 (alignée le 2026-10-21 : détail « abroutissement » permis sur un plant sain, atteint ou mort, refusé sur un absent ou un non observé ; arbitrage du 2026-10-16, mission 002) ; docs/spec.md § 4.3 ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-102",
@@ -51,7 +51,7 @@
           "cause_detail": "abroutissement"
         }
       },
-      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
+      "source": "docs/spec.md § 6 (alignée le 2026-10-21 : détail « abroutissement » permis sur un plant sain, atteint ou mort, refusé sur un absent ou un non observé ; arbitrage du 2026-10-16, mission 002) ; docs/spec.md § 4.3 ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-103",
@@ -63,7 +63,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
+      "source": "docs/spec.md § 6 (alignée le 2026-10-21 : détail « abroutissement » permis sur un plant sain, atteint ou mort, refusé sur un absent ou un non observé ; arbitrage du 2026-10-16, mission 002) ; docs/spec.md § 4.3 ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-104",
@@ -75,7 +75,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
+      "source": "docs/spec.md § 6 (alignée le 2026-10-21 : détail « abroutissement » permis sur un plant sain, atteint ou mort, refusé sur un absent ou un non observé ; arbitrage du 2026-10-16, mission 002) ; docs/spec.md § 4.3 ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-105",
@@ -87,7 +87,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
+      "source": "docs/spec.md § 6 (alignée le 2026-10-21 : détail « abroutissement » permis sur un plant sain, atteint ou mort, refusé sur un absent ou un non observé ; arbitrage du 2026-10-16, mission 002) ; docs/spec.md § 4.3 ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-110",
@@ -215,7 +215,7 @@
     },
     {
       "id": "DI-130",
-      "description": "État « sain » dicté quel que soit l'état courant (remplace la saisie).",
+      "description": "Un état dicté sur un plant qui en a déjà un dans le contrôle (atteint, puis « sain ») : accepté comme correction du journal, annoncée par la voix.",
       "entree": {
         "etat_courant": "atteint",
         "phrase": "sain"
@@ -225,9 +225,11 @@
         "commande": {
           "type": "etat",
           "etat": "sain"
-        }
+        },
+        "correction": true,
+        "annonce_vocale": true
       },
-      "source": "docs/spec.md § 4.3 (grammaire) ; docs/spec.md § 6 (un seul état par plant dans un contrôle)"
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; docs/spec.md § 5 (l'état courant suit le lien remplace_uuid) ; pilotage/journal.md, 2026-10-21, décision n° 10 de Pascal (un nouvel état sur un plant qui en a déjà un est une correction du journal, remplace_uuid, annoncée par la voix)"
     },
     {
       "id": "DI-106",
@@ -243,7 +245,7 @@
           "cause_groupe": "abiotique_complexe_indetermine"
         }
       },
-      "source": "docs/spec.md § 4.3 et § 6 (cause facultative sur atteint ou mort) ; docs/referentiels/etats-plants.yaml ; décision n° 5"
+      "source": "docs/spec.md § 4.3 et § 6 (cause facultative sur atteint ou mort) ; docs/referentiels/etats-plants.yaml ; pilotage/journal.md, 2026-10-21, inscription « Choix technique de l'orchestrateur » : mots vers cause_groupe selon docs/referentiels/etats-plants.yaml (climat et indéterminé vers abiotique_complexe_indetermine)"
     },
     {
       "id": "DI-107",
@@ -255,13 +257,25 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (cause facultative pour un plant atteint ou mort) ; décision n° 5"
+      "source": "docs/spec.md § 6 (cause facultative pour un plant atteint ou mort) ; pilotage/journal.md, 2026-10-21, décision n° 5"
     },
     {
       "id": "DI-108",
-      "description": "« remplace » est une commande de navigation vers le regarni : acceptée quel que soit l'état courant (aucun état).",
+      "description": "« remplace » dicté sans plant courant (aucun état) : refusé, un regarni remplace un plant mort ou absent.",
       "entree": {
         "etat_courant": null,
+        "phrase": "remplace"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire) ; pilotage/journal.md, 2026-10-21, décision n° 9 de Pascal (« remplace » dicté sans plant courant mort ou absent est refusé)"
+    },
+    {
+      "id": "DI-109",
+      "description": "« remplace » sur un plant mort : accepté (regarni du plant mort ou absent).",
+      "entree": {
+        "etat_courant": "mort",
         "phrase": "remplace"
       },
       "attendu": {
@@ -270,8 +284,112 @@
           "type": "regarni"
         }
       },
-      "source": "docs/spec.md § 4.3 (grammaire) ; décision n° 5 ; hypothèse du testeur : « remplace » ne dépend pas de l'état courant",
-      "hypothese": true
+      "source": "docs/spec.md § 6 (un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire) ; pilotage/journal.md, 2026-10-21, décision n° 9 de Pascal (« remplace » dicté sans plant courant mort ou absent est refusé)"
+    },
+    {
+      "id": "DI-115",
+      "description": "« remplace » sur un plant absent : accepté (regarni du plant mort ou absent).",
+      "entree": {
+        "etat_courant": "absent",
+        "phrase": "remplace"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "regarni"
+        }
+      },
+      "source": "docs/spec.md § 6 (un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire) ; pilotage/journal.md, 2026-10-21, décision n° 9 de Pascal (« remplace » dicté sans plant courant mort ou absent est refusé)"
+    },
+    {
+      "id": "DI-116",
+      "description": "« remplace » sur un plant sain : refusé.",
+      "entree": {
+        "etat_courant": "sain",
+        "phrase": "remplace"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire) ; pilotage/journal.md, 2026-10-21, décision n° 9 de Pascal (« remplace » dicté sans plant courant mort ou absent est refusé)"
+    },
+    {
+      "id": "DI-117",
+      "description": "« remplace » sur un plant atteint : refusé.",
+      "entree": {
+        "etat_courant": "atteint",
+        "phrase": "remplace"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire) ; pilotage/journal.md, 2026-10-21, décision n° 9 de Pascal (« remplace » dicté sans plant courant mort ou absent est refusé)"
+    },
+    {
+      "id": "DI-118",
+      "description": "« remplace » sur un plant non observe : refusé.",
+      "entree": {
+        "etat_courant": "non_observe",
+        "phrase": "remplace"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (un regarni remplace exactement un plant mort ou absent de la même placette, remplace_uuid obligatoire) ; pilotage/journal.md, 2026-10-21, décision n° 9 de Pascal (« remplace » dicté sans plant courant mort ou absent est refusé)"
+    },
+    {
+      "id": "DI-131",
+      "description": "« absent » dicté sur un plant sain : correction du journal, annoncée par la voix.",
+      "entree": {
+        "etat_courant": "sain",
+        "phrase": "absent"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "absent"
+        },
+        "correction": true,
+        "annonce_vocale": true
+      },
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; docs/spec.md § 5 (l'état courant suit le lien remplace_uuid) ; pilotage/journal.md, 2026-10-21, décision n° 10 de Pascal (un nouvel état sur un plant qui en a déjà un est une correction du journal, remplace_uuid, annoncée par la voix)"
+    },
+    {
+      "id": "DI-132",
+      "description": "« absent » dicté sur un plant mort : correction du journal, annoncée par la voix.",
+      "entree": {
+        "etat_courant": "mort",
+        "phrase": "absent"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "absent"
+        },
+        "correction": true,
+        "annonce_vocale": true
+      },
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; docs/spec.md § 5 (l'état courant suit le lien remplace_uuid) ; pilotage/journal.md, 2026-10-21, décision n° 10 de Pascal (un nouvel état sur un plant qui en a déjà un est une correction du journal, remplace_uuid, annoncée par la voix)"
+    },
+    {
+      "id": "DI-133",
+      "description": "« sain » dicté sur un plant sans état : première saisie, pas une correction (rien n'est annoncé).",
+      "entree": {
+        "etat_courant": null,
+        "phrase": "sain"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "sain"
+        },
+        "correction": false,
+        "annonce_vocale": false
+      },
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; docs/spec.md § 5 (l'état courant suit le lien remplace_uuid) ; pilotage/journal.md, 2026-10-21, décision n° 10 de Pascal (un nouvel état sur un plant qui en a déjà un est une correction du journal, remplace_uuid, annoncée par la voix)"
     }
   ]
 }

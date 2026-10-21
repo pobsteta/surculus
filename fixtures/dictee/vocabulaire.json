@@ -14,7 +14,18 @@
   "liste_de_mots": {
     "fichier": "fixtures/dictee/vocabulaire-vosk-model-small-fr-0.22.txt",
     "nombre_de_mots": 135774,
-    "extraction": "le modèle small n'a PAS de graph/words.txt : la table des mots est incorporée à graph/Gr.fst (en-tête OpenFst, table de symboles « exp/chain_a/tdnn/lgraph/words.txt »). Elle a été lue en octets (clé, mot) et triée en ordre d'octets ; un mot par ligne."
+    "extraction": "le modèle small n'a PAS de graph/words.txt : la table des mots est incorporée à graph/Gr.fst (en-tête OpenFst, table de symboles « exp/chain_a/tdnn/lgraph/words.txt »). Elle a été lue en octets (clé, mot) et triée en ordre d'octets ; un mot par ligne.",
+    "outil": "fixtures/dictee/outils/extraire_vocabulaire.py (commande dans fixtures/README.md)",
+    "symboles_non_mots": [
+      "<eps>",
+      "#0",
+      "<s>",
+      "</s>",
+      "!SIL",
+      "[unk]"
+    ],
+    "nombre_de_mots_reels": 135768,
+    "verification": "recoupée octet pour octet depuis graph/Gr.fst par le relecteur, 2026-10-21 (journal : relecteur, missions 024 et 025) ; SHA-256 de l'archive confirmé par un second téléchargement"
   },
   "cas": [
     {

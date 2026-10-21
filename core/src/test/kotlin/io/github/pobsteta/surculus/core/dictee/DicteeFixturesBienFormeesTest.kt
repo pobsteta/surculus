@@ -156,4 +156,87 @@ class DicteeFixturesBienFormeesTest {
         val digest = java.security.MessageDigest.getInstance("SHA-256").digest("abc".toByteArray())
         assertEquals(abc, digest.joinToString("") { "%02x".format(it) })
     }
+
+    private fun etat(c: io.github.pobsteta.surculus.core.fixtures.CasFixture): String? =
+        c.entree.get("etat_courant").let { e -> if (e.isJsonNull) null else e.asString }
+
+    @Test
+    fun `remplace n'est accepte que sur un plant mort ou absent (decision n 9)`() {
+        val m = DicteeFixtures.cas("contexte").filter { it.entree.get("phrase").asString == "remplace" }
+            .associate { etat(it) to it.attendu.get("accepte").asBoolean }
+        assertEquals(
+            mapOf("mort" to true, "absent" to true, "sain" to false, "atteint" to false, "non_observe" to false, null to false),
+            m,
+        )
+    }
+
+    @Test
+    fun `un nouvel etat sur un plant qui en a deja un est une correction annoncee par la voix (decision n 10)`() {
+        val etats = setOf("sain", "atteint", "mort", "absent")
+        val cas = DicteeFixtures.cas("contexte").filter { it.attendu.has("correction") }
+        assertTrue(cas.isNotEmpty())
+        cas.forEach { c ->
+            val attendu = c.attendu
+            val avait = etat(c) != null
+            assertEquals(avait, attendu.get("correction").asBoolean, "${c.id} : correction seulement si un état existe déjà")
+            assertEquals(avait, attendu.get("annonce_vocale").asBoolean, "${c.id} : annonce vocale de la correction")
+            assertEquals("etat", attendu.getAsJsonObject("commande").get("type").asString)
+        }
+        assertTrue(cas.any { etat(it) == "atteint" && it.entree.get("phrase").asString == "sain" })
+        assertTrue(cas.any { etat(it) == null && !it.attendu.get("correction").asBoolean })
+        assertTrue(cas.filter { etat(it) != null }.all { etat(it) in etats })
+    }
+
+    @Test
+    fun `le champ hypothese est un texte, jamais un booleen`() {
+        tous.forEach { (_, c) ->
+            c.json.get("hypothese")?.let {
+                assertTrue(it.isJsonPrimitive && it.asJsonPrimitive.isString && it.asString.isNotBlank(), "${c.id} : hypothese doit être un texte")
+            }
+        }
+    }
+
+    @Test
+    fun `plus aucune source ne laisse une proposition du testeur a confirmer, hors champ hypothese`() {
+        tous.forEach { (_, c) ->
+            assertTrue(!c.source.contains("proposée par le testeur") && !c.source.contains("à confirmer"), "${c.id} : source périmée")
+            assertTrue(!c.source.contains("seul « abrouti »"), "${c.id} : source périmée (abrouti)")
+        }
+    }
+
+    @Test
+    fun `les cas de normalisation et de refus de forme citent l'inscription du journal`() {
+        val ids = listOf("DI-61", "DI-62", "DI-68", "DI-69", "DI-70", "DI-71")
+        val refus = DicteeFixtures.cas("refus").associateBy { it.id }
+        ids.forEach {
+            assertTrue(refus.getValue(it).source.contains("pilotage/journal.md, 2026-10-21") && refus.getValue(it).source.contains("Choix technique"), "$it : source")
+        }
+    }
+
+    @Test
+    fun `les cas d'abroutissement citent la spec 6 alignee et la decision 4`() {
+        DicteeFixtures.cas("contexte").filter { it.entree.get("phrase").asString == "mangé" }.forEach {
+            assertTrue(it.source.contains("§ 6") && it.source.contains("décision n° 4"), "${it.id} : source")
+        }
+    }
+
+    @Test
+    fun `les symboles de la liste qui ne sont pas des mots sont declares, et aucun mot de la grammaire n'en est un`() {
+        val j = DicteeFixtures.famille("vocabulaire").json.getAsJsonObject("liste_de_mots")
+        val declares = j.getAsJsonArray("symboles_non_mots").map { it.asString }.toSet()
+        assertEquals(setOf("<eps>", "#0", "<s>", "</s>", "!SIL", "[unk]"), declares)
+        val v = DicteeFixtures.vocabulaire.toHashSet()
+        declares.forEach { assertTrue(it in v, it) }
+        assertEquals(135774 - 6, j.get("nombre_de_mots_reels").asInt)
+    }
+
+    @Test
+    fun `le script d'extraction de la liste de mots est versionne et documente`() {
+        val script = java.io.File(DicteeFixtures.dossier, "outils/extraire_vocabulaire.py")
+        assertTrue(script.isFile, "fixtures/dictee/outils/extraire_vocabulaire.py")
+        val readme = java.io.File(DicteeFixtures.dossier.parentFile, "README.md").readText()
+        assertTrue(readme.contains("extraire_vocabulaire.py"), "commande d'extraction dans fixtures/README.md")
+        assertTrue(readme.contains("<eps>") && readme.contains("[unk]"), "symboles non mots dans fixtures/README.md")
+        assertTrue(!readme.contains("proposée par le `testeur`, à confirmer par Pascal"), "README périmé")
+    }
 }
