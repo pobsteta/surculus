@@ -108,7 +108,7 @@ point à Brest et à Strasbourg.
   atteint, mort, absent**. Pour un plant atteint ou mort : **cause** facultative parmi les
   **quatre groupes** du DSF (entomologique, pathologique, animaux, abiotique ou complexe
   ou indéterminé), détail facultatif (abroutissement, frottis, hylobe, gel, sécheresse,
-  concurrence…). Un plant **abrouti** est un plant sain ou atteint dont le détail porte
+  concurrence…) ; sur un plant sain, seul le détail « abroutissement » est permis. Un plant **abrouti** est un plant sain ou atteint dont le détail porte
   l'abroutissement ; un plant mort d'abroutissement n'est pas compté dans `nb_abroutis`. Hauteur facultative en cm. L'agent **ne dit jamais** « hors
   entreprise » : c'est sommieR qui le décide au bureau.
 * **Saisie sans regarder l'écran** : vibration et synthèse vocale annoncent le numéro du
@@ -388,7 +388,7 @@ dans Surculus.
 | Numérotation de Groma sans masquage (les plants n'ont pas de diamètre) ; un plant pointé après coup prend le numéro suivant le plus grand déjà donné, sans renuméroter ; pente ≥ 90° refusée ; date hors validité du WMM2025 (après le 31/12/2029) refusée | Surculus | 1 |
 | États et causes uniquement ceux de `etats-plants.yaml` ; une cause sur un plant sain ou absent est refusée | Surculus | 1 |
 | `h_moy_cm` = moyenne des hauteurs des plants vivants (sains + atteints) mesurés, arrondie à l'entier le plus proche, **demi vers le haut** (42,5 → 43 ; en R, `floor(x + 0.5)`, pas `round()`) (sommieR exige un entier, `R/registre6.R` l. 174) ; absent si aucune hauteur ; `hauteur_cm` entier strictement positif | Surculus | 1 |
-| `cause_detail` libre, seule constante reconnue « abroutissement » ; détail refusé sur un plant absent, permis seul sur un atteint ou un mort | Surculus | 1 |
+| `cause_detail` libre, seule constante reconnue « abroutissement » ; détail refusé sur un plant absent ou non observé, permis seul (sans cause) sur un atteint ou un mort ; sur un plant sain, seul « abroutissement » est permis (arbitrage de Pascal du 2026-10-16, mission 002 ; dictée : décision 4 du 2026-10-21) | Surculus | 1 |
 | Un plant « non observé » ne porte aucune mesure (hauteur, cause, détail) ; hauteur refusée sur un plant absent ; un seul état par plant dans un contrôle ; numéro déjà pris dans la placette refusé (comme `sommier_pointer_plant`) | Surculus | 1 |
 | Plant pointé au-delà du rayon de sa placette (+ 0,10 m) : alerte et confirmation de l'agent, non refusé | Surculus | 1 |
 | Numéros provisoires pendant le premier contrôle, figés à sa clôture ; « un contrôle par jour » = (placette, jour civil Europe/Paris) dans une tournée ; le code lu l'emporte sur le GNSS, « rattaché par identité » seulement au-delà de 15 m | Surculus | 1 |

@@ -80,3 +80,47 @@ tort la spec § 4.3.
 un mort, les nombres à espaces, la normalisation des espaces). Le test actif ne doit plus
 consigner d'absence au vocabulaire : chaque mot de la grammaire y est. Écrire la redite de
 la mission dans cette fiche.
+
+## Seconde reprise après la relecture de la PR #41 (2026-10-21)
+
+Verdict du `relecteur` : **à reprendre, pour la traçabilité seulement**. Le fond des cas
+tient. La provenance de la liste de mots et le SHA-256 de l'archive sont confirmés par un
+second téléchargement.
+
+**Décisions de Pascal du 2026-10-21, suite de la numérotation du journal**
+(source : « pilotage/journal.md, 2026-10-21 ») :
+- (9) « remplace » dicté sans plant courant mort ou absent est **refusé** (DI-108 n'est
+  plus une hypothèse, et son attendu s'inverse).
+- (10) Dicter un nouvel état sur un plant qui en a déjà un dans le contrôle est une
+  **correction** du journal (`remplace_uuid`), annoncée par la voix (DI-130 n'est plus une
+  hypothèse).
+
+Le choix de l'orchestrateur sur la normalisation (texte de Vosk en minuscules, sans
+ponctuation, espaces normalisés, tout le reste refusé) est maintenant inscrit au journal
+du 2026-10-21, sur la branche `adr/0009-carte-hors-ligne`, qui sera fusionnée avant cette
+PR. La correspondance des mots vers `cause_groupe` est un choix de l'orchestrateur, inscrit
+au journal : ce n'est plus une proposition du testeur.
+
+La spec § 6 est alignée par l'orchestrateur sur cette branche : le détail
+« abroutissement » est permis sur un plant sain (arbitrage du 2026-10-16, mission 002).
+
+**À corriger :**
+- DI-61, 62 et 68 à 71 : citer l'inscription du journal sur la normalisation.
+- DI-80 et DI-85 : la décision 3 dit que frottis, hylobe, gel, sécheresse et concurrence
+  sont hors grammaire. Retirer « seul abrouti se dicte » ; le mot est « mangé ».
+- DI-06 à 08, DI-10 et `fixtures/README.md` : retirer « proposée par le testeur, à confirmer
+  par Pascal » et citer le choix de l'orchestrateur.
+- DI-100 à DI-105 : citer la spec § 6 alignée et la décision 4.
+- DI-108 et DI-130 : décisions 9 et 10.
+- Champ `hypothese` : un texte, comme dans les autres fixtures, jamais `true`. DI-303 porte
+  une `hypothese` texte s'il reste une règle supposée.
+- README : préciser que les 135 774 entrées comptent des symboles FST qui ne sont pas des
+  mots (`<eps>`, `#0`, `<s>`, `</s>`, `!SIL`, `[unk]`).
+- Versionner le script d'extraction de la liste de mots, par exemple sous
+  `fixtures/dictee/outils/`, avec la commande dans le README (test du successeur). Le
+  relecteur en a écrit un dans
+  `/tmp/claude-1000/-home-pascal-dev-surculus/e3cfbb72-b882-4157-a358-32255704ceed/scratchpad/scripts/sym.py`,
+  dont on peut s'inspirer.
+- Mettre à jour la description de la PR #41 avec
+  `gh api -X PATCH repos/pobsteta/surculus/pulls/41 -F body=@fichier`, car `gh pr edit`
+  échoue.
