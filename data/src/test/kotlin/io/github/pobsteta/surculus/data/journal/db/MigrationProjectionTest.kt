@@ -40,14 +40,19 @@ class MigrationProjectionTest {
             sql.execSQL(ins("U1", "A", 1)); sql.execSQL(ins("U2", "B", 2)); sql.execSQL(ins("U3", "", 3))
             // ancienne projection (clé objet, type) : sera recréée
             sql.execSQL("INSERT INTO projection VALUES ('P1','etat','U3',1,'U1,U2,U3','')")
-            lire(sql, "SELECT $cols FROM journal ORDER BY uuid")
+            sql.execSQL(
+                "INSERT INTO refus_journal ($cols) VALUES ('U1','P1','etat','{\"etat\":\"mort\"}',NULL,'op1','A',1,1760000000001,NULL,1,1,NULL,'A')",
+            )
+            lire(sql, "SELECT $cols FROM journal ORDER BY uuid") to lire(sql, "SELECT id, $cols FROM refus_journal ORDER BY id")
         }
         helper.runMigrationsAndValidate("m34.db", 4, true, JournalDatabase.MIGRATION_3_4).use { sql ->
-            assertEquals(avant, lire(sql, "SELECT $cols FROM journal ORDER BY uuid"))
+            assertEquals(avant.first, lire(sql, "SELECT $cols FROM journal ORDER BY uuid"))
+            assertEquals(1, avant.second.size)
+            assertEquals(avant.second, lire(sql, "SELECT id, $cols FROM refus_journal ORDER BY id"))
+            // U1 existe en deux contenus (journal et refus_journal) : la projection écarte les deux versions.
             assertEquals(
                 listOf(
                     listOf<String?>("", "P1", "etat", "U3", "0"),
-                    listOf<String?>("A", "P1", "etat", "U1", "0"),
                     listOf<String?>("B", "P1", "etat", "U2", "0"),
                 ),
                 lire(sql, "SELECT code_tournee, objet_uuid, type, courant_uuid, conflit FROM projection ORDER BY code_tournee"),

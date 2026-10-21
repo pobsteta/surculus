@@ -378,8 +378,17 @@ tournée. Dans le fichier `.sursync`, la tournée n'est écrite qu'une fois, dan
 - Une saisie de type X dont `remplace_uuid` désigne une ligne de type Y du même objet ne la
   remplace pas : la clé Y garde sa valeur, la saisie est tête de (objet, X), et l'anomalie
   `remplace_autre_type` est rattachée à cette clé.
-- Une anomalie de remplacement (`remplace_autre_objet`, `remplace_autre_type`, `remplace_inconnu`)
-  disparaît quand la saisie anormale est corrigée par une correction normale : la nouvelle tête
+- Une saisie ou une annulation dont `remplace_uuid` désigne une ligne d'une **autre tournée** ne
+  remplace ni n'annule rien : la ligne désignée garde sa valeur, la saisie est tête de sa propre
+  clé (tournée, objet, type), et l'anomalie `remplace_autre_tournee` lui est rattachée.
+- Quand plusieurs différences coexistent entre la saisie et la ligne désignée, **une seule**
+  anomalie est signalée, dans l'ordre : `remplace_autre_objet`, puis `remplace_autre_tournee`,
+  puis `remplace_autre_type` (décision de Pascal, 2026-10-21).
+- Les lignes sans tournée (`code_tournee = ''`) forment leur **propre état**, séparé de toutes
+  les tournées : elles ne contaminent aucune tournée et aucune tournée ne les modifie
+  (décision de Pascal, 2026-10-21).
+- Une anomalie de remplacement (`remplace_autre_objet`, `remplace_autre_tournee`,
+  `remplace_autre_type`, `remplace_inconnu`) disparaît quand la saisie anormale est corrigée par une correction normale : la nouvelle tête
   ne porte plus d'anomalie, et l'erreur reste tracée au journal.
 - Annuler une racine, c'est-à-dire la seule saisie d'une clé, ne laisse aucune valeur
   courante (confirmé par Pascal).
