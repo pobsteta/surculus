@@ -30,6 +30,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -123,7 +126,9 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
     var liste by remember { mutableStateOf(false) }
     var centrerSurMoi by remember { mutableStateOf(0) }
 
-    val ortho = remember(ouverte) { io.github.pobsteta.surculus.carte.OrthoDeTournee.etat(ouverte.dossier, ouverte.tournee.empriseForet) }
+    val ortho by produceState<OrthoTournee?>(null, ouverte) {
+        value = withContext(Dispatchers.IO) { OrthoDeTournee.etat(ouverte.dossier, ouverte.tournee.empriseForet) }
+    }
     val distances: Map<String, Double> = remember(fix, placettes) {
         val pos = fix?.position?.let { Guidage.versLambert93(it) }
         if (pos == null) emptyMap() else placettes.associate { p -> p.uuid to kotlin.math.hypot(p.position!!.xMetres - pos.xMetres, p.position!!.yMetres - pos.yMetres) }
@@ -242,7 +247,7 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
         }
 
         // Source et date, en petit (ADR 0009 : attribution datée).
-        Text(attribution(ortho), fontSize = 11.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+        Text(ortho?.let { attribution(it) } ?: "", fontSize = 11.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
     }
 }
 

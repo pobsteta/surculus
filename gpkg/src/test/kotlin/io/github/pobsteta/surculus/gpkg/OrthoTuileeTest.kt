@@ -22,6 +22,7 @@ class OrthoTuileeTest {
                 st.execute("CREATE TABLE ortho (zoom_level INTEGER, tile_column INTEGER, tile_row INTEGER, tile_data BLOB)")
                 st.execute("INSERT INTO gpkg_contents VALUES ('ortho', 'tiles')")
                 st.execute("INSERT INTO gpkg_tile_matrix_set VALUES ('ortho', $srs)")
+                st.execute("INSERT INTO ortho VALUES (14, 8000, 5000, x'FFD8')")
             }
         }
         return f
@@ -50,9 +51,31 @@ class OrthoTuileeTest {
     @Test
     fun `un mbtiles avec sa table tiles est exploitable en TMS`() {
         val f = dossier.resolve("ortho.mbtiles")
-        Sqlite.ouvrir(f).use { it.createStatement().use { st -> st.execute("CREATE TABLE tiles (zoom_level INTEGER, tile_column INTEGER, tile_row INTEGER, tile_data BLOB)") } }
+        creerMbtiles(f, avecTuile = true)
         val d = assertNotNull(OrthoTuilee.dans(dossier))
         assertEquals(true, d.tms)
+    }
+
+    private fun creerMbtiles(f: Path, avecTuile: Boolean) {
+        Sqlite.ouvrir(f).use { cnx ->
+            cnx.createStatement().use { st ->
+                st.execute("CREATE TABLE tiles (zoom_level INTEGER, tile_column INTEGER, tile_row INTEGER, tile_data BLOB)")
+                if (avecTuile) st.execute("INSERT INTO tiles VALUES (14, 8000, 5000, x'FFD8')")
+            }
+        }
+    }
+
+    @Test
+    fun `un mbtiles vide n'est pas une ortho`() {
+        creerMbtiles(dossier.resolve("ortho.mbtiles"), avecTuile = false)
+        assertNull(OrthoTuilee.dans(dossier))
+    }
+
+    @Test
+    fun `un gpkg tuile en 3857 sans aucune tuile n'est pas une ortho`() {
+        val f = gpkgTuile("ortho.gpkg", 3857)
+        Sqlite.ouvrir(f).use { it.createStatement().use { st -> st.execute("DELETE FROM ortho") } }
+        assertNull(OrthoTuilee.dans(dossier))
     }
 
     @Test

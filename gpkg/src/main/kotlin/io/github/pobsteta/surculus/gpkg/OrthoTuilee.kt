@@ -28,13 +28,13 @@ object OrthoTuilee {
         return try {
             Sqlite.ouvrir(fichier, lectureSeule = true).use { cnx ->
                 if (nom.endsWith(".mbtiles")) {
-                    if (cnx.existeTable("tiles")) Description(nom, "tiles", tms = true) else null
+                    if (cnx.existeTable("tiles") && cnx.aDesTuiles("tiles")) Description(nom, "tiles", tms = true) else null
                 } else {
                     if (!cnx.existeTable("gpkg_contents") || !cnx.existeTable("gpkg_tile_matrix_set")) return null
                     val table = cnx.lignes("SELECT table_name FROM gpkg_contents WHERE data_type = 'tiles' LIMIT 1").firstOrNull()?.texte("table_name")
                         ?: return null
                     val srs = cnx.lignes("SELECT srs_id FROM gpkg_tile_matrix_set WHERE table_name = '${table.replace("'", "''")}'").firstOrNull()?.entier("srs_id")
-                    if (srs == 3857 && cnx.existeTable(table)) Description(nom, table, tms = false) else null
+                    if (srs == 3857 && cnx.existeTable(table) && cnx.aDesTuiles(table)) Description(nom, table, tms = false) else null
                 }
             }
         } catch (e: Exception) {
@@ -45,3 +45,6 @@ object OrthoTuilee {
     /** Premier fichier exploitable du [dossier] (`ortho.mbtiles` d'abord), `null` si aucun. */
     fun dans(dossier: Path): Description? = NOMS.firstNotNullOfOrNull { lire(dossier.resolve(it)) }
 }
+
+/** Vrai si la table de tuiles porte au moins une tuile : un fichier vide n'est pas une ortho. */
+private fun java.sql.Connection.aDesTuiles(table: String): Boolean = lignes("SELECT 1 AS x FROM ${table.ident()} LIMIT 1").isNotEmpty()
