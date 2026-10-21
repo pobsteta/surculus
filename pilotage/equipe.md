@@ -10,6 +10,12 @@
 ## Plafond humain
 
 - **PR ouvertes en même temps, au plus :** 3
+- **Missions de code en parallèle, au plus :** 2 (bilan du 2026-10-21, décision de Pascal)
+- **PR de pilotage** (journal, kanban, fiches) : **lâchées**, hors plafond. L'orchestrateur
+  les fusionne quand le `relecteur` les juge prêtes et que la CI est verte ; une PR qui
+  porte une décision au nom de Pascal reste à Pascal (bilan du 2026-10-21).
+- **Terrain avant la 012** : les vérifications de terrain en attente sont faites par
+  Pascal et inscrites au journal avant de lancer la 012 (bilan du 2026-10-21).
 - **Rythme de relecture de Pascal :** un créneau par jour
 
 _Régler l'ambition sur le rythme qu'on peut tenir, et les Hommes avant la toupie._
@@ -57,6 +63,20 @@ demande dans ces tranches (le `bilan` les rappellera).
 | [019](missions/019-scenarios-ajout-seul.md) Scénarios du journal en ajout seul | `testeur` | sonnet | appuyer | 3 oui | 3 |
 | [023](missions/023-methode-en-plugin-et-pilotage.md) Méthode en plugin, pilotage rangé | orchestrateur | — | appuyer | 3 oui (demandée par Pascal le 2026-10-20) | — |
 
+## Règles adoptées au bilan du 2026-10-21 (décision de Pascal)
+
+Elles répondent aux trois causes du Pareto (`analyste`, journal du 2026-10-21) :
+
+1. **Vérifié à la source.** Chaque fiche porte une section « Vérifié à la source » : pour
+   chaque fait ou prérequis, le `fichier:ligne` lu ou la commande lancée ; pour chaque
+   règle, son auteur (Pascal, spec, relecteur). Le `relecteur` refuse une fiche sans elle.
+2. **Garde-fou = test vu rouge.** Un garde-fou d'ADR ou de spec n'existe que s'il a un test
+   nommé, montré rouge une fois.
+3. **Bilan des écarts avant rendu.** L'agent colle dans son rapport la liste des
+   assertions, fixtures et fichiers hors périmètre qu'il a modifiés. Un hook automatique
+   relèverait du plugin `imperatrice`.
+
 Plafond : au plus **3 PR ouvertes** ; un cycle ne démarre que quand le précédent est
-fusionné ou en revue sous le plafond. Aucune mission n'est « lâchée » : aucune n'a encore
-réussi deux fois.
+fusionné ou en revue sous le plafond. Seules les PR de pilotage sont « lâchées » (bilan du
+2026-10-21) ; aucune mission de code ne l'est. Le tableau ci-dessus date de la porte
+n° 2 : l'état à jour des missions est dans `kanban.md`.

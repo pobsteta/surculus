@@ -62,7 +62,14 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 **Attendent le plafond :**
 
-- **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032.
+- **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK de la 011 sur Couchey
+  (import, ortho, mode avion, guidage, test des dix secondes) ; restauration de
+  `exemple-v1.sursync` ; comptes de Couchey contre QGIS (029). Chaque essai au journal.
+- **Pascal, clé de signature** : dire au journal où est la copie hors du poste et qui
+  détient les mots de passe, puis l'ADR 0010.
+- **034** trous de mémoire du bilan (`archiviste`, appuyer).
+- **Test de forme des CSV** de `docs/referentiels/` en CI, vu rouge sur `22ec874^` (`dev`).
+- **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
 - Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
 - **028** registre attendu et sabotage en CI (`dev`, appuyer), après 026 et 027.
 
