@@ -186,6 +186,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    // Carte (ADR 0009) et préchargement de l'ortho en tâche de fond, avec reprise après coupure de réseau.
+    implementation(libs.osmdroid.android)
+    implementation(libs.androidx.work.runtime.ktx)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Accueil -->
+    <string name="tournees_ouvrir">Tournées</string>
+
+    <!-- Écran Tournées (mission 011, spec § 4.1) -->
+    <string name="tournees_titre">Tournées</string>
+    <string name="tournees_retour">‹ Retour</string>
+    <string name="tournees_importer_dossier">Ouvrir un dossier</string>
+    <string name="tournees_importer_zip">Ouvrir un .zip</string>
+    <string name="tournees_wifi">Ortho : Wi-Fi seulement</string>
+    <string name="tournees_vide">Aucune tournée. Ouvrez le dossier ou le .zip de sommieR.</string>
+    <string name="tournees_import_en_cours">Copie de la tournée…</string>
+    <string name="tournees_import_ok">Tournée ouverte : %1$s</string>
+    <string name="tournees_import_refus">Tournée refusée : %1$s</string>
+    <string name="tournees_illisible">Illisible : %1$s</string>
+    <string name="tournees_prepare">Préparée le %1$s · %2$s</string>
+    <string name="tournees_inconnu">non renseigné</string>
+    <string name="tournees_saisies">%1$d contrôles · ouverte</string>
+    <string name="ortho_complete">Ortho complète</string>
+    <string name="ortho_complete_fichier">Ortho complète (%1$s)</string>
+    <string name="ortho_partielle">Ortho partielle %1$d / %2$d</string>
+    <string name="ortho_absente">Ortho absente</string>
+    <string name="ortho_relancer">Précharger l\'ortho</string>
+    <string name="ortho_refus_hors_france">Ortho non préchargée : l\'emprise est hors de France métropolitaine.</string>
+    <string name="ortho_refus_trop_grande">Ortho non préchargée : zone trop grande (%1$d tuiles).</string>
+    <string name="ortho_planifiee">Préchargement lancé : il reprend tout seul quand le réseau revient.</string>
+    <string name="ortho_attribution_datee">%1$s · ortho téléchargée le %2$s</string>
+    <string name="ortho_attribution_fichier">%1$s · ortho : fichier de la tournée</string>
+    <string name="ortho_attribution_sans_date">%1$s · ortho non téléchargée</string>
+
+    <!-- Écran Carte (spec § 4.2) -->
+    <string name="carte_ouverture">Ouverture de la tournée…</string>
+    <string name="carte_refus">Carte impossible : %1$s</string>
+    <string name="carte_couche_foret">Forêt (%1$d)</string>
+    <string name="carte_couche_ug">UG (%1$d)</string>
+    <string name="carte_couche_parcelles">Parcelles (%1$d)</string>
+    <string name="carte_couche_placettes">Placettes (%1$d)</string>
+    <string name="carte_anomalies">%1$d surface(s) sans géométrie lisible, non dessinée(s)</string>
+    <string name="carte_placettes_liste">Placettes</string>
+    <string name="carte_ma_position">Ma position</string>
+    <string name="carte_fermer_liste">Fermer la liste</string>
+    <string name="carte_guider">Guider vers %1$s</string>
+    <string name="carte_guider_distance">Guider vers %1$s · %2$s</string>
+    <string name="carte_sans_position">Sans position</string>
+    <string name="carte_permission">Position du téléphone refusée : la carte reste sans position.</string>
+    <string name="carte_hors_france">Position hors de France : vérifier l\'ordre latitude / longitude</string>
+
+    <!-- Écran Guidage (spec § 4.2 et 4.3) -->
+    <string name="guidage_vers">Vers %1$s</string>
+    <string name="guidage_distance_m">%1$d m</string>
+    <string name="guidage_cap">Cap %1$s</string>
+    <string name="guidage_arrive">Dans le cercle de 30 m</string>
+    <string name="guidage_sans_position">Pas de position : attendre le GNSS dehors</string>
+    <string name="guidage_son_actif">Son : oui</string>
+    <string name="guidage_son_coupe">Son : non</string>
+    <string name="guidage_code">Code lu sur le piquet</string>
+    <string name="guidage_rattacher">Rattacher la placette</string>
+    <string name="guidage_moyenne">Moyenne de la position : %1$d / %2$d s</string>
+    <string name="guidage_rattache">Placette %1$s retrouvée, à %2$d m du piquet.</string>
+    <string name="guidage_rattache_identite">Placette %1$s rattachée par le code. Mesure à %2$d m : position du piquet retenue, mesure gardée à part.</string>
+    <string name="guidage_refus_15m">À %1$d m de la placette la plus proche (plus de 15 m). Lisez le code sur le piquet, saisissez-le, puis rattachez.</string>
+    <string name="guidage_refus_code">Code « %1$s » inconnu de la tournée.</string>
+    <string name="guidage_rien_enregistre">Rien n\'est enregistré à ce stade.</string>
+    <string name="guidage_nord">Nord en haut</string>
+    <string name="guidage_precision">%1$s</string>
+</resources>
