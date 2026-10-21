@@ -93,12 +93,14 @@ data class RefusJournalEntity(
 }
 
 /**
- * Table `projection` : état courant par clé (`objet_uuid`, `type`). **Reconstructible** depuis le journal
+ * Table `projection` : état courant par clé (`code_tournee`, `objet_uuid`, `type`). **Reconstructible** depuis le journal
  * (`JournalRepository.reconstruireProjection`) ; mise à jour par clé touchée à chaque ajout, jamais par
  * rejeu complet. `tetes` et `anomalies` : listes séparées par des virgules (les `uuid` n'en contiennent pas).
  */
-@Entity(tableName = "projection", primaryKeys = ["objet_uuid", "type"])
+@Entity(tableName = "projection", primaryKeys = ["code_tournee", "objet_uuid", "type"])
 data class ProjectionEntity(
+    // Version 4 : l'état se calcule par tournée ; '' = lignes non rattachées (mission 032).
+    @ColumnInfo(name = "code_tournee") val codeTournee: String,
     @ColumnInfo(name = "objet_uuid") val objetUuid: String,
     @ColumnInfo(name = "type") val type: String,
     @ColumnInfo(name = "courant_uuid") val courantUuid: String?,

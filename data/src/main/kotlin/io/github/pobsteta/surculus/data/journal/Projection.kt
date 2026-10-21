@@ -1,8 +1,11 @@
 package io.github.pobsteta.surculus.data.journal
 
-/** Clé de projection : (objet, type). Notée `objet|type`. */
-data class CleProjection(val objetUuid: String, val type: String) {
-    override fun toString() = "$objetUuid|$type"
+/**
+ * Clé de projection : (tournée, objet, type). Notée `objet|type`, préfixée de `tournée|` quand la tournée n'est pas
+ * vide. `codeTournee = ""` : lignes non rattachées, qui forment leur propre état (jamais fondues dans une tournée).
+ */
+data class CleProjection(val objetUuid: String, val type: String, val codeTournee: String = "") {
+    override fun toString() = if (codeTournee.isEmpty()) "$objetUuid|$type" else "$codeTournee|$objetUuid|$type"
 }
 
 /** État courant d'une clé. `courant` est `null` quand plus aucune valeur n'est active. */
@@ -48,7 +51,11 @@ data class ResultatProjection(
  *   saisie efface l'anomalie de la nouvelle tête (elle reste tracée au journal) ;
  * - une annulation dont l'objet diffère de celui de sa cible n'annule rien : la cible garde sa valeur,
  *   l'annulation est tête de la clé (objet déclaré, `annulation`) avec l'anomalie [REMPLACE_AUTRE_OBJET] ;
- * - si l'objet et le type diffèrent, seule [REMPLACE_AUTRE_OBJET] est signalée.
+ * - **état par tournée** (mission 032, décision de Pascal du 2026-10-21) : la clé est (tournée, objet, type) ; une
+ *   saisie ou une annulation dont `remplaceUuid` désigne une ligne **d'une autre tournée** ne remplace ni
+ *   n'annule rien : la ligne est gardée, tête de sa propre clé, avec l'anomalie [REMPLACE_AUTRE_TOURNEE] ;
+ *   le journal d'une autre tournée n'influe jamais sur l'état d'une tournée ;
+ * - si plusieurs différences coexistent, la première de la liste objet, tournée, type est seule signalée.
  */
 object Projection {
     const val UUID_CONTENU_DIFFERENT = "uuid_contenu_different"
@@ -56,6 +63,9 @@ object Projection {
 
     /** Une saisie qui désigne une ligne d'un autre objet : elle ne la remplace pas (2026-10-17). */
     const val REMPLACE_AUTRE_OBJET = "remplace_autre_objet"
+
+    /** Une saisie qui désigne une ligne d'une autre tournée : elle ne la remplace pas (mission 032). */
+    const val REMPLACE_AUTRE_TOURNEE = "remplace_autre_tournee"
 
     /** Une saisie qui désigne une ligne d'un autre type du même objet : elle ne la remplace pas (2026-10-17). */
     const val REMPLACE_AUTRE_TYPE = "remplace_autre_type"
@@ -83,10 +93,12 @@ object Projection {
         val anomaliesJournal = sortedSetOf<String>()
         if (refusees.isNotEmpty()) anomaliesJournal += UUID_CONTENU_DIFFERENT
 
-        // Une annulation dont la cible connue est d'un autre objet est ignorée : la cible garde sa valeur.
+        // Une annulation dont la cible connue est d'un autre objet ou d'une autre tournée est ignorée : la
+        // cible garde sa valeur.
         val annulationsAutreObjet = retenues.filter { l ->
             l.type == TypeLigne.ANNULATION &&
-                l.remplaceUuid?.let { parUuid[it] }?.let { it.objetUuid != l.objetUuid } == true
+                l.remplaceUuid?.let { parUuid[it] }
+                    ?.let { it.objetUuid != l.objetUuid || it.codeTournee != l.codeTournee } == true
         }
 
         val annulations = retenues.filter { it.type == TypeLigne.ANNULATION && it !in annulationsAutreObjet }
@@ -128,6 +140,7 @@ object Projection {
                 val anomalie = when {
                     parent == null -> REMPLACE_INCONNU
                     parent.objetUuid != cur.objetUuid -> REMPLACE_AUTRE_OBJET
+                    parent.codeTournee != cur.codeTournee -> REMPLACE_AUTRE_TOURNEE
                     parent.type != cur.type -> REMPLACE_AUTRE_TYPE
                     else -> null
                 }
@@ -141,9 +154,9 @@ object Projection {
             }
         }
 
-        val tetesParCle = actives.filter { it.uuid !in remplacees }.groupBy { CleProjection(it.objetUuid, it.type) }
+        val tetesParCle = actives.filter { it.uuid !in remplacees }.groupBy { CleProjection(it.objetUuid, it.type, it.codeTournee) }
         val cles = LinkedHashMap<CleProjection, EtatCle>()
-        for (cle in saisies.map { CleProjection(it.objetUuid, it.type) }.distinct()) {
+        for (cle in saisies.map { CleProjection(it.objetUuid, it.type, it.codeTournee) }.distinct()) {
             val tetes = tetesParCle[cle].orEmpty() // déjà dans l'ordre total
             cles[cle] = EtatCle(
                 cle = cle,

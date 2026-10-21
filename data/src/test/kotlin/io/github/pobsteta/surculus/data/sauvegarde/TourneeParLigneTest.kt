@@ -26,7 +26,7 @@ class TourneeParLigneTest {
 
     private fun depot(appareil: String = "a3f9c2d1"): JournalRepository {
         val db = JournalDatabase.construire(contexte, null).allowMainThreadQueries().build().also { bases += it }
-        return JournalRepository(db, appareil, HorlogeFixe())
+        return JournalRepository(db, appareil, HorlogeFixe(), tourneeObligatoire = false)
     }
 
     private fun deuxTournees(): JournalRepository = depot().also {
@@ -113,7 +113,7 @@ class TourneeParLigneTest {
     @Test fun `l'annulation et le saut d'horloge suivent la tournee de la ligne`() {
         val h = HorlogeFixe()
         val db = JournalDatabase.construire(contexte, null).allowMainThreadQueries().build().also { bases += it }
-        val r = JournalRepository(db, "a3f9c2d1", h)
+        val r = JournalRepository(db, "a3f9c2d1", h, tourneeObligatoire = false)
         val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1", codeTournee = "TOURNEE-A")
         h.avancer(120_000); h.monoMs -= 0; h.utcMs += 3_600_000 // saut : l'heure avance, pas la monotone
         val ann = r.annuler(l.uuid, "op1")

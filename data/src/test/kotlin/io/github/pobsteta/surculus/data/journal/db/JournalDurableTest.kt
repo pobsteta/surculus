@@ -48,7 +48,7 @@ class JournalDurableTest {
     private fun ouvrir(nom: String = "t.db") =
         JournalDatabase.construire(contexte, nom).allowMainThreadQueries().build().also { db = it }
 
-    private fun depot(base: JournalDatabase = ouvrir()) = JournalRepository(base, "tel-A", horloge)
+    private fun depot(base: JournalDatabase = ouvrir()) = JournalRepository(base, "tel-A", horloge, tourneeObligatoire = false)
 
     // --- ajout seul ---
 
@@ -230,7 +230,7 @@ class JournalDurableTest {
             val lignes = apres.dao().toutes()
             assertEquals(2, lignes.size)
             assertNotNull(lignes.singleOrNull { it.uuid == derniere.uuid })
-            assertEquals(derniere.uuid, JournalRepository(apres, "tel-A", horloge).etat("P1", "etat")?.courant)
+            assertEquals(derniere.uuid, JournalRepository(apres, "tel-A", horloge, tourneeObligatoire = false).etat("P1", "etat")?.courant)
         } finally {
             apres.close()
         }
@@ -260,7 +260,7 @@ class JournalDurableTest {
         val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
         db!!.close(); db = null
         SQLiteDatabase.openDatabase(contexte.getDatabasePath("t.db").path, null, SQLiteDatabase.OPEN_READWRITE).use {
-            it.execSQL("PRAGMA user_version = 4")
+            it.execSQL("PRAGMA user_version = 5")
         }
         assertFailsWith<Exception> { ouvrir("t.db").openHelper.writableDatabase }
         db = null

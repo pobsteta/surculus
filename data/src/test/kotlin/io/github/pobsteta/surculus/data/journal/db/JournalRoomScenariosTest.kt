@@ -31,7 +31,7 @@ class JournalRoomScenariosTest {
             for (ordre in c.ordresDArrivee) {
                 val db = JournalDatabase.construire(contexte, null).allowMainThreadQueries().build()
                 try {
-                    val depot = JournalRepository(db, "local", HorlogeFixe())
+                    val depot = JournalRepository(db, "local", HorlogeFixe(), tourneeObligatoire = false)
                     ordre.forEach { depot.recevoir(it) }
 
                     val incrementale = depot.projection()
@@ -60,7 +60,7 @@ class JournalRoomScenariosTest {
     fun `la cle de projection se lit par objet et type`() {
         val db = JournalDatabase.construire(contexte, null).allowMainThreadQueries().build()
         try {
-            val depot = JournalRepository(db, "local", HorlogeFixe())
+            val depot = JournalRepository(db, "local", HorlogeFixe(), tourneeObligatoire = false)
             val l = ScenariosJournal.cas("projection").first { it.id == "JR-08" }.lignes
             l.forEach(depot::recevoir)
             assertEquals("U1", depot.etat("P1", "pointage")?.courant)

@@ -31,6 +31,7 @@ object JournalApp {
     fun depot(context: Context): JournalRepository = depot ?: synchronized(this) {
         depot ?: JournalRepository(
             JournalDatabase.ouvrir(context), identifiantAppareil(context), HorlogeAppareil(context),
+            tourneeObligatoire = true,
         ).also { depot = it }
     }
 }
