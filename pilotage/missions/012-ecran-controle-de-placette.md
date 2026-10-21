@@ -15,7 +15,7 @@
 |---|---|---|
 | Peut-il redire la mission en une phrase, avec son but ? | oui | |
 | Sait-il comment faire ? (sources, conventions nommées ci-dessous) | oui : spec § 4.3 ; ADR 0004 ; Marculus (boutons de volume) en lecture seule | |
-| A-t-il les moyens ? (outils, données d'essai, tests) | oui une fois 004, 005 et 008 fusionnées | |
+| A-t-il les moyens ? (outils, données d'essai, tests) | oui une fois 004, 005, 008, 029, 031 et 032 fusionnées (032 ne l'est pas encore) | |
 
 **Temps de la main :** **appuyer**.
 
@@ -35,6 +35,8 @@
 
 - **Comment saura-t-on que c'est juste :** table des boutons ; annulation par double appui sur volume bas ; mode poche ignore l'écran tactile. Commande du projet : `.claude/test-command`.
 - **Codes de refus (décision de Pascal, 2026-10-17, relecture de la PR #34) :** un refus montré à l'agent porte les codes stables de la spec § 6 (`hors_referentiel`, `uuid_en_double`, `hors_france`, …), y compris pour les refus rendus par le domaine (`Observations.valider`, `Totaux.deduire`, `PointDerive.deriver`) ; la correspondance, aujourd'hui écrite seulement dans `gpkg/src/test/.../acceptation/BranchementExport.kt`, passe en code de production.
+
+- **Tournée (journal du 2026-10-21) :** chaque saisie passe le code de la tournée ouverte. Le refus d'un code vide et le calcul de l'état par tournée relèvent de la mission 032 (domaine), qui est un prérequis.
 
 ## Terrain
 
