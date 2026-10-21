@@ -1,0 +1,10 @@
+{
+  "fichier": "fixtures/export/scenario-couchey.json",
+  "regle": "Journée de contrôle sur la tournée de démonstration Couchey de sommieR 0.31.1 : ce que la CI de l'import (mission 007) exporte avec Surculus pour que le critère (a) mesure quelque chose.",
+  "description": "Deux contrôles (P35-01, P35-02) sur les placettes de la démo, désignées par leur code : la CI régénère la démo à chaque exécution, donc ses UUID changent, mais les codes P35-01 à P35-03 non. Les plants sont pointés depuis le piquet (distance horizontale, azimut magnétique lu), la position de chaque plant est dérivée par la chaîne des repères de :core (WMM2025, convergence, Lambert-93). Les UUID de l'export sont dérivés du scénario (UUID v3 du nom), donc identiques d'une exécution à l'autre sur une même tournée.",
+  "source": "docs/spec.md § 4.3, § 5 ; ADR 0007 ; ci/sommier/README.md (mission 007)",
+  "operateur": "Agent d'essai (scénario CI)",
+  "version_surculus": "0.0.0-scenario",
+  "exporte_le": "2026-10-20T12:00:00Z",
+  "controles": []
+}
