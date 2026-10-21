@@ -1,0 +1,32 @@
+{
+  "fichier": "fichiers-refuses.json",
+  "regle": "Fichier tronqué ou altéré : refusé en entier, journal local inchangé",
+  "format": "voir fixtures/README.md, section Sauvegarde",
+  "decision": "Le .sursync porte une empreinte SHA-256 de son contenu, que la mission 009 ajoutera au format (l'ADR 0005 sera complétée) : tout fichier altéré est refusé, même si son JSON reste valide (pilotage/journal.md, 2026-10-21).",
+  "cas": [
+    {"id": "SV-20", "description": "Fichier gzip tronqué (derniers octets coupés) : refusé.",
+     "entree": {"alteration": "tronquer_gzip", "journal_de": "journal/projection.json#JR-02"},
+     "attendu": {"accepte": false, "motif": "fichier_tronque", "journal_local_inchange": true},
+     "source": "ADR 0005, règle « Format .sursync » (gzip) ; mission 024, « fichier tronqué ou altéré refusé »"},
+    {"id": "SV-21", "description": "Fichier de 0 octet (l'état d'un fichier vu par câble avant la fin d'écriture avec le SAF) : refusé.",
+     "entree": {"alteration": "zero_octet"},
+     "attendu": {"accepte": false, "motif": "fichier_tronque", "journal_local_inchange": true},
+     "source": "ADR 0005, règle « Sauvegarde » (SAF abandonné : fichier vu à 0 octet par câble)"},
+    {"id": "SV-22", "description": "Une ligne JSON coupée au milieu, le gzip restant valide : refusé.",
+     "entree": {"alteration": "couper_une_ligne_json", "journal_de": "journal/projection.json#JR-02"},
+     "attendu": {"accepte": false, "motif": "ligne_illisible", "journal_local_inchange": true},
+     "source": "ADR 0005, règle « Format .sursync » (JSON Lines compressé gzip)"},
+    {"id": "SV-23", "description": "Une valeur modifiée dans une ligne, le JSON et le gzip restant valides, l'empreinte SHA-256 du fichier inchangée : refusé.",
+     "entree": {"alteration": "modifier_une_valeur_sans_recalculer_l_empreinte", "journal_de": "journal/projection.json#JR-02"},
+     "attendu": {"accepte": false, "motif": "empreinte_differente", "journal_local_inchange": true},
+     "source": "pilotage/journal.md, 2026-10-21, décision 2 (empreinte SHA-256 du contenu) ; code proposé, à confirmer par Pascal"},
+    {"id": "SV-24", "description": "Un même uuid deux fois dans le fichier : à l'identique, la seconde ligne est ignorée ; au contenu différent, le fichier est refusé.",
+     "entree": {"variantes": [{"doublon": "identique"}, {"doublon": "contenu_different"}], "journal_de": "journal/projection.json#JR-12"},
+     "attendu": {"variante_identique": {"accepte": true, "lignes_ignorees": 1}, "variante_contenu_different": {"accepte": false, "motif": "uuid_contenu_different", "journal_local_inchange": true}},
+     "source": "fixtures/journal/projection.json JR-12 et fixtures/README.md (code uuid_contenu_different fixé) ; ADR 0005, règle « Journal »"},
+    {"id": "SV-25", "description": "Un refus est tout ou rien : même quand la corruption n'est qu'à la dernière ligne, aucune des lignes valides précédentes n'entre dans le journal local.",
+     "entree": {"alteration": "couper_derniere_ligne_json", "journal_de": "journal/projection.json#JR-03"},
+     "attendu": {"accepte": false, "journal_local_inchange": true, "aucune_ligne_ajoutee": true},
+     "source": "ADR 0005, règle « Journal » (journal durable, jamais modifié) ; mission 024, « tournée existante jamais écrasée »"}
+  ]
+}

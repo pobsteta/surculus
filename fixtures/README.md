@@ -108,3 +108,16 @@ Cas d'acceptation de l'export `travaux.gpkg`, écrits par le `testeur` (mission 
 * **Champs facultatifs d'un cas** : `hypothese` (le cas suppose une règle non écrite, à confirmer par Pascal) ; `operation: "lecture"` (cas de relecture, joué par `ExportTournee.relire` : EX-11) ; `saisies.travaux` (travaux saisis, avec leur `code_travaux`, contrôlés contre la couche `codes` de `tournee_depart.codes` : EX-33).
 * **Trous voulus dans la numérotation** : EX-28 (date de travaux antérieure à la plantation) et EX-32 (export sans réseau) ont été retirés par Pascal le 2026-10-17 ; ne pas les réattribuer.
 * **Non couverts** : critère de CI (a) de l'ADR 0007 (import R, CI de la 007) ; fumée de l'APK sur émulateur ; essai sur ARM.
+
+## Sauvegarde `.sursync` (`sauvegarde/`)
+
+Cas d'acceptation de la sauvegarde et de sa restauration, écrits par le `testeur` (mission 024) à partir de la spec (§ 4.8), de l'ADR 0005 et des décisions de Pascal du 2026-10-21 (`pilotage/journal.md`), sans lire le code, pour que la mission 009 ait ses tests avant son code. `FixturesSauvegardeBienFormeesTest` (`:core`) vérifie leur forme ; la 009 les rejoue sans les modifier. Identifiants `SV-NN`.
+
+* **Familles** : `restauration.json` (SV-01 à 08), `versions.json` (10 à 13), `fichiers-refuses.json` (20 à 25), `noms-fichier.json` (30 à 34), `ecrasement.json` (40 à 42), `declenchement.json` (50 à 55). Les numéros 09, 14 à 19, 26 à 29, 35 à 39, 43 à 49 sont des trous voulus : ne pas les réattribuer sans le dire.
+* **`journal_de`** : `fichier#id`, le journal d'entrée est celui du cas `JR-NN` cité de `fixtures/journal/`. `variantes` rejoue le cas avec chaque variante.
+* **Opérations** : `sauvegarder_puis_restaurer`, `restaurer_deux_fois`. `alteration` décrit comment le fichier sauvegardé est abîmé avant restauration.
+* **Attendu** : `{"accepte": true, ...}` ou `{"accepte": false, "motif": "<code>", "journal_local_inchange": true}`. Un refus est tout ou rien.
+* **Codes de refus** : `version_future`, `version_illisible`, `fichier_tronque`, `ligne_illisible`, `empreinte_differente` (propositions du testeur, à confirmer par Pascal), et `uuid_contenu_different` (déjà fixé par le journal).
+* **Décisions de Pascal du 2026-10-21** : l'`<appareil>` du nom est un identifiant opaque ; le `.sursync` porte une empreinte SHA-256 de son contenu (que la 009 ajoute au format, l'ADR 0005 sera complétée) et tout fichier altéré est refusé même si son JSON reste valide ; un fichier de même nom n'est jamais écrasé (le nouveau est suffixé) et la rotation des 5 dernières ne supprime que la plus ancienne de la même tournée.
+* **N et M** : paramètres non fixés (valeurs de la 009, à mesurer) ; les cas les écrivent `N`, `M`.
+* **Non couverts** : le format binaire (`docs/formats/sursync-v1.md`, affaire de la 009) ; les trois voies hors appareil (010) ; SV-34 (MediaStore `IS_PENDING`) ne se vérifie que sur appareil ou émulateur ; pas de test Kotlin désactivé, l'interface attendue ne se décrit pas sans lire le code.

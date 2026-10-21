@@ -1,0 +1,24 @@
+{
+  "fichier": "versions.json",
+  "regle": "Versions du format .sursync : N et N-1 lues, N+1 refusée avec un message",
+  "format": "voir fixtures/README.md, section Sauvegarde",
+  "version_courante": "N, valeur du format publié dans docs/formats/sursync-v1.md (mission 009) ; N-1 est la précédente",
+  "cas": [
+    {"id": "SV-10", "description": "Version N : lue.",
+     "entree": {"version": "N", "journal_de": "journal/projection.json#JR-02"},
+     "attendu": {"accepte": true, "lignes_identiques": true},
+     "source": "ADR 0005, règle « Format .sursync »"},
+    {"id": "SV-11", "description": "Version N-1 : lue, mêmes lignes.",
+     "entree": {"version": "N-1", "journal_de": "journal/projection.json#JR-02"},
+     "attendu": {"accepte": true, "lignes_identiques": true},
+     "source": "ADR 0005, règle « Format .sursync » (« lit la version N-1 »)"},
+    {"id": "SV-12", "description": "Version N+1 : refusée avec un message ; le journal local n'est pas modifié.",
+     "entree": {"version": "N+1", "journal_de": "journal/projection.json#JR-02"},
+     "attendu": {"accepte": false, "motif": "version_future", "message_affiche": true, "journal_local_inchange": true},
+     "source": "ADR 0005, règle « Format .sursync » (« refuse N+1 avec un message »)"},
+    {"id": "SV-13", "description": "Version absente, ou illisible (texte, négative) : refusée, journal local inchangé.",
+     "entree": {"variantes": [{"version": null}, {"version": "abc"}, {"version": -1}], "journal_de": "journal/projection.json#JR-02"},
+     "attendu": {"accepte": false, "motif": "version_illisible", "journal_local_inchange": true},
+     "source": "ADR 0005, règle « Format .sursync » ; cas de terrain (fichier d'origine inconnue) ; code proposé, à confirmer par Pascal"}
+  ]
+}

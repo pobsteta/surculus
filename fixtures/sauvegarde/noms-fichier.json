@@ -1,0 +1,30 @@
+{
+  "fichier": "noms-fichier.json",
+  "regle": "Nom du fichier .sursync : sans « : », sans nom de propriétaire ni d'agent",
+  "format": "voir fixtures/README.md, section Sauvegarde",
+  "decision": "<appareil> est un identifiant opaque (UUID court ou empreinte), jamais un nom lisible (pilotage/journal.md, 2026-10-21, décision 1).",
+  "cas": [
+    {"id": "SV-30", "description": "Le nom suit <code-tournée>-<appareil>-<horodatage>.sursync.",
+     "entree": {"code_tournee": "COUCHEY-2026", "appareil": "a3f9c2d1", "instant_utc": "2026-10-14T09:05:07Z"},
+     "attendu": {"gabarit": "^COUCHEY-2026-[0-9a-f]{8,}-[0-9TZ-]+\\.sursync$", "extension": ".sursync"},
+     "source": "spec § 4.8 (fusion des tournées)"},
+    {"id": "SV-31", "description": "Le nom ne contient jamais « : » (ni l'horodatage ISO brut).",
+     "entree": {"code_tournee": "COUCHEY-2026", "appareil": "a3f9c2d1", "instant_utc": "2026-10-14T09:05:07Z"},
+     "attendu": {"caracteres_absents": [":"]},
+     "source": "ADR 0005, Sources (Marculus ExportFichier.kt : « : » remplacé dans les noms)"},
+    {"id": "SV-32", "description": "Le nom ne contient ni nom de propriétaire ni nom d'agent, même quand l'appareil s'appelle « Téléphone de Jean Dupont » et l'opérateur « Jean Dupont ».",
+     "entree": {"code_tournee": "COUCHEY-2026", "appareil_nom_lisible": "Téléphone de Jean Dupont", "operateur": "Jean Dupont", "instant_utc": "2026-10-14T09:05:07Z"},
+     "attendu": {"sous_chaines_absentes": ["Jean", "Dupont", "Téléphone"], "segment_appareil": "identifiant_opaque"},
+     "source": "pilotage/journal.md, 2026-10-21, décision 1 ; ADR 0005, règle « Confidentialité »"},
+    {"id": "SV-33", "description": "Un code de tournée avec espace, accent ou « / » donne un nom de fichier sain (ni séparateur de chemin, ni espace, ni « : »).",
+     "entree": {"code_tournee": "Forêt d'Orléans/Lot 3: nord", "appareil": "a3f9c2d1", "instant_utc": "2026-10-14T09:05:07Z"},
+     "attendu": {"caracteres_absents": [":", "/", "\\", " "], "extension": ".sursync"},
+     "source": "ADR 0005, Sources (Marculus ExportFichier.kt) ; cas de terrain : codes saisis à la main",
+     "hypothese": "la règle exacte de normalisation n'est pas écrite ; le test vérifie les caractères interdits, pas la forme du résultat"},
+    {"id": "SV-34", "description": "Le fichier est écrit sous Documents/Surculus/ par MediaStore avec IS_PENDING : il n'est visible qu'une fois complet, jamais à 0 octet.",
+     "entree": {"operation": "ecrire_sauvegarde"},
+     "attendu": {"dossier": "Documents/Surculus/", "is_pending_pendant_l_ecriture": true, "visible_a_0_octet": false},
+     "source": "ADR 0005, règle « Sauvegarde »",
+     "limite": "vérifiable sur appareil ou émulateur seulement (MediaStore) ; pas de test JVM"}
+  ]
+}
