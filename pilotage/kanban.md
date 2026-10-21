@@ -29,28 +29,30 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **009** sauvegarde `.sursync` (`dev`) : moyens prêts dès la fusion de la PR #40 (cas de la 024).
-- **013** dictée Vosk (`dev`) : moyens prêts dès la fusion de la PR #41 (cas de la 025) et
-  l'ajout des cas des décisions 11 et 12 par le `testeur`.
-- **011** écrans tournées, carte, guidage (`afficheur`) : ADR 0009 acceptée, prête dès la
-  fusion de la PR de pilotage.
+- **013** dictée Vosk (`dev`) : part après les cas des décisions 11 et 12 (testeur) et le
+  retrait de l'hypothèse DI-303.
 
 ## Planifié
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-- **026** CI d'import, F1 + F2 + F3 (`dev`, appuyer), après la fusion de la #39.
+**Cycle 5, lancé le 2026-10-21 :**
+
+- **009** sauvegarde `.sursync` et restauration (`dev`, appuyer) — cas de la 024.
+- **011** écrans tournées, carte, guidage (`afficheur`, appuyer) — ADR 0009.
+- **026** CI d'import, F1 + F2 + F3 (`dev`, appuyer).
+
+**Attendent le plafond :**
+
+- Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
 - **027** registre attendu du scénario Couchey (`testeur`, appuyer).
 - **028** registre attendu et sabotage en CI (`dev`, appuyer), après 026 et 027.
 
-**En revue chez Pascal :**
-
-- **022** critère (a) mesuré en CI, deux échecs montrés (PR #39) — relecteur : prêt.
-- **024** cas de la sauvegarde `.sursync` (PR #40) — relecteur : prêt.
-- **025** cas de la dictée (PR #41) — relecteur : prêt, après la PR de pilotage.
-- **PR de pilotage** — à fusionner en premier (au-delà du plafond, décision de Pascal).
-
 ## Terminé
+
+- Cycle 4, 2026-10-21 : **022** critère (a) mesuré en CI, deux échecs montrés (PR #39) ;
+  **024** cas de la sauvegarde `.sursync` (PR #40) ; **025** cas de la dictée et
+  vocabulaire Vosk (PR #41) ; ADR 0009 carte hors ligne, fiches 026 à 028 (PR #42) — Pascal.
 
 - Cycle 3, 2026-10-17 : **006** module GeoPackage (PR #34), **007** CI import sommieR
   (PR #33), **008** journal en ajout seul (PR #35), **019** et **021** scénarios du journal
