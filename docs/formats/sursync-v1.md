@@ -44,9 +44,9 @@ un lecteur de version 2 (paramètre de test).
 - **Seules les saisies sont sauvegardées**, pas les lignes refusées du journal (`refus_journal` : la seconde version
   d'un `uuid` reçu avec un contenu différent). Une restauration redonne donc les mêmes saisies, mais pas l'anomalie
   `uuid_contenu_different` d'un journal qui en portait une. Décision de Pascal, 2026-10-21.
-- **Le fichier contient aujourd'hui tout le journal du téléphone**, quelle que soit la tournée : le journal ne porte
-  pas la tournée de chaque ligne. Une mission séparée, avant la 011, ajoutera la tournée à chaque ligne ; cette
-  limite sera alors levée.
+- **Une tournée par fichier** (mission 031, décision de Pascal, 2026-10-21) : le journal porte la tournée de chaque
+  ligne ; la sauvegarde ne contient que les lignes de la tournée de l'en-tête. Les lignes **non rattachées**
+  (antérieures à la version 3 de la base, `code_tournee = ''`) n'entrent dans aucune sauvegarde.
 
 ## Un fichier abîmé n'est pas refusé en entier
 
@@ -58,6 +58,8 @@ signalé (codes lus par les tests ; les messages affichés ne le sont pas) :
 | gzip coupé, ou pied absent | `fichier_tronque` | lignes lisibles en entier avant la coupure restaurées |
 | ligne JSON illisible ou incomplète (champ absent ou mal typé, type hors liste) | `ligne_illisible` | ligne refusée, les autres restaurées |
 | pied présent mais faux | `empreinte_differente` | toutes les lignes lisibles restaurées, avertissement visible (décision de Pascal, 2026-10-21, n° 7) |
+| ligne dont `code_tournee` est un autre code que celui de l'en-tête | `ligne_autre_tournee` | ligne refusée (jamais rattachée à la tournée du fichier), les autres restaurées |
+| `code_tournee` d'une ligne qui n'est pas un texte | `ligne_illisible` | ligne refusée, les autres restaurées |
 | même `uuid` deux fois, contenu différent | `uuid_contenu_different` | les deux versions refusées, les autres restaurées |
 | même `uuid` deux fois, à l'identique | aucun | la seconde est ignorée |
 
@@ -90,7 +92,8 @@ celle d'une autre.
 
 Par le sélecteur de fichier (`ACTION_OPEN_DOCUMENT`). **Union sur l'`uuid`** dans le journal local, jamais
 d'écrasement : les lignes locales absentes du fichier restent, une ligne déjà présente à l'identique est ignorée,
-la restauration est idempotente. Les lignes gardent leur `appareil` et leur `sequence` d'origine. Un conflit
+la restauration est idempotente. Les lignes gardent leur `appareil` et leur `sequence` d'origine, et prennent la tournée de l'en-tête du fichier : la
+restauration d'une tournée ne touche à aucune ligne d'une autre. Un conflit
 (deux corrections concurrentes d'une même ligne) reste un conflit.
 
 ## Confidentialité

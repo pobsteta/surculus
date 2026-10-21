@@ -40,7 +40,8 @@
         "heure_gnss_ms": { "type": ["integer", "null"], "description": "ms Unix, UTC" },
         "monotone_ms": { "type": "integer", "description": "SystemClock.elapsedRealtime, valable dans un même démarrage" },
         "demarrage": { "type": "integer" },
-        "age_fix_ms": { "type": ["integer", "null"] }
+        "age_fix_ms": { "type": ["integer", "null"] },
+        "code_tournee": { "type": "string", "minLength": 1, "description": "facultatif, jamais écrit par l'application ; s'il est présent, il doit être celui de l'en-tête, sinon la ligne est refusée (ligne_autre_tournee)" }
       }
     },
     "pied": {
