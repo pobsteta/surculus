@@ -33,6 +33,7 @@
 ## Tests
 
 - Le job est vert sur l'export réel ; chaque sabotage fait rougir le contrôle visé, et l'auto-test le montre dans le résumé du job.
+- Renvoyés par la relecture de la 026 (journal, 2026-10-21) : un test de la tolérance `gpkg_schema` sur `gpkg_data_columns` et `gpkg_data_column_constraints` ; un test du chemin de l'avertissement du témoin « sans » (`::warning`, job vert).
 
 ## Qui veille, qui tranche
 

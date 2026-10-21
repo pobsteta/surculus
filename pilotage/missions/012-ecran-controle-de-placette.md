@@ -15,7 +15,7 @@
 |---|---|---|
 | Peut-il redire la mission en une phrase, avec son but ? | oui | |
 | Sait-il comment faire ? (sources, conventions nommées ci-dessous) | oui : spec § 4.3 ; ADR 0004 ; Marculus (boutons de volume) en lecture seule | |
-| A-t-il les moyens ? (outils, données d'essai, tests) | oui une fois 004, 005 et 008 fusionnées | |
+| A-t-il les moyens ? (outils, données d'essai, tests) | oui une fois 004, 005, 008, 029 et 031 fusionnées (toutes le sont au 2026-10-21) | |
 
 **Temps de la main :** **appuyer**.
 
@@ -35,6 +35,8 @@
 
 - **Comment saura-t-on que c'est juste :** table des boutons ; annulation par double appui sur volume bas ; mode poche ignore l'écran tactile. Commande du projet : `.claude/test-command`.
 - **Codes de refus (décision de Pascal, 2026-10-17, relecture de la PR #34) :** un refus montré à l'agent porte les codes stables de la spec § 6 (`hors_referentiel`, `uuid_en_double`, `hors_france`, …), y compris pour les refus rendus par le domaine (`Observations.valider`, `Totaux.deduire`, `PointDerive.deriver`) ; la correspondance, aujourd'hui écrite seulement dans `gpkg/src/test/.../acceptation/BranchementExport.kt`, passe en code de production.
+
+- **Tournée (décisions de Pascal, 2026-10-21, mission 031) :** chaque saisie passe le code de la tournée ouverte ; en production, `saisir` refuse un code vide (le défaut `""` gardé pour les tests ne doit jamais servir), et un test le prouve. L'état courant d'un plant est calculé **par tournée** : chaque tournée part de ce que sommieR livre dans son `travaux.gpkg`, le journal d'une autre tournée n'influe jamais ; un test le prouve avec un même `objet_uuid` dans deux tournées.
 
 ## Terrain
 
