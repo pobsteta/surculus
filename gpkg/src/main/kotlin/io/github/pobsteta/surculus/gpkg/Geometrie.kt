@@ -163,6 +163,75 @@ object GeometrieGpkg {
         return if (x.isFinite() && y.isFinite()) PointLambert93(x, y) else null
     }
 
+    /**
+     * Décode la géométrie surfacique complète d'un blob : [Geometrie.Polygone] (trous gardés) ou [Geometrie.MultiPolygone]
+     * (toutes les parties). x = Est, y = Nord (Lambert-93, mètres) : l'appelant garantit le repère par `srs_id`.
+     * Rend `null` si la géométrie est vide. Lève [IllegalArgumentException] si le blob est corrompu, tronqué,
+     * ou d'un type non polygonal (point, ligne, collection).
+     */
+    fun lire(blob: ByteArray): Geometrie? {
+        val lue = decoder(blob)
+        if (lue.vide) return null
+        val code = ((blob[3].toInt() and 0xFF) shr 1) and 0x07
+        val debut = 8 + when (code) {
+            0 -> 0
+            1 -> 32
+            2, 3 -> 48
+            else -> 64
+        }
+        val b = ByteBuffer.wrap(blob)
+        try {
+            return lireSurface(b, debut).first
+        } catch (e: IndexOutOfBoundsException) {
+            throw IllegalArgumentException("Géométrie tronquée")
+        }
+    }
+
+    private fun lireSurface(b: ByteBuffer, debut: Int): Pair<Geometrie, Int> {
+        b.order(if (b.get(debut).toInt() == 1) ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN)
+        val codeWkb = b.getInt(debut + 1)
+        val dimensions = when (codeWkb / 1000) {
+            0 -> 2
+            1, 2 -> 3
+            3 -> 4
+            else -> throw IllegalArgumentException("Type WKB $codeWkb inconnu")
+        }
+        var pos = debut + 5
+        when (codeWkb % 1000) {
+            WKB_POLYGON -> {
+                val nbAnneaux = b.getInt(pos)
+                pos += 4
+                require(nbAnneaux in 1..1_000_000) { "Nombre d'anneaux invalide" }
+                val anneaux = ArrayList<List<PointLambert93>>()
+                repeat(nbAnneaux) {
+                    val n = b.getInt(pos)
+                    pos += 4
+                    require(n in 0..100_000_000 && pos + 8L * dimensions * n <= b.limit()) { "Anneau tronqué" }
+                    val pts = ArrayList<PointLambert93>(n)
+                    repeat(n) {
+                        pts.add(PointLambert93(b.getDouble(pos), b.getDouble(pos + 8)))
+                        pos += 8 * dimensions
+                    }
+                    anneaux.add(pts)
+                }
+                return Geometrie.Polygone(anneaux) to pos
+            }
+            WKB_MULTIPOLYGON -> {
+                val n = b.getInt(pos)
+                pos += 4
+                require(n in 1..1_000_000) { "Nombre de parties invalide" }
+                val parties = ArrayList<Geometrie.Polygone>()
+                repeat(n) {
+                    val (g, fin) = lireSurface(b, pos)
+                    parties.add(g as? Geometrie.Polygone ?: throw IllegalArgumentException("Partie non polygonal"))
+                    pos = fin
+                }
+                return Geometrie.MultiPolygone(parties) to pos
+            }
+            else -> throw IllegalArgumentException("Type WKB $codeWkb non polygonal")
+        }
+    }
+
     private class Cumul {
         var xMin = Double.POSITIVE_INFINITY
         var xMax = Double.NEGATIVE_INFINITY
