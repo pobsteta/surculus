@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.pobsteta.surculus.essai.EcranEssaiGnss
+import io.github.pobsteta.surculus.sauvegarde.EcranRestauration
 
 /**
  * Accueil du squelette (mission 001) ; l'écran d'essai GNSS (mission 018) s'ouvre d'un bouton.
@@ -37,10 +38,13 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     var essai by rememberSaveable { mutableStateOf(false) }
-                    BackHandler(enabled = essai) { essai = false }
+                    var restauration by rememberSaveable { mutableStateOf(false) }
+                    BackHandler(enabled = essai || restauration) { essai = false; restauration = false }
                     Column(Modifier.fillMaxSize().safeDrawingPadding()) {
                         if (essai) {
                             EcranEssaiGnss()
+                        } else if (restauration) {
+                            EcranRestauration()
                         } else {
                             Column(
                                 Modifier.fillMaxSize().padding(24.dp),
@@ -50,6 +54,9 @@ class MainActivity : ComponentActivity() {
                                 Text(text = stringResource(R.string.app_name), fontSize = 32.sp)
                                 Button(onClick = { essai = true }, modifier = Modifier.fillMaxWidth().height(64.dp)) {
                                     Text(stringResource(R.string.essai_ouvrir), fontSize = 20.sp)
+                                }
+                                Button(onClick = { restauration = true }, modifier = Modifier.fillMaxWidth().height(64.dp)) {
+                                    Text(stringResource(R.string.restauration_ouvrir), fontSize = 20.sp)
                                 }
                             }
                         }

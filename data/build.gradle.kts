@@ -33,6 +33,8 @@ ksp {
 // Les tests relisent les scénarios du testeur : les déclarer, sinon Gradle ignore leurs changements.
 tasks.withType<Test>().configureEach {
     inputs.dir(rootProject.file("fixtures/journal")).withPropertyName("fixturesJournal")
+    inputs.dir(rootProject.file("fixtures/sauvegarde")).withPropertyName("fixturesSauvegarde")
+    inputs.dir(rootProject.file("fixtures/sursync")).withPropertyName("fixturesSursync")
 }
 
 kotlin {
@@ -46,6 +48,8 @@ dependencies {
     // Journal Room en ajout seul (ADR 0005, mission 008).
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    // Lecture et écriture du .sursync (JSON Lines, arbre JSON sans réflexion) : mission 009.
+    implementation(libs.gson)
     ksp(libs.room.compiler)
 
     testImplementation(kotlin("test-junit"))
@@ -53,5 +57,4 @@ dependencies {
     testImplementation(libs.room.testing)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
-    testImplementation(libs.gson)
 }
