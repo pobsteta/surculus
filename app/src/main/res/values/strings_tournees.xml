@@ -16,7 +16,7 @@
     <string name="tournees_illisible">Illisible : %1$s</string>
     <string name="tournees_prepare">Préparée le %1$s · %2$s</string>
     <string name="tournees_inconnu">non renseigné</string>
-    <string name="tournees_saisies">%1$d contrôles · ouverte</string>
+    <string name="tournees_saisies">%1$d contrôles prévus · ouverte</string>
     <string name="ortho_complete">Ortho complète</string>
     <string name="ortho_complete_fichier">Ortho complète (%1$s)</string>
     <string name="ortho_partielle">Ortho partielle %1$d / %2$d</string>
@@ -27,6 +27,7 @@
     <string name="ortho_planifiee">Préchargement lancé : il reprend tout seul quand le réseau revient.</string>
     <string name="ortho_attribution_datee">%1$s · ortho téléchargée le %2$s</string>
     <string name="ortho_attribution_fichier">%1$s · ortho : fichier de la tournée</string>
+    <string name="ortho_attribution_partielle">%1$s · ortho en cours de téléchargement</string>
     <string name="ortho_attribution_sans_date">%1$s · ortho non téléchargée</string>
 
     <!-- Écran Carte (spec § 4.2) -->
@@ -48,7 +49,6 @@
 
     <!-- Écran Guidage (spec § 4.2 et 4.3) -->
     <string name="guidage_vers">Vers %1$s</string>
-    <string name="guidage_distance_m">%1$d m</string>
     <string name="guidage_cap">Cap %1$s</string>
     <string name="guidage_arrive">Dans le cercle de 30 m</string>
     <string name="guidage_sans_position">Pas de position : attendre le GNSS dehors</string>
@@ -63,5 +63,4 @@
     <string name="guidage_refus_code">Code « %1$s » inconnu de la tournée.</string>
     <string name="guidage_rien_enregistre">Rien n\'est enregistré à ce stade.</string>
     <string name="guidage_nord">Nord en haut</string>
-    <string name="guidage_precision">%1$s</string>
 </resources>

@@ -17,6 +17,7 @@
 - **Arrivée** : distance strictement inférieure à 30 m.
 - **Signal à l'arrivée** : bip seulement.
 - **Place gardée** sur l'écran d'accueil pour le bouton « Restaurer une tournée » (mission 009, déjà présent).
+- **Décisions de Pascal du 2026-10-21 (relecture)** : (a) « Wi-Fi seulement » reste activé par défaut ; (b) la liste affiche « ouverte » et « contrôles prévus » (pas « saisies »), « rendue » et le nombre de saisies sont des dettes ; (c) les couleurs par `etat_suivi`, les travaux par code et les vides relèvent d'une mission de suite (033), hors de la 011 ; (d) le radar nord en haut est gardé, le test des dix secondes de Pascal tranchera.
 - **Données** : géométries lues par `LecteurTournee.lireCartographie()` (mission 029 fusionnée).
 - **Hors périmètre en attendant la 031** : aucune saisie écrite au journal, pas de branchement de la sauvegarde.
 

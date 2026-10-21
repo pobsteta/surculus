@@ -135,6 +135,9 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
             OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour), fontSize = 18.sp) }
             BadgeFix(fix)
         }
+        if (fix != null && Guidage.versLambert93(fix.position) == null) {
+            Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
+        }
         if (refusee) Text(stringResource(R.string.carte_permission), color = Palette.Rouge, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 8.dp))
 
         Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -246,8 +249,8 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
 @Composable
 private fun attribution(o: OrthoTournee): String = when {
     o.fichierLocal != null -> stringResource(R.string.ortho_attribution_fichier, OrthoIgn.ATTRIBUTION)
+    o.etat is EtatOrtho.Partielle -> stringResource(R.string.ortho_attribution_partielle, OrthoIgn.ATTRIBUTION)
     o.telechargeeLe != null -> stringResource(R.string.ortho_attribution_datee, OrthoIgn.ATTRIBUTION, o.telechargeeLe)
-    o.etat is EtatOrtho.Absente -> stringResource(R.string.ortho_attribution_sans_date, OrthoIgn.ATTRIBUTION)
     else -> stringResource(R.string.ortho_attribution_sans_date, OrthoIgn.ATTRIBUTION)
 }
 

@@ -57,13 +57,16 @@ import kotlinx.coroutines.withContext
  *
  * La place du bouton « Restaurer une tournée » (mission 009) est tenue par l'accueil, qui garde ce bouton.
  */
+/** Message de l'écran ; [refus] (et non un mot du texte) décide de la couleur. */
+private data class MessageTournees(val texte: String, val refus: Boolean)
+
 @Composable
 fun EcranTournees(onOuvrir: (String) -> Unit, onRetour: () -> Unit) {
     val ctx = LocalContext.current
     val portee = rememberCoroutineScope()
     var lignes by remember { mutableStateOf<List<LigneTournee>?>(null) }
     var version by remember { mutableIntStateOf(0) }
-    var message by remember { mutableStateOf<String?>(null) }
+    var message by remember { mutableStateOf<MessageTournees?>(null) }
     var occupe by remember { mutableStateOf(false) }
     var wifi by remember { mutableStateOf(ReglagesOrtho.wifiSeulement(ctx)) }
     val ressources = LocalResources.current
@@ -80,15 +83,15 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onRetour: () -> Unit) {
 
     fun importer(travail: suspend () -> java.io.File) {
         occupe = true
-        message = ressources.getString(R.string.tournees_import_en_cours)
+        message = MessageTournees(ressources.getString(R.string.tournees_import_en_cours), refus = false)
         portee.launch {
             message = try {
                 val dossier = withContext(Dispatchers.IO) { travail() }
-                ressources.getString(R.string.tournees_import_ok, dossier.name)
+                MessageTournees(ressources.getString(R.string.tournees_import_ok, dossier.name), refus = false)
             } catch (e: GpkgRefuse) {
-                ressources.getString(R.string.tournees_import_refus, e.refus.message)
+                MessageTournees(ressources.getString(R.string.tournees_import_refus, e.refus.message), refus = true)
             } catch (e: Exception) {
-                ressources.getString(R.string.tournees_import_refus, e.message ?: e.javaClass.simpleName)
+                MessageTournees(ressources.getString(R.string.tournees_import_refus, e.message ?: e.javaClass.simpleName), refus = true)
             }
             occupe = false
             version++
@@ -119,20 +122,23 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onRetour: () -> Unit) {
             Text(stringResource(R.string.tournees_wifi), fontSize = 18.sp)
             Switch(checked = wifi, onCheckedChange = { wifi = it; ReglagesOrtho.definirWifiSeulement(ctx, it) })
         }
-        message?.let { Text(it, fontSize = 16.sp, color = if (it.contains("refus")) Palette.Rouge else Palette.Noir) }
+        message?.let { Text(it.texte, fontSize = 16.sp, color = if (it.refus) Palette.Rouge else Palette.Noir) }
 
         val toutes = lignes
         if (toutes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
         LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             items(toutes.orEmpty(), key = { it.id }) { ligne ->
                 LigneDeTournee(ligne, onOuvrir = { onOuvrir(ligne.id) }, onOrtho = {
-                    val refus = DepotTournees.planifierOrtho(ctx, ligne.dossier, remplacer = true)
-                    message = when (refus) {
-                        is ZoneTuiles.Resultat.HorsFrance -> ressources.getString(R.string.ortho_refus_hors_france)
-                        is ZoneTuiles.Resultat.TropGrande -> ressources.getString(R.string.ortho_refus_trop_grande, refus.nombre.toInt())
-                        else -> ressources.getString(R.string.ortho_planifiee)
+                    // La lecture du gpkg (emprise) se fait hors du fil principal.
+                    portee.launch {
+                        val refus = withContext(Dispatchers.IO) { DepotTournees.planifierOrtho(ctx, ligne.dossier, remplacer = true) }
+                        message = when (refus) {
+                            is ZoneTuiles.Resultat.HorsFrance -> MessageTournees(ressources.getString(R.string.ortho_refus_hors_france), refus = true)
+                            is ZoneTuiles.Resultat.TropGrande -> MessageTournees(ressources.getString(R.string.ortho_refus_trop_grande, refus.nombre.toInt()), refus = true)
+                            else -> MessageTournees(ressources.getString(R.string.ortho_planifiee), refus = false)
+                        }
+                        version++
                     }
-                    version++
                 })
                 HorizontalDivider()
             }

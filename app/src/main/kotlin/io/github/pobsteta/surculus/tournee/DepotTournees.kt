@@ -71,7 +71,12 @@ object DepotTournees {
     /** Copie le `.zip` choisi dans le sélecteur de fichiers, le contrôle et le range. Renvoie le dossier de la tournée. */
     fun importerZip(ctx: Context, zip: Uri): File {
         val tmp = nouveauTemporaire(ctx)
-        ctx.contentResolver.openInputStream(zip)!!.use { ImportTournee.extraireZip(it, tmp.toPath()) }
+        try {
+            ctx.contentResolver.openInputStream(zip)!!.use { ImportTournee.extraireZip(it, tmp.toPath()) }
+        } catch (e: Exception) {
+            tmp.deleteRecursively() // zip refusé ou coupé : rien ne reste dans le cache
+            throw e
+        }
         return terminer(ctx, tmp)
     }
 
@@ -79,7 +84,12 @@ object DepotTournees {
     fun importerDossier(ctx: Context, arbre: Uri): File {
         val tmp = nouveauTemporaire(ctx)
         val racineDoc = DocumentsContract.getTreeDocumentId(arbre)
-        copierArbre(ctx, arbre, racineDoc, tmp)
+        try {
+            copierArbre(ctx, arbre, racineDoc, tmp)
+        } catch (e: Exception) {
+            tmp.deleteRecursively()
+            throw e
+        }
         return terminer(ctx, tmp)
     }
 

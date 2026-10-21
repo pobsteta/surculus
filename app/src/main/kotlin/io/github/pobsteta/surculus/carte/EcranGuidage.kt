@@ -145,7 +145,10 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, o
         }
         // 1. La seule chose à montrer, en grand : la distance.
         Text(stringResource(R.string.guidage_vers, cible.code.orEmpty()), fontSize = 20.sp)
-        if (cap == null) {
+        if (cap == null && fix != null) {
+            // Un fix existe mais tombe hors de France : axes inversés, pas une absence de signal.
+            Text(stringResource(R.string.carte_hors_france), fontSize = 22.sp, color = Palette.Rouge, fontWeight = FontWeight.Bold)
+        } else if (cap == null) {
             Text(stringResource(R.string.guidage_sans_position), fontSize = 22.sp, color = Palette.Rouge, fontWeight = FontWeight.Bold)
         } else {
             Text(
