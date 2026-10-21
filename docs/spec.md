@@ -43,7 +43,10 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
   enregistrée. **[ADR à venir : GNSS et repères]**
 * Pointage d'un plant sans RTK fixe : distance et azimut depuis le piquet. **Matériel de
   pointage à nommer par Pascal** (boussole de visée, télémètre, ruban).
-* **Hors ligne de bout en bout** : carte, ortho, dictée, contrôles, alertes.
+* **Hors ligne de bout en bout** : carte, ortho, dictée, contrôles, alertes (ortho :
+  ADR 0009).
+* **Périmètre géographique : France métropolitaine et Corse** (décision de Pascal du
+  2026-10-21, ADR 0009). sommieR code EPSG:2154 en dur ; les DOM ne passent pas.
 
 ### Repères et unités (règle commune, `CLAUDE.md`)
 
@@ -58,7 +61,7 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
 | Distance | mètres, **horizontale**. Une distance mesurée dans la pente est ramenée à l'horizontale si la pente est saisie |
 | Surface | ares pour les vides, hectares pour les interventions (aire calculée en EPSG:2154) |
 
-Des tests vérifient qu'une placette française tombe en France, qu'une inversion (x, y)
+Des tests vérifient qu'une placette française tombe en France métropolitaine (Corse comprise), qu'une inversion (x, y)
 ou (lat, lon) est détectée, et que la chaîne déclinaison puis convergence donne le bon
 point à Brest et à Strasbourg.
 

@@ -10,8 +10,12 @@
 _Idées, à trier au prochain `/mission`._
 
 - **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0008
-  (bibliothèques communes), 0009 (carte hors ligne, avant 011), 0010 (distribution et clé
-  de signature, avant la première release).
+  (bibliothèques communes), 0010 (distribution et clé de signature) ; réexamen de l'ADR
+  0004 (osmdroid archivé depuis le 2024-11-20, ADR 0009).
+- **Pascal (dans sommieR)** : brief vers sommieR, un seul fichier d'ortho tuilé en
+  EPSG:3857 à la place d'`ortho.tif` (ADR 0009, cible f).
+- **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
+  de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
   désignés).
 - **Pascal** : écrire à Centipède (version de RGF93) ; informer les employeurs des
@@ -25,13 +29,32 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-Missions 006 à 014 validées par Pascal le 2026-10-15 (`pilotage/equipe.md`, PR #13).
-Cycle 3 proposé : **006** module GeoPackage, lecture et export (tenir), **007** CI qui
-rejoue l'import de sommieR, **008** journal en ajout seul (tenir).
+- **009** sauvegarde `.sursync` (`dev`) : moyens prêts dès la fusion de la PR #40 (cas de la 024).
+- **013** dictée Vosk (`dev`) : moyens prêts dès la fusion de la PR #41 (cas de la 025) et
+  l'ajout des cas des décisions 11 et 12 par le `testeur`.
+- **011** écrans tournées, carte, guidage (`afficheur`) : ADR 0009 acceptée, prête dès la
+  fusion de la PR de pilotage.
 
 ## Planifié
 
+_En attente sous le plafond humain (3 PR en revue)._
+
+- **026** CI d'import, F1 + F2 + F3 (`dev`, appuyer), après la fusion de la #39.
+- **027** registre attendu du scénario Couchey (`testeur`, appuyer).
+- **028** registre attendu et sabotage en CI (`dev`, appuyer), après 026 et 027.
+
+**En revue chez Pascal :**
+
+- **022** critère (a) mesuré en CI, deux échecs montrés (PR #39) — relecteur : prêt.
+- **024** cas de la sauvegarde `.sursync` (PR #40) — relecteur : prêt.
+- **025** cas de la dictée (PR #41) — relecteur : prêt, après la PR de pilotage.
+- **PR de pilotage** — à fusionner en premier (au-delà du plafond, décision de Pascal).
+
 ## Terminé
+
+- Cycle 3, 2026-10-17 : **006** module GeoPackage (PR #34), **007** CI import sommieR
+  (PR #33), **008** journal en ajout seul (PR #35), **019** et **021** scénarios du journal
+  (PR #31, #35), **020** cas de l'export (PR #36), arbitrages (PR #37) — Pascal.
 
 - 2026-10-20 : **023** la méthode passe au plugin `imperatrice` v0.1.0 (GPL-3.0, CI et
   releases automatiques, pobsteta/methode-imperatrice#1), le pilotage dans `pilotage/`,
