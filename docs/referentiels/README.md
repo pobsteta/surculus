@@ -16,6 +16,10 @@
 | Essences et leurs codes | Codes ONF à trois caractères (nomenclature ONF des essences, DT Méditerranée, 2021 ; compléments de la table gftools de Marculus), correspondance avec les codes IGN (IFN) ; famille de seuil de reprise (F34 art. 3-2, p. 25) | Pascal | acquis le 2026-10-15, **à arbitrer** : [`essences.csv`](essences.csv) (écarts E1 à E8 ; code DSF non trouvé) |
 | Modèle géomagnétique hors ligne (déclinaison) | WMM2025 (NOAA NCEI et BGS), IGRF-14 (IAGA) ; calculateurs officiels NOAA et BGS | Pascal | acquis le 2026-10-15, **à arbitrer** : [`modele-geomagnetique.md`](modele-geomagnetique.md) (licence BGS non réglée ; pas de bibliothèque Java ou Kotlin établie ; déclinaisons de test au 2026-10-15) |
 | Référentiel des positions RTK Centipède | docs.centipede.fr (« Systèmes de référence », « Paramétrage du positionnement dans la base »), CRAIG, EPSG, IGN | Pascal | acquis le 2026-10-15, **à arbitrer** : [`referentiel-centipede.md`](referentiel-centipede.md) (RGF93 ; version v1 ou v2b non établie ; écart avec WGS 84 environ 1 m) |
+| Coûts de plantation et de regarni | Barème Fonds Pérenne 2024 (annexe E publiée par la DRAAF Bretagne), Fransylva (Label Bas Carbone, 2025), DSF et CNPF pour les seuils de regarni | Pascal | revérifié le 2026-10-21 (mission 030), **à arbitrer** : [`couts-plantation.csv`](couts-plantation.csv). Barème 2024 lu en entier ; régime d'aide remis en cause en octobre 2026 (montants du nouvel arrêté non lus) ; aucun prix de regarni trouvé ; prix unitaires encore « extrait » |
+| Échecs de plantations (observation, pas un code) | DSF : bilans nationaux 2023, 2024 (Lettre du DSF n°61) et 2025 ; bilan Normandie 2025 ; CRFB BFC du 24/11/2025 | Pascal | revérifié le 2026-10-21 (mission 030), **à arbitrer** : [`echecs-plantations.csv`](echecs-plantations.csv). Taux d'échec régional BFC non trouvé |
+| Itinéraires techniques CNPF par essence | CNPF, fiches « Itinéraires techniques par essence » (avril 2020) et introduction | Pascal | revérifié le 2026-10-21 (mission 030), **à arbitrer** : [`essences-itineraires.csv`](essences-itineraires.csv). Mélèze non relu (PDF trop gros) ; éléments non relus listés par ligne |
+| Densités minimales MFR en Bourgogne-Franche-Comté | Arrêté DRAAF/SREAF-2026-09 du 06/07/2026 (annexe 2) | Pascal | revérifié le 2026-10-21 (mission 030), **à arbitrer** : valeurs en lignes B1 à B6 de [`seuils-densites.csv`](seuils-densites.csv) (source unique) ; notice [`mfr-bfc.md`](mfr-bfc.md). Instruction DGPE 2025-693 abrogée par la 782, elle-même abrogée par la 2026-462 : mêmes valeurs |
 
 Chaque référentiel est déposé en format ouvert (CSV ou YAML) avec, en tête :
 source, date de consultation, propriétaire, et la liste des écarts relevés entre sources.
@@ -26,6 +30,25 @@ source, date de consultation, propriétaire, et la liste des écarts relevés en
 > le dépôt est public et les droits de rediffusion ne sont pas établis. Les PDF sont
 > rangés localement dans ce dossier, ignorés par git (`.gitignore`) ; chacun se
 > retélécharge depuis son URL.
+
+### Réutilisation et rediffusion : ce que disent les sources
+
+*(Repris de l'inventaire `SOURCES.md` de la PR #4, fusionné ici le 2026-10-21 ; l'absence de mention dans les 24 PDF déposés le 15 octobre est un constat de l'ébauche, non refait.)*
+
+- **Les PDF déposés ne portent ni licence ni conditions de réutilisation dans leur texte** (recherche de « licence », « droits », « reproduction », « © » dans l'extraction du 15/10). Mentions relevées : RNTSF (conception et impression ONF Fontainebleau, septembre 2010), CNPTSF (maquette DCOM, logo PEFC). Les fiches CNPF empruntent des cartes de l'IGN et des illustrations de la « Flore forestière française » : contenu de tiers possible.
+- **Mentions légales relues le 2026-10-21.** CNPF (https://www.cnpf.fr/mentions-legales) : tous droits réservés, autorisation écrite préalable pour toute reproduction ou diffusion, usage strictement personnel, privé et non commercial toléré, mention « Copyright CNPF, tous droits réservés » avec lien vers www.cnpf.fr pour toute copie autorisée. Ministère de l'Agriculture (https://agriculture.gouv.fr/mentions-legales) : textes sous licence Etalab 2.0 sauf mention contraire ; documents officiels (arrêtés, communiqués, circulaires) non protégés ; photos et vidéos réservées ; citation explicite du site demandée. ONF : mentions légales non relues.
+- **Conséquence pour ce dépôt public** (à confirmer par Pascal) : ne pas versionner les PDF ; ne garder que nos CSV et notices (valeurs chiffrées, résumés courts, référence document et page), avec la source citée. Pour les fiches CNPF, ajouter la mention de droits si le fichier est rediffusé ; en cas de doute, écrire à webmaster@cnpf.fr. La licence GPL-3.0-or-later du code ne s'applique pas à des documents de tiers.
+- L'ONF (établissement public industriel et commercial) peut relever d'un régime différent de celui du CNPF : non établi.
+- **Hors sujet, à sortir du dossier** (proposition de l'ébauche) : `guide-version-bfc.pdf` (« Guide d'usage des chemins ruraux et des voies communales... », Sous-préfecture de Château-Chinon, 2025, 24 pages) : mobilisation des bois, pas plantation ni suivi de reprise ; n'a servi à aucune ligne.
+
+### Textes nationaux de l'ONF
+
+| Fichier local | Éditeur | Source |
+|---|---|---|
+| `ONF_RNTSF.pdf` | ONF, Direction générale : « Règlement national des travaux et services forestiers » (RNTSF), décision du directeur général du 23 juillet 2010, avis au JO n° 0208 du 08/09/2010, en vigueur au 1er janvier 2011 pour les contrats signés à partir de cette date (version à jour sur onf.fr, code +1147) | _URL à compléter_ |
+| `ONF_CNPTSF_2023.pdf` | ONF, Direction générale : « Cahier national des prescriptions des travaux et services forestiers » (CNPTSF), version 2020, maquette de mai 2023 (le nom du fichier suit la maquette, le contenu est de 2020) ; le texte en vigueur est celui du site de l'ONF | _URL à compléter_ |
+
+Ces deux textes fixent des prescriptions générales et excluent les prescriptions techniques renvoyées aux CCTP (inventaire du 15/10, non revérifié).
 
 ### ITTS et mémentos de l'ONF
 
@@ -49,7 +72,7 @@ Déposés par Pascal le 15 octobre 2026.
 ### Fiches itinéraires techniques par essence du CNPF
 
 Page : https://www.cnpf.fr/gestion-durable-des-forets/mise-en-oeuvre/fiches-itineraires-techniques-par-essence
-(consultée et téléchargée le 15 octobre 2026).
+(consultée et téléchargée le 15 octobre 2026 ; fiches relues pour la mission 030 le 21 octobre 2026, voir [`essences-itineraires.csv`](essences-itineraires.csv)). Les fiches sont datées d'avril 2020 ; l'introduction (8 pages) est `cnpf/introduction_6.pdf`. Il y a 20 fiches par essence plus l'introduction (la mission d'origine en annonçait 22).
 
 | Essence | Fichier local | URL |
 |---|---|---|
