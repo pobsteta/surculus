@@ -71,9 +71,11 @@ internal object LectureCartographie {
             }
             val g = try {
                 GeometrieGpkg.lire(blob)
-            } catch (e: IllegalArgumentException) {
-                val m = e.message ?: ""
-                anomalies.add(AnomalieGeometrie(couche, fid, if (m.contains("non polygonal")) RaisonAnomalie.TYPE_NON_POLYGONAL else RaisonAnomalie.ILLISIBLE, m))
+            } catch (e: GeometrieNonPolygonale) {
+                anomalies.add(AnomalieGeometrie(couche, fid, RaisonAnomalie.TYPE_NON_POLYGONAL, e.message))
+                continue
+            } catch (e: RuntimeException) {
+                anomalies.add(AnomalieGeometrie(couche, fid, RaisonAnomalie.ILLISIBLE, e.message))
                 continue
             }
             if (g == null) {

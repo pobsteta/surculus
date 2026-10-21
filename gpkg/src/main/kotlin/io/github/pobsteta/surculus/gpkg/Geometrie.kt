@@ -41,6 +41,9 @@ sealed interface Geometrie {
     }
 }
 
+/** Géométrie lisible mais qui n'est ni un polygone ni un multipolygone (point, ligne, collection). */
+class GeometrieNonPolygonale(message: String) : IllegalArgumentException(message)
+
 /** Enveloppe en mètres (OGC 12-128 § 2.1.3 : ordre minx, maxx, miny, maxy dans l'en-tête). */
 data class Enveloppe(val xMin: Double, val xMax: Double, val yMin: Double, val yMax: Double)
 
@@ -170,20 +173,24 @@ object GeometrieGpkg {
      * ou d'un type non polygonal (point, ligne, collection).
      */
     fun lire(blob: ByteArray): Geometrie? {
-        val lue = decoder(blob)
-        if (lue.vide) return null
-        val code = ((blob[3].toInt() and 0xFF) shr 1) and 0x07
-        val debut = 8 + when (code) {
-            0 -> 0
-            1 -> 32
-            2, 3 -> 48
-            else -> 64
-        }
-        val b = ByteBuffer.wrap(blob)
         try {
-            return lireSurface(b, debut).first
-        } catch (e: IndexOutOfBoundsException) {
-            throw IllegalArgumentException("Géométrie tronquée")
+            val lue = decoder(blob)
+            if (lue.vide) return null
+            val code = ((blob[3].toInt() and 0xFF) shr 1) and 0x07
+            val debut = 8 + when (code) {
+                0 -> 0
+                1 -> 32
+                2, 3 -> 48
+                else -> 64
+            }
+            return lireSurface(ByteBuffer.wrap(blob), debut).first
+        } catch (e: GeometrieNonPolygonale) {
+            throw e
+        } catch (e: IllegalArgumentException) {
+            throw e
+        } catch (e: RuntimeException) {
+            // IndexOutOfBounds, BufferUnderflow… : blob tronqué ou abîmé, y compris dans l'en-tête ou le WKB sans enveloppe.
+            throw IllegalArgumentException("Géométrie tronquée ou abîmée", e)
         }
     }
 
@@ -223,12 +230,12 @@ object GeometrieGpkg {
                 val parties = ArrayList<Geometrie.Polygone>()
                 repeat(n) {
                     val (g, fin) = lireSurface(b, pos)
-                    parties.add(g as? Geometrie.Polygone ?: throw IllegalArgumentException("Partie non polygonal"))
+                    parties.add(g as? Geometrie.Polygone ?: throw GeometrieNonPolygonale("Partie non polygonale"))
                     pos = fin
                 }
                 return Geometrie.MultiPolygone(parties) to pos
             }
-            else -> throw IllegalArgumentException("Type WKB $codeWkb non polygonal")
+            else -> throw GeometrieNonPolygonale("Type WKB $codeWkb non polygonal")
         }
     }
 

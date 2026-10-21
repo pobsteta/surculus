@@ -114,6 +114,16 @@ class CartographieTest {
     }
 
     @Test
+    fun `un seul objet hors de France dans les parcelles refuse toute la cartographie`() {
+        val f = coucheyAvecGeometries()
+        val loin = Geometrie.Polygone(listOf(carre(origine.yMetres, origine.xMetres, 100.0)))
+        inserer(f, "INSERT INTO parcelles (geom, reference, designation) VALUES (?, 'X', 'X')", GeometrieGpkg.encoder(loin, 2154))
+        val refus = assertFailsWith<GpkgRefuse> { LecteurTournee.lireCartographie(f) }.refus
+        assertEquals("hors_france", refus.motif)
+        assertEquals("parcelles", (refus as RefusGpkg.PointHorsFrance).couche)
+    }
+
+    @Test
     fun `une tournee sans geometrie rend des listes vides et pas d emprise`() {
         val c = LecteurTournee.lireCartographie(TourneeDeTest.modeleVide(dossier))
         assertEquals(emptyList(), c.ug)
@@ -134,5 +144,25 @@ class CartographieTest {
     fun `un blob tronque est illisible, il leve une exception claire`() {
         val blob = GeometrieGpkg.encoder(ugAvecTrou, 2154)
         assertFailsWith<IllegalArgumentException> { GeometrieGpkg.lire(blob.copyOf(blob.size - 40)) }
+    }
+
+    @Test
+    fun `un en-tete sans enveloppe suivi d un polygone coupe donne l anomalie ILLISIBLE, sans exception`() {
+        // En-tête GP sans enveloppe (indicateurs 0x01), puis WKB polygone little endian annonçant 1 anneau de 5 points, coupé net.
+        val coupe = ByteBuffer.allocate(8 + 1 + 4 + 4 + 4 + 16).order(ByteOrder.LITTLE_ENDIAN)
+        coupe.put('G'.code.toByte()).put('P'.code.toByte()).put(0).put(0x01).putInt(2154)
+        coupe.put(1).putInt(3).putInt(1).putInt(5).putDouble(origine.xMetres).putDouble(origine.yMetres)
+        assertFailsWith<IllegalArgumentException> { GeometrieGpkg.lire(coupe.array()) }
+        val f = coucheyAvecGeometries()
+        // Les déclencheurs rtree décodent la géométrie à l'écriture et refuseraient ce blob abîmé : on les retire pour fabriquer le cas.
+        Sqlite.ouvrir(f).use { cnx ->
+            for (l in cnx.lignes("SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'ug'")) {
+                cnx.createStatement().use { st -> st.executeUpdate("DROP TRIGGER " + l.texte("name")!!.ident()) }
+            }
+        }
+        inserer(f, "INSERT INTO ug (geom, numero) VALUES (?, 'coupee')", coupe.array())
+        val c = LecteurTournee.lireCartographie(f)
+        assertEquals(listOf("35", "36"), c.ug.map { it.id })
+        assertEquals(listOf(RaisonAnomalie.ILLISIBLE), c.anomalies.map { it.raison })
     }
 }

@@ -73,6 +73,11 @@ object LecteurTournee {
     /**
      * Géométries de `foret`, `ug` et `parcelles` pour la carte, en lecture seule ; [lire] n'est pas modifié.
      * Mêmes refus que [lire], et [RefusGpkg.PointHorsFrance] si l'emprise d'une couche sort de France (axes inversés).
+     *
+     * Décisions de Pascal, 2026-10-21 :
+     * - une `foret` illisible fait refuser la tournée dès [lire] ; [lire] n'est pas modifié ;
+     * - un seul objet hors de France, quelle que soit la couche (`foret`, `ug`, `parcelles`), refuse toute la cartographie
+     *   (un point hors du rectangle de France fait sortir un coin de l'emprise de sa couche).
      */
     fun lireCartographie(chemin: Path): Cartographie {
         val cnx = try {

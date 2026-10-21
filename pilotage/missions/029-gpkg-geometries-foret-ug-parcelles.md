@@ -10,7 +10,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Exposer dans `:gpkg`, en lecture seule, les géométries de `foret`, `ug` et `parcelles` de la tournée (polygones et multipolygones en Lambert-93, trous compris, avec l'identifiant de chaque objet) et l'emprise des `ug`, pour que la carte de la 011 trace ces couches et que le préchargement de l'ortho porte sur l'emprise des UG plus une marge.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Je dois faire lire par `:gpkg`, en lecture seule, les géométries de `foret`, `ug` et `parcelles` (trous compris, avec leur identifiant) et l'emprise des UG, pour que la carte de la 011 les trace et que le préchargement de l'ortho porte sur l'emprise des UG plus une marge.
 
 ## Les trois questions (règle de staffing)
 
