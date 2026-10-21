@@ -1,5 +1,6 @@
 package io.github.pobsteta.surculus.gpkg.outil
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.github.pobsteta.surculus.core.geo.PointLambert93
@@ -23,9 +24,11 @@ import io.github.pobsteta.surculus.core.reperes.AzimutSaisi
 import io.github.pobsteta.surculus.core.reperes.CodesUniteAzimut
 import io.github.pobsteta.surculus.core.reperes.PointDerive
 import io.github.pobsteta.surculus.core.reperes.Resultat
+import io.github.pobsteta.surculus.gpkg.BilanExport
 import io.github.pobsteta.surculus.gpkg.ControleSaisi
 import io.github.pobsteta.surculus.gpkg.ExportTravaux
 import io.github.pobsteta.surculus.gpkg.ExportZip
+import io.github.pobsteta.surculus.gpkg.Geometrie
 import io.github.pobsteta.surculus.gpkg.LecteurTournee
 import io.github.pobsteta.surculus.gpkg.LigneEtat
 import io.github.pobsteta.surculus.gpkg.PlantNumerote
@@ -49,7 +52,7 @@ import kotlin.system.exitProcess
  * Usage : `./gradlew :gpkg:exporterScenario -Ptournee=<dossier> -Pscenario=<json> -Psortie=<dossier>`
  *
  * - `<dossier>` de la tournée : celui qui contient `travaux.gpkg` (`ci/sommier/sortie/tournee-sans`) ;
- * - `<sortie>` : reçoit `export-surculus.zip` et `export-surculus/travaux.gpkg` (le zip décompressé).
+ * - `<sortie>` : reçoit `export-surculus.zip`, `export-surculus/travaux.gpkg` (le zip décompressé) et `bilan-export.json`.
  *
  * Le scénario désigne les placettes **par leur code** (`P35-01`) : la CI régénère la démo à chaque exécution,
  * donc ses UUID changent, pas ses codes. Les UUID de l'export dérivent du scénario (UUID v3 du nom).
@@ -90,8 +93,43 @@ object ExporterScenario {
             json.get("version_surculus").asString, Instant.parse(json.get("exporte_le").asString), essences,
         )
         ExportZip.ecrire(dossierExport, sortie.resolve("export-surculus.zip"))
+        Files.writeString(sortie.resolve(BILAN_JSON), bilanJson(bilan, saisies).toString() + "\n")
         return "Export Surculus : ${bilan.controles} contrôle(s), ${bilan.plants} plant(s), ${bilan.etats} état(s) écrits " +
             "dans ${dossierExport.resolve(ExportZip.GPKG)} (EPSG:${tournee.epsg.code}) et ${sortie.resolve("export-surculus.zip")}"
+    }
+
+    /** Nom du bilan d'export, écrit à côté du zip (mission 026, critère F1 de l'ADR 0007). */
+    const val BILAN_JSON = "bilan-export.json"
+
+    /**
+     * Bilan d'export en JSON, lu par la CI d'import (`ci/sommier/verifier.R`, critères F1 et F2). Les compteurs sont
+     * ceux de [BilanExport] ; `travaux` et `uuid_ecrits` viennent des [saisies] (UUID en minuscules, triés), que
+     * l'export écrit dans les couches de sommieR. Limite : ces UUID viennent du même code que l'export
+     * (`uuidDe`), le registre écrit à la main (mission 027) lèvera ce cercle.
+     */
+    fun bilanJson(bilan: BilanExport, saisies: Saisies): JsonObject {
+        fun uuids(l: List<String>) = JsonArray().also { a -> l.map { it.lowercase() }.sorted().forEach { a.add(it) } }
+        return JsonObject().apply {
+            addProperty("exporte_le", bilan.exporteLe.toString())
+            addProperty("placettes", bilan.placettesInstallees)
+            addProperty("controles", bilan.controles)
+            addProperty("travaux", saisies.travaux.size)
+            addProperty("plants", bilan.plants)
+            addProperty("etats_plants", bilan.etats)
+            addProperty("positions_controles", bilan.positions)
+            addProperty("constats_reprise", bilan.constats)
+            addProperty("vides", bilan.vides)
+            addProperty("deja_presentes", bilan.dejaPresentes)
+            add(
+                "uuid_ecrits",
+                JsonObject().apply {
+                    add("placettes", uuids(saisies.placettesInstallees.map { it.uuid.valeur }))
+                    add("controles", uuids(saisies.controles.map { it.uuid.valeur }))
+                    add("travaux_pt", uuids(saisies.travaux.filter { it.geometrie is Geometrie.Point }.map { it.uuid }))
+                    add("travaux_surf", uuids(saisies.travaux.filter { it.geometrie !is Geometrie.Point }.map { it.uuid }))
+                },
+            )
+        }
     }
 
     /** Codes d'essence de `docs/referentiels/essences.csv`, lus à la racine du dépôt (jamais recopiés). */

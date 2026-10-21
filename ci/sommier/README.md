@@ -10,20 +10,44 @@ monte un service PostGIS éphémère et lance `verifier.R`.
    par `sommier_demo_couchey()`), puis la tournée de départ telle que sommieR la
    produit (`sommier_projet_qfield_travaux()`) dans `<sortie>/tournee-depart`.
    C'est l'entrée de Surculus (mission 006), pas le témoin.
-2. **`--etape comparer`** :
-   - L'entrée est l'export décompressé de Surculus (`--avec`). Le **témoin
-     « sans »** est une **copie du même export**, privée de ses six couches
-     (`plants`, `etats_plants`, `constats_reprise`, `vides`,
-     `positions_controles`, `projet`) : tables, et lignes de `gpkg_contents`,
-     `gpkg_geometry_columns`, `gpkg_data_columns`, `gpkg_extensions`.
-   - Chaque version est importée par `sommier_importer_qfield_travaux()` dans
-     son propre clone de `sommier_modele` (la tournée a besoin de la forêt et des
-     travaux de la démo pour rattacher ses placettes). Les **bilans** sont écrits
-     en JSON trié (`bilan-avec.json`, `bilan-sans.json`) : nombres, ids d'entrées,
-     registre sans ce qui dépend de l'horloge.
-   - (a) les deux bilans sont identiques ; (b) le schéma des couches de sommieR de
-     l'export (type, notnull, pk, géométrie, z/m, `srs_id`) égale
-     `inst/qgis/travaux.gpkg` ; (c) `sf::st_layers()` liste les six couches.
+2. **`--etape comparer`** (mission 026, ADR 0007 amendée). L'entrée est l'export
+   décompressé de Surculus (`--avec`) et son `bilan-export.json` (`--bilan-export`,
+   écrit à côté du zip par `:gpkg:exporterScenario`). L'export est importé par
+   `sommier_importer_qfield_travaux()` dans un clone de `sommier_modele`. Trois
+   contrôles, dans `criteres.R`, testés sans base par `test-criteres.R` :
+   - **F1** : le bilan d'import (travaux, placettes, contrôles, entrées écrites)
+     égale le bilan d'export de Surculus. « Déjà présents » de sommieR = **lignes de la
+     tournée de départ** (`travaux_*`, `placettes`, `controles`, avec `uuid`) : la
+     tournée est tirée du registre. Le `dejaPresentes` de Surculus a un autre sens
+     (rejeu d'un export) et n'est **pas comparé**. Un champ absent d'un
+     côté n'est jamais une égalité.
+   - **F2** : pour chaque table de données de la tournée de départ, l'export ne
+     diffère que par des lignes **ajoutées** (clé primaire absente du départ). Une
+     ligne retirée ou modifiée (toutes colonnes, géométrie comprise) est un écart,
+     et les UUID ajoutés doivent être exactement ceux de `uuid_ecrits` du bilan
+     d'export, en minuscules.
+   - **F3** : schéma complet identique à celui de la tournée de départ :
+     `application_id`, `user_version`, tout `sqlite_master` (DDL, index,
+     déclencheurs, vues), toutes les lignes des tables `gpkg_*`. Seuls ajouts
+     permis : les objets et lignes des six couches (dont `rtree_<couche>_*`), et
+     le support de l'extension Schema (`gpkg_data_columns`,
+     `gpkg_data_column_constraints`). Une ligne `gpkg_schema` de `gpkg_extensions`
+     n'est admise que si sa `table_name` est l'une des six couches ou l'une de ces
+     deux tables ; sur une couche de sommieR, elle est refusée.
+     `gpkg_ogr_contents.feature_count` n'est pas normalisé : il est vérifié, pour
+     chaque couche de départ, égal à son nombre de départ plus les lignes
+     ajoutées comptées par F2.
+   - **Seule exclusion** de F3 : `gpkg_contents.last_change`, qui change à chaque
+     écriture (décision de Pascal, 2026-10-21). Rien d'autre n'est toléré.
+   - (b) schéma des couches de sommieR de l'export contre `inst/qgis/travaux.gpkg`
+     et (c) `sf::st_layers()` liste les six couches : inchangés.
+   - **Témoin « sans »**, simple **avertissement** : le même export privé de ses six
+     couches s'importe avec le même bilan (`bilan-avec.json`, `bilan-sans.json`). Une
+     différence s'affiche dans `resume.md` et dans le résumé du job, sans faire échouer
+     le job. Le verdict tient à F1, F2, F3, (b), (c) et à l'auto-test du retrait. Ce
+     n'est plus le critère (a) : il ne mesure presque rien, et il **deviendra rouge
+     par construction au lot 2 de sommieR**, quand l'import lira les plants.
+   - Le résumé du job est `sortie/resume.md` (écrit même en cas d'écart).
 3. **Auto-test du retrait**, toujours : six couches vides (dont trois
    géométriques, donc avec index spatial) et des lignes de `gpkg_data_columns`
    sont posées sur une copie de la tournée de départ, puis retirées ; il ne doit
@@ -31,9 +55,21 @@ monte un service PostGIS éphémère et lance `verifier.R`.
    `gpkg_contents`, `gpkg_geometry_columns`, `gpkg_data_columns`,
    `gpkg_extensions`, `gpkg_metadata_reference`, `gpkg_ogr_contents`).
 4. **Sans `--avec`** (usage local seulement ; la CI le fournit toujours) : le retrait
-   est éprouvé, le critère (a) n'est **pas mesuré**, et le script le dit dans son
+   est éprouvé, F1, F2 et F3 ne sont **pas mesurés**, et le script le dit dans son
    message. **Avec `--avec`**, un import qui n'écrit rien (travaux + placettes +
    contrôles = 0) est un écart : un vert qui ne mesure rien doit le dire.
+
+**Ce qui a été vu rouge en CI, et ce qui ne l'a pas été.** F2 n'a été vu rouge en CI
+que sur `codes` (un `UPDATE`) : la tournée de départ n'a aucune ligne de `controles`,
+et `ST_IsEmpty` est absent de RSQLite pour `placettes` (déclencheurs R-tree). Le cas
+géométrique n'est couvert que par `test-criteres.R`. `feature_count` vaut NULL dans le
+modèle de sommieR : en CI, seul « reste NULL » est mesuré, pas « départ + ajouts »
+(cette seconde règle n'est couverte que par `test-criteres.R`).
+
+**Limite de F2 (à lever par la mission 027)** : les UUID attendus sont ceux du
+`bilan-export.json`, calculés par `uuidDe` de `ExporterScenario`, c'est-à-dire par le
+code même que F2 contrôle. Un UUID faux de la même façon des deux côtés passerait.
+Le registre attendu, écrit à la main (mission 027), lèvera ce cercle.
 
 **Critère (b) resserré par rapport à l'ADR 0007** : l'ADR parle de champs, types,
 géométrie et `srs_id` ; la comparaison porte aussi sur `notnull`, `pk` et les
@@ -46,16 +82,19 @@ deux fois, étape `preparer` manquante). Mot de passe de base : `SOMMIER_CI_PASS
 ## Limite de la tournée de démo
 
 Elle ne porte aucune saisie nouvelle : ses trois placettes sont déjà au registre.
-Le bilan est `0 écrits, 3 déjà présents`. Pour que (a) mesure quelque chose, l'export
-de la 006 doit contenir au moins un contrôle ou une placette saisis.
+Le bilan de la tournée seule est `0 écrits, 3 déjà présents`. Pour que F1 et F2
+mesurent quelque chose, l'export de la 006 contient au moins un contrôle ou une
+placette saisis (le scénario Couchey en joue deux).
 
-## Ce que la CI fournit à `verifier.R` (missions 006 et 022)
+## Ce que la CI fournit à `verifier.R` (missions 006, 022 et 026)
 
 Le workflow, entre « Préparer » et « Rejouer », installe le JDK 21 et lance
 `./gradlew :gpkg:exporterScenario -Ptournee=ci/sommier/sortie/tournee-depart
 -Pscenario=fixtures/export/scenario-couchey.json -Psortie=ci/sommier` : l'outil
 (classes de test de `:gpkg`, jamais dans l'APK) rejoue deux contrôles sur la tournée
 **de ce job** (UUID propres à l'exécution ; placettes désignées par leur code) et
-écrit `ci/sommier/export-surculus/travaux.gpkg` (variable `EXPORT_SURCULUS`) et
-`export-surculus.zip`. L'étape « Rejouer » exige cet export : s'il manque, le travail
-échoue. Le résumé du job affiche « Critère (a) mesuré » et les seuls compteurs du bilan d'entrée (travaux, placettes, contrôles, déjà présents, entrées écrites) ; le bilan entier reste dans l'artefact `bilans-import-sommier`.
+écrit `ci/sommier/export-surculus/travaux.gpkg` (variable `EXPORT_SURCULUS`),
+`export-surculus.zip` et `ci/sommier/bilan-export.json`. L'étape « Rejouer »
+exige l'export et son bilan : s'ils manquent, le travail échoue. Le résumé du job
+affiche F1, F2 et F3 avec leur verdict, les compteurs de F1 (attendu et mesuré) et les
+lignes ajoutées par couche ; le détail reste dans l'artefact `bilans-import-sommier`.

@@ -2,7 +2,8 @@ name: Import sommieR
 
 # Mission 007, ADR 0007 (« Critère de CI ») : rejouer
 # sommier_importer_qfield_travaux() de sommieR 0.31.1 sur une tournée, contre
-# une vraie base PostGIS. Voir ci/sommier/README.md.
+# une vraie base PostGIS, puis mesurer F1, F2 et F3 (mission 026). Voir
+# ci/sommier/README.md.
 
 on:
   push:
@@ -119,27 +120,34 @@ jobs:
             -Pscenario=fixtures/export/scenario-couchey.json \
             -Psortie=ci/sommier
 
-      - name: Rejouer l'import et comparer (critères (a), (b), (c))
+      # Mission 026 : F1, F2 et F3 remplacent la comparaison « avec / sans »
+      # (ancien critère (a)). Le détail est dans ci/sommier/README.md.
+      - name: Tester les fonctions des critères F1, F2 et F3
+        run: Rscript ci/sommier/test-criteres.R
+
+      - name: Rejouer l'import et mesurer F1, F2 et F3
         run: |
-          # L'export est obligatoire : son absence est un échec, jamais un vert
-          # partiel (le critère (a) ne se déclare plus « non mesuré »).
-          if [ ! -f "$EXPORT_SURCULUS/travaux.gpkg" ]; then
-            echo "::error title=Export Surculus absent::$EXPORT_SURCULUS/travaux.gpkg n'a pas été produit par :gpkg:exporterScenario."
-            exit 1
-          fi
+          # L'export et son bilan sont obligatoires : leur absence est un
+          # échec, jamais un vert partiel.
+          for f in "$EXPORT_SURCULUS/travaux.gpkg" ci/sommier/bilan-export.json; do
+            if [ ! -f "$f" ]; then
+              echo "::error title=Export Surculus absent::$f n'a pas été produit par :gpkg:exporterScenario."
+              exit 1
+            fi
+          done
           Rscript ci/sommier/verifier.R --sortie ci/sommier/sortie \
-            --etape comparer --avec "$EXPORT_SURCULUS"
-          {
-            echo "## Critère (a) mesuré"
-            echo
-            echo "Export Surculus (scénario Couchey) importé avec et sans ses six couches : bilans comparés."
-            echo
-            echo "| Compteur | Valeur |"
-            echo "|---|---|"
-            jq -r '"| travaux | \(.travaux) |", "| placettes | \(.placettes) |", "| contrôles | \(.controles) |", "| déjà présents | \(.deja_presents) |", "| entrées écrites | \([.entrees_ecrites] | flatten | length) |"' ci/sommier/sortie/bilan-avec.json
-            echo
-            echo "Le bilan entier est dans l'artefact bilans-import-sommier."
-          } >> "$GITHUB_STEP_SUMMARY"
+            --etape comparer --avec "$EXPORT_SURCULUS" \
+            --bilan-export ci/sommier/bilan-export.json
+
+      # Le résumé est écrit par verifier.R, même en cas d'écart.
+      - name: Résumé du job (F1, F2, F3)
+        if: always()
+        run: |
+          if [ -f ci/sommier/sortie/resume.md ]; then
+            cat ci/sommier/sortie/resume.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Aucun résumé : le script n'a pas atteint les critères." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Publier les bilans
         if: always()
@@ -148,5 +156,7 @@ jobs:
           name: bilans-import-sommier
           path: |
             ci/sommier/sortie/bilan-*.json
+            ci/sommier/sortie/resume.md
+            ci/sommier/bilan-export.json
             ci/sommier/export-surculus.zip
           if-no-files-found: ignore
