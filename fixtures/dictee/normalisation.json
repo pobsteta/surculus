@@ -1,0 +1,168 @@
+{
+  "fichier": "normalisation.json",
+  "regle": "Les espaces en tête, en queue ou doublés sont normalisés avant l'analyse : la phrase normalisée donne la même commande",
+  "format": "voir fixtures/README.md (section Dictée)",
+  "decision": "fiche 025, reprise du 2026-10-21 : choix technique de l'orchestrateur (Vosk peut rendre des espaces en trop)",
+  "note": "Une phrase d'espaces seuls reste refusée (refus.json, DI-62). La casse et la ponctuation ne sont PAS normalisées (refus.json).",
+  "cas": [
+    {
+      "id": "DI-140",
+      "description": "Normalisation : espace en tête.",
+      "entree": {
+        "phrase": " sain"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "sain"
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-141",
+      "description": "Normalisation : espace en queue.",
+      "entree": {
+        "phrase": "sain "
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "sain"
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-142",
+      "description": "Normalisation : espaces doublés en tête et en queue.",
+      "entree": {
+        "phrase": "  atteint  "
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "atteint"
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-143",
+      "description": "Normalisation : espaces doublés entre deux mots.",
+      "entree": {
+        "phrase": "non  observé"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "non_observe"
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-144",
+      "description": "Normalisation : espaces multiples dans « fin du vide ».",
+      "entree": {
+        "phrase": "fin   du  vide"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "vide_fin"
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-145",
+      "description": "Normalisation : espaces parasites dans « hauteur ».",
+      "entree": {
+        "phrase": " hauteur  quarante-cinq "
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 45
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-146",
+      "description": "Normalisation : espaces doublés dans un nombre à espaces.",
+      "entree": {
+        "phrase": "hauteur  quarante   cinq"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 45
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-147",
+      "description": "Normalisation : espace en tête devant « mangé ».",
+      "entree": {
+        "phrase": " mangé"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "detail",
+          "cause_detail": "abroutissement"
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-148",
+      "description": "Normalisation : espace en queue derrière « climat ».",
+      "entree": {
+        "phrase": "climat "
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "cause",
+          "cause_groupe": "abiotique_complexe_indetermine"
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-149",
+      "description": "Normalisation : espaces autour de « remplace ».",
+      "entree": {
+        "phrase": " remplace "
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "regarni"
+        }
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-150",
+      "description": "Normalisation : des espaces ne fusionnent pas deux commandes (« sain  suivant » reste refusé).",
+      "entree": {
+        "phrase": "sain  suivant"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "fiche 025, reprise du 2026-10-21 (normalisation des espaces) ; docs/spec.md § 4.3 ; décision n° 2 (une phrase, une commande)"
+    }
+  ]
+}
