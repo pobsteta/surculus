@@ -45,12 +45,13 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 - **011** écrans tournées, carte, guidage (`afficheur`, appuyer) — relancée après la 029 ;
   n'écrit pas au journal.
-- **030** référentiels de la PR #4, revérifiés (`acquereur`, appuyer).
+- **030** référentiels de la PR #4, revérifiés (`acquereur`, appuyer) — confiée le
+  2026-10-21, plan demandé.
 
 **Attendent le plafond :**
 
-- **012** écran du contrôle de placette (`afficheur`, appuyer) : moyens prêts ; fiche
-  complétée (tournée obligatoire, état par tournée).
+- **032** état par tournée, tournée obligatoire à la saisie (`dev`, appuyer), avant la 012.
+- **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032.
 - Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
 - **027** registre attendu du scénario Couchey (`testeur`, appuyer).
 - **028** registre attendu et sabotage en CI (`dev`, appuyer), après 026 et 027.
