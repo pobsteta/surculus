@@ -45,7 +45,7 @@ _En attente sous le plafond humain (3 PR en revue)._
   fiches 026 à 028, kanban. À fusionner **avant** les #40 et #41, dont les cas citent le
   journal du 2026-10-21.
 
-## En revue (Pascal)
+**En revue chez Pascal :**
 
 - **022** critère (a) mesuré en CI, deux échecs montrés (PR #39) — relecteur : prêt.
 - **024** cas de la sauvegarde `.sursync` (PR #40) — relecteur : prêt.
