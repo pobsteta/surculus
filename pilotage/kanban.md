@@ -56,8 +56,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 **Cycle 6, lancé le 2026-10-21 :**
 
 - **032** état par tournée, tournée obligatoire à la saisie (`dev`, appuyer), avant la 012 ;
-  plan demandé.
-- **027** registre attendu du scénario Couchey (`testeur`, appuyer) ; plan demandé.
+  relecteur : prête ; réserves levées (4d124c9 : spec § 5, test de migration sur
+  `refus_journal`), PR ouverte après la fusion de cette PR de pilotage.
+- **027** registre attendu du scénario Couchey (`testeur`, appuyer) ; en revue, PR #55.
 
 **Attendent le plafond :**
 
