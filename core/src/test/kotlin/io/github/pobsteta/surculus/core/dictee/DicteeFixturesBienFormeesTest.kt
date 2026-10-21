@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
  */
 class DicteeFixturesBienFormeesTest {
 
-    private val familles = listOf("phrases", "hauteur", "refus", "contexte", "vocabulaire", "modele")
+    private val familles = listOf("phrases", "hauteur", "refus", "contexte", "normalisation", "vocabulaire", "modele")
     private val tous = familles.flatMap { f -> DicteeFixtures.cas(f).map { f to it } }
 
     @Test
@@ -34,7 +34,7 @@ class DicteeFixturesBienFormeesTest {
     fun `tout code produit par une commande appartient aux referentiels`() {
         val etats = Referentiels.etats + "non_observe" // non_observe : docs/spec.md § 5
         val types = setOf("etat", "cause", "detail", "hauteur", "suivant", "regarni", "vide_debut", "vide_fin", "annule")
-        val commandes = listOf("phrases", "hauteur", "contexte").flatMap { DicteeFixtures.cas(it) }
+        val commandes = listOf("phrases", "hauteur", "contexte", "normalisation").flatMap { DicteeFixtures.cas(it) }
             .filter { it.attendu.get("accepte").asBoolean }.map { it.id to it.attendu.getAsJsonObject("commande") }
         assertTrue(commandes.isNotEmpty())
         for ((id, cmd) in commandes) {
@@ -52,8 +52,8 @@ class DicteeFixturesBienFormeesTest {
     fun `chaque mot de la grammaire de la spec a son cas, et une cause par mot dicte`() {
         val phrases = DicteeFixtures.cas("phrases").map { it.entree.get("phrase").asString }.toSet()
         val spec = setOf(
-            "sain", "atteint", "mort", "absent", "non observé", "insectes", "champignon", "animaux", "abiotique",
-            "indéterminé", "abrouti", "hauteur quarante-cinq", "suivant", "regarni", "vide", "fin du vide", "annule",
+            "sain", "atteint", "mort", "absent", "non observé", "insectes", "champignon", "animaux", "climat",
+            "indéterminé", "mangé", "hauteur quarante-cinq", "suivant", "remplace", "vide", "fin du vide", "annule",
         )
         assertEquals(spec, phrases) // docs/spec.md § 4.3 : 17 phrases
     }
@@ -96,15 +96,55 @@ class DicteeFixturesBienFormeesTest {
     }
 
     @Test
-    fun `trois mots de la grammaire sont absents du modele et signales, jamais contournes`() {
+    fun `chaque mot de la grammaire est dans le vocabulaire du modele, aucune absence consignee`() {
         val v = DicteeFixtures.vocabulaire.toHashSet()
-        val mots = DicteeFixtures.cas("phrases").flatMap { it.entree.get("phrase").asString.split(' ') } +
-            DicteeFixtures.cas("hauteur").filter { it.attendu.get("accepte").asBoolean }
-                .flatMap { it.entree.get("phrase").asString.split(' ') }
-        val absents = mots.filter { it !in v }.toSet()
-        assertEquals(setOf("abiotique", "abrouti", "regarni"), absents)
-        val declares = DicteeFixtures.famille("vocabulaire").json.getAsJsonArray("mots_absents_du_modele").map { it.asString }.toSet()
-        assertEquals(declares, absents)
+        val mots = (DicteeFixtures.cas("phrases") + DicteeFixtures.cas("hauteur").filter { it.attendu.get("accepte").asBoolean })
+            .flatMap { it.entree.get("phrase").asString.split(' ') }.toSet()
+        assertTrue(mots.isNotEmpty())
+        assertEquals(emptySet<String>(), mots.filter { it !in v }.toSet(), "mots de la grammaire absents du modèle")
+        val declares = DicteeFixtures.famille("vocabulaire").json.getAsJsonArray("mots_absents_du_modele")
+        assertEquals(0, declares.size(), "plus aucune absence à consigner (décision n° 5)")
+    }
+
+    @Test
+    fun `les trois mots remplaces sont dans le modele et les anciens n'y sont pas`() {
+        val v = DicteeFixtures.vocabulaire.toHashSet()
+        listOf("climat", "mangé", "remplace").forEach { assertTrue(it in v, it) }
+        listOf("abiotique", "abrouti", "regarni").forEach { assertTrue(it !in v, it) }
+        val phrases = DicteeFixtures.cas("phrases").map { it.entree.get("phrase").asString }
+        listOf("abiotique", "abrouti", "regarni").forEach { assertTrue(it !in phrases, "$it ne doit plus être une phrase") }
+        val refus = DicteeFixtures.cas("refus").map { it.entree.get("phrase").asString }
+        listOf("abiotique", "abrouti", "regarni").forEach { assertTrue(it in refus, "$it doit être refusé") }
+    }
+
+    @Test
+    fun `les nombres existent sous les deux formes, traits d'union et espaces`() {
+        val acceptes = DicteeFixtures.cas("hauteur").filter { it.attendu.get("accepte").asBoolean }
+            .associate { it.entree.get("phrase").asString to it.attendu.getAsJsonObject("commande").get("hauteur_cm").asInt }
+        assertEquals(45, acceptes["hauteur quarante-cinq"])
+        assertEquals(45, acceptes["hauteur quarante cinq"])
+        assertEquals(99, acceptes["hauteur quatre-vingt-dix-neuf"])
+        assertEquals(99, acceptes["hauteur quatre vingt dix neuf"])
+        val v = DicteeFixtures.vocabulaire.toHashSet()
+        acceptes.keys.flatMap { it.split(' ') }.forEach { assertTrue(it in v, "« $it » absent du modèle") }
+    }
+
+    @Test
+    fun `l'abroutissement est accepte sur sain, atteint et mort, refuse sur absent, non observe et sans etat`() {
+        val m = DicteeFixtures.cas("contexte").filter { it.entree.get("phrase").asString == "mangé" }
+            .associate { (it.entree.get("etat_courant").let { e -> if (e.isJsonNull) null else e.asString }) to it.attendu.get("accepte").asBoolean }
+        assertEquals(mapOf("sain" to true, "atteint" to true, "mort" to true, "absent" to false, "non_observe" to false, null to false), m)
+        assertTrue(DicteeFixtures.cas("contexte").none { it.entree.get("phrase").asString == "abrouti" })
+    }
+
+    @Test
+    fun `les espaces parasites sont normalises, sauf phrase d'espaces seuls`() {
+        val n = DicteeFixtures.cas("normalisation")
+        assertTrue(n.any { it.entree.get("phrase").asString.startsWith(" ") && it.attendu.get("accepte").asBoolean })
+        assertTrue(n.any { it.entree.get("phrase").asString.endsWith(" ") && it.attendu.get("accepte").asBoolean })
+        assertTrue(n.any { it.entree.get("phrase").asString.contains("  ") && it.attendu.get("accepte").asBoolean })
+        val refus = DicteeFixtures.cas("refus").first { it.entree.get("phrase").asString == "   " }
+        assertTrue(!refus.attendu.get("accepte").asBoolean)
     }
 
     @Test

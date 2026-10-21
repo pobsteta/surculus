@@ -118,13 +118,16 @@ du 2026-10-21 (`pilotage/journal.md`), **sans lire de code**. Identifiants `DI-N
 | Fichier | Contenu |
 |---|---|
 | `phrases.json` | les 17 phrases de la grammaire et leur commande (types : `etat`, `cause`, `detail`, `hauteur`, `suivant`, `regarni`, `vide_debut`, `vide_fin`, `annule`) |
-| `hauteur.json` | « hauteur » de 1 à 400 cm, bornes et refus (0, 401, sans nombre, deux nombres) |
-| `refus.json` | phrases hors grammaire, deux commandes dans une phrase, casse, ponctuation, accents, détails hors grammaire |
-| `contexte.json` | la commande face à l'état courant du plant (« abrouti » sur sain ou atteint seulement, cause refusée sur sain et absent...) |
+| `hauteur.json` | « hauteur » de 1 à 400 cm, formes à traits d'union et à espaces (« quarante-cinq », « quarante cinq »), bornes et refus (0, 401, sans nombre, deux nombres) |
+| `refus.json` | phrases hors grammaire (dont les anciens mots « abiotique », « abrouti », « regarni »), deux commandes dans une phrase, casse, ponctuation, accents, détails hors grammaire |
+| `contexte.json` | la commande face à l'état courant du plant (« mangé » sur sain, atteint ou mort, refusé sur absent, non observé ou sans état ; cause refusée sur sain et absent...) |
+| `normalisation.json` | espaces en tête, en queue ou doublés : normalisés avant l'analyse ; espaces seuls : refusés (`refus.json`) |
 | `vocabulaire.json` + `vocabulaire-vosk-model-small-fr-0.22.txt` | liste des 135 774 mots du modèle (un par ligne) et cas « mot dans le vocabulaire » |
 | `modele.json` | nom du modèle et empreinte SHA-256 vérifiés (contenu d'essai de quelques octets, jamais le modèle) |
 
 * Le modèle `vosk-model-small-fr-0.22` n'a **pas** de `graph/words.txt` : la table des mots est incorporée à `graph/Gr.fst` (table de symboles OpenFst). La liste versionnée en est extraite ; le modèle lui-même n'est pas versionné.
-* Correspondance mot dicté vers `cause_groupe` (proposée par le `testeur`, à confirmer par Pascal) : insectes = entomologique, champignon = pathologique, animaux = animaux, abiotique et indéterminé = abiotique_complexe_indetermine.
-* **Trois mots de la grammaire sont absents du modèle** : « abiotique », « abrouti », « regarni » (`mots_absents_du_modele` dans `vocabulaire.json`). Le test de la 013 « chaque mot dans le vocabulaire » ne peut passer qu'après décision de Pascal.
+* Correspondance mot dicté vers `cause_groupe` (proposée par le `testeur`, à confirmer par Pascal) : insectes = entomologique, champignon = pathologique, animaux = animaux, climat et indéterminé = abiotique_complexe_indetermine (confirmé par l'orchestrateur le 2026-10-21).
+* **Mots remplacés** (décision n° 5 de Pascal, 2026-10-21) : « abiotique » devient « climat », « abrouti » « mangé », « regarni » « remplace », les anciens étant absents du modèle. Chaque mot de la grammaire est maintenant dans le vocabulaire : plus aucune absence consignée.
+* « mangé » porte le détail « abroutissement » sur un plant sain, atteint ou mort, refusé sur absent, non observé ou sans état (spec § 6, décision n° 4 corrigée).
+* Le SHA-256 de l'archive n'est pas inscrit dans `docs/dependances.md` par la 025 : la 013 le recoupera sur un second téléchargement (le test désactivé `l'empreinte du modèle est inscrite` l'attend).
 * Tests : `core/src/test/kotlin/.../core/dictee/`. `DicteeFixturesBienFormeesTest` est actif (cas bien formés, codes dans les référentiels, vocabulaire). `DicteeRejeuTest` est `@Disabled("en attente de la mission 013")` : la 013 branche `ImplementationDictee.dictee()` (port `Dictee`) et retire `@Disabled`, sans modifier les cas.

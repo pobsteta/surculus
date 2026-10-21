@@ -39,6 +39,9 @@ class DicteeRejeuTest {
     fun `phrases hors grammaire refusees`() = rejouer("refus") { d, c -> d.analyser(c.entree.get("phrase").asString) }
 
     @TestFactory
+    fun `espaces parasites normalises`() = rejouer("normalisation") { d, c -> d.analyser(c.entree.get("phrase").asString) }
+
+    @TestFactory
     fun `commande confrontee a l'etat courant du plant`() = rejouer("contexte") { d, c ->
         val e = c.entree.get("etat_courant")
         d.appliquer(c.entree.get("phrase").asString, if (e == null || e.isJsonNull) null else e.asString)
@@ -67,7 +70,7 @@ class DicteeRejeuTest {
             DicteeFixtures.cas("hauteur").flatMap { it.entree.get("phrase").asString.split(' ') }.toSet()
         val en_trop = ImplementationDictee.dictee().motsDeLaGrammaire() - permis
         // Les mots de nombre non listés dans les cas (par exemple « trente ») sont admis ; aucun mot de commande en plus.
-        val interdits = setOf("frottis", "hylobe", "gel", "sécheresse", "concurrence", "abroutissement", "entreprise", "hors", "malade", "vivant")
+        val interdits = setOf("frottis", "hylobe", "gel", "sécheresse", "concurrence", "abroutissement", "entreprise", "hors", "malade", "vivant", "abiotique", "abrouti", "regarni")
         assertTrue(en_trop.none { it in interdits }, "mots hors grammaire : ${en_trop.filter { it in interdits }}")
     }
 

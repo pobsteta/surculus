@@ -3,7 +3,7 @@
   "regle": "« hauteur » accepte un nombre entier de 1 à 400 cm, dit en lettres ; tout le reste est refusé",
   "format": "voir fixtures/README.md (section Dictée)",
   "decision": "pilotage/journal.md, 2026-10-21 : décision n° 1 de Pascal (1 à 400 cm ; 0, plus de 400, « hauteur » seul et deux nombres refusés)",
-  "orthographe": "nombres de 1 à 99 en un mot lié par des traits d'union (« quarante-cinq », « vingt-et-un », « soixante-et-onze »), comme la spec écrit « quarante-cinq » et comme le vocabulaire du modèle les contient ; centaines en mots séparés (« cent vingt », « deux cents », « quatre cents »). Formes à confirmer par Pascal : voir le rapport du testeur.",
+  "orthographe": "les deux formes sont acceptées (choix de l'orchestrateur, fiche 025, reprise du 2026-10-21) : à traits d'union (« quarante-cinq », « vingt-et-un », « soixante-et-onze ») et à espaces (« quarante cinq », « vingt et un », « soixante et onze »), puisque Vosk peut rendre l'une ou l'autre ; centaines en mots séparés (« cent vingt », « deux cents », « quatre cents »).",
   "cas": [
     {
       "id": "DI-20",
@@ -367,6 +367,137 @@
         "accepte": false
       },
       "source": "docs/spec.md § 4.3 (grammaire fermée) ; pilotage/journal.md, 2026-10-21 (décision n° 1 : hauteur de 1 à 400 cm)"
+    },
+    {
+      "id": "DI-36",
+      "description": "« hauteur quarante cinq » = 45 cm (forme à espaces).",
+      "entree": {
+        "phrase": "hauteur quarante cinq"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 45
+        }
+      },
+      "source": "docs/spec.md § 4.3 (nombre en lettres) ; fiche 025, reprise du 2026-10-21 (formes à traits d'union et à espaces acceptées) ; décision n° 1 (1 à 400 cm)"
+    },
+    {
+      "id": "DI-37",
+      "description": "« hauteur vingt et un » = 21 cm (forme à espaces).",
+      "entree": {
+        "phrase": "hauteur vingt et un"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 21
+        }
+      },
+      "source": "docs/spec.md § 4.3 (nombre en lettres) ; fiche 025, reprise du 2026-10-21 (formes à traits d'union et à espaces acceptées) ; décision n° 1 (1 à 400 cm)"
+    },
+    {
+      "id": "DI-38",
+      "description": "« hauteur soixante et onze » = 71 cm (forme à espaces).",
+      "entree": {
+        "phrase": "hauteur soixante et onze"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 71
+        }
+      },
+      "source": "docs/spec.md § 4.3 (nombre en lettres) ; fiche 025, reprise du 2026-10-21 (formes à traits d'union et à espaces acceptées) ; décision n° 1 (1 à 400 cm)"
+    },
+    {
+      "id": "DI-39",
+      "description": "« hauteur soixante dix » = 70 cm (forme à espaces).",
+      "entree": {
+        "phrase": "hauteur soixante dix"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 70
+        }
+      },
+      "source": "docs/spec.md § 4.3 (nombre en lettres) ; fiche 025, reprise du 2026-10-21 (formes à traits d'union et à espaces acceptées) ; décision n° 1 (1 à 400 cm)"
+    },
+    {
+      "id": "DI-51",
+      "description": "« hauteur quatre vingts » = 80 cm (forme à espaces).",
+      "entree": {
+        "phrase": "hauteur quatre vingts"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 80
+        }
+      },
+      "source": "docs/spec.md § 4.3 (nombre en lettres) ; fiche 025, reprise du 2026-10-21 (formes à traits d'union et à espaces acceptées) ; décision n° 1 (1 à 400 cm)"
+    },
+    {
+      "id": "DI-52",
+      "description": "« hauteur quatre vingt dix neuf » = 99 cm (forme à espaces).",
+      "entree": {
+        "phrase": "hauteur quatre vingt dix neuf"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 99
+        }
+      },
+      "source": "docs/spec.md § 4.3 (nombre en lettres) ; fiche 025, reprise du 2026-10-21 (formes à traits d'union et à espaces acceptées) ; décision n° 1 (1 à 400 cm)"
+    },
+    {
+      "id": "DI-53",
+      "description": "« hauteur trois cent quatre vingt dix neuf » = 399 cm (forme à espaces).",
+      "entree": {
+        "phrase": "hauteur trois cent quatre vingt dix neuf"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 399
+        }
+      },
+      "source": "docs/spec.md § 4.3 (nombre en lettres) ; fiche 025, reprise du 2026-10-21 (formes à traits d'union et à espaces acceptées) ; décision n° 1 (1 à 400 cm)"
+    },
+    {
+      "id": "DI-54",
+      "description": "« hauteur quatre vingt un » = 81 cm (forme à espaces).",
+      "entree": {
+        "phrase": "hauteur quatre vingt un"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 81
+        }
+      },
+      "source": "docs/spec.md § 4.3 (nombre en lettres) ; fiche 025, reprise du 2026-10-21 (formes à traits d'union et à espaces acceptées) ; décision n° 1 (1 à 400 cm)"
+    },
+    {
+      "id": "DI-57",
+      "description": "Refus : zéro suivi d'un nombre : deux nombres.",
+      "entree": {
+        "phrase": "hauteur zéro cinq"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 ; décisions n° 1 et 2 de Pascal (pilotage/journal.md, 2026-10-21)"
     }
   ]
 }

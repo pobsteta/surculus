@@ -2,7 +2,7 @@
   "fichier": "refus.json",
   "regle": "Toute phrase hors grammaire est refusée entière ; jamais de commande approchée",
   "format": "voir fixtures/README.md (section Dictée)",
-  "note": "Résultat attendu : {\"accepte\": false}. Le libellé du refus n'est pas fixé. Espaces en tête, en queue ou doublés : non couverts, la spec et les décisions ne les nomment pas (voir le rapport du testeur).",
+  "note": "Résultat attendu : {\"accepte\": false}. Le libellé du refus n'est pas fixé. Espaces en tête, en queue ou doublés : normalisés avant l'analyse (voir normalisation.json) ; une phrase qui ne contient que des espaces reste refusée (DI-62).",
   "cas": [
     {
       "id": "DI-60",
@@ -388,6 +388,116 @@
         "accepte": false
       },
       "source": "docs/referentiels/etats-plants.yaml (états) ; docs/spec.md § 6"
+    },
+    {
+      "id": "DI-95",
+      "description": "Refus : ancien mot de la grammaire, remplacé par « climat ».",
+      "entree": {
+        "phrase": "abiotique"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
+    },
+    {
+      "id": "DI-96",
+      "description": "Refus : ancien mot de la grammaire, remplacé par « mangé ».",
+      "entree": {
+        "phrase": "abrouti"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
+    },
+    {
+      "id": "DI-97",
+      "description": "Refus : ancien mot de la grammaire, remplacé par « remplace ».",
+      "entree": {
+        "phrase": "regarni"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
+    },
+    {
+      "id": "DI-98",
+      "description": "Refus : pluriel de « climat ».",
+      "entree": {
+        "phrase": "climats"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
+    },
+    {
+      "id": "DI-99",
+      "description": "Refus : accent manquant : « mange » n'est pas « mangé ».",
+      "entree": {
+        "phrase": "mange"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
+    },
+    {
+      "id": "DI-160",
+      "description": "Refus : accord différent de « mangé ».",
+      "entree": {
+        "phrase": "mangée"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
+    },
+    {
+      "id": "DI-161",
+      "description": "Refus : participe : « remplace » seul est dans la grammaire.",
+      "entree": {
+        "phrase": "remplacé"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
+    },
+    {
+      "id": "DI-162",
+      "description": "Refus : infinitif : « remplace » seul est dans la grammaire.",
+      "entree": {
+        "phrase": "remplacer"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
+    },
+    {
+      "id": "DI-163",
+      "description": "Refus : deux commandes : cause et détail.",
+      "entree": {
+        "phrase": "climat mangé"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
+    },
+    {
+      "id": "DI-164",
+      "description": "Refus : deux commandes : remplace et suivant.",
+      "entree": {
+        "phrase": "remplace suivant"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (grammaire amendée) ; pilotage/journal.md, 2026-10-21, décision n° 5"
     }
   ]
 }

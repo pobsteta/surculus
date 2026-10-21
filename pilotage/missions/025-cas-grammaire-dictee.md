@@ -8,7 +8,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Écrire, à partir de la spec (§ 4.3, grammaire fermée) et de l'ADR 0004, sans lire de code, les cas d'acceptation sourcés de l'analyse des phrases dictées (chaque phrase de la grammaire et la commande attendue, nombres de « hauteur » aux bornes, phrases hors grammaire refusées, chaque mot présent dans le vocabulaire de `vosk-model-small-fr-0.22`, modèle à mauvaise empreinte SHA-256 refusé), pour que la mission 013 ait ses tests avant son code.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Reprise du 2026-10-21 (`testeur`) : aligner les cas d'acceptation de la dictée sur les décisions de Pascal (« climat », « mangé », « remplace » à la place des trois mots absents du modèle, abroutissement accepté sur un mort, nombres à traits d'union ou à espaces, espaces parasites normalisés), pour que la 013 trouve des tests justes et un vocabulaire sans aucune absence.
 
 ## Les trois questions (règle de staffing)
 

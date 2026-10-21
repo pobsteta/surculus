@@ -3,7 +3,7 @@
   "regle": "Chaque phrase de la grammaire fermée donne une commande, et une seule",
   "format": "voir fixtures/README.md (section Dictée)",
   "commandes": "types : etat (etat), cause (cause_groupe), detail (cause_detail), hauteur (hauteur_cm), suivant, regarni, vide_debut, vide_fin, annule",
-  "note": "Cas rejoués par DicteeRejeuTest. « vide » et « fin du vide » sont deux commandes distinctes. Les mots des phrases sont aussi contrôlés contre le vocabulaire du modèle (vocabulaire.json).",
+  "note": "Cas rejoués par DicteeRejeuTest. « vide » et « fin du vide » sont deux commandes distinctes. Les mots des phrases sont aussi contrôlés contre le vocabulaire du modèle (vocabulaire.json). Mots de la grammaire amendée : climat, mangé, remplace (décision de Pascal du 2026-10-21).",
   "cas": [
     {
       "id": "DI-01",
@@ -127,9 +127,9 @@
     },
     {
       "id": "DI-09",
-      "description": "Cause « abiotique ».",
+      "description": "Cause « climat » (remplace « abiotique »).",
       "entree": {
-        "phrase": "abiotique"
+        "phrase": "climat"
       },
       "attendu": {
         "accepte": true,
@@ -138,7 +138,7 @@
           "cause_groupe": "abiotique_complexe_indetermine"
         }
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+      "source": "docs/spec.md § 4.3 (grammaire amendée, mission 025) ; pilotage/journal.md, 2026-10-21 : décision n° 5 de Pascal (mots remplacés) ; docs/referentiels/etats-plants.yaml (climat et indéterminé : abiotique_complexe_indetermine)"
     },
     {
       "id": "DI-10",
@@ -153,13 +153,13 @@
           "cause_groupe": "abiotique_complexe_indetermine"
         }
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal ; décision n° 5 : « climat » et « indéterminé » mènent au même groupe"
     },
     {
       "id": "DI-11",
-      "description": "Détail « abrouti » : cause_detail abroutissement (seule constante reconnue).",
+      "description": "Détail « mangé » (remplace « abrouti ») : cause_detail abroutissement (seule constante reconnue).",
       "entree": {
-        "phrase": "abrouti"
+        "phrase": "mangé"
       },
       "attendu": {
         "accepte": true,
@@ -168,7 +168,7 @@
           "cause_detail": "abroutissement"
         }
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 6 (cause_detail, seule constante « abroutissement ») ; pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » seul est une commande valide)"
+      "source": "docs/spec.md § 4.3 (grammaire amendée, mission 025) ; pilotage/journal.md, 2026-10-21 : décision n° 5 de Pascal (mots remplacés) ; docs/spec.md § 6 (seule constante reconnue : abroutissement)"
     },
     {
       "id": "DI-12",
@@ -201,9 +201,9 @@
     },
     {
       "id": "DI-14",
-      "description": "« regarni ».",
+      "description": "« remplace » (remplace « regarni »).",
       "entree": {
-        "phrase": "regarni"
+        "phrase": "remplace"
       },
       "attendu": {
         "accepte": true,
@@ -211,7 +211,7 @@
           "type": "regarni"
         }
       },
-      "source": "docs/spec.md § 4.3 (grammaire fermée)"
+      "source": "docs/spec.md § 4.3 (grammaire amendée, mission 025) ; pilotage/journal.md, 2026-10-21 : décision n° 5 de Pascal (mots remplacés)"
     },
     {
       "id": "DI-15",

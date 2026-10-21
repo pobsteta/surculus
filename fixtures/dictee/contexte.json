@@ -3,14 +3,14 @@
   "regle": "La commande dictée est confrontée à l'état courant du plant : certaines combinaisons sont refusées par l'application",
   "format": "voir fixtures/README.md (section Dictée)",
   "entree": "etat_courant : sain, atteint, mort, absent, non_observe ou null (aucun état saisi) ; phrase : texte de Vosk",
-  "note": "Ces cas pilotent l'analyseur ET la règle d'application (mission 013 avec 012). La phrase refusée ici est une phrase de la grammaire, refusée pour le contexte seulement.",
+  "note": "Ces cas pilotent l'analyseur ET la règle d'application (mission 013 avec 012). La phrase refusée ici est une phrase de la grammaire, refusée pour le contexte seulement. « mangé » : détail « abroutissement » accepté sur sain, atteint ou mort ; refusé sur absent, non observé ou sans état (spec § 6, décision n° 4 corrigée).",
   "cas": [
     {
       "id": "DI-100",
-      "description": "« abrouti » sur un plant sain.",
+      "description": "« mangé » sur un plant sain.",
       "entree": {
         "etat_courant": "sain",
-        "phrase": "abrouti"
+        "phrase": "mangé"
       },
       "attendu": {
         "accepte": true,
@@ -19,14 +19,14 @@
           "cause_detail": "abroutissement"
         }
       },
-      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent)"
+      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-101",
-      "description": "« abrouti » sur un plant atteint.",
+      "description": "« mangé » sur un plant atteint.",
       "entree": {
         "etat_courant": "atteint",
-        "phrase": "abrouti"
+        "phrase": "mangé"
       },
       "attendu": {
         "accepte": true,
@@ -35,55 +35,59 @@
           "cause_detail": "abroutissement"
         }
       },
-      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent)"
+      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-102",
-      "description": "« abrouti » sur un plant mort : refusé.",
+      "description": "« mangé » sur un plant mort : accepté (corrigé le 2026-10-21 ; spec § 6).",
       "entree": {
         "etat_courant": "mort",
-        "phrase": "abrouti"
+        "phrase": "mangé"
       },
       "attendu": {
-        "accepte": false
+        "accepte": true,
+        "commande": {
+          "type": "detail",
+          "cause_detail": "abroutissement"
+        }
       },
-      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent) ; NB : docs/spec.md § 6 permet le détail sur un mort, à amender"
+      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-103",
-      "description": "« abrouti » sur un plant absent : refusé.",
+      "description": "« mangé » sur un plant absent : refusé.",
       "entree": {
         "etat_courant": "absent",
-        "phrase": "abrouti"
+        "phrase": "mangé"
       },
       "attendu": {
         "accepte": false
       },
-      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent) ; docs/spec.md § 6 (détail refusé sur un absent)"
+      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-104",
-      "description": "« abrouti » sur un plant non observé : refusé.",
+      "description": "« mangé » sur un plant non observé : refusé.",
       "entree": {
         "etat_courant": "non_observe",
-        "phrase": "abrouti"
+        "phrase": "mangé"
       },
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 6 (un plant non observé ne porte aucune mesure)"
+      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-105",
-      "description": "« abrouti » sans état saisi pour le plant courant : refusé.",
+      "description": "« mangé » sans état saisi pour le plant courant : refusé.",
       "entree": {
         "etat_courant": null,
-        "phrase": "abrouti"
+        "phrase": "mangé"
       },
       "attendu": {
         "accepte": false
       },
-      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent) ; le plant courant n'est ni sain ni atteint"
+      "source": "docs/spec.md § 6 (détail refusé sur un plant absent, permis seul sur un atteint ou un mort) ; docs/spec.md (paragraphe des états : un plant mort d'abroutissement n'est pas compté dans nb_abroutis) ; pilotage/journal.md, 2026-10-21, décision n° 4 corrigée"
     },
     {
       "id": "DI-110",
@@ -224,6 +228,50 @@
         }
       },
       "source": "docs/spec.md § 4.3 (grammaire) ; docs/spec.md § 6 (un seul état par plant dans un contrôle)"
+    },
+    {
+      "id": "DI-106",
+      "description": "« climat » sur un plant mort : cause acceptée, groupe abiotique_complexe_indetermine.",
+      "entree": {
+        "etat_courant": "mort",
+        "phrase": "climat"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "cause",
+          "cause_groupe": "abiotique_complexe_indetermine"
+        }
+      },
+      "source": "docs/spec.md § 4.3 et § 6 (cause facultative sur atteint ou mort) ; docs/referentiels/etats-plants.yaml ; décision n° 5"
+    },
+    {
+      "id": "DI-107",
+      "description": "« climat » sur un plant sain : refusée (cause réservée aux atteints et morts).",
+      "entree": {
+        "etat_courant": "sain",
+        "phrase": "climat"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (cause facultative pour un plant atteint ou mort) ; décision n° 5"
+    },
+    {
+      "id": "DI-108",
+      "description": "« remplace » est une commande de navigation vers le regarni : acceptée quel que soit l'état courant (aucun état).",
+      "entree": {
+        "etat_courant": null,
+        "phrase": "remplace"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "regarni"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire) ; décision n° 5 ; hypothèse du testeur : « remplace » ne dépend pas de l'état courant",
+      "hypothese": true
     }
   ]
 }
