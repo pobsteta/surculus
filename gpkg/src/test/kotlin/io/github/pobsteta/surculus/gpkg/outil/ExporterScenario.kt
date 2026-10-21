@@ -112,7 +112,7 @@ object ExporterScenario {
         return JsonObject().apply {
             addProperty("exporte_le", bilan.exporteLe.toString())
             addProperty("placettes", bilan.placettesInstallees)
-            addProperty("controles", bilan.controles + 1) // TEMPORAIRE 026 : sabotage F1
+            addProperty("controles", bilan.controles)
             addProperty("travaux", saisies.travaux.size)
             addProperty("plants", bilan.plants)
             addProperty("etats_plants", bilan.etats)
