@@ -32,6 +32,7 @@ import io.github.pobsteta.surculus.core.carte.Tuile
 import io.github.pobsteta.surculus.core.carte.ZoneTuiles
 import io.github.pobsteta.surculus.core.geo.EmpriseDegres
 import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
+import io.github.pobsteta.surculus.gpkg.OrthoTuilee
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -112,13 +113,14 @@ data class OrthoTournee(
 )
 
 /**
- * `ortho.mbtiles` ou `ortho.gpkg` du dossier de la tournée, **lu en priorité** (ADR 0009) : un seul fichier tuilé en
- * EPSG:3857, que sommieR livrera à la place de `ortho.tif`. Un GeoPackage tuilé dans un autre repère est ignoré.
+ * `ortho.mbtiles` ou `ortho.gpkg` du dossier de la tournée, **lu en priorité** (ADR 0009). Le prédicat d'exploitabilité
+ * est celui de `:gpkg` ([OrthoTuilee]), le même pour l'état, la planification et la carte : un fichier illisible ou
+ * tuilé hors EPSG:3857 n'est pas une ortho. SQLite d'Android ne sert qu'à lire les tuiles.
  */
-class FichierOrtho private constructor(val fichier: File, private val bd: SQLiteDatabase, private val table: String, private val tms: Boolean) {
+class FichierOrtho private constructor(val fichier: File, private val bd: SQLiteDatabase, private val description: OrthoTuilee.Description) {
     fun tuile(t: Tuile): ByteArray? {
-        val ligne = if (tms) (1 shl t.z) - 1 - t.y else t.y
-        bd.rawQuery("SELECT tile_data FROM \"$table\" WHERE zoom_level=? AND tile_column=? AND tile_row=?", arrayOf("${t.z}", "${t.x}", "$ligne")).use {
+        val ligne = if (description.tms) (1 shl t.z) - 1 - t.y else t.y
+        bd.rawQuery("SELECT tile_data FROM \"${description.table}\" WHERE zoom_level=? AND tile_column=? AND tile_row=?", arrayOf("${t.z}", "${t.x}", "$ligne")).use {
             return if (it.moveToFirst()) it.getBlob(0) else null
         }
     }
@@ -126,30 +128,15 @@ class FichierOrtho private constructor(val fichier: File, private val bd: SQLite
     fun fermer() = bd.close()
 
     companion object {
-        val NOMS = listOf("ortho.mbtiles", "ortho.gpkg")
-
-        fun nomPresent(dossierTournee: File): String? = NOMS.firstOrNull { File(dossierTournee, it).isFile }
+        /** Nom du fichier tuilé exploitable du dossier, `null` sinon (rien n'est ouvert côté Android). */
+        fun nomPresent(dossierTournee: File): String? = OrthoTuilee.dans(dossierTournee.toPath())?.nom
 
         /** `null` si aucun fichier exploitable. */
         fun ouvrir(dossierTournee: File): FichierOrtho? {
-            for (nom in NOMS) {
-                val f = File(dossierTournee, nom)
-                if (!f.isFile) continue
-                val bd = runCatching { SQLiteDatabase.openDatabase(f.path, null, SQLiteDatabase.OPEN_READONLY) }.getOrNull() ?: continue
-                val ouvert = runCatching { depuis(f, bd) }.getOrNull()
-                if (ouvert != null) return ouvert
-                bd.close()
-            }
-            return null
-        }
-
-        private fun depuis(f: File, bd: SQLiteDatabase): FichierOrtho? {
-            if (f.name.endsWith(".mbtiles")) return FichierOrtho(f, bd, "tiles", tms = true)
-            // GeoPackage tuilé : EPSG:3857 exigé, rangées en XYZ (pas de renversement).
-            val table = bd.rawQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'tiles' LIMIT 1", null).use { if (it.moveToFirst()) it.getString(0) else null }
-                ?: return null
-            val srs = bd.rawQuery("SELECT srs_id FROM gpkg_tile_matrix_set WHERE table_name = ?", arrayOf(table)).use { if (it.moveToFirst()) it.getInt(0) else null }
-            return if (srs == 3857) FichierOrtho(f, bd, table, tms = false) else null
+            val d = OrthoTuilee.dans(dossierTournee.toPath()) ?: return null
+            val f = File(dossierTournee, d.nom)
+            val bd = runCatching { SQLiteDatabase.openDatabase(f.path, null, SQLiteDatabase.OPEN_READONLY) }.getOrNull() ?: return null
+            return FichierOrtho(f, bd, d)
         }
     }
 }
@@ -266,6 +253,8 @@ class TelechargementTuiles(ctx: Context, params: WorkerParameters) : CoroutineWo
             faites++
             if (faites % 20 == 0L || faites == total) setProgress(workDataOf(CLE_FAITES to faites, CLE_TOTAL to total))
         }
+        // Une tuile en échec (réseau, serveur) : pas de marque de fin, l'ortho reste « partielle » et la tâche reprend.
+        if (!EtatOrtho.marqueAEcrire(echecs)) return@withContext Result.retry()
         TuilesHorsLigne.marqueFin(racine).writeText(LocalDate.now().toString())
         Result.success(workDataOf(CLE_FAITES to faites, CLE_TOTAL to total))
     }

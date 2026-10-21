@@ -76,6 +76,15 @@ object ImportTournee {
         try {
             val tournee = trouverTournee(temporaire) ?: throw GpkgRefuse(RefusGpkg.PasUnGeoPackage("aucun $NOM_GPKG dans ce dossier"))
             val lue = LecteurTournee.lire(tournee.resolve(NOM_GPKG))
+            // Mêmes refus que l'ouverture de la carte : une tournée hors de France (axes inversés) n'est pas rangée.
+            LecteurTournee.lireCartographie(tournee.resolve(NOM_GPKG))
+            // Un zip à dossier racine peut porter l'ortho à côté de ce dossier : on la rapatrie dans la tournée.
+            if (tournee != temporaire) {
+                for (nom in OrthoTuilee.NOMS) {
+                    val voisine = temporaire.resolve(nom)
+                    if (Files.isRegularFile(voisine) && !Files.exists(tournee.resolve(nom))) Files.move(voisine, tournee.resolve(nom))
+                }
+            }
             val nom = nomUnique(racine, lue.projet?.foret ?: lue.projet?.nom ?: "tournee", maintenant)
             Files.createDirectories(racine)
             val cible = racine.resolve(nom)

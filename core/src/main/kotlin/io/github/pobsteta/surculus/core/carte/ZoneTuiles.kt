@@ -4,6 +4,11 @@
  *
  * Ce fichier est un logiciel libre : vous pouvez le redistribuer et/ou le modifier selon
  * les termes de la licence publique générale GNU (GPL), version 3 ou ultérieure (voir LICENSE).
+ *
+ * Origine : dépôt Groma (pobsteta/groma), fichier android/groma-core/src/main/kotlin/groma/core/ZoneTuiles.kt,
+ *           lu en l'état de la copie locale (2026-10-21). Reprise prévue par l'ADR 0009, avant l'extraction en bibliothèque commune.
+ * Modifications : paquet ; emprise en degrés de Surculus (`EmpriseDegres`) ; zone construite depuis une emprise Lambert-93,
+ *           refusée hors de France métropolitaine ou trop grande (`Resultat`) ; commentaires en français.
  */
 package io.github.pobsteta.surculus.core.carte
 

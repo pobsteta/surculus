@@ -19,14 +19,20 @@ sealed interface EtatOrtho {
         /**
          * [presentes] tuiles sur disque sur [attendues] ; [termine] vaut vrai quand le préchargement est allé au bout
          * (les tuiles hors couverture de l'IGN ne sont jamais écrites : sans ce drapeau, l'ortho resterait « partielle »).
-         * [attendues] à 0 ou moins veut dire « pas de zone » : absente.
+         * Une ortho sans aucune tuile est toujours absente. [attendues] à 0 ou moins veut dire « pas de zone » : absente.
          */
         fun depuis(presentes: Long, attendues: Long, termine: Boolean = false): EtatOrtho = when {
             attendues <= 0L -> Absente
+            presentes <= 0L -> Absente // jamais « complète » sans une seule tuile
             termine -> Complete
-            presentes <= 0L -> Absente
             presentes >= attendues -> Complete
             else -> Partielle(presentes, attendues)
         }
+
+        /**
+         * La marque de fin n'est écrite que si **aucune** tuile n'a échoué (réseau perdu, erreur du serveur) : un échec
+         * ignoré ferait passer une ortho trouée pour « complète ». Les tuiles hors couverture (404) ne sont pas des échecs.
+         */
+        fun marqueAEcrire(echecs: Int): Boolean = echecs == 0
     }
 }

@@ -59,5 +59,14 @@ class ZoneTuilesTest {
         // Préchargement allé au bout : complète même si des tuiles hors couverture manquent.
         assertEquals(EtatOrtho.Complete, EtatOrtho.depuis(480, 500, termine = true))
         assertEquals(EtatOrtho.Absente, EtatOrtho.depuis(0, 0, termine = true))
+        // Jamais « complète » sans une seule tuile, même avec la marque de fin.
+        assertEquals(EtatOrtho.Absente, EtatOrtho.depuis(0, 500, termine = true))
+    }
+
+    @Test
+    fun `la marque de fin n'est ecrite que sans aucun echec`() {
+        assertTrue(EtatOrtho.marqueAEcrire(0))
+        assertFalse(EtatOrtho.marqueAEcrire(1))
+        assertFalse(EtatOrtho.marqueAEcrire(19))
     }
 }

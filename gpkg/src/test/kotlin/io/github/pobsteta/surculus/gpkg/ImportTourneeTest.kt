@@ -109,4 +109,30 @@ class ImportTourneeTest {
         val nom = ImportTournee.nomUnique(dossier, "Forêt de Couchey (démo)/../x", maintenant)
         assertEquals("Foret-de-Couchey-demo-x-20261021-103000", nom)
     }
+
+    @Test
+    fun `une tournee hors de France est refusee a l'import, rien n'est range (placette en Somalie)`() {
+        val f = TourneeDeTest.modeleVide(dossier.resolve("src").also { Files.createDirectories(it) })
+        fun carre(x: Double, y: Double) = listOf(x to y, x + 400 to y, x + 400 to y + 400, x to y + 400, x to y).map { io.github.pobsteta.surculus.core.geo.PointLambert93(it.first, it.second) }
+        val o = TourneeDeTest.centre(0)
+        val inverse = Geometrie.MultiPolygone(listOf(Geometrie.Polygone(listOf(carre(o.yMetres, o.xMetres))))) // x et y permutés
+        Sqlite.ouvrir(f).use { cnx ->
+            cnx.prepareStatement("INSERT INTO ug (geom, numero) VALUES (?, '35')").use { it.setBytes(1, GeometrieGpkg.encoder(inverse, 2154)); it.executeUpdate() }
+        }
+        val tmp = dossier.resolve("tmp").also { Files.createDirectories(it) }
+        Files.copy(f, tmp.resolve("travaux.gpkg"))
+        val refus = assertFailsWith<GpkgRefuse> { ImportTournee.finaliser(tmp, dossier.resolve("tournees"), maintenant) }.refus
+        assertEquals("hors_france", refus.motif)
+        assertFalse(Files.exists(tmp), "le temporaire est nettoyé")
+        assertFalse(Files.exists(dossier.resolve("tournees")), "rien n'est rangé")
+    }
+
+    @Test
+    fun `une ortho posee a la racine du zip rejoint la tournee`() {
+        val octets = zipDe("tournee/travaux.gpkg" to gpkg(), "ortho.mbtiles" to "x".toByteArray())
+        val tmp = dossier.resolve("tmp")
+        ImportTournee.extraireZip(ByteArrayInputStream(octets), tmp)
+        val rangee = ImportTournee.finaliser(tmp, dossier.resolve("tournees"), maintenant)
+        assertTrue(Files.isRegularFile(rangee.resolve("ortho.mbtiles")))
+    }
 }
