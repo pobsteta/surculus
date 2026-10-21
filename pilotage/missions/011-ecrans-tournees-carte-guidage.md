@@ -29,7 +29,8 @@
 
 - **Peut :** écrans Compose, osmdroid, réutilisation des écrans de Marculus.
 - **Ne doit pas :** sortir du périmètre de cette phrase ; inventer un code (travaux, essence, état) ; toucher à `main` ; modifier sommieR, Marculus ou Groma ; trancher une question de sens (la remonter à l'orchestrateur).
-- **Sources autorisées :** spec § 4.1-4.3 ; ADR 0003, 0004.
+- **Sources autorisées :** spec § 4.1-4.3 ; ADR 0003, 0004, **0009** (carte et ortho hors ligne) ; Groma (`TuilesHorsLigne.kt`, `TelechargementTuiles.kt`, `carte/Fonds.kt`, `groma-core/…/ZoneTuiles.kt`) en lecture seule.
+- **Exigences de l'ADR 0009 :** ortho WMTS IGN préchargée à l'ouverture ; état de l'ortho visible dans la liste des tournées (complète, partielle n / N, absente) ; emprise testée en France métropolitaine ; attribution datée du téléchargement ; `ortho.mbtiles` ou `ortho.gpkg` en EPSG:3857 du dossier lu en priorité ; option « Wi-Fi seulement ».
 
 ## Tests
 
