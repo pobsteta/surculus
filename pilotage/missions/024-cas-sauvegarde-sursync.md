@@ -47,3 +47,44 @@
 ## Comment saura-t-on que ça marche ?
 
 Le `dev` de la 009 branche ces cas sans les modifier, et ils passent au vert.
+
+## Reprise après la relecture de la PR #40 (2026-10-21)
+
+Verdict du `relecteur` : **à reprendre**. Les cas sont sérieux et sourcés, mais SV-24
+contredit un arbitrage déjà rendu.
+
+**Décisions de Pascal du 2026-10-21, numérotées comme au journal** (source :
+« pilotage/journal.md, 2026-10-21 ») :
+1. `<appareil>` dans le nom du fichier est un **identifiant opaque**. Sa forme n'est pas
+   fixée : un segment non vide, sans `:` ni nom de personne.
+2. Le `.sursync` porte une **empreinte SHA-256** de son contenu. Une empreinte fausse est
+   **signalée** (avertissement), elle ne fait pas refuser le fichier en entier (voir 5).
+3. Un fichier de même nom n'est **jamais écrasé** : le nouveau est suffixé.
+4. La rotation des 5 dernières sauvegardes ne supprime que **la plus ancienne de la même
+   tournée**.
+5. **Fichier abîmé : on garde les lignes saines.** Un `.sursync` tronqué, à ligne
+   illisible, à empreinte fausse ou à uuid en double au contenu différent n'est **jamais
+   refusé en entier**. Les lignes valides sont restaurées, les lignes fautives refusées et
+   signalées, comme dans le journal (JR-13, JR-14 : les deux versions d'un même uuid à
+   contenu différent sont refusées et signalées par l'anomalie `uuid_contenu_different`).
+   Seule une version N+1, ou une version illisible, fait refuser le fichier.
+6. **Pas de sauvegarde sans saisie nouvelle**, même quand M minutes sont passées (SV-54
+   n'est plus une hypothèse, SV-52 en dépend).
+
+**À corriger :**
+- SV-24 et SV-25 : à aligner sur la décision 5 et sur JR-13 et JR-14. Citer JR-13, pas JR-12.
+  `uuid_contenu_different` reste un code d'anomalie, pas un motif de refus.
+- SV-23 : une empreinte fausse donne un avertissement, avec les lignes valides restaurées.
+- SV-42 : citer la décision 4.
+- SV-30 : desserrer le gabarit (segment d'appareil non vide sans `:`, horodatage sans `:`),
+  ou marquer en `hypothese` ce qui reste non décidé. Retirer la glose « UUID court ou
+  empreinte ».
+- SV-33 : la forme du nom reste libre ; seuls les caractères interdits sont vérifiés. Ce
+  choix de l'orchestrateur suffit à la 009.
+- Codes de refus et d'avertissement, fixés par l'orchestrateur : `version_future`,
+  `version_illisible` (refus du fichier) ; `fichier_tronque`, `ligne_illisible`,
+  `empreinte_differente` (signalement, lignes saines gardées).
+- Test de forme : retirer ou rendre utile la vérification des noms, qui ne lit qu'une
+  entrée ; détecter N et M à un chiffre ; corriger « cinq familles » en six.
+- Écrire la redite de la mission dans cette fiche.
+- SV-55 (photos) est accepté, puisqu'il est sourcé.
