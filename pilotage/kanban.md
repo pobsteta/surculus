@@ -19,6 +19,11 @@ _Idées, à trier au prochain `/mission`._
   n'existe pas ; à trancher avant la mission photo.
 - **Pascal (dans sommieR)** : brief vers sommieR, un seul fichier d'ortho tuilé en
   EPSG:3857 à la place d'`ortho.tif` (ADR 0009, cible f).
+- **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées
+  (export, 032) ; essai sur téléphone et test des dix secondes par Pascal.
+- **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
+  barème 2024 (« en vigueur NON vérifié ») ; un test de forme des CSV de
+  `docs/referentiels/` (même nombre de colonnes sur chaque ligne).
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
   de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
@@ -34,6 +39,9 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **033** carte : placettes colorées selon `etat_suivi`, travaux tracés selon leur code,
+  vides relevés (`afficheur`), décidée par Pascal le 2026-10-21 ; fiche à écrire après
+  lecture des valeurs de `etat_suivi` dans sommieR.
 - **013** dictée Vosk (`dev`) : part après les cas des décisions 11 et 12 (testeur) et le
   retrait de l'hypothèse DI-303.
 
@@ -41,22 +49,22 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Cycle 5, lancé le 2026-10-21 :**
+**Cycle 6, lancé le 2026-10-21 :**
 
-- **011** écrans tournées, carte, guidage (`afficheur`, appuyer) — relancée après la 029 ;
-  n'écrit pas au journal.
-- **030** référentiels de la PR #4, revérifiés (`acquereur`, appuyer) — confiée le
-  2026-10-21, plan demandé.
+- **032** état par tournée, tournée obligatoire à la saisie (`dev`, appuyer), avant la 012 ;
+  plan demandé.
+- **027** registre attendu du scénario Couchey (`testeur`, appuyer) ; plan demandé.
 
 **Attendent le plafond :**
 
-- **032** état par tournée, tournée obligatoire à la saisie (`dev`, appuyer), avant la 012.
 - **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032.
 - Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
-- **027** registre attendu du scénario Couchey (`testeur`, appuyer).
 - **028** registre attendu et sabotage en CI (`dev`, appuyer), après 026 et 027.
 
 ## Terminé
+
+- Cycle 5 (suite), 2026-10-21 : **011** écrans Tournées, Carte et Guidage (PR #51) ;
+  **030** référentiels de la PR #4 revérifiés (PR #52) ; pilotage (PR #50) — Pascal.
 
 - Cycle 5, 2026-10-21 : **009** sauvegarde `.sursync` et restauration (PR #45) ;
   **029** géométries de `foret`, `ug`, `parcelles` (PR #47) ; **026** critères F1, F2, F3
