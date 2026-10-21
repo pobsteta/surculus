@@ -157,7 +157,8 @@ if (!is.null(avec)) {
   f2 <- controle_f2(gpkg_depart, gpkg_entree,
                     lapply(bilan_export$uuid_ecrits, unlist))
   # F3 : schéma complet identique à celui de la tournée de départ.
-  f3 <- controle_f3(gpkg_depart, gpkg_entree, COUCHES_AJOUTEES, f2$inserts)
+  f3 <- list(fautes = controle_f3(gpkg_depart, gpkg_entree, COUCHES_AJOUTEES,
+                                  f2$inserts))
   for (x in c(f1$fautes, f2$fautes, f3$fautes)) signaler(x)
   verdict <- function(fautes) if (length(fautes)) "ÉCHEC" else "vert"
   message("F1 bilan d'import = bilan d'export : ", verdict(f1$fautes))
