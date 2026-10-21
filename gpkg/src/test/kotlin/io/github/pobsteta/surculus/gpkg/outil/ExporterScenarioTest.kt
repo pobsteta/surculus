@@ -59,6 +59,24 @@ class ExporterScenarioTest {
     }
 
     @Test
+    fun `le bilan d'export en JSON redit ce que l'export contient`() {
+        val sortie = dossier.resolve("sortie")
+        ExporterScenario.jouer(tourneeDeDepart(), scenario, sortie)
+        val j = com.google.gson.JsonParser.parseString(Files.readString(sortie.resolve(ExporterScenario.BILAN_JSON))).asJsonObject
+        val t = LecteurTournee.lire(sortie.resolve("export-surculus/travaux.gpkg"))
+        assertEquals(2, j.get("controles").asInt)
+        assertEquals(0, j.get("placettes").asInt)
+        assertEquals(0, j.get("travaux").asInt)
+        assertEquals(t.plants.size, j.get("plants").asInt)
+        assertEquals(t.etats.size, j.get("etats_plants").asInt)
+        assertEquals(0, j.get("deja_presentes").asInt)
+        // Les UUID écrits sont ceux des contrôles de l'export, en minuscules et triés.
+        val uuids = j.getAsJsonObject("uuid_ecrits").getAsJsonArray("controles").map { it.asString }
+        assertEquals(t.controles.map { it.uuid.lowercase() }.sorted(), uuids)
+        assertEquals(0, j.getAsJsonObject("uuid_ecrits").getAsJsonArray("placettes").size())
+    }
+
+    @Test
     fun `le zip est a plat et contient le meme travaux gpkg que le dossier`() {
         val sortie = dossier.resolve("sortie")
         ExporterScenario.jouer(tourneeDeDepart(), scenario, sortie)
