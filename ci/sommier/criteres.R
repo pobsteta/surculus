@@ -187,8 +187,12 @@ ajout_permis <- function(t, df, couches) {
   if (nrow(df) == 0L) return(logical(0))
   if (t == "gpkg_data_column_constraints") return(rep(TRUE, nrow(df)))
   if (t == "gpkg_extensions")
-    return(df$extension_name %in% "gpkg_schema" |
-             df$table_name %in% c(couches, TABLES_EXTENSION_SCHEMA))
+    # Extension Schema (gpkg_schema) : seulement sur une des six couches ou sur
+    # les deux tables qui la portent. Une ligne gpkg_schema sur une couche de
+    # sommieR est refusée ; toute autre extension, seulement sur les six couches.
+    return(ifelse(df$extension_name %in% "gpkg_schema",
+                  df$table_name %in% c(couches, TABLES_EXTENSION_SCHEMA),
+                  df$table_name %in% couches))
   if ("table_name" %in% names(df)) return(df$table_name %in% couches)
   rep(FALSE, nrow(df))
 }

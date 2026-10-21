@@ -16,9 +16,10 @@ monte un service PostGIS éphémère et lance `verifier.R`.
    `sommier_importer_qfield_travaux()` dans un clone de `sommier_modele`. Trois
    contrôles, dans `criteres.R`, testés sans base par `test-criteres.R` :
    - **F1** : le bilan d'import (travaux, placettes, contrôles, entrées écrites)
-     égale le bilan d'export de Surculus, et « déjà présents » égale le nombre de
-     lignes de la tournée de départ que sommieR connaît au registre (travaux,
-     placettes, contrôles : la tournée est tirée du registre). Un champ absent d'un
+     égale le bilan d'export de Surculus. « Déjà présents » de sommieR = **lignes de la
+     tournée de départ** (`travaux_*`, `placettes`, `controles`, avec `uuid`) : la
+     tournée est tirée du registre. Le `dejaPresentes` de Surculus a un autre sens
+     (rejeu d'un export) et n'est **pas comparé**. Un champ absent d'un
      côté n'est jamais une égalité.
    - **F2** : pour chaque table de données de la tournée de départ, l'export ne
      diffère que par des lignes **ajoutées** (clé primaire absente du départ). Une
@@ -30,7 +31,9 @@ monte un service PostGIS éphémère et lance `verifier.R`.
      déclencheurs, vues), toutes les lignes des tables `gpkg_*`. Seuls ajouts
      permis : les objets et lignes des six couches (dont `rtree_<couche>_*`), et
      le support de l'extension Schema (`gpkg_data_columns`,
-     `gpkg_data_column_constraints`, lignes `gpkg_schema` de `gpkg_extensions`).
+     `gpkg_data_column_constraints`). Une ligne `gpkg_schema` de `gpkg_extensions`
+     n'est admise que si sa `table_name` est l'une des six couches ou l'une de ces
+     deux tables ; sur une couche de sommieR, elle est refusée.
      `gpkg_ogr_contents.feature_count` n'est pas normalisé : il est vérifié, pour
      chaque couche de départ, égal à son nombre de départ plus les lignes
      ajoutées comptées par F2.
@@ -38,10 +41,12 @@ monte un service PostGIS éphémère et lance `verifier.R`.
      écriture (décision de Pascal, 2026-10-21). Rien d'autre n'est toléré.
    - (b) schéma des couches de sommieR de l'export contre `inst/qgis/travaux.gpkg`
      et (c) `sf::st_layers()` liste les six couches : inchangés.
-   - **Vérification de fumée**, hors critères : le même export privé de ses six
-     couches s'importe avec le même bilan (`bilan-avec.json`, `bilan-sans.json`).
-     Ce n'est plus le critère (a) : elle ne mesure presque rien, et deviendrait
-     fausse au lot 2 de sommieR.
+   - **Témoin « sans »**, simple **avertissement** : le même export privé de ses six
+     couches s'importe avec le même bilan (`bilan-avec.json`, `bilan-sans.json`). Une
+     différence s'affiche dans `resume.md` et dans le résumé du job, sans faire échouer
+     le job. Le verdict tient à F1, F2, F3, (b), (c) et à l'auto-test du retrait. Ce
+     n'est plus le critère (a) : il ne mesure presque rien, et il **deviendra rouge
+     par construction au lot 2 de sommieR**, quand l'import lira les plants.
    - Le résumé du job est `sortie/resume.md` (écrit même en cas d'écart).
 3. **Auto-test du retrait**, toujours : six couches vides (dont trois
    géométriques, donc avec index spatial) et des lignes de `gpkg_data_columns`
@@ -53,6 +58,13 @@ monte un service PostGIS éphémère et lance `verifier.R`.
    est éprouvé, F1, F2 et F3 ne sont **pas mesurés**, et le script le dit dans son
    message. **Avec `--avec`**, un import qui n'écrit rien (travaux + placettes +
    contrôles = 0) est un écart : un vert qui ne mesure rien doit le dire.
+
+**Ce qui a été vu rouge en CI, et ce qui ne l'a pas été.** F2 n'a été vu rouge en CI
+que sur `codes` (un `UPDATE`) : la tournée de départ n'a aucune ligne de `controles`,
+et `ST_IsEmpty` est absent de RSQLite pour `placettes` (déclencheurs R-tree). Le cas
+géométrique n'est couvert que par `test-criteres.R`. `feature_count` vaut NULL dans le
+modèle de sommieR : en CI, seul « reste NULL » est mesuré, pas « départ + ajouts »
+(cette seconde règle n'est couverte que par `test-criteres.R`).
 
 **Limite de F2 (à lever par la mission 027)** : les UUID attendus sont ceux du
 `bilan-export.json`, calculés par `uuidDe` de `ExporterScenario`, c'est-à-dire par le

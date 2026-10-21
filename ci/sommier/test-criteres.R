@@ -30,6 +30,12 @@ sf::st_write(pts(c("aaaa", "bbbb")), depart, layer = "controles", quiet = TRUE,
 sf::st_write(pts("cccc"), depart, layer = "placettes", quiet = TRUE,
              layer_options = "SPATIAL_INDEX=NO")
 
+db0 <- DBI::dbConnect(RSQLite::SQLite(), depart)
+if (!DBI::dbExistsTable(db0, "gpkg_extensions"))
+  invisible(DBI::dbExecute(db0, "CREATE TABLE gpkg_extensions (table_name TEXT, column_name TEXT,
+    extension_name TEXT NOT NULL, definition TEXT NOT NULL, scope TEXT NOT NULL)"))
+DBI::dbDisconnect(db0)
+
 # Copie de la tournée de départ, modifiée par `sql` ; rend le chemin.
 variante <- function(nom, sql = character(0)) {
   f <- file.path(travail, paste0(nom, ".gpkg"))
@@ -105,6 +111,18 @@ verifier(length(controle_f3(depart, x, setdiff(COUCHES, "plants"), r$inserts)) >
 x <- variante("couche-etrangere")
 sf::st_write(pts("zzzz"), x, layer = "intruse", quiet = TRUE, layer_options = "SPATIAL_INDEX=NO")
 verifier(contient(controle_f3(depart, x, COUCHES), "intruse"), "F3 : une couche étrangère aux six est refusée")
+
+# Extension Schema : gpkg_schema admise sur une des six couches, refusée sur une
+# couche de sommieR.
+ext <- function(couche) sprintf(
+  "INSERT INTO gpkg_extensions (table_name, column_name, extension_name, definition, scope)
+     VALUES ('%s', NULL, 'gpkg_schema', 'x', 'read-write')", couche)
+x <- variante("schema-sur-plants", c(ext("plants")))
+verifier(length(controle_f3(depart, x, COUCHES)) == 0L, "F3 : gpkg_schema sur une des six couches admise")
+x <- variante("schema-sur-controles", ext("controles"))
+verifier(contient(controle_f3(depart, x, COUCHES), "gpkg_extensions"), "F3 : gpkg_schema sur une couche de sommieR refusée")
+x <- variante("autre-ext-sur-controles", sub("gpkg_schema", "gpkg_autre", ext("controles")))
+verifier(contient(controle_f3(depart, x, COUCHES), "gpkg_extensions"), "F3 : autre extension sur une couche de sommieR refusée")
 
 # feature_count NULL au départ (modèle de sommieR) : doit rester NULL.
 x <- variante("fc-null-depart", "UPDATE gpkg_ogr_contents SET feature_count = NULL")

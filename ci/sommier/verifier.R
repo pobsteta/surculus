@@ -24,7 +24,7 @@
 #   Si l'import n'écrit rien (travaux + placettes + contrôles = 0), c'est un
 #   écart : un vert qui ne mesure rien doit le dire.
 #   Le témoin « sans » (export privé de ses six couches) n'est plus un critère :
-#   c'est une vérification de fumée, dont le bilan doit rester égal.
+#   c'est un avertissement (affiché, sans faire échouer).
 #   Le résumé est écrit dans <sortie>/resume.md.
 # Toujours : auto-test du retrait (six couches vides posées sur une copie de
 #   la tournée de départ, retirées, plus aucune trace).
@@ -186,11 +186,19 @@ if (!is.null(avec)) {
   bilan_temoin <- importer_et_bilanter(temoin, "sommier_temoin", "sommier_modele",
                                        foret_id)
   ecrire_bilan(bilan_temoin, file.path(sortie, "bilan-sans.json"))
-  for (k in comparer_bilans(bilan_entree, bilan_temoin))
-    signaler("fumée : « ", k, " » diffère entre l'export et son témoin sans couches ajoutées")
+  # Un avertissement, pas un écart : il n'entre pas dans le verdict.
+  diff_fumee <- comparer_bilans(bilan_entree, bilan_temoin)
+  if (length(diff_fumee)) {
+    message("AVERTISSEMENT (fumée) : bilan différent entre l'export et son ",
+            "témoin sans couches ajoutées : ", paste(diff_fumee, collapse = ", "))
+    cat("::warning title=Témoin sans couches::bilan différent : ",
+        paste(diff_fumee, collapse = ", "), "\n", sep = "")
+  }
   resume <- c(resume, "",
-              paste0("Vérification de fumée (hors critères) : témoin sans couches ajoutées, ",
-                     if (any(grepl("^fumée", ecarts))) "bilan différent." else "même bilan."))
+              if (length(diff_fumee))
+                paste0("**Avertissement** (fumée, hors verdict) : le témoin sans couches ajoutées donne un bilan différent (",
+                       paste(diff_fumee, collapse = ", "), ").")
+              else "Vérification de fumée (hors verdict) : témoin sans couches ajoutées, même bilan.")
 } else {
   message("F1, F2 ET F3 NON MESURÉS : pas d'export Surculus (--avec). ",
           "Le retrait des couches est éprouvé (auto-test), pas l'export.")
