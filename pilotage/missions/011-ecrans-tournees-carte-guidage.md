@@ -7,7 +7,18 @@
 
 **En une phrase (quoi, et pourquoi) :** Réaliser les écrans Tournées (ouvrir une tournée sommieR en dossier ou `.zip`), Carte (couches, ortho, badge du fix) et Guidage (vers la placette, signal sonore, cercle à 30 m, rattachement par identité), pour que l'agent arrive au piquet sans chercher.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Construire trois écrans (Tournées, Carte, Guidage) pour qu'un agent ouvre une tournée sommieR, voie où il est et où est la placette, et soit conduit au piquet, avec un rattachement par identité.
+
+## Choix de Pascal, repris du plan accepté (2026-10-21)
+
+- **Ortho** : préchargement WMTS IGN repris de Groma tel quel (ADR 0009, avec ses trois garde-fous).
+- **WorkManager** ajouté à `gradle/libs.versions.toml` et à `docs/dependances.md`.
+- **Zooms** de préchargement : 12 à 18.
+- **Arrivée** : distance strictement inférieure à 30 m.
+- **Signal à l'arrivée** : bip seulement.
+- **Place gardée** sur l'écran d'accueil pour le bouton « Restaurer une tournée » (mission 009, déjà présent).
+- **Données** : géométries lues par `LecteurTournee.lireCartographie()` (mission 029 fusionnée).
+- **Hors périmètre en attendant la 031** : aucune saisie écrite au journal, pas de branchement de la sauvegarde.
 
 ## Les trois questions (règle de staffing)
 
