@@ -46,7 +46,8 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **029** `:gpkg` lit les géométries de `foret`, `ug`, `parcelles` (`dev`, appuyer) —
   préalable à la 011, décidé par Pascal le 2026-10-21 ; en revue, PR #47.
 - **026** CI d'import, F1 + F2 + F3 (`dev`, appuyer) ; en revue, PR #46.
-- **031** tournée dans chaque ligne du journal (`dev`, appuyer) : plan demandé, avant la 011.
+- **031** tournée dans chaque ligne du journal (`dev`, appuyer) : plan tranché par Pascal,
+  en réalisation ; PR ouverte quand une place se libère ; avant la 011.
 
 **Attendent le plafond :**
 
