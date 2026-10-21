@@ -1,0 +1,259 @@
+{
+  "fichier": "phrases.json",
+  "regle": "Chaque phrase de la grammaire fermée donne une commande, et une seule",
+  "format": "voir fixtures/README.md (section Dictée)",
+  "commandes": "types : etat (etat), cause (cause_groupe), detail (cause_detail), hauteur (hauteur_cm), suivant, regarni, vide_debut, vide_fin, annule",
+  "note": "Cas rejoués par DicteeRejeuTest. « vide » et « fin du vide » sont deux commandes distinctes. Les mots des phrases sont aussi contrôlés contre le vocabulaire du modèle (vocabulaire.json).",
+  "cas": [
+    {
+      "id": "DI-01",
+      "description": "État « sain ».",
+      "entree": {
+        "phrase": "sain"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "sain"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire) ; docs/referentiels/etats-plants.yaml (états, DSF24 p. 8) ; docs/spec.md § 5 (non_observe)"
+    },
+    {
+      "id": "DI-02",
+      "description": "État « atteint ».",
+      "entree": {
+        "phrase": "atteint"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "atteint"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire) ; docs/referentiels/etats-plants.yaml (états, DSF24 p. 8) ; docs/spec.md § 5 (non_observe)"
+    },
+    {
+      "id": "DI-03",
+      "description": "État « mort ».",
+      "entree": {
+        "phrase": "mort"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "mort"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire) ; docs/referentiels/etats-plants.yaml (états, DSF24 p. 8) ; docs/spec.md § 5 (non_observe)"
+    },
+    {
+      "id": "DI-04",
+      "description": "État « absent ».",
+      "entree": {
+        "phrase": "absent"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "absent"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire) ; docs/referentiels/etats-plants.yaml (états, DSF24 p. 8) ; docs/spec.md § 5 (non_observe)"
+    },
+    {
+      "id": "DI-05",
+      "description": "État « non observé ».",
+      "entree": {
+        "phrase": "non observé"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "non_observe"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire) ; docs/referentiels/etats-plants.yaml (états, DSF24 p. 8) ; docs/spec.md § 5 (non_observe)"
+    },
+    {
+      "id": "DI-06",
+      "description": "Cause « insectes ».",
+      "entree": {
+        "phrase": "insectes"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "cause",
+          "cause_groupe": "entomologique"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+    },
+    {
+      "id": "DI-07",
+      "description": "Cause « champignon ».",
+      "entree": {
+        "phrase": "champignon"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "cause",
+          "cause_groupe": "pathologique"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+    },
+    {
+      "id": "DI-08",
+      "description": "Cause « animaux ».",
+      "entree": {
+        "phrase": "animaux"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "cause",
+          "cause_groupe": "animaux"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+    },
+    {
+      "id": "DI-09",
+      "description": "Cause « abiotique ».",
+      "entree": {
+        "phrase": "abiotique"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "cause",
+          "cause_groupe": "abiotique_complexe_indetermine"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+    },
+    {
+      "id": "DI-10",
+      "description": "Cause « indéterminé ».",
+      "entree": {
+        "phrase": "indéterminé"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "cause",
+          "cause_groupe": "abiotique_complexe_indetermine"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 5 (cause_groupe) et docs/referentiels/etats-plants.yaml (causes_dsf_groupes_bilan) ; correspondance mot dicté vers groupe proposée par le testeur, à confirmer par Pascal"
+    },
+    {
+      "id": "DI-11",
+      "description": "Détail « abrouti » : cause_detail abroutissement (seule constante reconnue).",
+      "entree": {
+        "phrase": "abrouti"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "detail",
+          "cause_detail": "abroutissement"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 6 (cause_detail, seule constante « abroutissement ») ; pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » seul est une commande valide)"
+    },
+    {
+      "id": "DI-12",
+      "description": "« hauteur quarante-cinq » : 45 cm.",
+      "entree": {
+        "phrase": "hauteur quarante-cinq"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 45
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée)"
+    },
+    {
+      "id": "DI-13",
+      "description": "« suivant ».",
+      "entree": {
+        "phrase": "suivant"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "suivant"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée)"
+    },
+    {
+      "id": "DI-14",
+      "description": "« regarni ».",
+      "entree": {
+        "phrase": "regarni"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "regarni"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée)"
+    },
+    {
+      "id": "DI-15",
+      "description": "« vide ».",
+      "entree": {
+        "phrase": "vide"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "vide_debut"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 4.5 (vides)"
+    },
+    {
+      "id": "DI-16",
+      "description": "« fin du vide ».",
+      "entree": {
+        "phrase": "fin du vide"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "vide_fin"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée) ; docs/spec.md § 4.5 (vides)"
+    },
+    {
+      "id": "DI-17",
+      "description": "« annule ».",
+      "entree": {
+        "phrase": "annule"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "annule"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire fermée)"
+    }
+  ]
+}

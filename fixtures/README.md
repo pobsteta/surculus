@@ -108,3 +108,23 @@ Cas d'acceptation de l'export `travaux.gpkg`, écrits par le `testeur` (mission 
 * **Champs facultatifs d'un cas** : `hypothese` (le cas suppose une règle non écrite, à confirmer par Pascal) ; `operation: "lecture"` (cas de relecture, joué par `ExportTournee.relire` : EX-11) ; `saisies.travaux` (travaux saisis, avec leur `code_travaux`, contrôlés contre la couche `codes` de `tournee_depart.codes` : EX-33).
 * **Trous voulus dans la numérotation** : EX-28 (date de travaux antérieure à la plantation) et EX-32 (export sans réseau) ont été retirés par Pascal le 2026-10-17 ; ne pas les réattribuer.
 * **Non couverts** : critère de CI (a) de l'ADR 0007 (import R, CI de la 007) ; fumée de l'APK sur émulateur ; essai sur ARM.
+
+## Dictée (`fixtures/dictee/`, mission 025)
+
+Cas d'acceptation de la mission 013, écrits depuis `docs/spec.md` § 4.3, l'ADR 0004 et les décisions de Pascal
+du 2026-10-21 (`pilotage/journal.md`), **sans lire de code**. Identifiants `DI-NN`. Même format que ci-dessus ; l'entrée est
+`phrase` (texte rendu par Vosk : minuscules, sans ponctuation), le résultat `{"accepte": bool, "commande": {...}}`.
+
+| Fichier | Contenu |
+|---|---|
+| `phrases.json` | les 17 phrases de la grammaire et leur commande (types : `etat`, `cause`, `detail`, `hauteur`, `suivant`, `regarni`, `vide_debut`, `vide_fin`, `annule`) |
+| `hauteur.json` | « hauteur » de 1 à 400 cm, bornes et refus (0, 401, sans nombre, deux nombres) |
+| `refus.json` | phrases hors grammaire, deux commandes dans une phrase, casse, ponctuation, accents, détails hors grammaire |
+| `contexte.json` | la commande face à l'état courant du plant (« abrouti » sur sain ou atteint seulement, cause refusée sur sain et absent...) |
+| `vocabulaire.json` + `vocabulaire-vosk-model-small-fr-0.22.txt` | liste des 135 774 mots du modèle (un par ligne) et cas « mot dans le vocabulaire » |
+| `modele.json` | nom du modèle et empreinte SHA-256 vérifiés (contenu d'essai de quelques octets, jamais le modèle) |
+
+* Le modèle `vosk-model-small-fr-0.22` n'a **pas** de `graph/words.txt` : la table des mots est incorporée à `graph/Gr.fst` (table de symboles OpenFst). La liste versionnée en est extraite ; le modèle lui-même n'est pas versionné.
+* Correspondance mot dicté vers `cause_groupe` (proposée par le `testeur`, à confirmer par Pascal) : insectes = entomologique, champignon = pathologique, animaux = animaux, abiotique et indéterminé = abiotique_complexe_indetermine.
+* **Trois mots de la grammaire sont absents du modèle** : « abiotique », « abrouti », « regarni » (`mots_absents_du_modele` dans `vocabulaire.json`). Le test de la 013 « chaque mot dans le vocabulaire » ne peut passer qu'après décision de Pascal.
+* Tests : `core/src/test/kotlin/.../core/dictee/`. `DicteeFixturesBienFormeesTest` est actif (cas bien formés, codes dans les référentiels, vocabulaire). `DicteeRejeuTest` est `@Disabled("en attente de la mission 013")` : la 013 branche `ImplementationDictee.dictee()` (port `Dictee`) et retire `@Disabled`, sans modifier les cas.

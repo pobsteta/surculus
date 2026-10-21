@@ -1,0 +1,164 @@
+{
+  "fichier": "modele.json",
+  "regle": "Un modèle n'est accepté que si son nom est celui de l'ADR 0004 et si l'empreinte SHA-256 de son contenu égale l'empreinte attendue",
+  "format": "voir fixtures/README.md (section Dictée)",
+  "note": "Le contenu est un petit texte d'essai : la vérification d'empreinte se teste sans le modèle de 41 Mo, qu'on ne versionne pas. Absence de réseau : l'import se fait par fichier ; fichier absent ou illisible : cas DI-311 (erreur nette, pas de plantage).",
+  "cas": [
+    {
+      "id": "DI-300",
+      "description": "Empreinte conforme : modèle accepté.",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.22",
+        "contenu_utf8": "abc",
+        "sha256_attendu": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+      },
+      "attendu": {
+        "accepte": true
+      },
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3 ; empreinte de « abc » : FIPS 180-4, exemple SHA-256"
+    },
+    {
+      "id": "DI-301",
+      "description": "Empreinte différente d'un seul caractère hexadécimal : refusé.",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.22",
+        "contenu_utf8": "abc",
+        "sha256_attendu": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ae"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-302",
+      "description": "Contenu modifié d'un octet, empreinte d'origine : refusé.",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.22",
+        "contenu_utf8": "abd",
+        "sha256_attendu": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-303",
+      "description": "Empreinte attendue en majuscules : accepté (l'hexadécimal n'est pas sensible à la casse).",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.22",
+        "contenu_utf8": "abc",
+        "sha256_attendu": "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD"
+      },
+      "attendu": {
+        "accepte": true
+      },
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3 ; casse proposée par le testeur, à confirmer"
+    },
+    {
+      "id": "DI-304",
+      "description": "Fichier vide : refusé (empreinte de « abc » attendue).",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.22",
+        "contenu_utf8": "",
+        "sha256_attendu": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-305",
+      "description": "Fichier vide avec l'empreinte du vide : le contenu est vide, refusé quand même (aucun modèle vide).",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.22",
+        "contenu_utf8": "",
+        "sha256_attendu": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3 ; un modèle vide n'est pas un modèle"
+    },
+    {
+      "id": "DI-306",
+      "description": "Empreinte attendue vide : refusé.",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.22",
+        "contenu_utf8": "abc",
+        "sha256_attendu": ""
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-307",
+      "description": "Empreinte attendue mal formée (pas 64 caractères hexadécimaux) : refusé.",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.22",
+        "contenu_utf8": "abc",
+        "sha256_attendu": "pas-un-sha256"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3"
+    },
+    {
+      "id": "DI-308",
+      "description": "Modèle sous licence NC (small-fr-pguyot) refusé même avec l'empreinte valide.",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-pguyot",
+        "contenu_utf8": "abc",
+        "sha256_attendu": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (les modèles français NC et AGPL sont exclus)"
+    },
+    {
+      "id": "DI-309",
+      "description": "Modèle sous licence AGPL (fr-linto) refusé même avec l'empreinte valide.",
+      "entree": {
+        "nom_modele": "vosk-model-fr-linto-0.6",
+        "contenu_utf8": "abc",
+        "sha256_attendu": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (les modèles français NC et AGPL sont exclus)"
+    },
+    {
+      "id": "DI-310",
+      "description": "Autre version du modèle small (0.21) refusée : le nom exact est inscrit.",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.21",
+        "contenu_utf8": "abc",
+        "sha256_attendu": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (nom exact inscrit)"
+    },
+    {
+      "id": "DI-311",
+      "description": "Fichier du modèle absent : refus net, sans plantage ni accès au réseau.",
+      "entree": {
+        "nom_modele": "vosk-model-small-fr-0.22",
+        "contenu_utf8": null,
+        "sha256_attendu": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3 ; spec § 3 (pas de réseau)"
+    }
+  ]
+}

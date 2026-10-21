@@ -1,0 +1,229 @@
+{
+  "fichier": "contexte.json",
+  "regle": "La commande dictée est confrontée à l'état courant du plant : certaines combinaisons sont refusées par l'application",
+  "format": "voir fixtures/README.md (section Dictée)",
+  "entree": "etat_courant : sain, atteint, mort, absent, non_observe ou null (aucun état saisi) ; phrase : texte de Vosk",
+  "note": "Ces cas pilotent l'analyseur ET la règle d'application (mission 013 avec 012). La phrase refusée ici est une phrase de la grammaire, refusée pour le contexte seulement.",
+  "cas": [
+    {
+      "id": "DI-100",
+      "description": "« abrouti » sur un plant sain.",
+      "entree": {
+        "etat_courant": "sain",
+        "phrase": "abrouti"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "detail",
+          "cause_detail": "abroutissement"
+        }
+      },
+      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent)"
+    },
+    {
+      "id": "DI-101",
+      "description": "« abrouti » sur un plant atteint.",
+      "entree": {
+        "etat_courant": "atteint",
+        "phrase": "abrouti"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "detail",
+          "cause_detail": "abroutissement"
+        }
+      },
+      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent)"
+    },
+    {
+      "id": "DI-102",
+      "description": "« abrouti » sur un plant mort : refusé.",
+      "entree": {
+        "etat_courant": "mort",
+        "phrase": "abrouti"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent) ; NB : docs/spec.md § 6 permet le détail sur un mort, à amender"
+    },
+    {
+      "id": "DI-103",
+      "description": "« abrouti » sur un plant absent : refusé.",
+      "entree": {
+        "etat_courant": "absent",
+        "phrase": "abrouti"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent) ; docs/spec.md § 6 (détail refusé sur un absent)"
+    },
+    {
+      "id": "DI-104",
+      "description": "« abrouti » sur un plant non observé : refusé.",
+      "entree": {
+        "etat_courant": "non_observe",
+        "phrase": "abrouti"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (un plant non observé ne porte aucune mesure)"
+    },
+    {
+      "id": "DI-105",
+      "description": "« abrouti » sans état saisi pour le plant courant : refusé.",
+      "entree": {
+        "etat_courant": null,
+        "phrase": "abrouti"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "pilotage/journal.md, 2026-10-21 (décision n° 4 : « abrouti » s'applique au plant courant sain ou atteint, refusé sur un mort ou un absent) ; le plant courant n'est ni sain ni atteint"
+    },
+    {
+      "id": "DI-110",
+      "description": "Cause « insectes » sur un plant atteint : acceptée.",
+      "entree": {
+        "etat_courant": "atteint",
+        "phrase": "insectes"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "cause",
+          "cause_groupe": "entomologique"
+        }
+      },
+      "source": "docs/spec.md § 6 (une cause sur un plant sain ou absent est refusée ; cause pour atteint ou mort) ; docs/spec.md § 6 (non observé : aucune mesure)"
+    },
+    {
+      "id": "DI-111",
+      "description": "Cause « insectes » sur un plant mort : acceptée.",
+      "entree": {
+        "etat_courant": "mort",
+        "phrase": "insectes"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "cause",
+          "cause_groupe": "entomologique"
+        }
+      },
+      "source": "docs/spec.md § 6 (une cause sur un plant sain ou absent est refusée ; cause pour atteint ou mort) ; docs/spec.md § 6 (non observé : aucune mesure)"
+    },
+    {
+      "id": "DI-112",
+      "description": "Cause « insectes » sur un plant sain : refusée.",
+      "entree": {
+        "etat_courant": "sain",
+        "phrase": "insectes"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (une cause sur un plant sain ou absent est refusée ; cause pour atteint ou mort) ; docs/spec.md § 6 (non observé : aucune mesure)"
+    },
+    {
+      "id": "DI-113",
+      "description": "Cause « insectes » sur un plant absent : refusée.",
+      "entree": {
+        "etat_courant": "absent",
+        "phrase": "insectes"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (une cause sur un plant sain ou absent est refusée ; cause pour atteint ou mort) ; docs/spec.md § 6 (non observé : aucune mesure)"
+    },
+    {
+      "id": "DI-114",
+      "description": "Cause « insectes » sur un plant non_observe : refusée.",
+      "entree": {
+        "etat_courant": "non_observe",
+        "phrase": "insectes"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (une cause sur un plant sain ou absent est refusée ; cause pour atteint ou mort) ; docs/spec.md § 6 (non observé : aucune mesure)"
+    },
+    {
+      "id": "DI-120",
+      "description": "« hauteur quarante-cinq » sur un plant sain : acceptée.",
+      "entree": {
+        "etat_courant": "sain",
+        "phrase": "hauteur quarante-cinq"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 45
+        }
+      },
+      "source": "docs/spec.md § 6 (hauteur refusée sur un plant absent ; non observé : aucune mesure)"
+    },
+    {
+      "id": "DI-121",
+      "description": "« hauteur quarante-cinq » sur un plant atteint : acceptée.",
+      "entree": {
+        "etat_courant": "atteint",
+        "phrase": "hauteur quarante-cinq"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 45
+        }
+      },
+      "source": "docs/spec.md § 6 (hauteur refusée sur un plant absent ; non observé : aucune mesure)"
+    },
+    {
+      "id": "DI-122",
+      "description": "« hauteur quarante-cinq » sur un plant absent : refusée.",
+      "entree": {
+        "etat_courant": "absent",
+        "phrase": "hauteur quarante-cinq"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (hauteur refusée sur un plant absent ; non observé : aucune mesure)"
+    },
+    {
+      "id": "DI-123",
+      "description": "« hauteur quarante-cinq » sur un plant non_observe : refusée.",
+      "entree": {
+        "etat_courant": "non_observe",
+        "phrase": "hauteur quarante-cinq"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 6 (hauteur refusée sur un plant absent ; non observé : aucune mesure)"
+    },
+    {
+      "id": "DI-130",
+      "description": "État « sain » dicté quel que soit l'état courant (remplace la saisie).",
+      "entree": {
+        "etat_courant": "atteint",
+        "phrase": "sain"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "sain"
+        }
+      },
+      "source": "docs/spec.md § 4.3 (grammaire) ; docs/spec.md § 6 (un seul état par plant dans un contrôle)"
+    }
+  ]
+}

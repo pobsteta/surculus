@@ -1,0 +1,423 @@
+{
+  "fichier": "vocabulaire.json",
+  "regle": "Chaque mot de la grammaire figure dans la liste de mots du modèle (ADR 0004)",
+  "format": "voir fixtures/README.md (section Dictée)",
+  "modele": {
+    "nom": "vosk-model-small-fr-0.22",
+    "archive": "vosk-model-small-fr-0.22.zip",
+    "taille_octets": 42233323,
+    "sha256_archive_mesure": "cabf6180e177eb9b3a9a9d43a437bd5e549f3a7d09525e5d69a3fed787be12ad",
+    "telechargee_le": "2026-10-21",
+    "depuis": "https://alphacephei.com/vosk/models/vosk-model-small-fr-0.22.zip",
+    "licence": "Apache-2.0"
+  },
+  "liste_de_mots": {
+    "fichier": "fixtures/dictee/vocabulaire-vosk-model-small-fr-0.22.txt",
+    "nombre_de_mots": 135774,
+    "extraction": "le modèle small n'a PAS de graph/words.txt : la table des mots est incorporée à graph/Gr.fst (en-tête OpenFst, table de symboles « exp/chain_a/tdnn/lgraph/words.txt »). Elle a été lue en octets (clé, mot) et triée en ordre d'octets ; un mot par ligne."
+  },
+  "mots_absents_du_modele": [
+    "abiotique",
+    "abrouti",
+    "regarni"
+  ],
+  "signalement": "trois mots de la grammaire (spec § 4.3) sont absents du vocabulaire : abiotique, abrouti, regarni. Signalés à l'orchestrateur, non contournés. Le test de la 013 (« chaque mot de la grammaire dans le modèle ») ne peut pas passer tant que Pascal n'a pas tranché (remplacer le mot, ou autre modèle).",
+  "cas": [
+    {
+      "id": "DI-200",
+      "description": "Le mot « abiotique » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "abiotique"
+      },
+      "attendu": {
+        "dans_vocabulaire": false
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json) ; ABSENT du modèle : à signaler à Pascal, non contourné"
+    },
+    {
+      "id": "DI-201",
+      "description": "Le mot « abrouti » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "abrouti"
+      },
+      "attendu": {
+        "dans_vocabulaire": false
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json) ; ABSENT du modèle : à signaler à Pascal, non contourné"
+    },
+    {
+      "id": "DI-202",
+      "description": "Le mot « absent » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "absent"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-203",
+      "description": "Le mot « animaux » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "animaux"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-204",
+      "description": "Le mot « annule » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "annule"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-205",
+      "description": "Le mot « atteint » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "atteint"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-206",
+      "description": "Le mot « champignon » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "champignon"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-207",
+      "description": "Le mot « du » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "du"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-208",
+      "description": "Le mot « fin » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "fin"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-209",
+      "description": "Le mot « hauteur » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "hauteur"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-210",
+      "description": "Le mot « indéterminé » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "indéterminé"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-211",
+      "description": "Le mot « insectes » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "insectes"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-212",
+      "description": "Le mot « mort » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "mort"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-213",
+      "description": "Le mot « non » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "non"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-214",
+      "description": "Le mot « observé » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "observé"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-215",
+      "description": "Le mot « regarni » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "regarni"
+      },
+      "attendu": {
+        "dans_vocabulaire": false
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json) ; ABSENT du modèle : à signaler à Pascal, non contourné"
+    },
+    {
+      "id": "DI-216",
+      "description": "Le mot « sain » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "sain"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-217",
+      "description": "Le mot « suivant » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "suivant"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-218",
+      "description": "Le mot « vide » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "vide"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "docs/spec.md § 4.3 (mot de la grammaire) ; docs/adr/0004 (un test vérifie que chaque mot figure dans la liste de mots du modèle) ; liste extraite de vosk-model-small-fr-0.22 (voir vocabulaire.json)"
+    },
+    {
+      "id": "DI-230",
+      "description": "Le mot de nombre « cent » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "cent"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-231",
+      "description": "Le mot de nombre « cents » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "cents"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-232",
+      "description": "Le mot de nombre « deux » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "deux"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-233",
+      "description": "Le mot de nombre « dix » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "dix"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-234",
+      "description": "Le mot de nombre « quarante-cinq » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "quarante-cinq"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-235",
+      "description": "Le mot de nombre « quatre » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "quatre"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-236",
+      "description": "Le mot de nombre « quatre-vingt-dix-neuf » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "quatre-vingt-dix-neuf"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-237",
+      "description": "Le mot de nombre « quatre-vingts » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "quatre-vingts"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-238",
+      "description": "Le mot de nombre « quinze » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "quinze"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-239",
+      "description": "Le mot de nombre « soixante-dix » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "soixante-dix"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-240",
+      "description": "Le mot de nombre « soixante-et-onze » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "soixante-et-onze"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-241",
+      "description": "Le mot de nombre « trois » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "trois"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-242",
+      "description": "Le mot de nombre « un » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "un"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-243",
+      "description": "Le mot de nombre « vingt » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "vingt"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-244",
+      "description": "Le mot de nombre « vingt-et-un » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "vingt-et-un"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-245",
+      "description": "Le mot de nombre « zéro » est dans le vocabulaire du modèle.",
+      "entree": {
+        "mot": "zéro"
+      },
+      "attendu": {
+        "dans_vocabulaire": true
+      },
+      "source": "cas de hauteur.json ; extraction du vocabulaire de vosk-model-small-fr-0.22"
+    },
+    {
+      "id": "DI-299",
+      "description": "Témoin négatif : un mot absent du vocabulaire est signalé comme absent.",
+      "entree": {
+        "mot": "xylophagie-zzz"
+      },
+      "attendu": {
+        "dans_vocabulaire": false
+      },
+      "source": "témoin du test : prouve que la vérification peut échouer"
+    }
+  ]
+}
