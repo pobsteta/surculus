@@ -113,6 +113,13 @@ if (!is.null(avec)) {
   entree <- depart
 }
 temoin <- retirer_couches(entree, file.path(sortie, "temoin-sans"))
+# TEMPORAIRE (démonstration ii, mission 022) : simule une couche ajoutée dont le
+# retrait entraîne une couche de sommieR (ici : les lignes de « controles »).
+local({
+  db <- DBI::dbConnect(RSQLite::SQLite(), file.path(temoin, "travaux.gpkg"))
+  on.exit(DBI::dbDisconnect(db))
+  DBI::dbExecute(db, "DELETE FROM controles")
+})
 
 bilan_entree <- importer_et_bilanter(entree, "sommier_entree", "sommier_modele",
                                      foret_id)
