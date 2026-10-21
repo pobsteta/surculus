@@ -28,11 +28,6 @@ _Idées, à trier au prochain `/mission`._
   d'essai d'automne 2026 ; successeur ;
   coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
   fascicule 34 ; URL du guide des chênaies continentales.
-- **Dettes de la 009** : demander `WRITE_EXTERNAL_STORAGE` à l'exécution (Android 8-9)
-  et brancher le déclenchement de la sauvegarde sur les saisies (011, 012) ; essai de
-  restauration sur deux téléphones après la 011 et la 012.
-- **Pascal (spec § 5)** : l'empreinte des photos au journal exige un type de ligne qui
-  n'existe pas ; à trancher avant la mission photo.
 - **Pascal (dans sommieR)** : mettre à jour les briefs `vers-sommier` (couches
   ajoutées, données des plantations à constater, décision « hors entreprise », table de
   correspondance des codes, `montant_eur` facultatif).
