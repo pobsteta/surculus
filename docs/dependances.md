@@ -8,11 +8,12 @@ Licence du dépôt : **GPL-3.0-or-later**, comme Groma et nemeton.
 |---|---|---|---|
 | Kotlin, kotlinx-coroutines, kotlinx-serialization | partout | Apache-2.0 | |
 | AndroidX, Jetpack Compose, Material 3, Room, DataStore | `:app`, `:data` | Apache-2.0 | |
-| osmdroid | carte | Apache-2.0 | dépôt **archivé depuis le 2024-11-20** (ADR 0009) ; réexamen de l'ADR 0004 au bac à sable |
+| osmdroid 6.1.20 | carte | Apache-2.0 | dépôt **archivé depuis le 2024-11-20** (ADR 0009) ; réexamen de l'ADR 0004 au bac à sable |
 | sqlite-jdbc 3.53.4.0 (jar et classifieur `natives-android`) | `:gpkg` (JVM) et `:app` (natifs Android) | Apache-2.0 | lecture et écriture du `travaux.gpkg`, sur la JVM et sur l'appareil (ADR 0011) ; écrivain GeoPackage maison, sans geopackage-java ni proj4j |
 | desugar_jdk_libs 2.1.5 | `:app` | GPL-2.0 avec exception Classpath (OpenJDK) | désucrage des API Java récentes, exigé par sqlite-jdbc sur Android (USAGE.md du projet) ; taille mesurée dans le rendu de la mission 006 |
 | Modèle géomagnétique WMM2025 (`WMM.COF`, NCEI) | `:core` | domaine public selon NCEI (compatibilité GPL à confirmer) | déclinaison hors ligne, valable jusqu'à fin 2029 ; pas de bibliothèque Java établie (`docs/referentiels/modele-geomagnetique.md`) |
 | Vosk `vosk-android` 0.3.75 et modèle `vosk-model-small-fr-0.22` (41 Mo) | dictée | Apache-2.0 | modèle republié dans les releases de Surculus et importable par fichier ; SHA-256 à inscrire ; modèles fr NC et AGPL exclus (ADR 0004) |
+| AndroidX WorkManager `work-runtime-ktx` 2.12.0 | `:app` | Apache-2.0 | préchargement de l'ortho IGN en tâche de fond, avec reprise et recul après coupure de réseau, option « Wi-Fi seulement » (mission 011, ADR 0009) ; version de Groma (`android/app/build.gradle.kts` l. 58) ; ajoutée sur décision de Pascal (2026-10-21) |
 | JUnit Jupiter (aligné sur `groma-core`) | tests | EPL-2.0 | tests seulement |
 | JUnit 4.13.2, Robolectric 4.17, `androidx.test:core` 1.7.0, `room-testing` 2.8.1 | tests de `:data` | EPL-1.0 ; MIT ; Apache-2.0 ; Apache-2.0 | journal Room sous Robolectric (mission 008, ADR 0004) ; versions de Marculus (`gradle/libs.versions.toml`) ; aucune dépendance de production |
 | JNA 5.18.1 (`aar`) | `:app` (requise par Vosk) | LGPL-2.1-or-later ou Apache-2.0, au choix | embarquée dans l'APK (bibliothèque native `libjnidispatch.so`) |
