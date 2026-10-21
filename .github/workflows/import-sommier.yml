@@ -116,7 +116,7 @@ jobs:
         run: |
           ./gradlew :gpkg:exporterScenario --no-daemon \
             -Ptournee=ci/sommier/sortie/tournee-depart \
-            -Pscenario=fixtures/export/scenario-vide.json \
+            -Pscenario=fixtures/export/scenario-couchey.json \
             -Psortie=ci/sommier
 
       - name: Rejouer l'import et comparer (critères (a), (b), (c))
