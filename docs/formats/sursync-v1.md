@@ -36,6 +36,15 @@ La version courante est 1. Un lecteur de version *N* lit les versions *N*-1 et *
 Il n'existe pas de version 0 : le format v1 est le premier. La lecture de *N*-1 se teste avec un fichier v1 lu par
 un lecteur de version 2 (paramètre de test).
 
+## Limites de la version 1
+
+- **Seules les saisies sont sauvegardées**, pas les lignes refusées du journal (`refus_journal` : la seconde version
+  d'un `uuid` reçu avec un contenu différent). Une restauration redonne donc les mêmes saisies, mais pas l'anomalie
+  `uuid_contenu_different` d'un journal qui en portait une. Décision de Pascal, 2026-10-21.
+- **Le fichier contient aujourd'hui tout le journal du téléphone**, quelle que soit la tournée : le journal ne porte
+  pas la tournée de chaque ligne. Une mission séparée, avant la 011, ajoutera la tournée à chaque ligne ; cette
+  limite sera alors levée.
+
 ## Un fichier abîmé n'est pas refusé en entier
 
 Seuls les refus ci-dessus rejettent le fichier. Sinon les lignes saines sont restaurées et chaque défaut est
