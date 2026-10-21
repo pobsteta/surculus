@@ -120,10 +120,6 @@ jobs:
             -Pscenario=fixtures/export/scenario-couchey.json \
             -Psortie=ci/sommier
 
-      - name: TEMPORAIRE 026 sabotage
-        run: |
-          Rscript -e 'db <- DBI::dbConnect(RSQLite::SQLite(), "ci/sommier/export-surculus/travaux.gpkg"); print(DBI::dbGetQuery(db, "SELECT count(*) AS controles FROM controles")); DBI::dbExecute(db, "UPDATE placettes SET code_placette = code_placette || 'x' WHERE rowid = (SELECT min(rowid) FROM placettes)")'
-
       # Mission 026 : F1, F2 et F3 remplacent la comparaison « avec / sans »
       # (ancien critère (a)). Le détail est dans ci/sommier/README.md.
       - name: Tester les fonctions des critères F1, F2 et F3
