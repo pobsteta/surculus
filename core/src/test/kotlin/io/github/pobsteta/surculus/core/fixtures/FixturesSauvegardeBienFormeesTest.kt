@@ -19,7 +19,7 @@ class FixturesSauvegardeBienFormeesTest {
     }
 
     @Test
-    fun `les cinq familles et les identifiants SV attendus sont presents`() {
+    fun `les six familles et les identifiants SV attendus sont presents`() {
         assertEquals(
             listOf("declenchement.json", "ecrasement.json", "fichiers-refuses.json", "noms-fichier.json", "restauration.json", "versions.json"),
             fichiers.map { it.name },
@@ -59,29 +59,83 @@ class FixturesSauvegardeBienFormeesTest {
         }
     }
 
-    @Test
-    fun `les motifs de refus sont fixes et les decisions de Pascal du 2026-10-21 sont citees`() {
-        val motifs = setOf("version_future", "version_illisible", "fichier_tronque", "ligne_illisible", "empreinte_differente", "uuid_contenu_different")
-        cas.forEach { (_, c) ->
-            val texte = c.get("attendu").toString()
-            Regex("\"motif\":\"([a-z_]+)\"").findAll(texte).forEach { assertTrue(it.groupValues[1] in motifs, "${c.get("id").asString} : motif ${it.groupValues[1]}") }
-        }
-        val sources = cas.associate { it.second.get("id").asString to it.second.get("source").asString }
-        listOf("SV-23", "SV-32", "SV-41", "SV-42").forEach { assertTrue("pilotage/journal.md, 2026-10-21" in sources[it]!!, "$it : décision de Pascal non citée") }
+    private fun cherche(e: com.google.gson.JsonElement, cle: String, sortie: MutableList<com.google.gson.JsonElement>) {
+        if (e.isJsonObject) e.asJsonObject.entrySet().forEach { (k, v) -> if (k == cle) sortie += v else cherche(v, cle, sortie) }
+        else if (e.isJsonArray) e.asJsonArray.forEach { cherche(it, cle, sortie) }
     }
 
     @Test
-    fun `les noms de fichier attendus ne contiennent ni deux-points ni nom de personne`() {
+    fun `les motifs de refus et les signalements sont fixes, et uuid_contenu_different n'est jamais un motif de refus`() {
+        val refus = setOf("version_future", "version_illisible")
+        val signalements = setOf("fichier_tronque", "ligne_illisible", "empreinte_differente", "uuid_contenu_different")
+        val vus = mutableSetOf<String>()
         cas.forEach { (_, c) ->
-            val nom = c.get("entree").asJsonObject.get("nom_demande")?.asString ?: return@forEach
-            assertTrue(':' !in nom && !nom.contains("Jean") && !nom.contains("Dupont"), "$nom")
+            val id = c.get("id").asString
+            val motifs = mutableListOf<com.google.gson.JsonElement>().also { cherche(c.get("attendu"), "motif", it) }
+            motifs.forEach { assertTrue(it.asString in refus, "$id : motif de refus ${it.asString}") ; vus += it.asString }
+            val sigs = mutableListOf<com.google.gson.JsonElement>().also { cherche(c.get("attendu"), "signalements", it) }
+            sigs.forEach { l -> l.asJsonArray.forEach { assertTrue(it.asString in signalements, "$id : signalement ${it.asString}") ; vus += it.asString } }
         }
+        assertEquals(refus + signalements, vus, "tous les codes fixés sont exercés par au moins un cas")
     }
 
     @Test
-    fun `N et M restent des parametres non fixes`() {
-        val texte = File(dossier, "declenchement.json").readText()
-        assertTrue(texte.contains("parametres_non_fixes"))
-        assertTrue(!Regex("\"saisies_depuis_derniere_sauvegarde\": ?\\d{2,}").containsMatchIn(texte), "une valeur numérique de N est fixée")
+    fun `un fichier abime n'est refuse en entier que pour une version N+1 ou illisible`() {
+        val parId = cas.associate { it.second.get("id").asString to it.second }
+        listOf("SV-20", "SV-22", "SV-23", "SV-25").forEach {
+            assertTrue(parId[it]!!.get("attendu").asJsonObject.get("accepte").asBoolean, "$it : un fichier abîmé garde ses lignes saines")
+        }
+        val refuses = cas.filter { (_, c) -> mutableListOf<com.google.gson.JsonElement>().also { l -> cherche(c.get("attendu"), "accepte", l) }.any { !it.asBoolean } }
+        refuses.forEach { (_, c) ->
+            val m = mutableListOf<com.google.gson.JsonElement>().also { cherche(c.get("attendu"), "motif", it) }.map { it.asString }
+            assertTrue(m.all { it in setOf("version_future", "version_illisible") }, "${c.get("id").asString} : refus pour $m")
+        }
+        listOf("SV-23", "SV-24", "SV-25", "SV-32", "SV-41", "SV-42", "SV-54").forEach {
+            assertTrue("pilotage/journal.md, 2026-10-21" in parId[it]!!.get("source").asString, "$it : décision de Pascal non citée")
+        }
+        assertTrue("JR-13" in parId["SV-24"]!!.get("source").asString && "JR-12" in parId["SV-24"]!!.get("source").asString)
+    }
+
+    @Test
+    fun `le gabarit de nom de SV-30 accepte un appareil opaque quelconque et refuse deux-points et segment vide`() {
+        val c = cas.first { it.second.get("id").asString == "SV-30" }.second
+        val gabarit = Regex(c.get("attendu").asJsonObject.get("gabarit").asString)
+        listOf(
+            "COUCHEY-2026-a3f9c2d1-20261014T090507Z.sursync",
+            "COUCHEY-2026-Pixel7-20261014T090507Z.sursync",
+            "COUCHEY-2026-0f3a-2026-10-14T09-05-07Z.sursync",
+        ).forEach { assertTrue(gabarit.matches(it), "devrait être accepté : $it") }
+        listOf(
+            "COUCHEY-2026-a3f9c2d1-20261014T09:05:07Z.sursync",
+            "COUCHEY-2026-a:3f9-20261014T090507Z.sursync",
+            "COUCHEY-2026--20261014T090507Z.sursync",
+            "COUCHEY-2026-a3f9c2d1-20261014T090507Z.zip",
+        ).forEach { assertTrue(!gabarit.matches(it), "devrait être refusé : $it") }
+    }
+
+    @Test
+    fun `les noms et les caracteres interdits des cas de nom sont coherents`() {
+        cas.forEach { (_, c) ->
+            val id = c.get("id").asString
+            val entree = c.get("entree").asJsonObject
+            listOf("nom_demande", "nom_existant").forEach { k -> entree.get(k)?.let { assertTrue(':' !in it.asString, "$id : $k contient un deux-points") } }
+            val interdits = c.get("attendu").asJsonObject.get("caracteres_absents")?.asJsonArray?.map { it.asString } ?: return@forEach
+            assertTrue(":" in interdits, "$id : le deux-points doit être interdit")
+        }
+        val sv32 = cas.first { it.second.get("id").asString == "SV-32" }.second.get("attendu").asJsonObject
+        assertEquals(setOf("Jean", "Dupont", "Téléphone"), sv32.getAsJsonArray("sous_chaines_absentes").map { it.asString }.toSet())
+    }
+
+    @Test
+    fun `N et M restent des parametres non fixes, y compris a un chiffre`() {
+        val texte = JsonParser.parseString(File(dossier, "declenchement.json").readText()).asJsonObject
+        val params = texte.getAsJsonObject("parametres_non_fixes")
+        assertEquals(setOf("N", "M"), params.keySet())
+        params.entrySet().forEach { (k, v) -> assertTrue(v.isJsonPrimitive && v.asJsonPrimitive.isString && v.asString.toIntOrNull() == null, "$k : valeur numérique fixée") }
+        val nombres = mutableListOf<com.google.gson.JsonElement>()
+        cherche(texte.getAsJsonArray("cas"), "saisies_depuis_derniere_sauvegarde", nombres)
+        nombres.filter { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }.forEach { assertTrue(it.asInt in 0..1, "N fixé par une valeur ${it.asInt}") }
+        val minutes = mutableListOf<com.google.gson.JsonElement>().also { l -> listOf("minutes_depuis_derniere_sauvegarde", "minutes_monotones_depuis_derniere_sauvegarde").forEach { cherche(texte.getAsJsonArray("cas"), it, l) } }
+        minutes.filter { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }.forEach { assertTrue(it.asInt == 0, "M fixé par une valeur ${it.asInt}") }
     }
 }

@@ -2,32 +2,119 @@
   "fichier": "declenchement.json",
   "regle": "Déclenchement de la sauvegarde : par unité de travail, et toutes les N saisies ou M minutes",
   "format": "voir fixtures/README.md, section Sauvegarde",
-  "parametres_non_fixes": {"N": "nombre de saisies : valeur de la mission 009, à mesurer", "M": "minutes : valeur de la mission 009, à mesurer"},
+  "parametres_non_fixes": {
+    "N": "nombre de saisies : valeur de la mission 009, à mesurer",
+    "M": "minutes : valeur de la mission 009, à mesurer"
+  },
   "cas": [
-    {"id": "SV-50", "description": "Chaque fin de placette, de constat, de vide et d'intervention déclenche une sauvegarde (quatre variantes).",
-     "entree": {"variantes": [{"evenement": "fin_placette"}, {"evenement": "fin_constat"}, {"evenement": "fin_vide"}, {"evenement": "fin_intervention"}], "saisies_depuis_derniere_sauvegarde": 1, "minutes_depuis_derniere_sauvegarde": 0},
-     "attendu": {"sauvegardes_declenchees": 1},
-     "source": "ADR 0005, règle « Sauvegarde » ; spec § 4.8"},
-    {"id": "SV-51", "description": "Sans fin d'unité de travail, la sauvegarde se déclenche à la N-ième saisie, pas à la (N-1)-ième.",
-     "entree": {"evenement": "saisie", "saisies_depuis_derniere_sauvegarde": ["N-1", "N"], "minutes_depuis_derniere_sauvegarde": 0},
-     "attendu": {"sauvegardes_declenchees": [0, 1]},
-     "source": "ADR 0005, règle « Sauvegarde » (« toutes les N saisies ou M minutes (au premier des deux) »)"},
-    {"id": "SV-52", "description": "Sans fin d'unité de travail ni N atteint, la sauvegarde se déclenche après M minutes (horloge monotone) s'il y a au moins une saisie nouvelle.",
-     "entree": {"evenement": "tic", "saisies_depuis_derniere_sauvegarde": 1, "minutes_monotones_depuis_derniere_sauvegarde": ["M-0.01", "M"]},
-     "attendu": {"sauvegardes_declenchees": [0, 1]},
-     "source": "ADR 0005, règle « Sauvegarde » ; règle « Temps » (durées sur l'horloge monotone)"},
-    {"id": "SV-53", "description": "Un saut de l'horloge murale (+2 h, ou -1 h) n'avance ni ne retarde le déclenchement de M.",
-     "entree": {"evenement": "tic", "saisies_depuis_derniere_sauvegarde": 1, "minutes_monotones_depuis_derniere_sauvegarde": "M-1", "saut_horloge_murale_min": [120, -60]},
-     "attendu": {"sauvegardes_declenchees": 0},
-     "source": "ADR 0005, règle « Temps » ; fixtures/journal/horloge.json JR-40 et JR-41"},
-    {"id": "SV-54", "description": "Aucune saisie nouvelle depuis la dernière sauvegarde : pas de sauvegarde inutile, même après plus de M minutes.",
-     "entree": {"evenement": "tic", "saisies_depuis_derniere_sauvegarde": 0, "minutes_monotones_depuis_derniere_sauvegarde": "10*M"},
-     "attendu": {"sauvegardes_declenchees": 0},
-     "source": "ADR 0005, règle « Sauvegarde » (limite du terrain : journée sans saisie)",
-     "hypothese": "la règle « pas de sauvegarde à vide » n'est pas écrite ; proposition du testeur, à confirmer par Pascal"},
-    {"id": "SV-55", "description": "Une photo est écrite dès la prise dans Pictures/Surculus/<code-tournée>/, avec son empreinte au journal, sans attendre une sauvegarde.",
-     "entree": {"evenement": "prise_photo", "code_tournee": "COUCHEY-2026"},
-     "attendu": {"photo_ecrite_immediatement": true, "dossier": "Pictures/Surculus/COUCHEY-2026/", "empreinte_au_journal": true, "sauvegarde_declenchee_requise": false},
-     "source": "ADR 0005, règle « Photos » ; spec § 4.8"}
+    {
+      "id": "SV-50",
+      "description": "Chaque fin de placette, de constat, de vide et d'intervention déclenche une sauvegarde (quatre variantes).",
+      "entree": {
+        "variantes": [
+          {
+            "evenement": "fin_placette"
+          },
+          {
+            "evenement": "fin_constat"
+          },
+          {
+            "evenement": "fin_vide"
+          },
+          {
+            "evenement": "fin_intervention"
+          }
+        ],
+        "saisies_depuis_derniere_sauvegarde": 1,
+        "minutes_depuis_derniere_sauvegarde": 0
+      },
+      "attendu": {
+        "sauvegardes_declenchees": 1
+      },
+      "source": "ADR 0005, règle « Sauvegarde » ; spec § 4.8"
+    },
+    {
+      "id": "SV-51",
+      "description": "Sans fin d'unité de travail, la sauvegarde se déclenche à la N-ième saisie, pas à la (N-1)-ième.",
+      "entree": {
+        "evenement": "saisie",
+        "saisies_depuis_derniere_sauvegarde": [
+          "N-1",
+          "N"
+        ],
+        "minutes_depuis_derniere_sauvegarde": 0
+      },
+      "attendu": {
+        "sauvegardes_declenchees": [
+          0,
+          1
+        ]
+      },
+      "source": "ADR 0005, règle « Sauvegarde » (« toutes les N saisies ou M minutes (au premier des deux) »)"
+    },
+    {
+      "id": "SV-52",
+      "description": "Sans fin d'unité de travail ni N atteint, la sauvegarde se déclenche après M minutes (horloge monotone) s'il y a au moins une saisie nouvelle.",
+      "entree": {
+        "evenement": "tic",
+        "saisies_depuis_derniere_sauvegarde": 1,
+        "minutes_monotones_depuis_derniere_sauvegarde": [
+          "M-0.01",
+          "M"
+        ]
+      },
+      "attendu": {
+        "sauvegardes_declenchees": [
+          0,
+          1
+        ]
+      },
+      "source": "ADR 0005, règle « Sauvegarde » ; règle « Temps » (durées sur l'horloge monotone) ; pilotage/journal.md, 2026-10-21, décision 6 (au moins une saisie nouvelle)"
+    },
+    {
+      "id": "SV-53",
+      "description": "Un saut de l'horloge murale (+2 h, ou -1 h) n'avance ni ne retarde le déclenchement de M.",
+      "entree": {
+        "evenement": "tic",
+        "saisies_depuis_derniere_sauvegarde": 1,
+        "minutes_monotones_depuis_derniere_sauvegarde": "M-1",
+        "saut_horloge_murale_min": [
+          120,
+          -60
+        ]
+      },
+      "attendu": {
+        "sauvegardes_declenchees": 0
+      },
+      "source": "ADR 0005, règle « Temps » ; fixtures/journal/horloge.json JR-40 et JR-41"
+    },
+    {
+      "id": "SV-54",
+      "description": "Aucune saisie nouvelle depuis la dernière sauvegarde : pas de sauvegarde inutile, même après plus de M minutes.",
+      "entree": {
+        "evenement": "tic",
+        "saisies_depuis_derniere_sauvegarde": 0,
+        "minutes_monotones_depuis_derniere_sauvegarde": "10*M"
+      },
+      "attendu": {
+        "sauvegardes_declenchees": 0
+      },
+      "source": "pilotage/journal.md, 2026-10-21, décision 6 (pas de sauvegarde sans saisie nouvelle, même après M minutes) ; ADR 0005, règle « Sauvegarde »"
+    },
+    {
+      "id": "SV-55",
+      "description": "Une photo est écrite dès la prise dans Pictures/Surculus/<code-tournée>/, avec son empreinte au journal, sans attendre une sauvegarde.",
+      "entree": {
+        "evenement": "prise_photo",
+        "code_tournee": "COUCHEY-2026"
+      },
+      "attendu": {
+        "photo_ecrite_immediatement": true,
+        "dossier": "Pictures/Surculus/COUCHEY-2026/",
+        "empreinte_au_journal": true,
+        "sauvegarde_declenchee_requise": false
+      },
+      "source": "ADR 0005, règle « Photos » ; spec § 4.8"
+    }
   ]
 }

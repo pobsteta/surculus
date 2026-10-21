@@ -9,7 +9,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Écrire, à partir de la spec (§ 4.8) et de l'ADR 0005, sans lire de code, les cas d'acceptation sourcés de la sauvegarde `.sursync` et de sa restauration (journal restauré à la ligne près, version N-1 lue et N+1 refusée, fichier tronqué ou altéré refusé, nom de fichier sans `:` ni nom de propriétaire ou d'agent, tournée existante jamais écrasée, déclenchement par unité de travail et toutes les N saisies ou M minutes), pour que la mission 009 ait ses tests avant son code.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent (reprise du 2026-10-21) :** je reprends les cas SV de la sauvegarde `.sursync` pour les aligner sur les six décisions de Pascal du 2026-10-21 (fichier abîmé : lignes saines gardées et fautives signalées, jamais de refus en entier sauf version N+1 ou illisible ; nom d'appareil opaque ; empreinte signalée ; jamais d'écrasement ; rotation par tournée ; pas de sauvegarde sans saisie), sans lire de code, afin que la 009 ait des tests justes avant son code.
 
 ## Les trois questions (règle de staffing)
 
