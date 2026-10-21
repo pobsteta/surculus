@@ -30,7 +30,8 @@ _Idées, à trier au prochain `/mission`._
 ## Validé
 
 - **009** sauvegarde `.sursync` (`dev`) : moyens prêts dès la fusion de la PR #40 (cas de la 024).
-- **013** dictée Vosk (`dev`) : moyens prêts dès la fusion de la PR #41 (cas de la 025).
+- **013** dictée Vosk (`dev`) : moyens prêts dès la fusion de la PR #41 (cas de la 025) et
+  l'ajout des cas des décisions 11 et 12 par le `testeur`.
 - **011** écrans tournées, carte, guidage (`afficheur`) : ADR 0009 acceptée, prête dès la
   fusion de la PR de pilotage.
 
@@ -41,15 +42,13 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **026** CI d'import, F1 + F2 + F3 (`dev`, appuyer), après la fusion de la #39.
 - **027** registre attendu du scénario Couchey (`testeur`, appuyer).
 - **028** registre attendu et sabotage en CI (`dev`, appuyer), après 026 et 027.
-- **PR de pilotage** (branche `adr/0009-carte-hors-ligne`) : ADR 0009, journal du cycle 4,
-  fiches 026 à 028, kanban. À fusionner **avant** les #40 et #41, dont les cas citent le
-  journal du 2026-10-21.
 
 **En revue chez Pascal :**
 
 - **022** critère (a) mesuré en CI, deux échecs montrés (PR #39) — relecteur : prêt.
 - **024** cas de la sauvegarde `.sursync` (PR #40) — relecteur : prêt.
-- **025** cas de la dictée (PR #41) — seconde reprise en cours (traçabilité).
+- **025** cas de la dictée (PR #41) — relecteur : prêt, après la PR de pilotage.
+- **PR de pilotage** — à fusionner en premier (au-delà du plafond, décision de Pascal).
 
 ## Terminé
 
