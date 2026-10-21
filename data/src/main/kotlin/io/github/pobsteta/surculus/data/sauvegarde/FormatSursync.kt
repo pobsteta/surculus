@@ -100,6 +100,9 @@ enum class Signalement(val code: String) {
     LIGNE_ILLISIBLE("ligne_illisible"),
     EMPREINTE_DIFFERENTE("empreinte_differente"),
     UUID_CONTENU_DIFFERENT("uuid_contenu_different"),
+
+    /** Ligne dont `code_tournee` n'est pas celui de l'en-tête : refusée, jamais rattachée à la tournée du fichier. */
+    LIGNE_AUTRE_TOURNEE("ligne_autre_tournee"),
 }
 
 /**
@@ -162,6 +165,8 @@ object LectureSursync {
                 nbLignes = jEntete.get("nb_lignes").asInt,
             )
         } catch (e: RuntimeException) { return refus(MotifRefus.VERSION_ILLISIBLE) }
+        // Sans code de tournée, les lignes ne se rattachent à rien : en-tête illisible.
+        if (entete.codeTournee.isBlank()) return refus(MotifRefus.VERSION_ILLISIBLE)
 
         // Pied : dernière ligne terminée, objet à la seule clé « sha256 ».
         var finSaisies = lignesBrutes.size
@@ -185,8 +190,12 @@ object LectureSursync {
         val lus = mutableListOf<LigneJournal>()
         for (i in 1 until finSaisies) {
             val o = json(lignesBrutes[i])
-            val ligne = o?.let(::versLigne)
-            if (ligne == null) {
+            val ligne = o?.let { versLigne(it, entete.codeTournee) }
+            if (o != null && ligne == null && autreTournee(o, entete.codeTournee)) {
+                refusees++
+                signalements += Signalement.LIGNE_AUTRE_TOURNEE
+                o.get("uuid")?.takeIf { it.isJsonPrimitive }?.asString?.let { uuidRefuses += it }
+            } else if (ligne == null) {
                 refusees++
                 signalements += Signalement.LIGNE_ILLISIBLE
                 o?.get("uuid")?.takeIf { it.isJsonPrimitive }?.asString?.let { uuidRefuses += it }
@@ -236,8 +245,18 @@ object LectureSursync {
         return Decompresse(sortie.toByteArray(), tronque)
     }
 
-    /** `null` si la ligne n'a pas tous ses champs avec le bon type, ou un type hors de la liste fermée. */
-    internal fun versLigne(o: JsonObject): LigneJournal? = try {
+    /** Vrai si la ligne porte un `code_tournee` texte différent de celui de l'en-tête. */
+    private fun autreTournee(o: JsonObject, codeEntete: String): Boolean = try {
+        val c = o.get("code_tournee")
+        c != null && c.isJsonPrimitive && c.asJsonPrimitive.isString && c.asString != codeEntete
+    } catch (e: RuntimeException) { false }
+
+    /**
+     * `null` si la ligne n'a pas tous ses champs avec le bon type, ou un type hors de la liste fermée, ou si son
+     * `code_tournee` (facultatif) n'est pas celui de l'en-tête. Sans `code_tournee`, la ligne prend celui de
+     * l'en-tête (`codeEntete`) : un fichier est celui d'une seule tournée.
+     */
+    internal fun versLigne(o: JsonObject, codeEntete: String): LigneJournal? = try {
         fun texte(c: String) = o.get(c).also { require(it.isJsonPrimitive && it.asJsonPrimitive.isString) }.asString
         fun texteOuNull(c: String) = o.get(c).let { if (it == null || it.isJsonNull) null else { require(it.asJsonPrimitive.isString); it.asString } }
         fun entier(c: String) = o.get(c).also { require(it.isJsonPrimitive && it.asJsonPrimitive.isNumber) }.asBigDecimal.longValueExact()
@@ -245,12 +264,16 @@ object LectureSursync {
         require(o.has("valeur") && o.has("remplace_uuid") && o.has("heure_gnss_ms") && o.has("age_fix_ms"))
         val type = texte("type")
         require(type in TypeLigne.TOUS)
+        if (o.has("code_tournee")) {
+            val c = o.get("code_tournee")
+            require(c.isJsonPrimitive && c.asJsonPrimitive.isString && c.asString == codeEntete)
+        }
         LigneJournal(
             uuid = texte("uuid"), objetUuid = texte("objet_uuid"), type = type, valeur = texteOuNull("valeur"),
             remplaceUuid = texteOuNull("remplace_uuid"), operateur = texte("operateur"), appareil = texte("appareil"),
             sequence = entier("sequence"), saisiLeUtcMs = entier("saisi_le_utc_ms"),
             heureGnssMs = entierOuNull("heure_gnss_ms"), monotoneMs = entier("monotone_ms"),
-            demarrage = entier("demarrage"), ageFixMs = entierOuNull("age_fix_ms"),
+            demarrage = entier("demarrage"), ageFixMs = entierOuNull("age_fix_ms"), codeTournee = codeEntete,
         )
     } catch (e: RuntimeException) { null }
 }

@@ -20,7 +20,7 @@ object TypeLigne {
  * `ageFixMs` est l'âge du dernier fix GNSS au moment de la saisie, mesuré sur l'horloge monotone
  * (`null` : aucun fix, ou âge inconnu).
  *
- * `valeur` est un texte JSON (ou `null`) ; deux lignes de même `uuid` sont « identiques » si tous leurs
+ * `codeTournee` est un code de tournée, jamais une coordonnée. `valeur` est un texte JSON (ou `null`) ; deux lignes de même `uuid` sont « identiques » si tous leurs
  * champs, `valeur` comprise, sont égaux caractère pour caractère.
  */
 data class LigneJournal(
@@ -37,4 +37,9 @@ data class LigneJournal(
     val monotoneMs: Long,
     val demarrage: Long,
     val ageFixMs: Long?,
+    /**
+     * Code de la tournée à laquelle appartient la saisie (spec § 5, mission 031). `""` : ligne **non rattachée**
+     * (antérieure à la version 3 de la base) ; elle reste au journal et n'entre dans aucune sauvegarde.
+     */
+    val codeTournee: String = "",
 )

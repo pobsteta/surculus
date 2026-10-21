@@ -260,7 +260,7 @@ class JournalDurableTest {
         val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
         db!!.close(); db = null
         SQLiteDatabase.openDatabase(contexte.getDatabasePath("t.db").path, null, SQLiteDatabase.OPEN_READWRITE).use {
-            it.execSQL("PRAGMA user_version = 3")
+            it.execSQL("PRAGMA user_version = 4")
         }
         assertFailsWith<Exception> { ouvrir("t.db").openHelper.writableDatabase }
         db = null

@@ -31,9 +31,13 @@ class ServiceSauvegarde(
     private val appareilOpaque: String,
     private val versionSommier: String?,
 ) {
-    /** Sauvegarde tout le journal sous un nom libre, puis applique la rotation de cette tournée. */
+    /**
+     * Sauvegarde les lignes de **cette tournée seule** sous un nom libre, puis applique la rotation de cette
+     * tournée. Les lignes d'une autre tournée et les lignes non rattachées n'y entrent jamais.
+     */
     fun sauvegarder(codeTournee: String, maintenantUtcMs: Long): SauvegardeEcrite {
-        val lignes = depot.lignes()
+        require(codeTournee.isNotBlank()) { "code de tournée vide" }
+        val lignes = depot.lignes(codeTournee)
         val octets = EcritureSursync.ecrire(
             EnTeteSursync(FormatSursync.VERSION_COURANTE, codeTournee, versionSommier, appareilOpaque, maintenantUtcMs, lignes.size),
             lignes,

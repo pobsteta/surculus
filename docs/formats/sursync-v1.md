@@ -14,7 +14,10 @@ Un fichier gzip dont le contenu est du **JSON Lines** (UTF-8, une ligne JSON par
    (version de sommieR de la tournée, ou `null` ; jamais l'empreinte du `travaux.gpkg`, qui change à chaque
    régénération), `appareil` (identifiant **opaque** de l'appareil qui écrit), `cree_le_utc_ms`, `nb_lignes`.
 2. **Saisies**, dans l'ordre total du journal (`saisi_le_utc`, `appareil`, `sequence`, `uuid`) : les treize champs
-   d'une ligne du journal, tels quels (spec § 5). `valeur` est le **texte** JSON de la valeur, recopié au caractère
+   d'une ligne du journal, tels quels (spec § 5). La tournée de la ligne est celle de l'en-tête : un fichier est celui
+   d'**une seule tournée**. Le champ `code_tournee` d'une saisie est **facultatif** : l'application ne l'écrit pas ;
+   absent, la ligne prend le code de l'en-tête ; présent et différent de celui de l'en-tête, la ligne est refusée
+   (`ligne_autre_tournee`, voir plus bas). Un en-tête dont `code_tournee` est vide n'est pas lu (`version_illisible`). `valeur` est le **texte** JSON de la valeur, recopié au caractère
    près (c'est ce qui garantit une restauration « à la ligne près »). Les instants sont des **millisecondes depuis
    l'époque Unix, UTC** (suffixe `_ms`).
 3. **Pied** : `{"sha256": "<64 chiffres hexadécimaux minuscules>"}`, SHA-256 des octets **décompressés** de toutes

@@ -34,6 +34,10 @@ interface JournalDao {
     @Query("SELECT * FROM journal ORDER BY saisi_le_utc, appareil, sequence, uuid")
     fun toutes(): List<LigneJournalEntity>
 
+    /** Lignes d'**une** tournée, dans l'ordre total. Le code `''` (lignes non rattachées) n'est jamais demandé. */
+    @Query("SELECT * FROM journal WHERE code_tournee = :code AND code_tournee <> '' ORDER BY saisi_le_utc, appareil, sequence, uuid")
+    fun deLaTournee(code: String): List<LigneJournalEntity>
+
     @Query("SELECT * FROM refus_journal ORDER BY id")
     fun tousLesRefus(): List<RefusJournalEntity>
 

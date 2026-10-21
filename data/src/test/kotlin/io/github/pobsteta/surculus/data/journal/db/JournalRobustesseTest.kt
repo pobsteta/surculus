@@ -135,7 +135,7 @@ class JournalRobustesseTest {
         contexte.deleteDatabase("m2.db")
         helper.createDatabase("m2.db", 1).use { it.execSQL(insertionV1) }
         val db = JournalDatabase.construire(contexte, "m2.db").allowMainThreadQueries().build().also { bases += it }
-        assertEquals(2, db.openHelper.writableDatabase.version)
+        assertEquals(3, db.openHelper.writableDatabase.version) // mission 031 : v3
         val l = db.dao().trouver("U1")!!.versLigne()
         assertEquals(7L, l.sequence)
         assertEquals(250L, l.ageFixMs)
