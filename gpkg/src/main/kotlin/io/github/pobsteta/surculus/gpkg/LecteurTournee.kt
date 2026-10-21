@@ -70,6 +70,38 @@ object LecteurTournee {
         }
     }
 
+    /**
+     * Géométries de `foret`, `ug` et `parcelles` pour la carte, en lecture seule ; [lire] n'est pas modifié.
+     * Mêmes refus que [lire], et [RefusGpkg.PointHorsFrance] si l'emprise d'une couche sort de France (axes inversés).
+     *
+     * Décisions de Pascal, 2026-10-21 :
+     * - une `foret` illisible fait refuser la tournée dès [lire] ; [lire] n'est pas modifié ;
+     * - un seul objet hors de France, quelle que soit la couche (`foret`, `ug`, `parcelles`), refuse toute la cartographie
+     *   (un point hors du rectangle de France fait sortir un coin de l'emprise de sa couche).
+     */
+    fun lireCartographie(chemin: Path): Cartographie {
+        val cnx = try {
+            Sqlite.ouvrir(chemin, lectureSeule = true)
+        } catch (e: SQLException) {
+            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "ouverture impossible"))
+        }
+        cnx.use { return lireCartographie(it) }
+    }
+
+    fun lireCartographie(cnx: Connection): Cartographie {
+        lire(cnx) // repère et couches de sommieR : mêmes refus que la lecture de la tournée
+        try {
+            val geometries = if (cnx.existeTable("gpkg_geometry_columns")) {
+                cnx.lignes("SELECT table_name, column_name FROM gpkg_geometry_columns").associate { it.texte("table_name")!! to it.texte("column_name")!! }
+            } else {
+                emptyMap()
+            }
+            return LectureCartographie.lire(cnx, geometries)
+        } catch (e: SQLException) {
+            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "lecture impossible"))
+        }
+    }
+
     private fun lireSansTraduction(cnx: Connection): Tournee {
         val applicationId = cnx.createStatement().use { st -> st.executeQuery("PRAGMA application_id").use { it.next(); it.getInt(1) } }
         if (applicationId != APPLICATION_ID_GPKG && !cnx.existeTable("gpkg_contents")) {

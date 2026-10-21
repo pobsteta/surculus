@@ -41,6 +41,9 @@ sealed interface Geometrie {
     }
 }
 
+/** Géométrie lisible mais qui n'est ni un polygone ni un multipolygone (point, ligne, collection). */
+class GeometrieNonPolygonale(message: String) : IllegalArgumentException(message)
+
 /** Enveloppe en mètres (OGC 12-128 § 2.1.3 : ordre minx, maxx, miny, maxy dans l'en-tête). */
 data class Enveloppe(val xMin: Double, val xMax: Double, val yMin: Double, val yMax: Double)
 
@@ -161,6 +164,79 @@ object GeometrieGpkg {
         val x = b.getDouble(debut + 5)
         val y = b.getDouble(debut + 13)
         return if (x.isFinite() && y.isFinite()) PointLambert93(x, y) else null
+    }
+
+    /**
+     * Décode la géométrie surfacique complète d'un blob : [Geometrie.Polygone] (trous gardés) ou [Geometrie.MultiPolygone]
+     * (toutes les parties). x = Est, y = Nord (Lambert-93, mètres) : l'appelant garantit le repère par `srs_id`.
+     * Rend `null` si la géométrie est vide. Lève [IllegalArgumentException] si le blob est corrompu, tronqué,
+     * ou d'un type non polygonal (point, ligne, collection).
+     */
+    fun lire(blob: ByteArray): Geometrie? {
+        try {
+            val lue = decoder(blob)
+            if (lue.vide) return null
+            val code = ((blob[3].toInt() and 0xFF) shr 1) and 0x07
+            val debut = 8 + when (code) {
+                0 -> 0
+                1 -> 32
+                2, 3 -> 48
+                else -> 64
+            }
+            return lireSurface(ByteBuffer.wrap(blob), debut).first
+        } catch (e: GeometrieNonPolygonale) {
+            throw e
+        } catch (e: IllegalArgumentException) {
+            throw e
+        } catch (e: RuntimeException) {
+            // IndexOutOfBounds, BufferUnderflow… : blob tronqué ou abîmé, y compris dans l'en-tête ou le WKB sans enveloppe.
+            throw IllegalArgumentException("Géométrie tronquée ou abîmée", e)
+        }
+    }
+
+    private fun lireSurface(b: ByteBuffer, debut: Int): Pair<Geometrie, Int> {
+        b.order(if (b.get(debut).toInt() == 1) ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN)
+        val codeWkb = b.getInt(debut + 1)
+        val dimensions = when (codeWkb / 1000) {
+            0 -> 2
+            1, 2 -> 3
+            3 -> 4
+            else -> throw IllegalArgumentException("Type WKB $codeWkb inconnu")
+        }
+        var pos = debut + 5
+        when (codeWkb % 1000) {
+            WKB_POLYGON -> {
+                val nbAnneaux = b.getInt(pos)
+                pos += 4
+                require(nbAnneaux in 1..1_000_000) { "Nombre d'anneaux invalide" }
+                val anneaux = ArrayList<List<PointLambert93>>()
+                repeat(nbAnneaux) {
+                    val n = b.getInt(pos)
+                    pos += 4
+                    require(n in 0..100_000_000 && pos + 8L * dimensions * n <= b.limit()) { "Anneau tronqué" }
+                    val pts = ArrayList<PointLambert93>(n)
+                    repeat(n) {
+                        pts.add(PointLambert93(b.getDouble(pos), b.getDouble(pos + 8)))
+                        pos += 8 * dimensions
+                    }
+                    anneaux.add(pts)
+                }
+                return Geometrie.Polygone(anneaux) to pos
+            }
+            WKB_MULTIPOLYGON -> {
+                val n = b.getInt(pos)
+                pos += 4
+                require(n in 1..1_000_000) { "Nombre de parties invalide" }
+                val parties = ArrayList<Geometrie.Polygone>()
+                repeat(n) {
+                    val (g, fin) = lireSurface(b, pos)
+                    parties.add(g as? Geometrie.Polygone ?: throw GeometrieNonPolygonale("Partie non polygonale"))
+                    pos = fin
+                }
+                return Geometrie.MultiPolygone(parties) to pos
+            }
+            else -> throw GeometrieNonPolygonale("Type WKB $codeWkb non polygonal")
+        }
     }
 
     private class Cumul {
