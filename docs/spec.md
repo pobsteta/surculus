@@ -127,9 +127,14 @@ point à Brest et à Strasbourg.
   ignore l'écran tactile (ADR 0004).
 
   Dictée hors ligne à **grammaire fermée** : « sain », « atteint », « mort », « absent »,
-  « non observé », « insectes », « champignon », « animaux », « abiotique »,
-  « indéterminé », « abrouti », « hauteur quarante-cinq », « suivant », « regarni »,
+  « non observé », « insectes », « champignon », « animaux », « climat »,
+  « indéterminé », « mangé », « hauteur quarante-cinq », « suivant », « remplace »,
   « vide », « fin du vide », « annule ».
+  « climat », « mangé » et « remplace » remplacent « abiotique », « abrouti » et « regarni »,
+  absents du vocabulaire de `vosk-model-small-fr-0.22` (décision de Pascal du 2026-10-21,
+  mission 025). « climat » et « indéterminé » mènent au même groupe DSF ; « mangé » porte
+  le détail « abroutissement » sur un plant sain, atteint ou mort. Une phrase porte une
+  seule commande ; « hauteur » va de 1 à 400 cm.
   **[ADR à venir : stack, dont moteur de dictée]**
 * **Totaux déduits des plants** et écrits dans `controles` pour l'import 0.31.1 :
   `nb_total` (sains + atteints + morts + absents, **hors non observés et hors plants

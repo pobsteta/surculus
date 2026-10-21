@@ -46,3 +46,37 @@
 ## Comment saura-t-on que ça marche ?
 
 Le `dev` de la 013 branche ces cas sans les modifier, et ils passent au vert.
+
+## Reprise après la remise de la PR #41 (2026-10-21)
+
+Le testeur a montré que trois mots de la grammaire sont absents du vocabulaire du modèle,
+et que la décision 4 transmise par l'orchestrateur contredisait la spec § 6. **Erreur de
+l'orchestrateur :** l'option qu'il recommandait (« abrouti refusé sur un mort ») citait à
+tort la spec § 4.3.
+
+**Décisions de Pascal du 2026-10-21, numérotées comme au journal** (source :
+« pilotage/journal.md, 2026-10-21 ») :
+1. « hauteur » de 1 à 400 cm.
+2. Une phrase, une commande.
+3. Frottis, hylobe, gel, sécheresse et concurrence restent hors grammaire.
+4. **Corrigée :** le mot du détail « abroutissement » est accepté sur un plant **sain,
+   atteint ou mort**, et refusé sur un absent, un non observé ou sans état (spec § 6 et
+   arbitrage de la 002).
+5. **Mots remplacés :** « abiotique » devient « climat », « abrouti » devient « mangé »,
+   « regarni » devient « remplace ». Les trois sont dans le vocabulaire du modèle. La
+   spec § 4.3 est amendée sur cette branche par l'orchestrateur.
+
+**Choix techniques de l'orchestrateur :**
+- Correspondance des mots vers `cause_groupe` : insectes → entomologique, champignon →
+  pathologique, animaux → animaux, climat et indéterminé →
+  abiotique_complexe_indetermine (référentiel `etats-plants.yaml`).
+- Nombres : la forme à traits d'union (« quarante-cinq ») et la forme à espaces
+  (« quarante cinq ») sont acceptées toutes les deux, puisque Vosk peut rendre l'une ou
+  l'autre. Les espaces en tête, en queue ou doublés sont normalisés avant l'analyse.
+- Le SHA-256 de l'archive n'est pas inscrit dans `docs/dependances.md` par cette mission :
+  la 013 le recoupera sur un second téléchargement.
+
+**À faire :** aligner tous les cas sur ces décisions (les trois mots, l'abroutissement sur
+un mort, les nombres à espaces, la normalisation des espaces). Le test actif ne doit plus
+consigner d'absence au vocabulaire : chaque mot de la grammaire y est. Écrire la redite de
+la mission dans cette fiche.
