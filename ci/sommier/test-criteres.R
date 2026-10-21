@@ -106,6 +106,15 @@ x <- variante("couche-etrangere")
 sf::st_write(pts("zzzz"), x, layer = "intruse", quiet = TRUE, layer_options = "SPATIAL_INDEX=NO")
 verifier(contient(controle_f3(depart, x, COUCHES), "intruse"), "F3 : une couche étrangère aux six est refusée")
 
+# feature_count NULL au départ (modèle de sommieR) : doit rester NULL.
+x <- variante("fc-null-depart", "UPDATE gpkg_ogr_contents SET feature_count = NULL")
+dn <- file.path(travail, "depart-null.gpkg")
+invisible(file.copy(x, dn, overwrite = TRUE))
+verifier(length(controle_f3(dn, x, COUCHES)) == 0L, "F3 : feature_count NULL des deux côtés accepté")
+x2 <- variante("fc-null-rempli", "UPDATE gpkg_ogr_contents SET feature_count = NULL WHERE table_name = 'placettes'")
+verifier(contient(controle_f3(dn, depart, COUCHES), "feature_count de controles"),
+         "F3 : feature_count NULL au départ puis renseigné dans l'export refusé")
+
 # --- F1 ---------------------------------------------------------------------
 bexp <- list(travaux = 0L, placettes = 0L, controles = 2L)
 bimp <- list(travaux = 0L, placettes = 0L, controles = 2L, deja_presents = 3L,

@@ -266,12 +266,20 @@ controle_f3 <- function(depart_gpkg, export_gpkg, couches_ajoutees,
       t <- fd$table_name[i]
       ajout <- if (t %in% names(inserts)) inserts[[t]] else 0L
       mesure <- fe$feature_count[fe$table_name == t]
-      attendu <- fd$feature_count[i] + ajout
-      if (length(mesure) != 1L || is.na(mesure) || is.na(attendu) || mesure != attendu)
+      depart_fc <- fd$feature_count[i]
+      if (length(mesure) != 1L) {
+        fautes <- c(fautes, sprintf(
+          "F3 : gpkg_ogr_contents : ligne de %s absente de l'export", t))
+        next
+      }
+      # feature_count NULL au départ (cas du modèle de sommieR : GDAL le
+      # recalcule à l'ouverture) : l'export doit le laisser NULL, inchangé.
+      attendu <- if (is.na(depart_fc)) NA_integer_ else depart_fc + ajout
+      if (!identical(is.na(mesure), is.na(attendu)) ||
+          (!is.na(attendu) && mesure != attendu))
         fautes <- c(fautes, sprintf(
           "F3 : gpkg_ogr_contents : feature_count de %s, attendu %s (départ %s + %d ajoutées), mesuré %s",
-          t, attendu, fd$feature_count[i], ajout,
-          if (length(mesure)) mesure else "absent"))
+          t, attendu, depart_fc, ajout, mesure))
     }
   }
   fautes
