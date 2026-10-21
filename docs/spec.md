@@ -328,6 +328,14 @@ Les choix **techniques du `dev`** (non tranchés par Pascal, à relire) sont sig
 Chaque geste est une ligne ajoutée au journal, jamais modifiée (arbitrage de Pascal du
 2026-10-17, plan de la mission 008) :
 
+**Tournée de la ligne** (décision de Pascal, 2026-10-21, mission 031) : chaque ligne porte `code_tournee`, le code de
+la tournée à laquelle appartient la saisie (le même code que celui du fichier de la tournée). La valeur `''` désigne
+une ligne **non rattachée** : celles qui existaient avant la version 3 de la base. Elles restent au journal, sans
+perte, ne sont rattachées à aucune tournée par supposition et n'entrent dans aucune sauvegarde. Une ligne reçue dont
+l'`uuid` existe déjà avec une autre tournée est un contenu différent (`uuid_contenu_different`). La projection
+ne change pas : sa clé reste (`objet_uuid`, `type`). La sauvegarde et la restauration (§ 4.8) ne portent que sur une
+tournée. Dans le fichier `.sursync`, la tournée n'est écrite qu'une fois, dans l'en-tête ; les saisies n'en portent pas (`docs/formats/sursync-v1.md`).
+
 | `type` | Objet (`objet_uuid`) | Ce que porte `valeur` |
 |---|---|---|
 | `controle` | le contrôle | placette, jour civil, opérateur |

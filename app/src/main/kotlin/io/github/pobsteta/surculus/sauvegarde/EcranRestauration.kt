@@ -93,6 +93,7 @@ private fun texte(r: CompteRendu?): String {
             Signalement.LIGNE_ILLISIBLE -> R.string.restauration_ligne_illisible
             Signalement.EMPREINTE_DIFFERENTE -> R.string.restauration_empreinte
             Signalement.UUID_CONTENU_DIFFERENT -> R.string.restauration_uuid_different
+            Signalement.LIGNE_AUTRE_TOURNEE -> R.string.restauration_autre_tournee
         },
     )
     return lignes.joinToString("\n")

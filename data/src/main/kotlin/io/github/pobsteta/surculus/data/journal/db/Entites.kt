@@ -19,6 +19,8 @@ import io.github.pobsteta.surculus.data.journal.LigneJournal
         Index(value = ["appareil", "sequence"]),
         // Version 2 : l'ordre total range d'abord par `saisi_le_utc` (MIGRATION_1_2).
         Index(value = ["saisi_le_utc"]),
+        // Version 3 : la sauvegarde lit les lignes d'une tournée (MIGRATION_2_3).
+        Index(value = ["code_tournee"]),
     ],
 )
 data class LigneJournalEntity(
@@ -35,16 +37,18 @@ data class LigneJournalEntity(
     @ColumnInfo(name = "monotone_ms") val monotoneMs: Long,
     @ColumnInfo(name = "demarrage") val demarrage: Long,
     @ColumnInfo(name = "age_fix_ms") val ageFixMs: Long?,
+    // Version 3 : tournée de la ligne ; '' = non rattachée (lignes antérieures, MIGRATION_2_3).
+    @ColumnInfo(name = "code_tournee", defaultValue = "''") val codeTournee: String = "",
 ) {
     fun versLigne() = LigneJournal(
         uuid, objetUuid, type, valeur, remplaceUuid, operateur, appareil, sequence,
-        saisiLeUtcMs, heureGnssMs, monotoneMs, demarrage, ageFixMs,
+        saisiLeUtcMs, heureGnssMs, monotoneMs, demarrage, ageFixMs, codeTournee,
     )
 
     companion object {
         fun de(l: LigneJournal) = LigneJournalEntity(
             l.uuid, l.objetUuid, l.type, l.valeur, l.remplaceUuid, l.operateur, l.appareil, l.sequence,
-            l.saisiLeUtcMs, l.heureGnssMs, l.monotoneMs, l.demarrage, l.ageFixMs,
+            l.saisiLeUtcMs, l.heureGnssMs, l.monotoneMs, l.demarrage, l.ageFixMs, l.codeTournee,
         )
     }
 }
@@ -70,10 +74,12 @@ data class RefusJournalEntity(
     @ColumnInfo(name = "monotone_ms") val monotoneMs: Long,
     @ColumnInfo(name = "demarrage") val demarrage: Long,
     @ColumnInfo(name = "age_fix_ms") val ageFixMs: Long?,
+    // Version 3 : tournée de la ligne ; '' = non rattachée (lignes antérieures, MIGRATION_2_3).
+    @ColumnInfo(name = "code_tournee", defaultValue = "''") val codeTournee: String = "",
 ) {
     fun versLigne() = LigneJournal(
         uuid, objetUuid, type, valeur, remplaceUuid, operateur, appareil, sequence,
-        saisiLeUtcMs, heureGnssMs, monotoneMs, demarrage, ageFixMs,
+        saisiLeUtcMs, heureGnssMs, monotoneMs, demarrage, ageFixMs, codeTournee,
     )
 
     companion object {
@@ -81,6 +87,7 @@ data class RefusJournalEntity(
             uuid = l.uuid, objetUuid = l.objetUuid, type = l.type, valeur = l.valeur, remplaceUuid = l.remplaceUuid,
             operateur = l.operateur, appareil = l.appareil, sequence = l.sequence, saisiLeUtcMs = l.saisiLeUtcMs,
             heureGnssMs = l.heureGnssMs, monotoneMs = l.monotoneMs, demarrage = l.demarrage, ageFixMs = l.ageFixMs,
+            codeTournee = l.codeTournee,
         )
     }
 }

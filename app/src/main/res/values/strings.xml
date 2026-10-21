@@ -40,6 +40,7 @@
     <string name="restauration_version_illisible">Ce fichier n\'est pas une sauvegarde Surculus lisible. Rien n\'a été changé.</string>
     <string name="restauration_tronque">Attention : le fichier est incomplet, les dernières saisies manquent peut-être.</string>
     <string name="restauration_ligne_illisible">Attention : des lignes du fichier sont illisibles et ont été écartées.</string>
+    <string name="restauration_autre_tournee">Attention : des lignes du fichier appartiennent à une autre tournée et ont été écartées.</string>
     <string name="restauration_empreinte">Attention : le fichier a été modifié ou abîmé depuis sa sauvegarde (empreinte différente). Vérifiez les saisies restaurées.</string>
     <string name="restauration_uuid_different">Attention : une même saisie apparaît deux fois avec un contenu différent ; les deux ont été écartées.</string>
 </resources>

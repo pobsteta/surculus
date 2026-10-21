@@ -64,9 +64,10 @@ class JournalRepository(
         operateur: String,
         remplaceUuid: String? = null,
         fix: FixGnss? = null,
+        codeTournee: String = "",
     ): LigneJournal {
         require(type in TypeLigne.TOUS) { "type de ligne inconnu : $type" }
-        return saisirDansTransaction(objetUuid, type, valeur, operateur, remplaceUuid, fix)
+        return saisirDansTransaction(objetUuid, type, valeur, operateur, remplaceUuid, fix, codeTournee)
     }
 
     private fun saisirDansTransaction(
@@ -76,6 +77,7 @@ class JournalRepository(
         operateur: String,
         remplaceUuid: String?,
         fix: FixGnss?,
+        codeTournee: String,
     ): LigneJournal = db.runInTransaction(Callable {
         val sequence = (dao.derniereSequence(appareil) ?: 0L) + 1
         val maintenant = horloge.maintenantUtcMs()
@@ -85,7 +87,7 @@ class JournalRepository(
             uuid = uuids.suivant(), objetUuid = objetUuid, type = type, valeur = valeur,
             remplaceUuid = remplaceUuid, operateur = operateur, appareil = appareil, sequence = sequence,
             saisiLeUtcMs = maintenant, heureGnssMs = fix?.heureUtcMs, monotoneMs = monotone, demarrage = demarrage,
-            ageFixMs = fix?.let { monotone - it.monotoneMs },
+            ageFixMs = fix?.let { monotone - it.monotoneMs }, codeTournee = codeTournee,
         )
         val precedente = dao.precedente(appareil)?.versLigne()
         ajouter(ligne)
@@ -105,7 +107,10 @@ class JournalRepository(
     /** Annule une ligne (défait ; annuler une annulation refait). L'annulation agit sur la clé de la cible. */
     fun annuler(uuidCible: String, operateur: String): LigneJournal {
         val cible = dao.trouver(uuidCible) ?: throw IllegalArgumentException("ligne inconnue : $uuidCible")
-        return saisir(cible.objetUuid, TypeLigne.ANNULATION, null, operateur, remplaceUuid = cible.uuid)
+        return saisir(
+            cible.objetUuid, TypeLigne.ANNULATION, null, operateur, remplaceUuid = cible.uuid,
+            codeTournee = cible.codeTournee,
+        )
     }
 
     /**
@@ -118,6 +123,9 @@ class JournalRepository(
 
     /** Toutes les lignes du journal, dans l'ordre total. */
     fun lignes(): List<LigneJournal> = dao.toutes().map { it.versLigne() }
+
+    /** Lignes d'**une** tournée, dans l'ordre total : jamais celles d'une autre, ni les lignes non rattachées. */
+    fun lignes(codeTournee: String): List<LigneJournal> = dao.deLaTournee(codeTournee).map { it.versLigne() }
 
     /** Projection lue dans la table. */
     fun projection(): Map<CleProjection, EtatCle> = dao.projection().associate { it.versEtat().let { e -> e.cle to e } }

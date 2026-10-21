@@ -10,9 +10,11 @@ import java.util.zip.GZIPInputStream
 /** Outils des tests de la sauvegarde : construction et altération de fichiers `.sursync`, sans passer par l'écriture testée. */
 object OutilsSursync {
     /** `journal/projection.json#JR-02` : les lignes d'entrée du cas cité de `fixtures/journal/`. */
-    fun journalDe(ref: String): List<LigneJournal> {
+    fun journalDe(ref: String, tournee: String = "COUCHEY-2026"): List<LigneJournal> {
         val (fichier, id) = ref.split("#")
+        // Les fixtures du journal n'ont pas de champ tournée : l'assistant affecte celle du fichier d'essai.
         return ScenariosJournal.cas(fichier.removePrefix("journal/").removeSuffix(".json")).first { it.id == id }.lignes
+            .map { it.copy(codeTournee = tournee) }
     }
 
     fun entete(version: Any? = 1, nb: Int = 0): JsonObject = JsonObject().apply {

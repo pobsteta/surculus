@@ -18,7 +18,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 @Database(
     entities = [LigneJournalEntity::class, RefusJournalEntity::class, ProjectionEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class JournalDatabase : RoomDatabase() {
@@ -37,8 +37,22 @@ abstract class JournalDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v2 -> v3 : le code de la tournée de chaque ligne (mission 031). `ADD COLUMN` seul, avec la valeur
+         * `''` (ligne **non rattachée**) : aucune ligne n'est copiée, modifiée ni supprimée (les déclencheurs
+         * d'ajout seul ne se déclenchent pas), et aucune ligne n'est rattachée à une tournée par supposition.
+         * Les lignes non rattachées restent au journal et n'entrent dans aucune sauvegarde.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `journal` ADD COLUMN `code_tournee` TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE `refus_journal` ADD COLUMN `code_tournee` TEXT NOT NULL DEFAULT ''")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_journal_code_tournee` ON `journal` (`code_tournee`)")
+            }
+        }
+
         /** Toutes les migrations connues. Jamais de repli destructif. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
 
         /** Déclencheurs qui refusent toute modification ou suppression d'une ligne du journal. */
         internal val DECLENCHEURS = listOf(
