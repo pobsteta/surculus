@@ -1,0 +1,69 @@
+{
+  "fichier": "ecrasement.json",
+  "regle": "Une tournée existante n'est jamais écrasée ; rotation des 5 dernières sauvegardes",
+  "format": "voir fixtures/README.md, section Sauvegarde",
+  "decision": "Un fichier de même nom n'est jamais écrasé : le nouveau est suffixé (décision 3). La rotation des 5 dernières ne supprime que la plus ancienne de la même tournée (décision 4). Source : pilotage/journal.md, 2026-10-21.",
+  "cas": [
+    {
+      "id": "SV-40",
+      "description": "Restaurer sur un appareil qui a déjà cette tournée fusionne par union sur l'UUID : les lignes locales absentes du fichier restent.",
+      "entree": {
+        "journal_local": {
+          "journal_de": "journal/projection.json#JR-02"
+        },
+        "fichier": {
+          "lignes_en_plus": 1,
+          "lignes_en_commun": "toutes celles du journal local sauf une"
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "lignes_locales_conservees": true,
+        "lignes_ajoutees": 1,
+        "aucun_doublon": true
+      },
+      "source": "spec § 4.8 (union sur l'UUID) ; mission 024, « tournée existante jamais écrasée »"
+    },
+    {
+      "id": "SV-41",
+      "description": "Un fichier de même nom existe déjà : le nouveau est écrit sous un nom suffixé, l'ancien reste intact octet pour octet.",
+      "entree": {
+        "nom_existant": "COUCHEY-2026-a3f9c2d1-20261014T090507Z.sursync",
+        "nom_demande": "COUCHEY-2026-a3f9c2d1-20261014T090507Z.sursync"
+      },
+      "attendu": {
+        "ancien_intact": true,
+        "nouveau_nom_different": true,
+        "nouveau_nom_commence_par": "COUCHEY-2026-a3f9c2d1-20261014T090507Z",
+        "extension": ".sursync",
+        "caracteres_absents": [
+          ":"
+        ]
+      },
+      "source": "pilotage/journal.md, 2026-10-21, décision 3"
+    },
+    {
+      "id": "SV-42",
+      "description": "Sixième sauvegarde d'une tournée : la plus ancienne de cette tournée est supprimée, jamais la plus récente, jamais un fichier d'une autre tournée.",
+      "entree": {
+        "sauvegardes_existantes": {
+          "COUCHEY-2026": 5,
+          "AUTRE-TOURNEE": 5
+        },
+        "nouvelle_sauvegarde": "COUCHEY-2026"
+      },
+      "attendu": {
+        "COUCHEY-2026": {
+          "restantes": 5,
+          "plus_ancienne_supprimee": true,
+          "plus_recente_conservee": true
+        },
+        "AUTRE-TOURNEE": {
+          "restantes": 5,
+          "aucune_supprimee": true
+        }
+      },
+      "source": "pilotage/journal.md, 2026-10-21, décision 4 ; ADR 0005, règle « Sauvegarde » (5 dernières gardées par tournée)"
+    }
+  ]
+}

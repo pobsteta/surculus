@@ -41,3 +41,31 @@
 ## Comment saura-t-on que ça marche ?
 
 Le résumé du job sur `main` affiche un critère (a) mesuré et vert.
+
+## Reprise après la relecture de la PR #39 (2026-10-20)
+
+Verdict du `relecteur` : **à reprendre**. Le critère (a) est mesuré et vert (2 contrôles,
+P35-01 et P35-02, « Conforme »), aucun contrôle n'est affaibli, mais l'échec n'a jamais été
+montré.
+
+**Erreur de la fiche, reconnue par l'orchestrateur :** « un export privé d'une saisie le fait
+échouer » est faux : le témoin « sans » est le même export privé de ses six couches, donc
+les deux bilans perdent la même saisie et le job reste vert.
+
+**Décision de Pascal (2026-10-20) : montrer les deux échecs**, chacun par un commit
+temporaire poussé sur la PR, puis retiré ; le lien de chaque run rouge est écrit dans la
+description de la PR :
+- (i) **scénario sans aucune saisie** : l'import n'écrit rien, donc écart ;
+- (ii) **une couche ajoutée qui modifie une couche de sommieR**, donc le bilan : le critère (a)
+  diffère entre « avec » et « sans ».
+
+**À corriger aussi :**
+- `ci/sommier/README.md`, point 4 : retirer la phrase sur le `::warning::` qui n'existe plus ;
+- résumé du job : n'afficher que les compteurs (travaux, placettes, contrôles, déjà
+  présents, entrées écrites), le bilan entier reste dans l'artefact.
+
+**Hors mission (ne pas toucher) :** la doc d'`ExporterScenario.kt` (l. 51) cite
+`tournee-sans` au lieu de `tournee-depart` ; elle sera corrigée à part.
+
+**Rappel de méthode :** le temps de la main est « appuyer » : rendre en quelques lignes le
+plan des deux démonstrations avant de pousser.

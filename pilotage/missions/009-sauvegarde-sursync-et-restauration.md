@@ -48,3 +48,12 @@
 ## Comment saura-t-on que ça marche ?
 
 la tournée restaurée montre les mêmes saisies.
+
+## Moyens ajoutés le 2026-10-21
+
+- Cas d'acceptation : `fixtures/sauvegarde/` (mission 024, PR #40), à brancher **sans les
+  modifier**. Décisions de Pascal du 2026-10-21 au journal (1 à 8) : appareil opaque,
+  empreinte SHA-256 (l'ADR 0005 est à compléter par cette mission), jamais d'écrasement,
+  rotation par tournée, lignes saines gardées, pas de sauvegarde sans saisie nouvelle,
+  empreinte fausse → toutes les lignes lisibles restaurées avec un avertissement (SV-23),
+  0 octet → `version_illisible`.

@@ -48,3 +48,14 @@
 ## Comment saura-t-on que ça marche ?
 
 les mots de la grammaire sont reconnus sur le terrain.
+
+## Moyens ajoutés le 2026-10-21
+
+- Cas d'acceptation : `fixtures/dictee/` (mission 025, PR #41), à brancher **sans les modifier** ;
+  `DicteeRejeuTest` à réactiver ; port de test `DicteePort.kt`. Mots de la grammaire :
+  « climat », « mangé », « remplace » (spec § 4.3 amendée). SHA-256 de l'archive
+  `cabf6180…be12ad`, confirmé par deux téléchargements, à inscrire dans
+  `docs/dependances.md`.
+- **Avant de lancer la 013**, le `testeur` ajoute les cas des décisions 11 et 12 du
+  2026-10-21 (même état redit : aucune ligne et confirmation vocale ; « non observé » sur
+  un plant qui a un état : correction) et retire l'hypothèse de DI-303 (décision 13).
