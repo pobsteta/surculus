@@ -28,4 +28,18 @@
     <string name="essai_mot_de_passe">Mot de passe NTRIP</string>
     <string name="essai_compte_aide">Compte public de Centipède : voir docs.centipede.fr. Rien n\'est enregistré avant « Démarrer ».</string>
     <string name="essai_hors_france">Hors de France : vérifier l\'ordre latitude / longitude</string>
+
+    <!-- Restauration d'une tournée (mission 009) -->
+    <string name="restauration_ouvrir">Restaurer une tournée</string>
+    <string name="restauration_titre">Restaurer une tournée</string>
+    <string name="restauration_choisir">Choisir un fichier .sursync</string>
+    <string name="restauration_lecture_impossible">Le fichier n\'a pas pu être lu. Rien n\'a été changé.</string>
+    <string name="restauration_ok">Tournée restaurée : %1$d saisies ajoutées, %2$d déjà présentes.</string>
+    <string name="restauration_refusees">%1$d saisies abîmées n\'ont pas été restaurées.</string>
+    <string name="restauration_version_future">Ce fichier vient d\'une version plus récente de Surculus. Mettez l\'application à jour. Rien n\'a été changé.</string>
+    <string name="restauration_version_illisible">Ce fichier n\'est pas une sauvegarde Surculus lisible. Rien n\'a été changé.</string>
+    <string name="restauration_tronque">Attention : le fichier est incomplet, les dernières saisies manquent peut-être.</string>
+    <string name="restauration_ligne_illisible">Attention : des lignes du fichier sont illisibles et ont été écartées.</string>
+    <string name="restauration_empreinte">Attention : le fichier a été modifié ou abîmé depuis sa sauvegarde (empreinte différente). Vérifiez les saisies restaurées.</string>
+    <string name="restauration_uuid_different">Attention : une même saisie apparaît deux fois avec un contenu différent ; les deux ont été écartées.</string>
 </resources>

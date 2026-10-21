@@ -1,0 +1,4 @@
+{"format":"sursync","version":1,"code_tournee":"COUCHEY-2026","version_sommier":"0.31.1","appareil":"a3f9c2d1","cree_le_utc_ms":1791968707000,"nb_lignes":2}
+{"uuid":"U2","objet_uuid":"P1","type":"etat","valeur":"{\"etat\":\"mort\"}","remplace_uuid":"U1","operateur":"op1","appareil":"A","sequence":2,"saisi_le_utc_ms":1791968400000,"heure_gnss_ms":null,"monotone_ms":2000,"demarrage":1,"age_fix_ms":null}
+{"uuid":"U1","objet_uuid":"P1","type":"etat","valeur":"{\"etat\":\"sain\"}","remplace_uuid":null,"operateur":"op1","appareil":"A","sequence":1,"saisi_le_utc_ms":1791972000000,"heure_gnss_ms":null,"monotone_ms":1000,"demarrage":1,"age_fix_ms":null}
+{"sha256":"17282df752fef4b1c486d5d38e9206d48bc98da98e877b5d3099cc492f0c820e"}

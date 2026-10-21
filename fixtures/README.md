@@ -123,6 +123,10 @@ Cas d'acceptation de la sauvegarde et de sa restauration, écrits par le `testeu
 * **N et M** : paramètres non fixés (valeurs de la 009, à mesurer) ; les cas les écrivent `N`, `M`.
 * **Non couverts** : le format binaire (`docs/formats/sursync-v1.md`, affaire de la 009) ; les trois voies hors appareil (010) ; SV-34 (MediaStore `IS_PENDING`) ne se vérifie que sur appareil ou émulateur ; pas de test Kotlin désactivé, l'interface attendue ne se décrit pas sans lire le code.
 
+## Exemples du format `.sursync` (`fixtures/sursync/`, mission 009)
+
+Exemples du format publié dans `docs/formats/sursync-v1.md`, tirés du journal `fixtures/journal/projection.json#JR-02` (écrits par la mission 009, rejoués par `FormatEtServiceTest`) : `exemple-v1.jsonl` (contenu décompressé, lisible), `exemple-v1.sursync` (le même, en gzip), `exemple-v1-tronque.sursync` (10 derniers octets coupés), `exemple-v1-empreinte-fausse.sursync` (une valeur changée, pied inchangé). Les cas d'acceptation, eux, sont dans `sauvegarde/`.
+
 ## Dictée (`fixtures/dictee/`, mission 025)
 
 Cas d'acceptation de la mission 013, écrits depuis `docs/spec.md` § 4.3, l'ADR 0004 et les décisions de Pascal
