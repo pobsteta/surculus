@@ -24,6 +24,10 @@ _Idées, à trier au prochain `/mission`._
 - **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
   barème 2024 (« en vigueur NON vérifié ») ; un test de forme des CSV de
   `docs/referentiels/` (même nombre de colonnes sur chaque ligne).
+- **Tests (relecture de la 027)** : une seule emprise France, celle de la spec § 10.9
+  (domaine d'usage d'EPSG:2154) ; `FixturesBienFormeesTest` (l. 138) a sa propre boîte.
+  `fixtures/README.md` (l. 79) : ajouter `remplace_autre_tournee` aux codes d'anomalie
+  (`testeur`).
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
   de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
