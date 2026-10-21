@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** SV-40 à SV-42 (écrasement, rotation) et SV-50 à SV-55 (déclenchement, photo), sans Android. Les tests ne dépendent pas des valeurs de N et M. */
+/** SV-41, SV-42 (écrasement, rotation) et SV-50 à SV-55 (déclenchement, photo), sans Android ; SV-40 (union avec un journal local) est dans `SauvegardeFixturesTest`, qui a besoin de Room. Les tests ne dépendent pas des valeurs de N et M. */
 class DeclenchementEtStockageTest {
     private val n = RegleDeclenchement.N_SAISIES
     private val m = RegleDeclenchement.M_MINUTES.toDouble()

@@ -246,6 +246,26 @@ class SauvegardeFixturesTest {
         assertNull(LectureSursync.lire(OutilsSursync.ecrire(emptyList())).motif)
     }
 
+    // --- ecrasement.json ---
+
+    @Test fun `SV-40 restaurer sur un journal local non vide - lignes locales gardees, une seule ajoutee`() {
+        val locales = journalDe("journal/projection.json#JR-02") // U1, U2
+        val local = depot("B", locales)
+        val avant = local.lignes()
+        // Le fichier a toutes les lignes locales sauf U2, et une ligne de plus.
+        val enPlus = locales[0].copy(uuid = "U9", sequence = 9, saisiLeUtcMs = locales[0].saisiLeUtcMs + 1000)
+        val fichier = OutilsSursync.fichierDe(listOf(locales[0], enPlus))
+        val cr = Restauration.restaurer(fichier, local)
+        assertTrue(cr.accepte)
+        assertEquals(1, cr.ajoutees)
+        assertEquals(1, cr.dejaPresentes)
+        val apres = local.lignes()
+        assertEquals(3, apres.size)
+        assertTrue(apres.containsAll(avant), "une ligne locale a disparu")
+        assertEquals(apres.size, apres.map { it.uuid }.toSet().size, "doublon")
+        assertEquals(listOf("U9"), apres.map { it.uuid } - avant.map { it.uuid }.toSet())
+    }
+
     // --- noms-fichier.json ---
 
     @Test fun `SV-30 SV-31 gabarit du nom, sans deux-points`() {

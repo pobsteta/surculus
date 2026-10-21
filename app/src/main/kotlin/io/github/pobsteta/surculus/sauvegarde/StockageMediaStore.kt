@@ -26,7 +26,9 @@ import java.io.IOException
  *   nom pris reçoit un suffixe du système.
  * - Android 8 et 9 : pas de MediaStore pour les documents ; écriture directe dans le dossier public
  *   `Documents/Surculus/` (permission `WRITE_EXTERNAL_STORAGE`, limitée à l'API 28 par le manifeste), sous un
- *   nom `.part` renommé une fois complet : même garantie, et le fichier survit aussi à la désinstallation.
+ *   nom `.part` renommé une fois complet, et le fichier survit aussi à la désinstallation.
+ *   **À faire** : `WRITE_EXTERNAL_STORAGE` doit être demandée à l'exécution sur les API 26 à 28 ; ce n'est pas
+ *   encore fait, ce sera la mission qui branchera la sauvegarde sur les saisies. Sans elle, l'écriture échoue.
  *
  * Limite de l'API 29 et plus : sans autorisation étendue, l'application ne voit que les fichiers qu'elle a
  * elle-même créés ; après une réinstallation, `noms()` ne liste pas ceux de l'installation précédente. La
