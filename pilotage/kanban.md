@@ -31,6 +31,10 @@ _Idées, à trier au prochain `/mission`._
 - **Emprise France** : y min vaut 6 005 294,71 dans le code (PROJ, densify 50) et
   6 005 281,2 dans `fixtures/acceptation-export/repere-et-france.json` (epsg.io), soit
   13,5 m d'écart, sans effet sur le test de la Corse ; laquelle fait foi (Pascal) ?
+- **Carte, après la 012** : l'état d'une placette contrôlée pendant la tournée, « mission
+  à part, après 012 » (Pascal, 2026-10-22 ; l'option proposait de faire primer l'état local
+  sur `etat_suivi`) ; travaux et vides au bac à sable (Pascal, même jour), à dessiner quand
+  l'app les saisira (la tournée de sommieR n'en porte aucun).
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
   de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
@@ -40,21 +44,31 @@ _Idées, à trier au prochain `/mission`._
   d'essai d'automne 2026 ; successeur ;
   coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
   fascicule 34 ; URL du guide des chênaies continentales.
+- **Pascal (dans sommieR)** : déposer le brief
+  `vers-sommier/2026-10-22-position-mesuree-du-controle.md` (le registre ne garde pas la
+  position mesurée du contrôle, décision du 2026-10-22).
 - **Pascal (dans sommieR)** : mettre à jour les briefs `vers-sommier` (couches
   ajoutées, données des plantations à constater, décision « hors entreprise », table de
   correspondance des codes, `montant_eur` facultatif).
 
 ## Validé
 
-- **033** carte : placettes colorées selon `etat_suivi`, travaux tracés selon leur code,
-  vides relevés (`afficheur`), décidée par Pascal le 2026-10-21 ; fiche à écrire après
-  lecture des valeurs de `etat_suivi` dans sommieR.
 - **013** dictée Vosk (`dev`) : part après les cas des décisions 11 et 12 (testeur) et le
   retrait de l'hypothèse DI-303.
 
 ## Planifié
 
 _En attente sous le plafond humain (3 PR en revue)._
+
+**Cycle 8, lancé le 2026-10-22 (deux missions, réglage du bilan) :**
+
+- **028** registre attendu et sabotage en CI (`dev`, appuyer) : F4 compare les totaux au
+  registre et le point à `positions_controles` de l'export (décision de Pascal du
+  2026-10-22) ; en revue, PR #64, après cette PR de pilotage.
+- **033** placettes colorées selon `etat_suivi` (`afficheur`, appuyer) : couleurs, légende
+  avec décomptes (décisions de Pascal du 2026-10-22) ; en cours.
+- **036** cas des décisions 11 et 12 de la dictée (`testeur`, appuyer) : en revue,
+  PR #63, à fusionner après cette PR de pilotage.
 
 **Attendent le plafond :**
 
@@ -64,9 +78,6 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **Pascal, clé de signature** : dire au journal où est la copie hors du poste et qui
   détient les mots de passe, puis l'ADR 0010.
 - **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
-- Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
-- **028** registre attendu et sabotage en CI (`dev`, appuyer) : moyens prêts (026 et 027
-  fusionnées).
 
 ## Terminé
 
