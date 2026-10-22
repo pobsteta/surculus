@@ -4,6 +4,9 @@
 > d'après les arbitrages de Pascal (voir `pilotage/journal.md`). Rédigé par l'orchestrateur,
 > à valider par Pascal. Le détail technique est dans `docs/spec.md` ; ce brief n'en
 > recopie rien.
+>
+> **Amendé le 22 octobre 2026** (style commun, liste du départ), après la critique du
+> `contradicteur`, d'après les quatre arbitrages de Pascal du même jour (journal).
 
 ## Ma réponse d'abord
 
@@ -70,6 +73,15 @@ travaux au départ ; recopié mot pour mot de sa réponse dans la session) :
   - **vides** : des plants morts ou absents groupés sur **10 ares** ou plus déclenchent
     une alerte même si le taux moyen est bon (ITTS de l'ONF : 10 ares pour les chênes du
     Sud-Ouest, 10 à 20 ares pour le chêne rouge, 50 ares ailleurs).
+- **Liste du départ** (arbitrages de Pascal du 2026-10-22) : l'unité reste la
+  **tournée de sommieR**. Une tournée ouverte liste d'abord ses **placettes**, telles
+  que sommieR les livre avec leur `etat_suivi`. Ce n'est pas une liste de travaux :
+  les **travaux à faire** (le prévu de nemetonshiny) attendent que sommieR les porte
+  dans la tournée (lot 3) ; Surculus les y lira, jamais ailleurs.
+- **Style commun** avec Marculus et Groma, pour la cohérence du projet nemeton, **sans
+  jamais passer devant la lisibilité au soleil** : thème clair forcé, contraste du texte
+  d'au moins 7:1, couleurs des placettes gardées, essai au soleil par Pascal avant la
+  fusion. Le thème vient de la bibliothèque commune `terrain`, pas d'une copie.
 - **Plant atteint** : un plant atteint (abrouti, malade) compte comme **vivant** dans le
   taux ; l'atteinte et sa cause sont notées à part pour le gestionnaire.
 
