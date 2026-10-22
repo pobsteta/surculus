@@ -11,9 +11,9 @@
 | [0003](0003-gnss-et-reperes.md) | GNSS et repères | acceptée (2026-10-15) |
 | [0004](0004-stack-kotlin-compose-vosk.md) | Stack : Kotlin, Compose, Room, module GeoPackage JVM, Vosk | acceptée (2026-10-15) ; réexamen face à osmdroid archivé **non fait** (bac à sable) |
 | [0005](0005-stockage-et-sauvegarde.md) | Stockage et sauvegarde | acceptée (2026-10-15), complétée après la 032 |
-| 0006 | Fusion des tournées | **réservée, non écrite** ; citée par l'ADR 0005 (Sources), la spec |
+| 0006 | Fusion des tournées | **réservée, non écrite** ; citée par l'ADR 0005 (Sources) ; le renvoi depuis la spec (§ 4, l. 236) a été ajouté par la mission 034 |
 | [0007](0007-couches-ajoutees-au-contrat-sommier.md) | Couches ajoutées au contrat `travaux.gpkg` | acceptée (2026-10-15) |
-| 0008 | Bibliothèques communes (Marculus, Groma) | **réservée, non écrite** ; citée par les en-têtes de `app/.../gnss/*.kt` et `core/.../{gnss,geo}/*.kt`, la spec § 10 |
+| 0008 | Bibliothèques communes (Marculus, Groma) | **réservée, non écrite** ; citée par l'ADR 0003 (l. 69), les en-têtes de `app/.../gnss/*.kt`, de `core/.../{gnss,geo}/*.kt` et de `core/.../reperes/wmm/Declinaison.kt`, la spec § 10 |
 | [0009](0009-carte-hors-ligne.md) | Carte et ortho hors ligne | acceptée (2026-10-21) |
 | 0010 | Clé de signature et distribution | **réservée, non écrite** ; citée par `docs/publier.md` ; la clé reste à Pascal |
 | [0011](0011-ecriture-geopackage-sur-appareil.md) | Écriture du GeoPackage sur l'appareil | acceptée (2026-10-17) |

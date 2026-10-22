@@ -171,9 +171,14 @@ Ajouté le 2026-10-22. Le rectangle du domaine d'usage d'EPSG:2154 existe à plu
 * `core/.../core/geo/PointLambert93.kt` : `EmpriseLambert93.FRANCE_METROPOLITAINE` (Lambert-93, mètres) et
   `EmpriseDegres.FRANCE_METROPOLITAINE` (degrés, `BBOX[41.15,-9.86,51.56,10.38]`). La source (registre EPSG, `projinfo`)
   est écrite dans le commentaire du code, qui fait foi ;
-* `fixtures/acceptation-export/repere-et-france.json` : **recopie les bornes en Lambert-93** (l. 245 et suivantes,
-  avec leur source), pour que le `testeur` les attende sans lire le code ;
+* `fixtures/acceptation-export/repere-et-france.json` : **recopie les bornes en Lambert-93** (l. 245 et suivantes, avec
+  leur source epsg.io). Elles **ne sont pas identiques** à celles du code pour y min : 6 005 294,71 dans le code
+  (PROJ, `densify_pts=50`) contre 6 005 281,2 dans la fixture (epsg.io, densify 100), soit 13,5 m d'écart. Cause
+  probable : la source et la densification différentes. Je ne tranche pas laquelle fait foi ;
+* `fixtures/export/registre-attendu-couchey.json` (l. 19, mission 027) : **recopie le rectangle en degrés**
+  (41,15 ; 51,56 ; -9,86 ; 10,38), avec sa note de source ;
 * `fixtures/regles/emprise-et-france.json` : des cas (Brest, etc.) qui **ne recopient pas le rectangle** ; ils vérifient
   qu'un point français y tombe et qu'un point hors de France n'y tombe pas.
 
-Si le rectangle change (contour officiel ADMIN-EXPRESS, spec § 10 question 9), on modifie le code, puis la recopie de `repere-et-france.json`.
+Si le rectangle change (contour officiel ADMIN-EXPRESS, spec § 10 question 9), on modifie le code, puis les deux recopies :
+`repere-et-france.json` et `registre-attendu-couchey.json`.
