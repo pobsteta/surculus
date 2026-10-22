@@ -10,6 +10,25 @@
 
 **Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
 
+## Vérifié à la source
+
+Constats vérifiés par l'orchestrateur sur `main` (162fb8c), le 2026-10-22.
+
+| Constat | Lu à | Source du constat |
+|---|---|---|
+| Les attentes F4 existent, écrites par le testeur (mission 027) | `fixtures/export/registre-attendu-couchey.json` ; `fixtures/README.md:158` | orchestrateur |
+| Aucune étape de la CI ne lit encore ces attentes | `grep -rn registre-attendu ci .github` : aucun résultat | orchestrateur |
+| Le modèle d'auto-test existe : `autotest_retrait`, appelé par le script de la CI | `ci/sommier/fonctions.R:171` ; `ci/sommier/verifier.R:113` | orchestrateur |
+| L'avertissement du témoin « sans » passe par `::warning` | `ci/sommier/verifier.R:194` | orchestrateur |
+| La tolérance de l'extension Schema porte sur deux tables | `ci/sommier/criteres.R:24` | orchestrateur |
+| Le workflow d'import fait 162 lignes | `.github/workflows/import-sommier.yml` | orchestrateur |
+| Les tests R de la CI sont dans `ci/sommier/test-criteres.R` | `ls ci/sommier/` | orchestrateur |
+
+Règles, avec leur auteur :
+- **F1 à F5 remplacent le critère (a)** ; F4 et F5 vont aux missions 027 (testeur) et 028 (dev). Décision de Pascal, journal du 2026-10-21.
+- **Garde-fou = test vu rouge** et **bilan des écarts avant rendu**. Décisions de Pascal au bilan du 2026-10-21.
+- **Un écart avec les attentes de la 027 se remonte, il ne se corrige pas.** Fiche 028 d'origine (orchestrateur, 2026-10-21), dans la ligne de la règle du testeur (CLAUDE.md).
+
 ## Les trois questions (règle de staffing)
 
 | Question | Réponse | Conséquence |
@@ -35,9 +54,16 @@
 - Le job est vert sur l'export réel ; chaque sabotage fait rougir le contrôle visé, et l'auto-test le montre dans le résumé du job.
 - Renvoyés par la relecture de la 026 (journal, 2026-10-21) : un test de la tolérance `gpkg_schema` sur `gpkg_data_columns` et `gpkg_data_column_constraints` ; un test du chemin de l'avertissement du témoin « sans » (`::warning`, job vert).
 
+- **Bilan des écarts** : le rapport liste chaque fichier modifié, et chaque assertion ou fixture changée, avec la raison.
+
+## Terrain
+
+- **Échantillon que Pascal vérifiera :** le résumé du job sur la PR : registre conforme ligne à ligne, puis un sabotage par contrôle (F1 à F4), chacun au rouge avec son message.
+
 ## Qui veille, qui tranche
 
 - **Relecteur :** `relecteur`, puis Pascal. **Qui tranche :** Pascal.
+- **Point de suivi :** à la remise du plan, puis à l'ouverture de la PR.
 
 ## Comment saura-t-on que ça marche ?
 

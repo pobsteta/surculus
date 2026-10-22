@@ -2,7 +2,7 @@ name: Import sommieR
 
 # Mission 007, ADR 0007 (« Critère de CI ») : rejouer
 # sommier_importer_qfield_travaux() de sommieR 0.31.1 sur une tournée, contre
-# une vraie base PostGIS, puis mesurer F1, F2 et F3 (mission 026). Voir
+# une vraie base PostGIS, puis mesurer F1 à F4 et les éprouver par sabotage, F5 (missions 026 et 028). Voir
 # ci/sommier/README.md.
 
 on:
@@ -121,11 +121,13 @@ jobs:
             -Psortie=ci/sommier
 
       # Mission 026 : F1, F2 et F3 remplacent la comparaison « avec / sans »
-      # (ancien critère (a)). Le détail est dans ci/sommier/README.md.
-      - name: Tester les fonctions des critères F1, F2 et F3
+      # (ancien critère (a)). Mission 028 : F4 (registre contre les attentes
+      # de la 027) et F5 (un sabotage par contrôle, qui doit rougir). Le détail
+      # est dans ci/sommier/README.md.
+      - name: Tester les fonctions des critères F1 à F5
         run: Rscript ci/sommier/test-criteres.R
 
-      - name: Rejouer l'import et mesurer F1, F2 et F3
+      - name: Rejouer l'import, mesurer F1 à F4 et éprouver par sabotage (F5)
         run: |
           # L'export et son bilan sont obligatoires : leur absence est un
           # échec, jamais un vert partiel.
@@ -137,10 +139,11 @@ jobs:
           done
           Rscript ci/sommier/verifier.R --sortie ci/sommier/sortie \
             --etape comparer --avec "$EXPORT_SURCULUS" \
-            --bilan-export ci/sommier/bilan-export.json
+            --bilan-export ci/sommier/bilan-export.json \
+            --registre-attendu fixtures/export/registre-attendu-couchey.json
 
       # Le résumé est écrit par verifier.R, même en cas d'écart.
-      - name: Résumé du job (F1, F2, F3)
+      - name: Résumé du job (F1 à F5)
         if: always()
         run: |
           if [ -f ci/sommier/sortie/resume.md ]; then

@@ -4,7 +4,7 @@
 # Usage :
 #   Rscript ci/sommier/verifier.R --sortie <dossier> [--etape tout|preparer|comparer]
 #       [--modele <travaux.gpkg>] [--avec <export Surculus décompressé>]
-#       [--bilan-export <bilan-export.json>]
+#       [--bilan-export <bilan-export.json>] [--registre-attendu <json>]
 #
 # --etape preparer : crée la base de démo et la tournée de départ de Surculus
 #   (<sortie>/tournee-depart, <sortie>/foret_id.txt), puis s'arrête. Surculus
@@ -19,6 +19,12 @@
 #      ajouts, aux UUID du bilan d'export ;
 #   F3 le schéma complet est identique à celui de la tournée de départ, aux six
 #      couches ajoutées près (feature_count vérifié, last_change seul exclu) ;
+#   F4 (avec --registre-attendu, mission 028) le registre de sommieR porte les
+#      valeurs de registre-attendu-couchey.json (totaux et visite_le, par code de
+#      placette) ; le point est comparé à `positions_controles` de l'export (voir
+#      f4.R : pilotage/journal.md, 2026-10-22, décision de Pascal, mission 028) ;
+#   F5 auto-test par sabotage : F1 à F4 passent au rouge sur une copie sabotée
+#      de l'export (sabotage.R) ; un sabotage resté vert est un écart ;
 #   (b) le schéma des couches de sommieR de l'export égale le modèle ;
 #   (c) sf::st_layers() liste toutes les couches ajoutées.
 #   Si l'import n'écrit rien (travaux + placettes + contrôles = 0), c'est un
@@ -38,12 +44,14 @@ usage <- function(motif) {
   message(motif)
   message("Usage : verifier.R --sortie <dossier> [--etape ",
           "tout|preparer|comparer] [--modele <travaux.gpkg>] ",
-          "[--avec <export décompressé>] [--bilan-export <json>]")
+          "[--avec <export décompressé>] [--bilan-export <json>] ",
+          "[--registre-attendu <json>]")
   quit(status = 2)
 }
 
 args <- commandArgs(trailingOnly = TRUE)
-connues <- c("--sortie", "--etape", "--modele", "--avec", "--bilan-export")
+connues <- c("--sortie", "--etape", "--modele", "--avec", "--bilan-export",
+              "--registre-attendu")
 noms <- args[seq_along(args) %% 2L == 1L]
 if (length(args) %% 2L != 0L || !all(noms %in% connues))
   usage(paste0("Option inconnue ou valeur absente : ",
@@ -59,6 +67,8 @@ dir_script <- dirname(sub("^--file=", "",
   grep("^--file=", commandArgs(FALSE), value = TRUE)[1L]))
 source(file.path(dir_script, "fonctions.R"))
 source(file.path(dir_script, "criteres.R"))
+source(file.path(dir_script, "f4.R"))
+source(file.path(dir_script, "sabotage.R"))
 
 modele <- option("--modele", system.file("qgis", "travaux.gpkg",
                                          package = "sommieR"))
@@ -66,6 +76,9 @@ sortie <- option("--sortie")
 avec <- option("--avec")
 fichier_bilan_export <- option("--bilan-export")
 etape <- option("--etape", "tout")
+fichier_attendu <- option("--registre-attendu")
+if (!is.null(fichier_attendu) && !file.exists(fichier_attendu))
+  usage(paste0("--registre-attendu : fichier absent : ", fichier_attendu))
 if (modele == "" || is.null(sortie) ||
     !etape %in% c("tout", "preparer", "comparer"))
   usage("Arguments invalides.")
@@ -159,26 +172,56 @@ if (!is.null(avec)) {
   # F3 : schéma complet identique à celui de la tournée de départ.
   f3 <- list(fautes = controle_f3(gpkg_depart, gpkg_entree, COUCHES_AJOUTEES,
                                   f2$inserts))
-  for (x in c(f1$fautes, f2$fautes, f3$fautes)) signaler(x)
+  # F4 : le registre de sommieR porte les valeurs attendues (mission 028).
+  attendu <- if (!is.null(fichier_attendu))
+    jsonlite::fromJSON(fichier_attendu, simplifyVector = FALSE)
+  f4 <- NULL
+  if (!is.null(attendu)) {
+    controles_registre <- controles_ecrits(
+      bilan_entree$registre, bilan_entree$entrees_ecrites,
+      bilan_entree$codes_placettes)
+    f4 <- controle_f4(attendu, controles_registre,
+                      lire_points_export(gpkg_entree))
+  }
+  tous_fautes <- c(f1$fautes, f2$fautes, f3$fautes, f4$fautes)
+  for (x in tous_fautes) signaler(x)
   verdict <- function(fautes) if (length(fautes)) "ÉCHEC" else "vert"
   message("F1 bilan d'import = bilan d'export : ", verdict(f1$fautes))
   message("F2 ajouts seuls, aux UUID attendus : ", verdict(f2$fautes))
   message("F3 schéma identique à la tournée de départ : ", verdict(f3$fautes))
+  if (!is.null(f4)) {
+    message("F4 registre = valeurs attendues (027) : ", verdict(f4$fautes))
+    message(gsub("[*`]", "", LIMITE_POSITION_SOMMIER))
+    cat("::notice title=Position mesurée hors registre::",
+        gsub("[*`]", "", LIMITE_POSITION_SOMMIER), "\n", sep = "")
+  } else {
+    message("F4 NON MESURÉ : pas de --registre-attendu.")
+  }
 
   resume <- c(resume,
     sprintf("| Contrôle | Verdict |"), "|---|---|",
     sprintf("| F1 : le bilan d'import égale le bilan d'export, déjà présents compris | %s |", verdict(f1$fautes)),
     sprintf("| F2 : ajouts seuls dans les couches de la tournée de départ, aux UUID attendus | %s |", verdict(f2$fautes)),
     sprintf("| F3 : schéma complet identique à la tournée de départ (feature_count vérifié) | %s |", verdict(f3$fautes)),
+    if (!is.null(f4))
+      sprintf("| F4 : le registre de sommieR porte les valeurs attendues (mission 027), ligne à ligne | %s |", verdict(f4$fautes))
+    else "| F4 : registre attendu | NON MESURÉ (pas de --registre-attendu) |",
     "", "F1, compteurs :", "",
     "| Compteur | Export Surculus (attendu) | Import sommieR (mesuré) |", "|---|---|---|",
     sprintf("| %s | %s | %s |", f1$lignes$compteur, f1$lignes$attendu, f1$lignes$mesure),
     "", "F2, lignes ajoutées par couche de la tournée de départ :", "",
     "| Couche | Lignes ajoutées |", "|---|---|",
     if (length(f2$inserts)) sprintf("| %s | %d |", names(f2$inserts), f2$inserts))
-  if (length(c(f1$fautes, f2$fautes, f3$fautes)))
-    resume <- c(resume, "", "Écarts :", "",
-                paste0("- ", c(f1$fautes, f2$fautes, f3$fautes)))
+  if (!is.null(f4))
+    resume <- c(resume, "", "F4, registre contre attentes (écrites à la main, mission 027) :", "",
+      LIMITE_POSITION_SOMMIER, "",
+      "| Placette | Champ | Attendu | Mesuré | Verdict |", "|---|---|---|---|---|",
+      if (nrow(f4$lignes))
+        sprintf("| %s | %s | %s | %s | %s |", f4$lignes$placette, f4$lignes$champ,
+                f4$lignes$attendu, f4$lignes$mesure, f4$lignes$verdict),
+      "", LIGNE_PIQUET)
+  if (length(tous_fautes))
+    resume <- c(resume, "", "Écarts :", "", paste0("- ", tous_fautes))
 
   # Vérification de fumée (plus un critère) : le même export privé de ses six
   # couches s'importe avec le même bilan.
@@ -188,21 +231,49 @@ if (!is.null(avec)) {
   ecrire_bilan(bilan_temoin, file.path(sortie, "bilan-sans.json"))
   # Un avertissement, pas un écart : il n'entre pas dans le verdict.
   diff_fumee <- comparer_bilans(bilan_entree, bilan_temoin)
-  if (length(diff_fumee)) {
+  avert <- avertissement_temoin(diff_fumee)
+  if (length(diff_fumee))
     message("AVERTISSEMENT (fumée) : bilan différent entre l'export et son ",
             "témoin sans couches ajoutées : ", paste(diff_fumee, collapse = ", "))
-    cat("::warning title=Témoin sans couches::bilan différent : ",
-        paste(diff_fumee, collapse = ", "), "\n", sep = "")
+  if (!is.null(avert$annotation)) cat(avert$annotation, "\n", sep = "")
+  resume <- c(resume, "", avert$resume)
+
+  # F5 : auto-test par sabotage (mission 028). Chaque contrôle doit rougir.
+  if (!is.null(f4)) {
+    f5 <- tryCatch({
+      ce <- controles_registre
+      p1 <- ce$releve_uuid[ce$code %in% "P35-01"]
+      autre <- setdiff(ce$releve_uuid, p1)[1L]
+      if (length(p1) != 1L || is.na(autre))
+        stop("P35-01 et un second contrôle sont introuvables au registre")
+      autotest_sabotage(
+        entree, file.path(sortie, "sabotage"),
+        list(depart_gpkg = gpkg_depart, bilan_export = bilan_export,
+             attendu = attendu, foret_id = foret_id,
+             bilan_propre = bilan_entree, nom_base = "sommier_sabotage"),
+        controle_autre = autre, controle_p35_01 = p1)
+    }, error = function(e) {
+      signaler("F5 : auto-test par sabotage interrompu : ", conditionMessage(e))
+      NULL })
+    if (!is.null(f5)) {
+      for (i in which(!f5$resultat == RESULTAT_OK))
+        signaler("F5 : sabotage « ", f5$sabotage[i], " » : ", f5$controle[i],
+                 " : ", f5$resultat[i], " (", f5$message[i], ")")
+      message("F5 sabotages : ", sum(f5$resultat == RESULTAT_OK), " sur ",
+              nrow(f5), " détectés.")
+      resume <- c(resume, "",
+        "F5, auto-test par sabotage (chaque contrôle doit passer au rouge, pour le motif visé, sur une copie sabotée de l'export) :", "",
+        "| Sabotage | Contrôle visé | Résultat | Message du contrôle |", "|---|---|---|---|",
+        sprintf("| %s | %s | %s | %s |", f5$sabotage, f5$controle, f5$resultat,
+                gsub("\\|", "/", f5$message)))
+    }
+  } else {
+    message("F5 NON MESURÉ : pas de --registre-attendu.")
   }
-  resume <- c(resume, "",
-              if (length(diff_fumee))
-                paste0("**Avertissement** (fumée, hors verdict) : le témoin sans couches ajoutées donne un bilan différent (",
-                       paste(diff_fumee, collapse = ", "), ").")
-              else "Vérification de fumée (hors verdict) : témoin sans couches ajoutées, même bilan.")
 } else {
-  message("F1, F2 ET F3 NON MESURÉS : pas d'export Surculus (--avec). ",
+  message("F1 À F5 NON MESURÉS : pas d'export Surculus (--avec). ",
           "Le retrait des couches est éprouvé (auto-test), pas l'export.")
-  resume <- c(resume, "F1, F2 et F3 non mesurés : pas d'export Surculus.")
+  resume <- c(resume, "F1 à F5 non mesurés : pas d'export Surculus.")
 }
 writeLines(c(resume, "", "Le détail est dans l'artefact bilans-import-sommier."),
            file.path(sortie, "resume.md"))
