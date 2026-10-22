@@ -250,3 +250,4 @@
 2026-10-22 · afficheur · mission 033 · Reprise (7a78540) : libellé « travaux à prévoir », redite et bilan des écarts dans la fiche.
 2026-10-22 · relecteur · mission 033 · Delta 7a78540 : prête ; libellé changé partout, plus de « à repasser » ; réserve levée par cette PR de pilotage : la décision de Pascal sur le libellé doit être au journal avant la fusion de la #65.
 2026-10-22 · Claude (orchestrateur) · mission 033 · Commande de tests complète verte sur main fusionné avec 7a78540 (rc=0) ; PR #65 ouverte, à fusionner après cette PR de pilotage.
+2026-10-22 · relecteur · PR #66 · Prête ; ajout seul, faits exacts, seule ligne nouvelle de Pascal fidèle (« travaux à prévoir »), kanban intact ; à fusionner avant la #65. Remarque : l'en-tête du cycle 8 disait « deux missions » (précisé par l'orchestrateur).

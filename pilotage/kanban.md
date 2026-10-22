@@ -60,7 +60,7 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Cycle 8, lancé le 2026-10-22 (deux missions, réglage du bilan) :**
+**Cycle 8, lancé le 2026-10-22 (028 et 036, puis 033 ; au plus deux missions de code à la fois, réglage du bilan) :**
 
 - **033** placettes colorées selon `etat_suivi` (`afficheur`, appuyer) : couleurs, légende
   avec décomptes, libellé « travaux à prévoir » (décisions de Pascal du 2026-10-22) ; en
