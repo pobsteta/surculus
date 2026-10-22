@@ -157,6 +157,7 @@ object LecteurTournee {
                 materialisation = l.texte("materialisation"),
                 ug = l.texte("ug"),
                 position = geom("placettes")?.let { g -> l.blob(g)?.let(GeometrieGpkg::point) },
+                etatSuivi = EtatSuivi.depuis(l.texte("etat_suivi")),
             )
         }
         val controles = cnx.lignes("SELECT * FROM \"controles\" ORDER BY fid").map {

@@ -8,6 +8,11 @@
 package io.github.pobsteta.surculus.carte
 
 import android.graphics.Color as CouleurAndroid
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
 import androidx.compose.foundation.clickable
@@ -37,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,9 +56,13 @@ import io.github.pobsteta.surculus.core.geo.Projections
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.core.guidage.Libelles
+import io.github.pobsteta.surculus.gpkg.EtatSuivi
+import io.github.pobsteta.surculus.gpkg.FormePastille
 import io.github.pobsteta.surculus.gpkg.Geometrie
 import io.github.pobsteta.surculus.gpkg.ObjetSurfacique
+import io.github.pobsteta.surculus.gpkg.Pastille
 import io.github.pobsteta.surculus.gpkg.PlacetteTournee
+import io.github.pobsteta.surculus.gpkg.decomptes
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
@@ -64,7 +74,9 @@ import org.osmdroid.views.overlay.Polygon
 /**
  * Carte de la tournée (spec § 4.2) : forêt, UG, parcelles, placettes, ortho hors ligne, position et badge du fix.
  * Une question : où suis-je par rapport aux placettes ? Un appui sur une placette (ou sur la liste) ouvre le guidage.
- * Pas de couleur de placette selon `etat_suivi` ni de travaux ni de vides à ce stade : voir le rendu de la mission.
+ * Les placettes sont colorées selon `etat_suivi` (rouge `jamais`, orange `a_programmer` (« travaux à prévoir », pilotage/journal.md, 2026-10-22, décision de Pascal, mission 033, libellé), anneau vert `a_jour`, noir « ? »
+ * sinon) : pilotage/journal.md, 2026-10-22, décisions de Pascal (mission 033). La couleur vient de sommieR, lue à
+ * l'ouverture de la tournée : elle ne change pas pendant la tournée. Ni travaux ni vides à ce stade.
  */
 @Composable
 fun EcranCarte(id: String, onRetour: () -> Unit, onGuider: (String) -> Unit) {
@@ -87,6 +99,46 @@ private fun disque(couleur: Int, diametrePx: Int) = ShapeDrawable(OvalShape()).a
     paint.color = couleur
     intrinsicWidth = diametrePx
     intrinsicHeight = diametrePx
+}
+
+/** Pastille d'une placette : filet blanc, puis disque plein, anneau creux ou disque noir marqué d'un « ? ». */
+private fun pastille(etat: EtatSuivi, densite: Float): Drawable {
+    val p = Pastille.de(etat)
+    val taille = (if (p.forme == FormePastille.ANNEAU) 26 else 32) * densite
+    val px = taille.toInt()
+    val bmp = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888)
+    val c = Canvas(bmp)
+    val centre = px / 2f
+    val couleur = Palette.de(p.teinte).toArgb()
+    val pinceau = Paint(Paint.ANTI_ALIAS_FLAG)
+    val filet = 3 * densite
+    when (p.forme) {
+        FormePastille.ANNEAU -> {
+            val epaisseur = 5 * densite
+            pinceau.style = Paint.Style.STROKE
+            pinceau.color = CouleurAndroid.WHITE
+            pinceau.strokeWidth = epaisseur + 2 * filet
+            c.drawCircle(centre, centre, centre - filet - epaisseur / 2 - 1, pinceau)
+            pinceau.color = couleur
+            pinceau.strokeWidth = epaisseur
+            c.drawCircle(centre, centre, centre - filet - epaisseur / 2 - 1, pinceau)
+        }
+        else -> {
+            pinceau.style = Paint.Style.FILL
+            pinceau.color = CouleurAndroid.WHITE
+            c.drawCircle(centre, centre, centre - 1, pinceau)
+            pinceau.color = couleur
+            c.drawCircle(centre, centre, centre - filet - 1, pinceau)
+            if (p.forme == FormePastille.DISQUE_AVEC_POINT_INTERROGATION) {
+                pinceau.color = CouleurAndroid.WHITE
+                pinceau.textSize = 20 * densite
+                pinceau.isFakeBoldText = true
+                pinceau.textAlign = Paint.Align.CENTER
+                c.drawText("?", centre, centre - (pinceau.descent() + pinceau.ascent()) / 2, pinceau)
+            }
+        }
+    }
+    return BitmapDrawable(null, bmp)
 }
 
 private fun polygones(carte: MapView, objets: List<ObjetSurfacique>, contour: Int, remplissage: Int, epaisseur: Float): List<Overlay> =
@@ -170,7 +222,7 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                                     position = GeoPoint(p.position!!)
                                     title = p.code
                                     relatedObject = p
-                                    icon = disque(CouleurAndroid.rgb(176, 0, 32), (28 * densite).toInt())
+                                    icon = pastille(p.etatSuivi, densite)
                                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                                     setInfoWindow(null)
                                 }
@@ -220,6 +272,16 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             CaseCouche(stringResource(R.string.carte_couche_parcelles, carto.parcelles.size), voirParcelles) { voirParcelles = it }
             CaseCouche(stringResource(R.string.carte_couche_placettes, placettes.size), voirPlacettes) { voirPlacettes = it }
+        }
+        // Légende : un décompte par état, dans la couleur du disque ; « sans état » seulement s'il y en a.
+        val nombres = remember(placettes) { decomptes(placettes) }
+        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(stringResource(R.string.carte_legende_jamais, nombres.getValue(EtatSuivi.JAMAIS)), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Palette.Rouge)
+            Text(stringResource(R.string.carte_legende_a_programmer, nombres.getValue(EtatSuivi.A_PROGRAMMER)), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Palette.Orange)
+            Text(stringResource(R.string.carte_legende_a_jour, nombres.getValue(EtatSuivi.A_JOUR)), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Palette.Vert)
+            if (nombres.getValue(EtatSuivi.INCONNU) > 0) {
+                Text(stringResource(R.string.carte_legende_inconnu, nombres.getValue(EtatSuivi.INCONNU)), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Palette.Noir)
+            }
         }
         if (carto.anomalies.isNotEmpty()) {
             Text(stringResource(R.string.carte_anomalies, carto.anomalies.size), fontSize = 14.sp, color = Palette.Orange, modifier = Modifier.padding(horizontal = 8.dp))
