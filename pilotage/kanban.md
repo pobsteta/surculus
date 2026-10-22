@@ -23,7 +23,7 @@ _Idées, à trier au prochain `/mission`._
 - **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées
   (export, 032) ; l'essai sur téléphone est sur la carte « terrain avant la 012 ».
 - **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
-  barème 2024 (« en vigueur NON vérifié ») ; le test de forme des CSV est en revue (PR #59).
+  barème 2024 (« en vigueur NON vérifié »).
 - **Tests (relecture de la 027)** : une seule emprise France, celle de la spec § 10.9
   (domaine d'usage d'EPSG:2154) ; `FixturesBienFormeesTest` (l. 138) a sa propre boîte.
   `fixtures/README.md` (l. 79) : ajouter `remplace_autre_tournee` aux codes d'anomalie
@@ -56,11 +56,6 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Cycle 7, lancé le 2026-10-22 (deux missions, réglage du bilan) :**
-
-- **034** trous de mémoire du bilan (`archiviste`, appuyer) ; en revue, PR #58.
-- **035** test de forme des CSV de `docs/referentiels/` (`dev`, appuyer) ; en revue, PR #59.
-
 **Attendent le plafond :**
 
 - **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK de la 011 sur Couchey
@@ -74,6 +69,10 @@ _En attente sous le plafond humain (3 PR en revue)._
   fusionnées).
 
 ## Terminé
+
+- Cycle 7, 2026-10-22 : **034** trous de mémoire du bilan, README, spec, index des ADR
+  (PR #58) ; **035** test de forme des CSV de `docs/referentiels/`, vu rouge 9 sur 9
+  (PR #59) ; pilotage (PR #60) — Pascal.
 
 - Cycle 6, 2026-10-22 : **027** registre attendu du scénario Couchey (PR #55) ; **032** état
   par tournée, tournée obligatoire (PR #56) ; pilotage et bilan (PR #53, #54) ; outillage
