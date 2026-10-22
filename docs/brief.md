@@ -77,11 +77,11 @@ travaux au départ ; recopié mot pour mot de sa réponse dans la session) :
   **tournée de sommieR**. Une tournée ouverte liste d'abord ses **placettes**, telles
   que sommieR les livre avec leur `etat_suivi`. Ce n'est pas une liste de travaux :
   les **travaux à faire** (le prévu de nemetonshiny) attendent que sommieR les porte
-  dans la tournée (lot 3) ; Surculus les y lira, jamais ailleurs.
+  dans la tournée (lot 3, brief `vers-sommier`) ; Surculus les y lira, jamais ailleurs.
 - **Style commun** avec Marculus et Groma, pour la cohérence du projet nemeton, **sans
-  jamais passer devant la lisibilité au soleil** : thème clair forcé, contraste du texte
-  d'au moins 7:1, couleurs des placettes gardées, essai au soleil par Pascal avant la
-  fusion. Le thème vient de la bibliothèque commune `terrain`, pas d'une copie.
+  jamais passer devant la lisibilité au soleil** (règles dans la spec, § 3). Le thème
+  viendra de la bibliothèque commune `terrain`, pas d'une copie ; forme et calendrier
+  dans l'ADR 0008, à trancher par Pascal.
 - **Plant atteint** : un plant atteint (abrouti, malade) compte comme **vivant** dans le
   taux ; l'atteinte et sa cause sont notées à part pour le gestionnaire.
 
