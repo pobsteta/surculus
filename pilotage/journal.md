@@ -192,7 +192,8 @@
 2026-10-22 · Pascal · bilan · Les quatre précisions d'`equipe.md` sont gardées : l'orchestrateur fusionne les PR de pilotage prêtes et vertes ; le relecteur refuse une fiche sans « Vérifié à la source » ; un hook automatique relèverait du plugin ; le tableau des missions date de la porte n° 2, l'état à jour est au kanban.
 2026-10-22 · Claude (orchestrateur) · PR #54 · Reprise : fiche 034 avec `fichier:ligne` pour chaque constat, auteurs des règles, sections Terrain et Point de suivi ; doublons du kanban retirés. La PR #57 (outillage, `ANDROID_HOME` dans la commande de tests, plugin imperatrice 0.2.0) a été ouverte hors de cette session ; elle n'est pas une mission et n'est pas classée ici.
 2026-10-22 · relecteur · PR #54 (c372cce) · Prêt pour Pascal : fiche 034 conforme (fichier:ligne, auteurs, Terrain, Point de suivi), kanban sans doublon ; la PR porte une décision au nom de Pascal, elle lui revient.
-2026-10-22 · Pascal · PR #54, #55 et #56 · Fusionnées : décisions du cycle 6 et du bilan (#54), mission 027 (#55), mission 032 (#56). La #54 était en conflit avec la ligne de journal de la #57 : résolu en gardant les deux ajouts, sans rien retirer.
+2026-10-22 · Pascal · PR #54, #55 et #56 · Fusionnées : décisions du cycle 6 et du bilan (#54), mission 027 (#55), mission 032 (#56).
+2026-10-22 · Claude (orchestrateur) · PR #54 · Conflit avec la ligne de journal de la #57 résolu avant la fusion (9c6e013) : les deux ajouts gardés, la ligne de la #57 d'abord, rien retiré.
 2026-10-22 · Claude (orchestrateur) · cycle 7 · Lancé selon le réglage du bilan (deux missions) : 034 (`archiviste`) et 035 (`dev`), fiche 035 écrite avec sa section « Vérifié à la source ».
 2026-10-22 · dev · mission 035 · Plan rendu : lecteur RFC 4180 en Kotlin pur dans le test, lignes # ignorées avant l'en-tête, message nommant fichier et ligne, test rangé à côté de FixturesBienFormeesTest.
 2026-10-22 · Claude (orchestrateur) · mission 035 · Plan accepté (choix techniques) : ligne vide finale tolérée, ligne vide au milieu refusée ; pas de variable d'environnement, le vu rouge se fait par sabotage en place non commité de couts-plantation.csv (état 22ec874^).
@@ -212,3 +213,4 @@
 2026-10-22 · relecteur · mission 035 · Seconde relecture (e18c7a8) : prête ; 9 lignes sur 9 refaites ; réserves : règle de zone large, renvoi accepté partout.
 2026-10-22 · Claude (orchestrateur) · mission 035 · Commande complète verte sur la fusion (rc=0, 17 tests rejoués) ; PR ouverte.
 2026-10-22 · Claude (orchestrateur) · cycle 7 · PR #58 (034) et #59 (035) ouvertes, prêtes au relecteur, vertes sur la fusion. La 012 attend les essais de terrain de Pascal.
+2026-10-22 · relecteur · PR #60 (f359ba6) · Prête : journal en ajout seul, seule décision de Pascal sur la 035, choix techniques et erreur reconnue signés orchestrateur, kanban conforme ; à préciser : qui a résolu le conflit de la #54 (précisé : l'orchestrateur).

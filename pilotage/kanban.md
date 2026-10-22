@@ -23,7 +23,7 @@ _Idées, à trier au prochain `/mission`._
 - **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées
   (export, 032) ; l'essai sur téléphone est sur la carte « terrain avant la 012 ».
 - **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
-  barème 2024 (« en vigueur NON vérifié ») ; le test de forme des CSV est au Planifié.
+  barème 2024 (« en vigueur NON vérifié ») ; le test de forme des CSV est en revue (PR #59).
 - **Tests (relecture de la 027)** : une seule emprise France, celle de la spec § 10.9
   (domaine d'usage d'EPSG:2154) ; `FixturesBienFormeesTest` (l. 138) a sa propre boîte.
   `fixtures/README.md` (l. 79) : ajouter `remplace_autre_tournee` aux codes d'anomalie
