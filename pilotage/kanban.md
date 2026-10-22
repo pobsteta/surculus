@@ -40,6 +40,9 @@ _Idées, à trier au prochain `/mission`._
   d'essai d'automne 2026 ; successeur ;
   coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
   fascicule 34 ; URL du guide des chênaies continentales.
+- **Pascal (dans sommieR)** : déposer le brief
+  `vers-sommier/2026-10-22-position-mesuree-du-controle.md` (le registre ne garde pas la
+  position mesurée du contrôle, décision du 2026-10-22).
 - **Pascal (dans sommieR)** : mettre à jour les briefs `vers-sommier` (couches
   ajoutées, données des plantations à constater, décision « hors entreprise », table de
   correspondance des codes, `montant_eur` facultatif).
@@ -56,6 +59,14 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
+**Cycle 8, lancé le 2026-10-22 (deux missions, réglage du bilan) :**
+
+- **028** registre attendu et sabotage en CI (`dev`, appuyer) : F4 compare les totaux au
+  registre et le point à `positions_controles` de l'export (décision de Pascal du
+  2026-10-22) ; en cours.
+- **036** cas des décisions 11 et 12 de la dictée (`testeur`, appuyer) : reprise d'une
+  citation, puis PR après cette PR de pilotage.
+
 **Attendent le plafond :**
 
 - **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK de la 011 sur Couchey
@@ -64,9 +75,6 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **Pascal, clé de signature** : dire au journal où est la copie hors du poste et qui
   détient les mots de passe, puis l'ADR 0010.
 - **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
-- Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
-- **028** registre attendu et sabotage en CI (`dev`, appuyer) : moyens prêts (026 et 027
-  fusionnées).
 
 ## Terminé
 
