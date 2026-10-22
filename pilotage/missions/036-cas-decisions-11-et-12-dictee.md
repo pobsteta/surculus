@@ -8,7 +8,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Ajouter à `fixtures/dictee/contexte.json` les cas d'acceptation des décisions 11 et 12 de Pascal (redire l'état qu'a déjà le plant n'ajoute aucune ligne et la voix confirme ; « non observé » sur un plant qui a déjà un état est une correction et ses mesures tombent avec lui), sans lire de code, pour que la 013 ait tous ses tests avant d'écrire une ligne.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** j'ajoute à `fixtures/dictee/contexte.json` les cas d'acceptation des décisions 11 et 12 de Pascal (redire l'état qu'a déjà le plant n'ajoute aucune ligne et la voix confirme ; « non observé » sur un plant qui a déjà un état est une correction et ses mesures tombent avec lui), sans lire de code, pour que la 013 ait tous ses tests avant d'écrire une ligne.
 
 ## Vérifié à la source
 
