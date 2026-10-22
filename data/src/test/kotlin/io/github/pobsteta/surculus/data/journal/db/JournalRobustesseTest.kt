@@ -35,7 +35,7 @@ class JournalRobustesseTest {
 
     private fun depot(nom: String? = null): JournalRepository {
         val db = JournalDatabase.construire(contexte, nom).allowMainThreadQueries().build().also { bases += it }
-        return JournalRepository(db, "tel-A", HorlogeFixe())
+        return JournalRepository(db, "tel-A", HorlogeFixe(), tourneeObligatoire = false)
     }
 
     private fun ligne(uuid: String, objet: String, type: String, remplace: String? = null, seq: Long, valeur: String? = null) =
@@ -135,7 +135,7 @@ class JournalRobustesseTest {
         contexte.deleteDatabase("m2.db")
         helper.createDatabase("m2.db", 1).use { it.execSQL(insertionV1) }
         val db = JournalDatabase.construire(contexte, "m2.db").allowMainThreadQueries().build().also { bases += it }
-        assertEquals(3, db.openHelper.writableDatabase.version) // mission 031 : v3
+        assertEquals(4, db.openHelper.writableDatabase.version) // mission 032 : v4
         val l = db.dao().trouver("U1")!!.versLigne()
         assertEquals(7L, l.sequence)
         assertEquals(250L, l.ageFixMs)
@@ -167,7 +167,7 @@ class JournalRobustesseTest {
         }
         val r = JournalRepository(
             JournalDatabase.construire(contexte, null).allowMainThreadQueries().build().also { bases += it },
-            "tel-A", source,
+            "tel-A", source, tourneeObligatoire = false,
         )
         r.saisir("P1", TypeLigne.ETAT, null, "op1")
         utc += 600_000; mono = 1_000 // 10 minutes plus tard, après un redémarrage

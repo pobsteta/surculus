@@ -66,9 +66,9 @@ interface JournalDao {
     @Query("DELETE FROM projection")
     fun effacerToutesLesProjections()
 
-    @Query("SELECT * FROM projection ORDER BY objet_uuid, type")
+    @Query("SELECT * FROM projection ORDER BY code_tournee, objet_uuid, type")
     fun projection(): List<ProjectionEntity>
 
-    @Query("SELECT * FROM projection WHERE objet_uuid = :objet AND type = :type")
-    fun projectionDe(objet: String, type: String): ProjectionEntity?
+    @Query("SELECT * FROM projection WHERE objet_uuid = :objet AND type = :type AND code_tournee = :tournee")
+    fun projectionDe(objet: String, type: String, tournee: String): ProjectionEntity?
 }

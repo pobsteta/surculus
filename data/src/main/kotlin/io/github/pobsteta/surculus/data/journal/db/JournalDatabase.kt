@@ -6,6 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import io.github.pobsteta.surculus.data.journal.LigneJournal
+import io.github.pobsteta.surculus.data.journal.Projection
 
 /**
  * Base du journal (ADR 0005).
@@ -18,7 +20,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 @Database(
     entities = [LigneJournalEntity::class, RefusJournalEntity::class, ProjectionEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class JournalDatabase : RoomDatabase() {
@@ -51,8 +53,53 @@ abstract class JournalDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v3 -> v4 : l'état courant se calcule par tournée (mission 032). La table `projection`, **dérivée**,
+         * change de clé primaire : elle est recréée puis reconstruite depuis le journal (`Projection`). `journal` et
+         * `refus_journal` ne sont ni lus en écriture ni modifiés : aucune ligne n'est copiée, modifiée ni supprimée.
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS `projection`")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `projection` (`code_tournee` TEXT NOT NULL, `objet_uuid` TEXT NOT NULL, " +
+                        "`type` TEXT NOT NULL, `courant_uuid` TEXT, `conflit` INTEGER NOT NULL, `tetes` TEXT NOT NULL, " +
+                        "`anomalies` TEXT NOT NULL, PRIMARY KEY(`code_tournee`, `objet_uuid`, `type`))",
+                )
+                val lignes = lire(db, "journal") + lire(db, "refus_journal")
+                Projection.projeter(lignes).cles.values.forEach { e ->
+                    db.execSQL(
+                        "INSERT INTO `projection` (code_tournee, objet_uuid, type, courant_uuid, conflit, tetes, anomalies) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        arrayOf<Any?>(
+                            e.cle.codeTournee, e.cle.objetUuid, e.cle.type, e.courant, if (e.conflit) 1 else 0,
+                            e.tetes.joinToString(","), e.anomalies.joinToString(","),
+                        ),
+                    )
+                }
+            }
+
+            private fun lire(db: SupportSQLiteDatabase, table: String): List<LigneJournal> =
+                db.query(
+                    "SELECT uuid, objet_uuid, type, valeur, remplace_uuid, operateur, appareil, sequence, saisi_le_utc, " +
+                        "heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee FROM `$table`",
+                ).use { c ->
+                    generateSequence { if (c.moveToNext()) c else null }.map {
+                        LigneJournal(
+                            uuid = c.getString(0), objetUuid = c.getString(1), type = c.getString(2),
+                            valeur = if (c.isNull(3)) null else c.getString(3),
+                            remplaceUuid = if (c.isNull(4)) null else c.getString(4),
+                            operateur = c.getString(5), appareil = c.getString(6), sequence = c.getLong(7),
+                            saisiLeUtcMs = c.getLong(8), heureGnssMs = if (c.isNull(9)) null else c.getLong(9),
+                            monotoneMs = c.getLong(10), demarrage = c.getLong(11),
+                            ageFixMs = if (c.isNull(12)) null else c.getLong(12), codeTournee = c.getString(13),
+                        )
+                    }.toList()
+                }
+        }
+
         /** Toutes les migrations connues. Jamais de repli destructif. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 
         /** Déclencheurs qui refusent toute modification ou suppression d'une ligne du journal. */
         internal val DECLENCHEURS = listOf(

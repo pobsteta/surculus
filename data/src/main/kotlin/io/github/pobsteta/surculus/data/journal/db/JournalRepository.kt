@@ -49,6 +49,11 @@ class JournalRepository(
     private val appareil: String,
     private val horloge: SourceHorloge,
     private val uuids: GenerateurUuidV7 = GenerateurUuidV7(),
+    /**
+     * Strict par défaut (mission 032, décision de Pascal du 2026-10-21) : `saisir` refuse un code de tournée vide,
+     * pour qu'aucune saisie ne sorte des sauvegardes sans signal. `false` : réservé aux tests antérieurs à la 032.
+     */
+    private val tourneeObligatoire: Boolean = true,
 ) {
     private val dao get() = db.dao()
 
@@ -67,6 +72,7 @@ class JournalRepository(
         codeTournee: String = "",
     ): LigneJournal {
         require(type in TypeLigne.TOUS) { "type de ligne inconnu : $type" }
+        require(!tourneeObligatoire || codeTournee.isNotBlank()) { "code de tournée vide : saisie refusée" }
         return saisirDansTransaction(objetUuid, type, valeur, operateur, remplaceUuid, fix, codeTournee)
     }
 
@@ -127,10 +133,16 @@ class JournalRepository(
     /** Lignes d'**une** tournée, dans l'ordre total : jamais celles d'une autre, ni les lignes non rattachées. */
     fun lignes(codeTournee: String): List<LigneJournal> = dao.deLaTournee(codeTournee).map { it.versLigne() }
 
-    /** Projection lue dans la table. */
+    /** Projection lue dans la table : toutes les tournées (la clé porte `codeTournee`). */
     fun projection(): Map<CleProjection, EtatCle> = dao.projection().associate { it.versEtat().let { e -> e.cle to e } }
 
-    fun etat(objetUuid: String, type: String): EtatCle? = dao.projectionDe(objetUuid, type)?.versEtat()
+    /** Projection d'**une** tournée : l'état ne dépend que des lignes de cette tournée. */
+    fun projection(codeTournee: String): Map<CleProjection, EtatCle> =
+        projection().filterKeys { it.codeTournee == codeTournee }
+
+    /** État d'une clé dans une tournée (`""` : lignes non rattachées). */
+    fun etat(objetUuid: String, type: String, codeTournee: String = ""): EtatCle? =
+        dao.projectionDe(objetUuid, type, codeTournee)?.versEtat()
 
     /** Anomalies du journal, hors clé (par exemple `uuid_contenu_different`), recalculées. */
     fun anomalies(): List<String> = recalculer().anomalies
@@ -189,12 +201,12 @@ class JournalRepository(
             """"heure_avant_utc_ms":${avant.saisiLeUtcMs},"heure_apres_utc_ms":${apres.saisiLeUtcMs}}"""
 
     private fun EtatCle.versEntite() = ProjectionEntity(
-        objetUuid = cle.objetUuid, type = cle.type, courantUuid = courant, conflit = conflit,
+        codeTournee = cle.codeTournee, objetUuid = cle.objetUuid, type = cle.type, courantUuid = courant, conflit = conflit,
         tetes = tetes.joinToString(","), anomalies = anomalies.joinToString(","),
     )
 
     private fun ProjectionEntity.versEtat() = EtatCle(
-        cle = CleProjection(objetUuid, type), courant = courantUuid, conflit = conflit,
+        cle = CleProjection(objetUuid, type, codeTournee), courant = courantUuid, conflit = conflit,
         tetes = tetes.split(",").filter { it.isNotEmpty() }, anomalies = anomalies.split(",").filter { it.isNotEmpty() },
     )
 }

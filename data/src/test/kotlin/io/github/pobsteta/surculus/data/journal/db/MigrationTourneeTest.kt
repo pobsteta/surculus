@@ -67,7 +67,7 @@ class MigrationTourneeTest {
         contexte.deleteDatabase("m23b.db")
         helper.createDatabase("m23b.db", 2).use { sql -> insertions.forEach(sql::execSQL) }
         val base = JournalDatabase.construire(contexte, "m23b.db").allowMainThreadQueries().build().also { db = it }
-        assertEquals(3, base.openHelper.writableDatabase.version)
+        assertEquals(4, base.openHelper.writableDatabase.version)
         assertEquals(2L, base.dao().compter())
         assertEquals("", base.dao().trouver("U1")!!.codeTournee)
         assertEquals(1, base.dao().tousLesRefus().size)

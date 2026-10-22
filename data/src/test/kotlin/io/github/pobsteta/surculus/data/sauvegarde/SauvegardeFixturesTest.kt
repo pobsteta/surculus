@@ -32,7 +32,7 @@ class SauvegardeFixturesTest {
 
     private fun depot(appareil: String, lignes: List<LigneJournal> = emptyList()): JournalRepository {
         val db = JournalDatabase.construire(contexte, null).allowMainThreadQueries().build().also { bases += it }
-        return JournalRepository(db, appareil, HorlogeFixe()).also { d -> lignes.forEach(d::recevoir) }
+        return JournalRepository(db, appareil, HorlogeFixe(), tourneeObligatoire = false).also { d -> lignes.forEach(d::recevoir) }
     }
 
     private fun sauverPuisRestaurer(ref: String, restaurant: String): Triple<JournalRepository, JournalRepository, CompteRendu> {

@@ -59,7 +59,7 @@ class FormatEtServiceTest {
     @Test fun `le service sauvegarde, suffixe un nom pris et fait tourner par tournee`() {
         val db = JournalDatabase.construire(ApplicationProvider.getApplicationContext<Context>(), null).allowMainThreadQueries().build()
         try {
-            val depot = JournalRepository(db, "a3f9c2d1", HorlogeFixe()).also { d -> journalDe("journal/projection.json#JR-02").forEach(d::recevoir) }
+            val depot = JournalRepository(db, "a3f9c2d1", HorlogeFixe(), tourneeObligatoire = false).also { d -> journalDe("journal/projection.json#JR-02").forEach(d::recevoir) }
             val fichiers = linkedMapOf<String, ByteArray>()
             val stockage = object : StockageSauvegardes {
                 override fun noms() = fichiers.keys.toSet()
