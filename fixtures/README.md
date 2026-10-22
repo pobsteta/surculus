@@ -152,3 +152,14 @@ du 2026-10-21 (`pilotage/journal.md`), **sans lire de code**. Identifiants `DI-N
 * « mangé » porte le détail « abroutissement » sur un plant sain, atteint ou mort, refusé sur absent, non observé ou sans état (spec § 6, décision n° 4 corrigée).
 * Le SHA-256 de l'archive n'est pas inscrit dans `docs/dependances.md` par la 025 : la 013 le recoupera sur un second téléchargement (le test désactivé `l'empreinte du modèle est inscrite` l'attend).
 * Tests : `core/src/test/kotlin/.../core/dictee/`. `DicteeFixturesBienFormeesTest` est actif (cas bien formés, codes dans les référentiels, vocabulaire). `DicteeRejeuTest` est `@Disabled("en attente de la mission 013")` : la 013 branche `ImplementationDictee.dictee()` (port `Dictee`) et retire `@Disabled`, sans modifier les cas.
+
+## Registre attendu du scénario Couchey
+
+`export/registre-attendu-couchey.json` (mission 027) donne, pour chaque contrôle de
+`export/scenario-couchey.json`, les valeurs que le registre doit contenir après import :
+`nb_total`, `nb_vivants`, `nb_abroutis`, `h_moy_cm`, `visite_le`, la placette par son code
+et le point en WGS 84 (`lon`, `lat`, `tolerance_m` = 0,5 m, décision de Pascal du
+2026-10-21). Les valeurs sont écrites à la main depuis la spec, chacune avec son calcul ;
+les coordonnées des placettes viennent de sommieR (`R/demo.R` l. 363-364, commit fd92078, sommieR 0.31.1 (DESCRIPTION)),
+hypothèse : la CI importe cette version. Chaque point doit tomber dans le rectangle de `docs/spec.md` § 10, point 9 (domaine d'usage d'EPSG:2154).
+La comparaison à l'export relève de la mission 028.
