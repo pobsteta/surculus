@@ -130,3 +130,20 @@ _Avec la raison, en une ligne._
 - 2026-10-21 : PR #4 (ébauche des référentiels, 2026-10-15) fermée : antérieure à la porte
   n° 1, codes travaux contraires à la décision du 2026-10-15 ; ses cinq documents utiles
   passent à la mission 030.
+
+## Livraisons
+
+_Une ligne par cycle, ajoutée sous la précédente à la fin de chaque `/boucle`, et une
+par `/bilan` : la livraison que Pascal a retenue, pour qui, et ce qu'elle apporte de plus
+que la précédente du même rythme. Un cycle sans livraison neuve livre sa mauvaise
+nouvelle, car
+« une mauvaise nouvelle est une livraison sur laquelle on apprend » (Pascal) : on
+l'inscrit avec ce qu'elle nous apprend. Rubrique ouverte le 2026-10-22 (plugin
+imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
+
+```
+- cycle N · livraison · pour qui · ce qu'elle apporte de plus que la précédente
+- cycle N · mauvaise nouvelle : … · pour qui · ce qu'elle nous apprend
+- bilan du AAAA-MM-JJ · livraison · pour qui · ce qu'elle apporte de plus que la précédente
+- bilan du AAAA-MM-JJ · mauvaise nouvelle : … · pour qui · ce qu'elle nous apprend
+```
