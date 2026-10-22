@@ -188,6 +188,51 @@ class DicteeFixturesBienFormeesTest {
     }
 
     @Test
+    fun `redite de l'etat courant et correction vers non observe (decisions 11 et 12)`() {
+        val cas = DicteeFixtures.cas("contexte")
+        // champs nouveaux : booléens vrais (jamais des textes), ligne_ajoutee obligatoire sur ces cas
+        cas.filter { it.attendu.has("ligne_ajoutee") || it.attendu.has("confirmation_vocale") }.forEach { c ->
+            val a = c.attendu
+            assertTrue(a.has("ligne_ajoutee") && a.get("ligne_ajoutee").asJsonPrimitive.isBoolean, "${c.id} : ligne_ajoutee booléen obligatoire")
+            a.get("confirmation_vocale")?.let { assertTrue(it.asJsonPrimitive.isBoolean, "${c.id} : confirmation_vocale doit être un booléen") }
+            assertEquals("etat", a.getAsJsonObject("commande").get("type").asString, "${c.id} : commande etat")
+        }
+        // décision 11 : redite = même état que le courant, aucune ligne, voix confirme, jamais une correction
+        val redites = cas.filter { it.attendu.has("confirmation_vocale") && it.attendu.get("confirmation_vocale").asBoolean }
+        assertEquals(setOf("sain", "atteint", "mort", "absent", "non_observe"), redites.map { etat(it) }.toSet())
+        redites.forEach { c ->
+            assertTrue(etat(c) != null, "${c.id} : une redite suppose un état courant")
+            assertEquals(etat(c), c.attendu.getAsJsonObject("commande").get("etat").asString, "${c.id} : état redit = état courant")
+            assertEquals(false, c.attendu.get("ligne_ajoutee").asBoolean, "${c.id} : aucune ligne ajoutée")
+            assertTrue(!c.attendu.has("correction"), "${c.id} : une redite n'est pas une correction")
+            if (c.entree.has("mesures_courantes")) {
+                assertEquals(true, c.attendu.get("mesures_conservees").asBoolean, "${c.id} : redite = mesures conservées")
+            }
+        }
+        assertTrue(redites.any { it.entree.has("mesures_courantes") && etat(it) == "atteint" })
+        // décision 12 : « non observé » sur un état existant = correction, mesures supprimées
+        val versNonObserve = cas.filter { it.attendu.get("accepte").asBoolean && it.attendu.getAsJsonObject("commande").get("etat")?.asString == "non_observe" && !it.attendu.has("confirmation_vocale") }
+        assertEquals(setOf("sain", "atteint", "mort", "absent", null), versNonObserve.map { etat(it) }.toSet())
+        versNonObserve.forEach { c ->
+            assertEquals(true, c.attendu.get("ligne_ajoutee").asBoolean, "${c.id} : la correction ajoute une ligne")
+            if (c.entree.has("mesures_courantes")) {
+                assertEquals(false, c.attendu.get("mesures_conservees").asBoolean, "${c.id} : la mesure tombe avec l'état")
+            }
+        }
+        // mesures_courantes : seulement hauteur_cm entier > 0 et cause_groupe du référentiel, jamais sur absent / non observé / sans état
+        cas.filter { it.entree.has("mesures_courantes") }.forEach { c ->
+            val m = c.entree.getAsJsonObject("mesures_courantes")
+            assertTrue(etat(c) in setOf("sain", "atteint", "mort"), "${c.id} : mesures sur sain, atteint ou mort seulement")
+            m.keySet().forEach { assertTrue(it in setOf("hauteur_cm", "cause_groupe"), "${c.id} : champ $it inconnu") }
+            m.get("hauteur_cm")?.let { assertTrue(it.asInt > 0, "${c.id} : hauteur entière strictement positive") }
+            m.get("cause_groupe")?.let { assertTrue(it.asString in Referentiels.groupesCauses, "${c.id} : cause hors référentiel") }
+            if (etat(c) == "sain") assertTrue(!m.has("cause_groupe"), "${c.id} : pas de cause sur un plant sain")
+        }
+        // sans état : première saisie
+        assertTrue(versNonObserve.any { etat(it) == null && !it.attendu.get("correction").asBoolean && !it.attendu.get("annonce_vocale").asBoolean })
+    }
+
+    @Test
     fun `le champ hypothese est un texte, jamais un booleen`() {
         tous.forEach { (_, c) ->
             c.json.get("hypothese")?.let {
