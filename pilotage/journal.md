@@ -214,3 +214,4 @@
 2026-10-22 · Claude (orchestrateur) · mission 035 · Commande complète verte sur la fusion (rc=0, 17 tests rejoués) ; PR ouverte.
 2026-10-22 · Claude (orchestrateur) · cycle 7 · PR #58 (034) et #59 (035) ouvertes, prêtes au relecteur, vertes sur la fusion. La 012 attend les essais de terrain de Pascal.
 2026-10-22 · relecteur · PR #60 (f359ba6) · Prête : journal en ajout seul, seule décision de Pascal sur la 035, choix techniques et erreur reconnue signés orchestrateur, kanban conforme ; à préciser : qui a résolu le conflit de la #54 (précisé : l'orchestrateur).
+2026-10-22 · Claude (orchestrateur) · PR #60, #58 et #59 · Fusionnées dans cet ordre sur l'ordre de Pascal (« Fusionne »), checks verts vérifiés juste avant chacune : pilotage du cycle 7 (#60), mission 034 (#58), mission 035 (#59). Cycle 7 clos.
