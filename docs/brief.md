@@ -5,6 +5,15 @@
 > à valider par Pascal. Le détail technique est dans `docs/spec.md` ; ce brief n'en
 > recopie rien.
 
+## Ma réponse d'abord
+
+**2026-10-22, Pascal** (amendement : thème commun avec Groma et Marculus, liste des
+travaux au départ ; recopié mot pour mot de sa réponse dans la session) :
+
+> le thème commun donne une cohérence au projet nemeton Marculus, Groma et Surculus
+> soutienne le projet d'où l'intérêt d'un style commun. Comme Marculus, Surculus peut
+> lister des tavaux de plusieurs projets
+
 ## Le problème, et pour qui (Abstraction)
 
 - **Problème** : le contrôle de reprise existe déjà, par totaux, dans sommieR et son
