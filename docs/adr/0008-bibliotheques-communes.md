@@ -66,12 +66,12 @@ WCAG, en supposant 1 sp ≈ 1 px CSS, police du téléphone à 100 % : hypothès
 |---|---|---|---|---|---|
 | noir (`Palette.Noir`) | messages, cap de guidage, légende « inconnu » | 14-72 sp | 19,96 | oui | oui |
 | texte par défaut (`onSurface` #1D1B20) | tous les écrans | — | 16,23 | oui | oui |
-| rouge #B00020 | refus, hors France, sans position, légende « jamais », ortho absente, erreurs de l'écran d'essai (`EcranCarte.kt` l. 86, 196, 198, 279 ; `EcranGuidage.kt` l. 70, 76, 150, 152, 216 ; `EcranTournees.kt` l. 125, 159, 173 ; `EcranEssaiGnss.kt` l. 162, 163, 180) | 14-22 sp | **6,96** | **non** | oui pour `EcranGuidage.kt` l. 150 et 152 (22 sp gras) ; non ailleurs |
+| rouge #B00020 | refus, hors France, sans position, légende « jamais », ortho absente, erreurs de l'écran d'essai (`EcranCarte.kt` l. 86, 196, 198, 279 ; `EcranGuidage.kt` l. 70, 76, 150, 152, 216 ; `EcranTournees.kt` l. 125, 159, 176 ; `EcranEssaiGnss.kt` l. 162, 163, 180) | 14-22 sp | **6,96** | **non** | oui pour `EcranGuidage.kt` l. 150 et 152 (22 sp gras) ; non ailleurs |
 | vert #0B6B2E | « arrivé », cap arrivé, rattaché, légende « à jour », ortho complète (`EcranGuidage.kt` l. 158, 162, 206 ; `EcranCarte.kt` l. 281 ; `EcranTournees.kt` l. 176) | 14-72 sp | **6,32** | **non** | oui pour `EcranGuidage.kt` l. 158 (72 sp) et 162 (24 sp gras) ; non pour l. 206 et `EcranTournees.kt` l. 176 (18 sp gras) et pour la légende (14 sp) |
 | orange #B45300 | rattachement par identité, à confirmer, anomalies, légende « travaux à prévoir », ortho partielle (`EcranGuidage.kt` l. 204, 218 ; `EcranCarte.kt` l. 280, 287 ; `EcranTournees.kt` l. 176) | 14-18 sp | **4,78** | **non** | non |
 | blanc sur vert / orange / rouge | badge du fix (`carte/Commun.kt` l. 69-75, 18 sp gras), panneau de l'écran d'essai GNSS (`EcranEssaiGnss.kt` l. 267-279) | 18-44 sp | 6,65 / **5,03** / 7,33 | non / **non** / oui | badge (18 sp gras, texte normal) : non / non / oui ; lignes de 18-20 sp de l'écran d'essai : non / non / oui ; lignes de 44 sp : oui |
-| blanc sur `primary` par défaut #6750A4 | boutons pleins (`MainActivity.kt` l. 76-84, `EcranGuidage.kt` l. 180-184, `EcranTournees.kt` l. 114-117, `EcranCarte.kt` l. 307) | 18-20 sp | **6,44** | **non** | non |
-| `primary` #6750A4 **en texte** sur `surface` | boutons à contour : « Retour » de chaque écran (`EcranCarte.kt` l. 87, 192 ; `EcranGuidage.kt` l. 71, 143 ; `EcranTournees.kt` l. 110), « Ma position » (`EcranCarte.kt` l. 293), « Fermer la liste » (l. 336), son (`EcranGuidage.kt` l. 191), « Relancer l'ortho » (`EcranTournees.kt` l. 178) ; libellé et curseur du champ du code du piquet (`EcranGuidage.kt` l. 173) | 14-18 sp | **6,12** | **non** | non |
+| blanc sur `primary` par défaut #6750A4 | boutons pleins (`MainActivity.kt` l. 76-84, `EcranGuidage.kt` l. 180-184, `EcranTournees.kt` l. 114-117, `EcranCarte.kt` l. 307, `sauvegarde/EcranRestauration.kt` l. 69) | 18-20 sp | **6,44** | **non** | non |
+| `primary` #6750A4 **en texte** sur `surface` | boutons à contour : « Retour » de chaque écran (`EcranCarte.kt` l. 87, 192 ; `EcranGuidage.kt` l. 71, 143 ; `EcranTournees.kt` l. 110), « Ma position » (`EcranCarte.kt` l. 293), « Fermer la liste » (l. 336), son (`EcranGuidage.kt` l. 191), « Relancer l'ortho » (`EcranTournees.kt` l. 178) ; libellé et curseur des champs actifs : code du piquet (`EcranGuidage.kt` l. 173), réglages de l'écran d'essai (`EcranEssaiGnss.kt` l. 212, 240, 247) | 14-18 sp | **6,12** | **non** | non |
 | blanc sur vert #0B6B2E | boutons de `EcranCarte.kt` l. 298 et « Démarrer » de `EcranEssaiGnss.kt` l. 170-171 | 18-20 sp | 6,65 | non | non |
 | texte d'un bouton désactivé (`onSurface` à 38 %) | rôle implicite de Material 3 | — | ≈ 2,3 (`contradicteur`) | non | exempté |
 
@@ -98,10 +98,14 @@ canopée sombre ; les contours des polygones (l. 217-219).
 | D | Cohérence par le nom, l'icône, la typographie et les formes seulement | Aucun risque au soleil | Ne donne pas les couleurs communes demandées |
 
 **La palette d'état** (rouge, orange, vert, noir des pastilles, du badge et des alertes)
-reste propre à Surculus (spec § 3). Là où elle porte du **texte**, la règle de contraste
-s'y applique comme au reste : la mission devra foncer les variantes « texte » de ces
-couleurs, ou écrire en noir à côté d'une pastille de couleur, **sans changer les pastilles**
-de la mission 033.
+reste propre à Surculus (spec § 3). Là où elle porte du **texte**
+(alertes, badge, et la légende de la carte, `EcranCarte.kt` l. 279-281, qui reprend les
+couleurs des pastilles), elle échoue à la règle de contraste : l'orange (4,78:1) échoue
+quelle que soit la réponse à la question 2. Comment le résoudre sans toucher ce que Pascal a
+gardé est la question 6 : la lecture de l'orchestrateur, **à confirmer par Pascal**, est que
+« couleurs de la 033 gardées » vise les pastilles, et que leurs couleurs en texte peuvent être
+foncées (au prix d'une légende un peu plus sombre que ses pastilles) ou remplacées par du
+noir à côté d'une pastille de couleur.
 
 ## Le crible FRANCE
 
@@ -137,6 +141,9 @@ de la mission 033.
 5. **Le grand texte**, si tu retiens 1.4.6 tel qu'écrit : jugé avec la taille de police du
    téléphone à 100 %, ou chaque texte tient 7:1 quelle que soit la taille choisie par
    l'agent ?
+6. **« Couleurs de la 033 gardées »** : les pastilles seules (la légende et les alertes en
+   texte peuvent alors être foncées, ou écrites en noir à côté d'une pastille), ou aussi la
+   légende en texte (il faut alors une autre issue pour l'orange, à 4,78:1) ?
 
 Et une proposition : pendant le terrain de Couchey, un premier essai au soleil de la
 palette actuelle (badge du fix, texte orange, pastilles sur une ortho claire, **marqueur
