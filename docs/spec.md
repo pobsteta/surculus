@@ -44,8 +44,8 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
 * Pointage d'un plant sans RTK fixe : distance et azimut depuis le piquet. **Matériel de
   pointage à nommer par Pascal** (boussole de visée, télémètre, ruban).
 * **Affichage** (amendement du brief, 2026-10-22) : style commun avec Marculus et Groma,
-  tiré de la bibliothèque `terrain` (ADR 0008, réservée, à écrire puis à trancher par
-  Pascal ; calendrier à y fixer) ; **thème clair forcé** (le mode sombre
+  tiré de la bibliothèque `terrain` ([ADR 0008](adr/0008-bibliotheques-communes.md),
+  proposée, à trancher par Pascal) ; **thème clair forcé** (le mode sombre
   du téléphone n'est pas suivi), contraste texte/fond d'au moins 7:1
   ([WCAG 2.2, 1.4.6](https://www.w3.org/TR/WCAG22/#contrast-enhanced)) vérifié par un
   test, palette des placettes (mission 033, PR #65) inchangée, essai au soleil par Pascal avant
@@ -487,7 +487,7 @@ jamais dans la base de sommieR.
    de plants, leurs lignes (écartement, orientation, essence), leur date de réception et
    leurs cloisonnements ? À ajouter au brief `vers-sommier`.
 5. **Bibliothèques communes** : forme et calendrier de l'extraction (Marculus et Groma
-   sont sous GPL-3.0-or-later). **[ADR 0008 réservée, non écrite : voir [l'index des ADR](adr/README.md)]**
+   sont sous GPL-3.0-or-later). *Ajouté le 2026-10-22 : le style commun est traité par l'[ADR 0008](adr/0008-bibliotheques-communes.md) (proposée) ; les autres briques attendent une ADR ultérieure, après l'essai d'automne.*
 6. **Identifiant d'application** : `io.github.pobsteta.surculus` ou `fr.nemeton.surculus`.
    *Ajouté le 2026-10-22 : tranchée par l'[ADR 0004](adr/0004-stack-kotlin-compose-vosk.md) (`io.github.pobsteta.surculus`).*
 7. **Briefs vers sommieR** à mettre à jour : nouvelles couches (`etats_plants` avec
