@@ -18,12 +18,13 @@ forme que choisit Marculus), et la tenir à jour quand l'une des deux l'adopte.
 
 ## 2. Pour information : le style commun
 
-Pascal a décidé le 2026-10-22 que Surculus prend le style de Marculus et Groma par `terrain`,
-sans copier `Theme.kt`, et que ce style **ne passe jamais devant la lisibilité au soleil** :
-thème clair forcé, contraste du texte d'au moins 7:1 (WCAG 2.2, critère 1.4.6).
+Pascal a décidé le 2026-10-22 que Surculus prend son style commun avec Marculus et Groma
+par `terrain`, sans copie de `Theme.kt`, et qu'il **ne passe jamais devant la lisibilité au
+soleil** : thème clair forcé dans Surculus, contraste du texte d'au moins 7:1 (portée de la
+règle : ADR 0008 de Surculus, question 2).
 
 Constat qui concerne Marculus : le texte blanc sur `VertVif` #3E7A40 (couleur `primary` de
-`ui/theme/Theme.kt` l. 11) donne 5,17:1, sous les 7:1 ; `VertVif` sur crème donne 4,37:1.
+`ui/theme/Theme.kt` l. 11) donne 5,17:1, sous les 7:1.
 Blanc sur `VertMarculus` donne 9,80:1. Marculus n'est pas tenu par la règle de Surculus ;
 c'est à Pascal de dire si la règle vaut pour les trois applications.
 

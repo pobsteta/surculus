@@ -17,6 +17,7 @@
 | [0009](0009-carte-hors-ligne.md) | Carte et ortho hors ligne | acceptée (2026-10-21) |
 | 0010 | Clé de signature et distribution | **réservée, non écrite** ; citée par `docs/publier.md` ; la clé reste à Pascal |
 | [0011](0011-ecriture-geopackage-sur-appareil.md) | Écriture du GeoPackage sur l'appareil | acceptée (2026-10-17) |
+| 0012 | Briques communes (GNSS, géodésie, journal, GeoPackage, voix, carte) vers `terrain` | **réservée, non écrite** (2026-10-22) : renvoyée par l'ADR 0008 après l'essai d'automne 2026 et une table des écarts ; les en-têtes des copies (`core/.../{gnss,geo}/*.kt`, `Declinaison.kt`, `app/.../gnss/*.kt`, leurs tests, `NOTICE` l. 38), l'ADR 0003 l. 69 et la fiche 003 l. 26 disent encore « ADR 0008 » |
 
-Les ADR 0006, 0008 et 0010 sont des décisions d'architecture : elles passent par le
+Les ADR 0006, 0008, 0010 et 0012 sont des décisions d'architecture : elles passent par le
 `contradicteur`, puis Pascal tranche (`CLAUDE.md`, « Le déroulé »). Aucun contenu n'est supposé ici.

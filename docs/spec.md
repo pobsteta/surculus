@@ -47,7 +47,7 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
   tiré de la bibliothèque `terrain` ([ADR 0008](adr/0008-bibliotheques-communes.md),
   proposée, à trancher par Pascal) ; **thème clair forcé** (le mode sombre
   du téléphone n'est pas suivi), contraste texte/fond d'au moins 7:1
-  ([WCAG 2.2, 1.4.6](https://www.w3.org/TR/WCAG22/#contrast-enhanced)) vérifié par un
+  (portée de la règle : ADR 0008, question 2) vérifié par un
   test, palette des placettes (mission 033, PR #65) inchangée, essai au soleil par Pascal avant
   la fusion.
 * **Hors ligne de bout en bout** : carte, ortho, dictée, contrôles, alertes (ortho :
