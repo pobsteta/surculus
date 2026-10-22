@@ -34,6 +34,8 @@ data class PlacetteTournee(
     val ug: String?,
     /** Lambert-93 (x = Est, y = Nord, mètres) ; `null` si la géométrie est vide. */
     val position: PointLambert93?,
+    /** Calculé par sommieR, lu tel quel ; [EtatSuivi.INCONNU] si nul, absent (ancienne tournée) ou valeur inconnue. */
+    val etatSuivi: EtatSuivi = EtatSuivi.INCONNU,
 )
 
 /** Un contrôle déjà inscrit dans le fichier (`controles`). */

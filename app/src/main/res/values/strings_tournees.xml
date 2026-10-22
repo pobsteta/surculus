@@ -37,6 +37,11 @@
     <string name="carte_couche_ug">UG (%1$d)</string>
     <string name="carte_couche_parcelles">Parcelles (%1$d)</string>
     <string name="carte_couche_placettes">Placettes (%1$d)</string>
+    <!-- Légende des placettes (mission 033) : un décompte par état de suivi, le symbole redit la forme du disque. -->
+    <string name="carte_legende_jamais">● %1$d jamais</string>
+    <string name="carte_legende_a_programmer">● %1$d à repasser</string>
+    <string name="carte_legende_a_jour">○ %1$d à jour</string>
+    <string name="carte_legende_inconnu">\? %1$d sans état</string>
     <string name="carte_anomalies">%1$d surface(s) sans géométrie lisible, non dessinée(s)</string>
     <string name="carte_placettes_liste">Placettes</string>
     <string name="carte_ma_position">Ma position</string>
