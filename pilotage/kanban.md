@@ -10,8 +10,9 @@
 _Idées, à trier au prochain `/mission`._
 
 - **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0008
-  (bibliothèques communes), 0010 (distribution et clé de signature) ; réexamen de l'ADR
-  0004 (osmdroid archivé depuis le 2024-11-20, ADR 0009).
+  (bibliothèques communes), 0010 (voir la carte « clé de signature » au Planifié) ;
+  réexamen de l'ADR 0004 (osmdroid archivé depuis le 2024-11-20, ADR 0009) : la 034 n'y
+  ajoute qu'un renvoi daté.
 - **Dettes de la 009** : demander `WRITE_EXTERNAL_STORAGE` à l'exécution (Android 8-9)
   et brancher le déclenchement de la sauvegarde sur les saisies (011, 012) ; essai de
   restauration sur deux téléphones après la 011 et la 012.
@@ -20,10 +21,13 @@ _Idées, à trier au prochain `/mission`._
 - **Pascal (dans sommieR)** : brief vers sommieR, un seul fichier d'ortho tuilé en
   EPSG:3857 à la place d'`ortho.tif` (ADR 0009, cible f).
 - **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées
-  (export, 032) ; essai sur téléphone et test des dix secondes par Pascal.
+  (export, 032) ; l'essai sur téléphone est sur la carte « terrain avant la 012 ».
 - **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
-  barème 2024 (« en vigueur NON vérifié ») ; un test de forme des CSV de
-  `docs/referentiels/` (même nombre de colonnes sur chaque ligne).
+  barème 2024 (« en vigueur NON vérifié ») ; le test de forme des CSV est au Planifié.
+- **Tests (relecture de la 027)** : une seule emprise France, celle de la spec § 10.9
+  (domaine d'usage d'EPSG:2154) ; `FixturesBienFormeesTest` (l. 138) a sa propre boîte.
+  `fixtures/README.md` (l. 79) : ajouter `remplace_autre_tournee` aux codes d'anomalie
+  (`testeur`).
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
   de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
@@ -52,12 +56,20 @@ _En attente sous le plafond humain (3 PR en revue)._
 **Cycle 6, lancé le 2026-10-21 :**
 
 - **032** état par tournée, tournée obligatoire à la saisie (`dev`, appuyer), avant la 012 ;
-  plan demandé.
-- **027** registre attendu du scénario Couchey (`testeur`, appuyer) ; plan demandé.
+  relecteur : prête ; réserves levées (4d124c9 : spec § 5, test de migration sur
+  `refus_journal`), PR ouverte après la fusion de cette PR de pilotage.
+- **027** registre attendu du scénario Couchey (`testeur`, appuyer) ; en revue, PR #55.
 
 **Attendent le plafond :**
 
-- **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032.
+- **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK de la 011 sur Couchey
+  (import, ortho, mode avion, guidage, test des dix secondes) ; restauration de
+  `exemple-v1.sursync` ; comptes de Couchey contre QGIS (029). Chaque essai au journal.
+- **Pascal, clé de signature** : dire au journal où est la copie hors du poste et qui
+  détient les mots de passe, puis l'ADR 0010.
+- **034** trous de mémoire du bilan (`archiviste`, appuyer).
+- **Test de forme des CSV** de `docs/referentiels/` en CI, vu rouge sur `22ec874^` (`dev`).
+- **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
 - Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
 - **028** registre attendu et sabotage en CI (`dev`, appuyer), après 026 et 027.
 
