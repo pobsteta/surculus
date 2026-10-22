@@ -83,7 +83,9 @@ point à Brest et à Strasbourg.
   avec QField est une compatibilité **de format** (ADR 0001 : pas de repli plant par
   plant hors Surculus, risque accepté).
 * Liste des tournées : forêt, opérateur, date de préparation, nombre de saisies, état
-  (ouverte, rendue). Une tournée n'est jamais écrasée.
+  (ouverte, rendue). Une tournée n'est jamais écrasée. C'est elle qui donne « les travaux
+  de plusieurs projets » du brief : un projet est une tournée (décision de Pascal du
+  2026-10-22) ; aucun écran ne montre ensemble les placettes de plusieurs tournées.
 * **Liste du départ** (amendement du brief, 2026-10-22) : une tournée ouverte liste ses
   placettes avec leur `etat_suivi`, chacune dans sa tournée (critère (d) de la tranche 1 :
   deux tournées ne sont jamais fusionnées). `a_programmer` dit un besoin de travaux à
