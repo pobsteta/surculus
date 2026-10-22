@@ -55,13 +55,22 @@ monte un service PostGIS éphémère et lance `verifier.R`.
      Source de ce choix : pilotage/journal.md, 2026-10-22, décision de Pascal
      (mission 028). Coordonnées : `lon` puis `lat`, degrés WGS 84 ; les couches de
      l'export (EPSG:2154) sont converties par sf ; chaque point doit tomber dans le
-     rectangle de la France du JSON. **Hypothèse** : le fuseau horaire du processus
-     R est celui de l'export (`visite_le` des couches est une heure locale lue par
-     sommieR) ; en CI, les deux sont en UTC.
+     rectangle de la France du JSON. **`visite_le`** : l'export l'écrit en UTC avec « Z »
+     (`gpkg/.../ValidationExport.kt:237-241`, `docs/spec.md:282`) ; F4 compare
+     l'instant lu dans `payload.visite_le` du registre à l'instant attendu, **à la
+     seconde, en UTC**, et le résumé affiche la valeur lue. Mesuré le 2026-10-22 : sf
+     rend un `POSIXct`, donc `as.POSIXct(k$visite_le)` de sommieR
+     (`R/travaux_qfield.R:264`) ne change rien, et le registre porte
+     `2026-10-20T09:30:00Z` et `2026-10-20T10:15:00Z` sous `TZ=UTC` comme sous
+     `TZ=Europe/Paris`. **P35-02** : son point est le piquet de la tournée, qui vient de
+     sommieR ; il ne mesure rien de Surculus (le résumé le dit).
    - **F5** (mission 028, `sabotage.R`) : chaque contrôle F1 à F4 est rejoué sur une
-     copie sabotée de l'export et **doit passer au rouge** ; le résumé du job donne,
-     par sabotage, le contrôle visé et son message. Un sabotage resté vert est un
-     écart (un contrôle qui ne contrôle rien) et fait échouer le job.
+     copie sabotée de l'export et **doit passer au rouge pour le motif visé** (une
+     expression régulière par sabotage : `nb_total` pour le total faux, la distance
+     pour le point, le contrôle manquant pour F1, etc.) ; le résumé du job donne, par
+     sabotage, le contrôle visé et son message. Un sabotage resté vert, ou rouge pour
+     un autre motif, est un écart (un contrôle qui ne contrôle pas ce qu'il prétend) et
+     fait échouer le job.
 
      | Sabotage | Contrôle visé |
      |---|---|

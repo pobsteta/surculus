@@ -218,7 +218,8 @@ if (!is.null(avec)) {
       "| Placette | Champ | Attendu | Mesuré | Verdict |", "|---|---|---|---|---|",
       if (nrow(f4$lignes))
         sprintf("| %s | %s | %s | %s | %s |", f4$lignes$placette, f4$lignes$champ,
-                f4$lignes$attendu, f4$lignes$mesure, f4$lignes$verdict))
+                f4$lignes$attendu, f4$lignes$mesure, f4$lignes$verdict),
+      "", LIGNE_PIQUET)
   if (length(tous_fautes))
     resume <- c(resume, "", "Écarts :", "", paste0("- ", tous_fautes))
 
@@ -255,13 +256,13 @@ if (!is.null(avec)) {
       signaler("F5 : auto-test par sabotage interrompu : ", conditionMessage(e))
       NULL })
     if (!is.null(f5)) {
-      for (i in which(!grepl("^rouge", f5$resultat)))
+      for (i in which(!f5$resultat == RESULTAT_OK))
         signaler("F5 : sabotage « ", f5$sabotage[i], " » : ", f5$controle[i],
-                 " est resté vert")
-      message("F5 sabotages : ", sum(grepl("^rouge", f5$resultat)), " sur ",
+                 " : ", f5$resultat[i], " (", f5$message[i], ")")
+      message("F5 sabotages : ", sum(f5$resultat == RESULTAT_OK), " sur ",
               nrow(f5), " détectés.")
       resume <- c(resume, "",
-        "F5, auto-test par sabotage (chaque contrôle doit passer au rouge sur une copie sabotée de l'export) :", "",
+        "F5, auto-test par sabotage (chaque contrôle doit passer au rouge, pour le motif visé, sur une copie sabotée de l'export) :", "",
         "| Sabotage | Contrôle visé | Résultat | Message du contrôle |", "|---|---|---|---|",
         sprintf("| %s | %s | %s | %s |", f5$sabotage, f5$controle, f5$resultat,
                 gsub("\\|", "/", f5$message)))

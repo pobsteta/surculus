@@ -236,8 +236,28 @@ verifier(contient(f$fautes, "P35-02, h_moy_cm"), "F4 : h_moy_cm faux de P35-02 r
 f <- controle_f4(attendu, change(controles_ok, 1L, "nb_total", NA), points_ok)
 verifier(contient(f$fautes, "nb_total"), "F4 : total absent (NA) refusé")
 f <- controle_f4(attendu, change(controles_ok, 1L, "visite_le", "2026-10-20T11:30:00Z"), points_ok)
-verifier(contient(f$fautes, "contrôle du 2026-10-20T09:30:00Z : 0 entrée"),
-         "F4 : visite_le faux (contrôle introuvable à la date attendue) refusé")
+verifier(contient(f$fautes, "P35-01, visite_le : attendu 2026-10-20T09:30:00Z, lu au registre 2026-10-20T11:30:00Z"),
+         "F4 : visite_le faux de 2 h refusé, avec la valeur lue au registre")
+f <- controle_f4(attendu, change(controles_ok, 1L, "visite_le", "2026-10-19T22:00:00Z"), points_ok)
+verifier(contient(f$fautes, "P35-01, visite_le"), "F4 : visite_le un jour trop tôt (perte de l'heure) refusé")
+f <- controle_f4(attendu, change(controles_ok, 1L, "visite_le", "2026-10-20T09:30:01Z"), points_ok)
+verifier(contient(f$fautes, "P35-01, visite_le"), "F4 : visite_le faux d'une seconde refusé (à la seconde)")
+f <- controle_f4(attendu, change(controles_ok, 1L, "visite_le", "2026-10-20 09:30:00"), points_ok)
+verifier(contient(f$fautes, "P35-01, visite_le"), "F4 : visite_le sans « Z » (pas un instant UTC) refusé")
+f <- controle_f4(attendu, change(controles_ok, 1L, "visite_le", "2026-10-20T09:30:00.000Z"), points_ok)
+verifier(length(f$fautes) == 0L, "F4 : même instant avec millisecondes accepté")
+f <- controle_f4(attendu, change(controles_ok, 1L, "visite_le", "2026-10-20T11:30:00Z"), points_ok)
+verifier("2026-10-20T11:30:00Z" %in% f$lignes$mesure && "ÉCART" %in% f$lignes$verdict,
+         "F4 : le résumé porte la valeur lue au registre, et la ligne visite_le n'est pas conforme d'office")
+# Le fuseau du processus R ne change pas la comparaison.
+tz_avant <- Sys.getenv("TZ", NA)
+Sys.setenv(TZ = "Europe/Paris")
+verifier(length(controle_f4(attendu, controles_ok, points_ok)$fautes) == 0L,
+         "F4 : conforme aussi sous TZ=Europe/Paris")
+verifier(contient(controle_f4(attendu, change(controles_ok, 1L, "visite_le", "2026-10-20T11:30:00Z"),
+                              points_ok)$fautes, "visite_le"),
+         "F4 : une heure fausse reste refusée sous TZ=Europe/Paris")
+if (is.na(tz_avant)) Sys.unsetenv("TZ") else Sys.setenv(TZ = tz_avant)
 f <- controle_f4(attendu, controles_ok[2L, ], points_ok)
 verifier(contient(f$fautes, "P35-01, contrôle du"), "F4 : contrôle attendu absent du registre refusé")
 f <- controle_f4(attendu, rbind(controles_ok, change(controles_ok, 1L, "id", "e3")[1L, ]), points_ok)
@@ -341,6 +361,20 @@ ctx_test <- list(depart_gpkg = depart, bilan_export = list(uuid_ecrits = uuid_ec
 x <- variante("f5-intact")
 r <- mesurer_sabotage(list(controle = "F2", import = FALSE), x, dirname(x), ctx_test)
 verifier(!r$rouge && contient(r$message, "AUCUN ÉCART"), "F5 : une copie non sabotée reste verte, et le dit")
+# Le motif visé : un contrôle rouge pour une AUTRE faute n'est pas un succès.
+x <- variante("f5-motif", "UPDATE controles SET nb_total = 99 WHERE uuid = 'aaaa'")
+r <- mesurer_sabotage(list(controle = "F2", import = FALSE, motif = "F2 : controles : 1 ligne\\(s\\) retirée"),
+                      x, dirname(x), ctx_test)
+verifier(r$rouge && !r$motif_vu && contient(r$message, "MOTIF INATTENDU"),
+         "F5 : F2 rouge pour « modifiée » alors que « retirée » était visé : motif inattendu")
+verifier(resultat_sabotage(r) == "ROUGE, MOTIF INATTENDU" && resultat_sabotage(r) != RESULTAT_OK,
+         "F5 : un motif inattendu n'est pas un résultat conforme")
+r <- mesurer_sabotage(list(controle = "F2", import = FALSE, motif = "F2 : controles : 1 ligne\\(s\\) modifiée"),
+                      x, dirname(x), ctx_test)
+verifier(r$rouge && r$motif_vu && resultat_sabotage(r) == RESULTAT_OK, "F5 : le bon motif est conforme")
+verifier(resultat_sabotage(list(rouge = FALSE, motif_vu = FALSE)) == "VERT (non détecté)", "F5 : contrôle vert = écart")
+verifier(all(vapply(liste_sabotages("a", "b"), function(s) !is.null(s$motif), logical(1))),
+         "F5 : chaque sabotage déclare son motif")
 x <- variante("f5-f2", "UPDATE controles SET nb_total = 99 WHERE uuid = 'aaaa'")
 verifier(mesurer_sabotage(list(controle = "F2", import = FALSE), x, dirname(x), ctx_test)$rouge,
          "F5 : le sabotage F2 (ligne modifiée) rougit F2")

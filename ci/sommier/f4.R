@@ -29,6 +29,11 @@ LIMITE_POSITION_SOMMIER <- paste0(
   "`positions_controles` de l'export (pilotage/journal.md, 2026-10-22, décision ",
   "de Pascal, mission 028).")
 
+# Ligne du résumé sur le point de P35-02 (sans mesure : le piquet).
+LIGNE_PIQUET <- paste0(
+  "Le point de P35-02 est le piquet de la tournée de départ : il vient de ",
+  "sommieR (couche `placettes`) et ne mesure rien de Surculus.")
+
 # Distance en mètres entre deux points (lon, lat) en degrés WGS 84, au plan
 # tangent à (lon1, lat1) : dlon * N cos(lat), dlat * M (ellipsoïde WGS 84,
 # comme `methode_decalage` de registre-attendu-couchey.json).
@@ -75,6 +80,18 @@ lire_points_export <- function(export_gpkg) {
                           lon = p$lon, lat = p$lat, stringsAsFactors = FALSE)
   }
   list(positions = positions, piquets = piquets)
+}
+
+# Instant ISO 8601 en UTC (« 2026-10-20T09:30:00Z », millisecondes admises) en
+# secondes depuis 1970, indépendamment du fuseau du processus (tz = "UTC"
+# explicite). NA si la chaîne n'est pas un instant UTC.
+# Mesuré le 2026-10-22 (mission 028) : l'export écrit visite_le en UTC avec « Z »
+# (gpkg/.../ValidationExport.kt:237-241, docs/spec.md:282) ; sf::read_sf rend un
+# POSIXct, donc as.POSIXct de sommieR (R/travaux_qfield.R:264) ne change rien, et
+# le registre porte le même instant sous TZ=UTC et sous TZ=Europe/Paris.
+instant_utc <- function(x) {
+  x <- sub("\\.[0-9]+Z$", "Z", as.character(x))
+  as.numeric(as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"))
 }
 
 # Les contrôles ÉCRITS par l'import, lus dans le registre : une ligne par
@@ -126,8 +143,13 @@ controle_f4 <- function(attendu, controles, points) {
   utilises <- character(0)
   for (att in attendu$controles) {
     pl <- att$placette
-    cible <- controles[controles$code %in% pl &
-                         controles$visite_le %in% att$visite_le, , drop = FALSE]
+    # Le contrôle de la placette ; s'il y en a plusieurs d'écrits, celui dont
+    # l'instant est l'attendu. Un instant faux n'est pas « contrôle absent » :
+    # la ligne visite_le le signale, avec la valeur lue au registre.
+    cible <- controles[controles$code %in% pl, , drop = FALSE]
+    if (nrow(cible) > 1L)
+      cible <- cible[instant_utc(cible$visite_le) %in% instant_utc(att$visite_le), ,
+                     drop = FALSE]
     if (nrow(cible) != 1L) {
       noter(pl, "contrôle au registre", paste("1 à", att$visite_le),
             paste(nrow(cible), "trouvé(s)"), FALSE,
@@ -136,7 +158,12 @@ controle_f4 <- function(attendu, controles, points) {
       next
     }
     utilises <- c(utilises, cible$id)
-    noter(pl, "visite_le", att$visite_le, cible$visite_le, TRUE)
+    # L'instant lu au registre (payload.visite_le), comparé à la seconde, en UTC.
+    noter(pl, "visite_le (instant UTC, à la seconde)", att$visite_le,
+          cible$visite_le,
+          isTRUE(instant_utc(cible$visite_le) == instant_utc(att$visite_le)),
+          sprintf("F4 : %s, visite_le : attendu %s, lu au registre %s",
+                  pl, att$visite_le, cible$visite_le))
     for (k in c("nb_total", "nb_vivants", "nb_abroutis", "h_moy_cm")) {
       mes <- cible[[k]]
       noter(pl, k, att[[k]], mes, !is.na(mes) && mes == att[[k]])

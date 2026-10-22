@@ -48,16 +48,20 @@ sans_declencheurs_rtree <- function(gpkg, table) {
 liste_sabotages <- function(controle_autre, controle_p35_01) {
   list(
     list(nom = "contrôle retiré de l'export", controle = "F1", import = TRUE,
+         motif = "F1 : contrôles, export [0-9]+, import [0-9]+",
          modifier = function(gpkg) sql_sur(gpkg, sprintf(
            "DELETE FROM controles WHERE uuid = '%s'", controle_autre))),
     list(nom = "ligne existante modifiée (codes)", controle = "F2",
+         motif = "F2 : codes : 1 ligne\\(s\\) modifiée",
          import = FALSE,
          modifier = function(gpkg) sql_sur(gpkg,
            "UPDATE codes SET libelle = 'sabotage' WHERE code = 'PL'")),
     list(nom = "déclencheur ajouté (codes)", controle = "F3", import = FALSE,
+         motif = "F3 : sqlite_master : trigger sabotage_declencheur ajouté",
          modifier = function(gpkg) sql_sur(gpkg,
            "CREATE TRIGGER sabotage_declencheur AFTER INSERT ON codes BEGIN SELECT 1; END")),
     list(nom = "total faux (nb_total de P35-01 + 1)", controle = "F4",
+         motif = "F4 : P35-01, nb_total : attendu",
          import = TRUE,
          modifier = function(gpkg) {
            # RSQLite n'a pas ST_IsEmpty, appelée par les déclencheurs R-tree
@@ -70,6 +74,7 @@ liste_sabotages <- function(controle_autre, controle_p35_01) {
          }),
     list(nom = sprintf("point déplacé de %s m (positions_controles)",
                        DEPLACEMENT_POINT_M), controle = "F4", import = FALSE,
+         motif = "F4 : P35-01, point de positions_controles à [0-9.]+ m du point attendu",
          modifier = function(gpkg) {
            p <- sf::st_read(gpkg, "positions_controles", quiet = TRUE)
            crs <- sf::st_crs(p)              # EPSG:2154, conservé
@@ -101,12 +106,27 @@ mesurer_sabotage <- function(s, gpkg, dossier, ctx) {
                      controles_ecrits(bilan$registre, bilan$entrees_ecrites,
                                       bilan$codes_placettes),
                      lire_points_export(gpkg))$fautes)
-  list(rouge = length(fautes) > 0L,
-       message = if (length(fautes)) fautes[[1L]] else "AUCUN ÉCART : le contrôle est resté vert")
+  rouge <- length(fautes) > 0L
+  # Le contrôle doit rougir POUR LE MOTIF VISÉ (`s$motif`, expression régulière) :
+  # une autre faute du même contrôle ne prouve pas qu'il voit le sabotage.
+  visees <- if (is.null(s$motif)) fautes else grep(s$motif, fautes, value = TRUE)
+  list(rouge = rouge, motif_vu = length(visees) > 0L,
+       message = if (length(visees)) visees[[1L]]
+                 else if (rouge) paste0("MOTIF INATTENDU (attendu : ", s$motif,
+                                        ") ; faute lue : ", fautes[[1L]])
+                 else "AUCUN ÉCART : le contrôle est resté vert")
+}
+
+# Résultat d'un sabotage : RESULTAT_OK, ou l'un des deux écarts du script
+# lui-même (contrôle resté vert, ou rouge pour un autre motif).
+RESULTAT_OK <- "rouge, motif attendu"
+resultat_sabotage <- function(r) {
+  if (r$rouge && r$motif_vu) return(RESULTAT_OK)
+  if (r$rouge) "ROUGE, MOTIF INATTENDU" else "VERT (non détecté)"
 }
 
 # Fait tous les sabotages. Rend un data.frame (sabotage, controle, resultat,
-# message) ; une ligne « resultat = vert » est un écart du script lui-même.
+# message).
 autotest_sabotage <- function(export_dir, travail, ctx, controle_autre,
                               controle_p35_01) {
   sab <- liste_sabotages(controle_autre, controle_p35_01)
@@ -117,7 +137,7 @@ autotest_sabotage <- function(export_dir, travail, ctx, controle_autre,
     s$modifier(gpkg)
     r <- mesurer_sabotage(s, gpkg, dossier, ctx)
     data.frame(sabotage = s$nom, controle = s$controle,
-               resultat = if (r$rouge) "rouge (détecté)" else "VERT (non détecté)",
+               resultat = resultat_sabotage(r),
                message = r$message, stringsAsFactors = FALSE)
   })
   do.call(rbind, lignes)
