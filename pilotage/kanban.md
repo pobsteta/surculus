@@ -28,6 +28,9 @@ _Idées, à trier au prochain `/mission`._
   (domaine d'usage d'EPSG:2154) ; `FixturesBienFormeesTest` (l. 138) a sa propre boîte.
   `fixtures/README.md` (l. 79) : ajouter `remplace_autre_tournee` aux codes d'anomalie
   (`testeur`).
+- **Emprise France** : y min vaut 6 005 294,71 dans le code (PROJ, densify 50) et
+  6 005 281,2 dans `fixtures/acceptation-export/repere-et-france.json` (epsg.io), soit
+  13,5 m d'écart, sans effet sur le test de la Corse ; laquelle fait foi (Pascal) ?
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
   de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
@@ -53,12 +56,10 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Cycle 6, lancé le 2026-10-21 :**
+**Cycle 7, lancé le 2026-10-22 (deux missions, réglage du bilan) :**
 
-- **032** état par tournée, tournée obligatoire à la saisie (`dev`, appuyer), avant la 012 ;
-  relecteur : prête ; réserves levées (4d124c9 : spec § 5, test de migration sur
-  `refus_journal`), PR ouverte après la fusion de cette PR de pilotage.
-- **027** registre attendu du scénario Couchey (`testeur`, appuyer) ; en revue, PR #55.
+- **034** trous de mémoire du bilan (`archiviste`, appuyer) ; en revue, PR #58.
+- **035** test de forme des CSV de `docs/referentiels/` (`dev`, appuyer) ; en revue, PR #59.
 
 **Attendent le plafond :**
 
@@ -67,13 +68,16 @@ _En attente sous le plafond humain (3 PR en revue)._
   `exemple-v1.sursync` ; comptes de Couchey contre QGIS (029). Chaque essai au journal.
 - **Pascal, clé de signature** : dire au journal où est la copie hors du poste et qui
   détient les mots de passe, puis l'ADR 0010.
-- **034** trous de mémoire du bilan (`archiviste`, appuyer).
-- **Test de forme des CSV** de `docs/referentiels/` en CI, vu rouge sur `22ec874^` (`dev`).
 - **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
 - Cas des décisions 11 et 12 de la dictée (`testeur`), avant la 013.
-- **028** registre attendu et sabotage en CI (`dev`, appuyer), après 026 et 027.
+- **028** registre attendu et sabotage en CI (`dev`, appuyer) : moyens prêts (026 et 027
+  fusionnées).
 
 ## Terminé
+
+- Cycle 6, 2026-10-22 : **027** registre attendu du scénario Couchey (PR #55) ; **032** état
+  par tournée, tournée obligatoire (PR #56) ; pilotage et bilan (PR #53, #54) ; outillage
+  `ANDROID_HOME` (PR #57) — Pascal.
 
 - Cycle 5 (suite), 2026-10-21 : **011** écrans Tournées, Carte et Guidage (PR #51) ;
   **030** référentiels de la PR #4 revérifiés (PR #52) ; pilotage (PR #50) — Pascal.
