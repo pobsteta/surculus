@@ -43,6 +43,13 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
   enregistrée. ([ADR 0003](adr/0003-gnss-et-reperes.md))
 * Pointage d'un plant sans RTK fixe : distance et azimut depuis le piquet. **Matériel de
   pointage à nommer par Pascal** (boussole de visée, télémètre, ruban).
+* **Affichage** (amendement du brief, 2026-10-22) : style commun avec Marculus et Groma,
+  tiré de la bibliothèque `terrain` (ADR 0008, réservée, à écrire puis à trancher par
+  Pascal ; calendrier à y fixer) ; **thème clair forcé** (le mode sombre
+  du téléphone n'est pas suivi), contraste texte/fond d'au moins 7:1
+  ([WCAG 2.2, 1.4.6](https://www.w3.org/TR/WCAG22/#contrast-enhanced)) vérifié par un
+  test, palette des placettes (mission 033, PR #65) inchangée, essai au soleil par Pascal avant
+  la fusion.
 * **Hors ligne de bout en bout** : carte, ortho, dictée, contrôles, alertes (ortho :
   ADR 0009).
 * **Périmètre géographique : France métropolitaine et Corse** (décision de Pascal du
@@ -76,7 +83,18 @@ point à Brest et à Strasbourg.
   avec QField est une compatibilité **de format** (ADR 0001 : pas de repli plant par
   plant hors Surculus, risque accepté).
 * Liste des tournées : forêt, opérateur, date de préparation, nombre de saisies, état
-  (ouverte, rendue). Une tournée n'est jamais écrasée.
+  (ouverte, rendue). Une tournée n'est jamais écrasée. C'est elle qui répond aux travaux
+  de plusieurs projets du brief : un projet est une tournée (décision de Pascal du
+  2026-10-22) ; on choisit une tournée, puis on voit ses placettes (choix (a) de Pascal,
+  2026-10-22 ; pas d'écran prévu qui réunit les placettes de plusieurs tournées).
+* **Liste du départ** (amendement du brief, 2026-10-22) : une tournée ouverte liste ses
+  placettes avec leur `etat_suivi`, chacune dans sa tournée (critère (d) de la tranche 1 :
+  deux tournées ne sont jamais fusionnées). `a_programmer` dit un besoin de travaux à
+  programmer, pas une placette due ; `etat_suivi` est figé à la préparation par
+  sommieR. Tests exigés avant tout tri « à faire » : placette contrôlée le matin, deux
+  tournées des mêmes placettes, placette `a_jour` ancienne, plantation plus âgée que
+  l'itinéraire. Les travaux à faire (prévu) : après la tranche 1, quand sommieR aura livré le
+  [lot 3](../pilotage/briefs/vers-sommier/2026-10-15-travaux-3-programme.md).
 
 ### 4.2 Se repérer
 
