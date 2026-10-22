@@ -4,6 +4,9 @@
 > un code quand une convention existe.** Chaque fichier indique sa source, sa date et
 > son propriétaire.
 
+La forme des fichiers CSV (autant de champs que l'en-tête sur chaque ligne) est vérifiée par le test
+[`ReferentielsCsvBienFormesTest`](../../core/src/test/kotlin/io/github/pobsteta/surculus/core/fixtures/ReferentielsCsvBienFormesTest.kt).
+
 ## À constituer (agent `acquereur`)
 
 | Référentiel | Source | Propriétaire | Statut |
