@@ -12,7 +12,7 @@
 
 ## Vérifié à la source
 
-Règle du bilan du 2026-10-21. L'orchestrateur a vérifié chaque constat par `grep` sur `main` (ce7d027), le 2026-10-21 ; le `relecteur` en a recontrôlé six sur sept.
+Règle du bilan du 2026-10-21. L'orchestrateur a vérifié chaque constat par `grep` sur `main` (ce7d027), le 2026-10-21 ; le `relecteur` les a recontrôlés tous les sept (six exacts, un exact en partie).
 
 | Constat | Lu à | Source du constat |
 |---|---|---|
