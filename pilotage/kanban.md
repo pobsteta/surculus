@@ -31,6 +31,9 @@ _Idées, à trier au prochain `/mission`._
 - **Emprise France** : y min vaut 6 005 294,71 dans le code (PROJ, densify 50) et
   6 005 281,2 dans `fixtures/acceptation-export/repere-et-france.json` (epsg.io), soit
   13,5 m d'écart, sans effet sur le test de la Corse ; laquelle fait foi (Pascal) ?
+- **Carte, après la 012** (Pascal, 2026-10-22) : l'état local d'une placette contrôlée
+  pendant la tournée prime sur `etat_suivi` ; travaux et vides dessinés quand l'app les
+  saisira (la tournée de sommieR n'en porte aucun).
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
   de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
@@ -49,9 +52,6 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **033** carte : placettes colorées selon `etat_suivi`, travaux tracés selon leur code,
-  vides relevés (`afficheur`), décidée par Pascal le 2026-10-21 ; fiche à écrire après
-  lecture des valeurs de `etat_suivi` dans sommieR.
 - **013** dictée Vosk (`dev`) : part après les cas des décisions 11 et 12 (testeur) et le
   retrait de l'hypothèse DI-303.
 
@@ -63,7 +63,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 - **028** registre attendu et sabotage en CI (`dev`, appuyer) : F4 compare les totaux au
   registre et le point à `positions_controles` de l'export (décision de Pascal du
-  2026-10-22) ; en cours.
+  2026-10-22) ; en revue, PR #64, après cette PR de pilotage.
+- **033** placettes colorées selon `etat_suivi` (`afficheur`, appuyer) : couleurs, légende
+  avec décomptes (décisions de Pascal du 2026-10-22) ; en cours.
 - **036** cas des décisions 11 et 12 de la dictée (`testeur`, appuyer) : en revue,
   PR #63, à fusionner après cette PR de pilotage.
 
