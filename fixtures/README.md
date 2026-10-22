@@ -174,7 +174,7 @@ Ajouté le 2026-10-22. Le rectangle du domaine d'usage d'EPSG:2154 existe à plu
 * `fixtures/acceptation-export/repere-et-france.json` : **recopie les bornes en Lambert-93** (l. 245 et suivantes, avec
   leur source epsg.io). Elles **ne sont pas identiques** à celles du code pour y min : 6 005 294,71 dans le code
   (PROJ, `densify_pts=50`) contre 6 005 281,2 dans la fixture (epsg.io, densify 100), soit 13,5 m d'écart. Cause
-  probable : la source et la densification différentes. Je ne tranche pas laquelle fait foi ;
+  probable : la source et la densification différentes. Question ouverte, à trancher par Pascal (bac à sable du kanban) ;
 * `fixtures/export/registre-attendu-couchey.json` (l. 19, mission 027) : **recopie le rectangle en degrés**
   (41,15 ; 51,56 ; -9,86 ; 10,38), avec sa note de source ;
 * `fixtures/regles/emprise-et-france.json` : des cas (Brest, etc.) qui **ne recopient pas le rectangle** ; ils vérifient
