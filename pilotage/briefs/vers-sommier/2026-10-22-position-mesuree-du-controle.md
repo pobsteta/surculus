@@ -33,8 +33,8 @@ l'import ne se voient pas dans sommieR.
 ## Ce qui est demandé
 
 1. Que `registre6_controle` accepte une `geometrie` (POINT, WGS 84 dans le
-   payload, comme les autres entrées), avec `precision_m` et
-   `rattache_par_identite`.
+   payload, comme les autres entrées), avec l'équivalent de `precision_m` et de
+   `rattache_par_identite` (noms de Surculus).
 2. Que l'import de la tournée lise `positions_controles` (clé
    `controle_uuid`) et passe la position au contrôle.
 3. Que `v_controle_plantation` expose cette position.
