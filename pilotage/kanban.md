@@ -31,9 +31,10 @@ _Idées, à trier au prochain `/mission`._
 - **Emprise France** : y min vaut 6 005 294,71 dans le code (PROJ, densify 50) et
   6 005 281,2 dans `fixtures/acceptation-export/repere-et-france.json` (epsg.io), soit
   13,5 m d'écart, sans effet sur le test de la Corse ; laquelle fait foi (Pascal) ?
-- **Carte, après la 012** (Pascal, 2026-10-22) : l'état local d'une placette contrôlée
-  pendant la tournée prime sur `etat_suivi` ; travaux et vides dessinés quand l'app les
-  saisira (la tournée de sommieR n'en porte aucun).
+- **Carte, après la 012** : l'état d'une placette contrôlée pendant la tournée, « mission
+  à part, après 012 » (Pascal, 2026-10-22 ; l'option proposait de faire primer l'état local
+  sur `etat_suivi`) ; travaux et vides au bac à sable (Pascal, même jour), à dessiner quand
+  l'app les saisira (la tournée de sommieR n'en porte aucun).
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
   de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
