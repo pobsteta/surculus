@@ -12,19 +12,23 @@
 
 ## Vérifié à la source
 
-Règle du bilan du 2026-10-21 : l'orchestrateur a vérifié chaque constat ci-dessous, sur `main` (8e73ac7 et suivants).
+Règle du bilan du 2026-10-21. L'orchestrateur a vérifié chaque constat par `grep` sur `main` (ce7d027), le 2026-10-21 ; le `relecteur` en a recontrôlé six sur sept.
 
-| Constat | Où | Auteur de la règle |
+| Constat | Lu à | Source du constat |
 |---|---|---|
-| Le README dit « JDK 17 et SDK Android requis » ; la CI utilise Temurin 21 | `README.md` ; `.github/workflows/ci.yml` | archiviste, bilan |
-| Le README annonce les écrans de tournée « à venir » ; la 011 est fusionnée | `README.md` ; PR #51 | archiviste, bilan |
-| Spec : « [ADR à venir] » aux l. 43, 141 et 236 alors que l'ADR 0003, l'ADR 0004 et `docs/formats/sursync-v1.md` existent ; la question 6 du § 10 est tranchée par l'ADR 0004 | `docs/spec.md` | archiviste, bilan |
-| L'ADR 0004 ne dit pas qu'osmdroid est archivé et copie une commande de tests périmée | `docs/adr/0004-*.md` ; `.claude/test-command` | archiviste, bilan |
-| L'ADR 0009, l. 110, dit « Wi-Fi seulement à prévoir dans la 011 » | `docs/adr/0009-carte-hors-ligne.md` | décisions (a) à (d) de Pascal, journal du 2026-10-21 |
-| Les ADR 0006, 0008 et 0010 sont citées (code GNSS, `docs/publier.md`) mais absentes | `docs/adr/` | kanban, bac à sable |
-| `docs/publier.md` ne décrit pas l'essai de fumée sur émulateur | `docs/publier.md` ; `.github/workflows/release.yml` | archiviste, bilan |
+| Le README annonce les écrans de tournée « à venir » ; la 011 est fusionnée (PR #51) | `README.md:19` | archiviste, bilan |
+| Le README dit « JDK 17 » ; la CI utilise Temurin 21 | `README.md:45` ; `.github/workflows/ci.yml:26` | archiviste, bilan |
+| Spec : « [ADR à venir] » alors que l'ADR 0003, l'ADR 0004 et `docs/formats/sursync-v1.md` existent ; la l. 459 (bibliothèques communes) reste vraie, l'ADR 0008 n'existant pas ; la question 6 du § 10 est tranchée par l'ADR 0004 | `docs/spec.md:7`, `:43`, `:141`, `:236`, `:459` | archiviste, bilan |
+| L'ADR 0004 cite osmdroid sans dire qu'il est archivé ; elle copie la commande de tests à la l. 15 (sans `:data`), corrigée plus bas par une mention datée | `docs/adr/0004-stack-kotlin-compose-vosk.md:11`, `:15`, `:78-84` | archiviste, bilan ; relecteur |
+| L'ADR 0009 dit encore « Wi-Fi seulement à prévoir dans la 011 » | `docs/adr/0009-carte-hors-ligne.md:110` | décisions (a) à (d) de Pascal, journal du 2026-10-21 |
+| Les ADR 0006, 0008 et 0010 sont citées mais absentes de `docs/adr/` | `docs/adr/0005-stockage-et-sauvegarde.md:89` (0006) ; en-têtes de `app/src/main/kotlin/io/github/pobsteta/surculus/gnss/*.kt` et de `core/src/main/kotlin/io/github/pobsteta/surculus/core/{gnss,geo}/*.kt` (0008) ; `docs/publier.md:75` (0010) | archiviste, bilan |
+| `docs/publier.md` ne décrit pas l'essai de fumée sur émulateur | `grep -n -i "fumée\|émulateur" docs/publier.md` : aucune ligne | archiviste, bilan |
 
-Le relecteur vérifie ces lignes avant d'accepter la fiche.
+Règles de la fiche, avec leur auteur :
+- **On ajoute, on ne réécrit pas.** Règle du sommier, méthode de l'Impératrice (`CLAUDE.md`, « Les sources de vérité »).
+- **Les ADR 0006, 0008 et 0010 ne sont pas écrites par cette mission.** C'est une décision d'architecture, qui revient à Pascal, après le `contradicteur` (`CLAUDE.md`, « Le déroulé », point 1).
+- **La clé de signature reste à Pascal.** Décision de Pascal au bilan du 2026-10-21.
+- **Le réexamen de l'ADR 0004 face à osmdroid archivé n'est pas fait ici.** Cette mission ajoute seulement un renvoi daté vers l'ADR 0009. Le réexamen reste au bac à sable, pour le `contradicteur`.
 
 ## Les trois questions (règle de staffing)
 
@@ -63,9 +67,14 @@ Le relecteur vérifie ces lignes avant d'accepter la fiche.
 - Le test de la minute, refait sur le résultat : prérequis de build, état des écrans, statut d'osmdroid et liste des ADR se trouvent chacun en moins d'une minute.
 - Bilan des écarts avant rendu (règle du bilan) : l'agent liste chaque fichier modifié.
 
+## Terrain
+
+- **Échantillon que Pascal vérifiera :** il refait lui-même le test de la minute sur le README fusionné : prérequis de build, état des écrans, statut d'osmdroid et liste des ADR.
+
 ## Qui veille, qui tranche
 
 - **Relecteur :** `relecteur`, puis Pascal. **Qui tranche :** Pascal.
+- **Point de suivi :** à la remise de la liste des modifications (appuyer), puis à l'ouverture de la PR.
 
 ## Comment saura-t-on que ça marche ?
 
