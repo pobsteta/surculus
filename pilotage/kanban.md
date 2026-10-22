@@ -64,8 +64,8 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **028** registre attendu et sabotage en CI (`dev`, appuyer) : F4 compare les totaux au
   registre et le point à `positions_controles` de l'export (décision de Pascal du
   2026-10-22) ; en cours.
-- **036** cas des décisions 11 et 12 de la dictée (`testeur`, appuyer) : reprise d'une
-  citation, puis PR après cette PR de pilotage.
+- **036** cas des décisions 11 et 12 de la dictée (`testeur`, appuyer) : en revue,
+  PR #63, à fusionner après cette PR de pilotage.
 
 **Attendent le plafond :**
 
