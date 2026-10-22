@@ -8,7 +8,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Lire `etat_suivi` dans la couche `placettes` de la tournée et colorer chaque placette sur la carte selon sa valeur (`jamais`, `a_jour`, `a_programmer`), pour que le forestier voie en dix secondes, en forêt, quelles placettes il lui reste à contrôler.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Lire `etat_suivi` dans la couche `placettes` de la tournée et colorer chaque placette de la carte selon `jamais`, `a_programmer` ou `a_jour`, pour que le forestier voie en dix secondes celles qui restent à contrôler.
 
 ## Vérifié à la source
 
@@ -78,3 +78,19 @@ Règles, avec leur auteur :
 ## Comment saura-t-on que ça marche ?
 
 Sur la carte de Couchey, les placettes `jamais`, `a_jour` et `a_programmer` se distinguent d'un coup d'œil, sans confusion avec le badge du fix.
+
+## Bilan des écarts
+
+Choix de couleurs (option A) : pilotage/journal.md, 2026-10-22, décisions de Pascal (mission 033). Libellé « travaux à prévoir » : pilotage/journal.md, 2026-10-22, décision de Pascal (mission 033, libellé). Garde-fou vu rouge : `jamais` mis en vert dans `Pastille.de`, 2 tests sur 6 échouent, puis rétabli.
+
+| Fichier | Modification | Raison |
+|---|---|---|
+| `gpkg/.../EtatSuivi.kt` (nouveau) | `EtatSuivi`, `Teinte`, `FormePastille`, `Pastille.de()`, `decomptes()` | logique testable dans `:gpkg` (`:app` n'a pas de tests unitaires dans la commande du projet) |
+| `gpkg/.../Tournee.kt` | `PlacetteTournee.etatSuivi`, défaut `INCONNU` | aucun constructeur existant cassé |
+| `gpkg/.../LecteurTournee.kt` | une ligne : lecture de `etat_suivi` par nom | colonne absente (ancienne tournée) donne `INCONNU`, sans plantage |
+| `gpkg/.../EtatSuiviTest.kt` (nouveau) | 6 tests : lecture (3 valeurs, nul, inconnue), ancienne tournée, correspondance, pastilles distinctes, reconnaissance stricte, décomptes | tests demandés par la fiche |
+| `app/.../Palette.kt` | `Palette.de(Teinte)` | aucune couleur nouvelle (quatre au plus) |
+| `app/.../EcranCarte.kt` | `pastille()` en bitmap, légende à décomptes, commentaire (couleur issue de sommieR, fixe pendant la tournée) | remplace le disque rouge uniforme |
+| `app/.../strings_tournees.xml` | 4 textes de légende ; `\?` échappé | un « ? » initial est lu comme référence d'attribut par aapt |
+
+Aucun test, assertion ni fixture existant modifié. `dernier_controle` et `dernier_besoin` non lus (inutiles à la couleur).

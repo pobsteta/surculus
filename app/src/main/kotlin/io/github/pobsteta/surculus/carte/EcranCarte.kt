@@ -74,7 +74,7 @@ import org.osmdroid.views.overlay.Polygon
 /**
  * Carte de la tournée (spec § 4.2) : forêt, UG, parcelles, placettes, ortho hors ligne, position et badge du fix.
  * Une question : où suis-je par rapport aux placettes ? Un appui sur une placette (ou sur la liste) ouvre le guidage.
- * Les placettes sont colorées selon `etat_suivi` (rouge `jamais`, orange `a_programmer`, anneau vert `a_jour`, noir « ? »
+ * Les placettes sont colorées selon `etat_suivi` (rouge `jamais`, orange `a_programmer` (« travaux à prévoir », pilotage/journal.md, 2026-10-22, décision de Pascal, mission 033, libellé), anneau vert `a_jour`, noir « ? »
  * sinon) : pilotage/journal.md, 2026-10-22, décisions de Pascal (mission 033). La couleur vient de sommieR, lue à
  * l'ouverture de la tournée : elle ne change pas pendant la tournée. Ni travaux ni vides à ce stade.
  */
