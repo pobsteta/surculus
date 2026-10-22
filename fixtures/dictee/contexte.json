@@ -3,7 +3,7 @@
   "regle": "La commande dictée est confrontée à l'état courant du plant : certaines combinaisons sont refusées par l'application",
   "format": "voir fixtures/README.md (section Dictée)",
   "entree": "etat_courant : sain, atteint, mort, absent, non_observe ou null (aucun état saisi) ; phrase : texte de Vosk",
-  "note": "Ces cas pilotent l'analyseur ET la règle d'application (mission 013 avec 012). La phrase refusée ici est une phrase de la grammaire, refusée pour le contexte seulement. « mangé » : détail « abroutissement » accepté sur sain, atteint ou mort ; refusé sur absent, non observé ou sans état (spec § 6, décision n° 4 corrigée). « remplace » : accepté seulement sur un plant mort ou absent (décision n° 9). Un état dicté sur un plant qui en a déjà un est une correction du journal (`remplace_uuid`), annoncée par la voix (décision n° 10) : l'attendu porte `correction` et `annonce_vocale`.",
+  "note": "Ces cas pilotent l'analyseur ET la règle d'application (mission 013 avec 012). La phrase refusée ici est une phrase de la grammaire, refusée pour le contexte seulement. « mangé » : détail « abroutissement » accepté sur sain, atteint ou mort ; refusé sur absent, non observé ou sans état (spec § 6, décision n° 4 corrigée). « remplace » : accepté seulement sur un plant mort ou absent (décision n° 9). Un état dicté sur un plant qui en a déjà un est une correction du journal (`remplace_uuid`), annoncée par la voix (décision n° 10) : l'attendu porte `correction` et `annonce_vocale`. Redire l'état que le plant a déjà n'ajoute aucune ligne et la voix confirme (décision n° 11, étendue à « non observé » le 2026-10-22) : l'attendu porte `ligne_ajoutee` faux et `confirmation_vocale` vrai, sans `correction`. « non observé » sur un plant qui a déjà un état est une correction (décision n° 12) : le journal est en ajout seul, l'ancienne ligne `etat` reste telle quelle, la nouvelle ligne `non_observe` la désigne par `remplace_uuid` et ne porte aucune mesure, donc l'état courant n'en a plus (spec § 5 et l. 110) ; `mesures_courantes` (entrée) donne les mesures du plant, `mesures_conservees` (attendu) dit si l'état courant les garde.",
   "cas": [
     {
       "id": "DI-100",
@@ -390,6 +390,227 @@
         "annonce_vocale": false
       },
       "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; docs/spec.md § 5 (l'état courant suit le lien remplace_uuid) ; pilotage/journal.md, 2026-10-21, décision n° 10 de Pascal (un nouvel état sur un plant qui en a déjà un est une correction du journal, remplace_uuid, annoncée par la voix)"
+    },
+    {
+      "id": "DI-134",
+      "description": "Redite de l'état déjà porté (« sain » sur un plant sain) : aucune ligne ajoutée, la voix confirme.",
+      "entree": {
+        "etat_courant": "sain",
+        "phrase": "sain"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "sain"
+        },
+        "ligne_ajoutee": false,
+        "confirmation_vocale": true
+      },
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; pilotage/journal.md, 2026-10-21, décision n° 11 de Pascal (redire l'état qu'a déjà le plant n'ajoute aucune ligne, la voix confirme)"
+    },
+    {
+      "id": "DI-135",
+      "description": "Redite de l'état déjà porté (« atteint » sur un plant atteint) : aucune ligne ajoutée, la voix confirme.",
+      "entree": {
+        "etat_courant": "atteint",
+        "phrase": "atteint"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "atteint"
+        },
+        "ligne_ajoutee": false,
+        "confirmation_vocale": true
+      },
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; pilotage/journal.md, 2026-10-21, décision n° 11 de Pascal (redire l'état qu'a déjà le plant n'ajoute aucune ligne, la voix confirme)"
+    },
+    {
+      "id": "DI-136",
+      "description": "Redite de l'état déjà porté (« mort » sur un plant mort) : aucune ligne ajoutée, la voix confirme.",
+      "entree": {
+        "etat_courant": "mort",
+        "phrase": "mort"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "mort"
+        },
+        "ligne_ajoutee": false,
+        "confirmation_vocale": true
+      },
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; pilotage/journal.md, 2026-10-21, décision n° 11 de Pascal (redire l'état qu'a déjà le plant n'ajoute aucune ligne, la voix confirme)"
+    },
+    {
+      "id": "DI-137",
+      "description": "Redite de l'état déjà porté (« absent » sur un plant absent) : aucune ligne ajoutée, la voix confirme.",
+      "entree": {
+        "etat_courant": "absent",
+        "phrase": "absent"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "absent"
+        },
+        "ligne_ajoutee": false,
+        "confirmation_vocale": true
+      },
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; pilotage/journal.md, 2026-10-21, décision n° 11 de Pascal (redire l'état qu'a déjà le plant n'ajoute aucune ligne, la voix confirme)"
+    },
+    {
+      "id": "DI-138",
+      "description": "Redite de l'état déjà porté (« non observé » sur un plant non_observe) : aucune ligne ajoutée, la voix confirme.",
+      "entree": {
+        "etat_courant": "non_observe",
+        "phrase": "non observé"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "non_observe"
+        },
+        "ligne_ajoutee": false,
+        "confirmation_vocale": true
+      },
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; pilotage/journal.md, 2026-10-21, décision n° 11 de Pascal (redire l'état qu'a déjà le plant n'ajoute aucune ligne, la voix confirme) ; pilotage/journal.md, 2026-10-22, décision de Pascal (mission 036) : la décision 11 s'applique aussi à « non observé » redit sur un plant non observé"
+    },
+    {
+      "id": "DI-139",
+      "description": "Redite « atteint » sur un plant atteint avec hauteur et cause : aucune ligne ajoutée, la voix confirme, les mesures sont conservées.",
+      "entree": {
+        "etat_courant": "atteint",
+        "phrase": "atteint",
+        "mesures_courantes": {
+          "hauteur_cm": 45,
+          "cause_groupe": "entomologique"
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "atteint"
+        },
+        "ligne_ajoutee": false,
+        "confirmation_vocale": true,
+        "mesures_conservees": true
+      },
+      "source": "docs/spec.md § 6 (un seul état par plant dans un contrôle) ; pilotage/journal.md, 2026-10-21, décision n° 11 de Pascal (redire l'état qu'a déjà le plant n'ajoute aucune ligne, la voix confirme) ; docs/spec.md l. 110 (les mesures sont sur la ligne etat, que la redite ne touche pas)"
+    },
+    {
+      "id": "DI-165",
+      "description": "« non observé » sur un plant sain avec hauteur : correction annoncée ; la nouvelle ligne ne porte aucune mesure.",
+      "entree": {
+        "etat_courant": "sain",
+        "phrase": "non observé",
+        "mesures_courantes": {
+          "hauteur_cm": 45
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "non_observe"
+        },
+        "correction": true,
+        "annonce_vocale": true,
+        "ligne_ajoutee": true,
+        "mesures_conservees": false
+      },
+      "source": "docs/spec.md § 4.3 et § 6 (un plant non observé ne porte aucune mesure) ; docs/spec.md § 5 et l. 110 (la ligne etat porte état, cause, détail, hauteur ; l'état courant suit remplace_uuid) ; pilotage/journal.md, 2026-10-21, décisions n° 10 et n° 12 de Pascal (« non observé » sur un plant qui a déjà un état est une correction, la mesure tombe avec lui) ; docs/spec.md l. 416 et pilotage/journal.md, 2026-10-16, mission 004 (un plant sain porte une hauteur ; seuls absent et non observé la refusent)"
+    },
+    {
+      "id": "DI-166",
+      "description": "« non observé » sur un plant atteint avec hauteur et cause : correction annoncée ; la nouvelle ligne ne porte aucune mesure.",
+      "entree": {
+        "etat_courant": "atteint",
+        "phrase": "non observé",
+        "mesures_courantes": {
+          "hauteur_cm": 45,
+          "cause_groupe": "entomologique"
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "non_observe"
+        },
+        "correction": true,
+        "annonce_vocale": true,
+        "ligne_ajoutee": true,
+        "mesures_conservees": false
+      },
+      "source": "docs/spec.md § 4.3 et § 6 (un plant non observé ne porte aucune mesure) ; docs/spec.md § 5 et l. 110 (la ligne etat porte état, cause, détail, hauteur ; l'état courant suit remplace_uuid) ; pilotage/journal.md, 2026-10-21, décisions n° 10 et n° 12 de Pascal (« non observé » sur un plant qui a déjà un état est une correction, la mesure tombe avec lui)"
+    },
+    {
+      "id": "DI-167",
+      "description": "« non observé » sur un plant mort avec cause : correction annoncée ; la nouvelle ligne ne porte aucune mesure.",
+      "entree": {
+        "etat_courant": "mort",
+        "phrase": "non observé",
+        "mesures_courantes": {
+          "cause_groupe": "pathologique"
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "non_observe"
+        },
+        "correction": true,
+        "annonce_vocale": true,
+        "ligne_ajoutee": true,
+        "mesures_conservees": false
+      },
+      "source": "docs/spec.md § 4.3 et § 6 (un plant non observé ne porte aucune mesure) ; docs/spec.md § 5 et l. 110 (la ligne etat porte état, cause, détail, hauteur ; l'état courant suit remplace_uuid) ; pilotage/journal.md, 2026-10-21, décisions n° 10 et n° 12 de Pascal (« non observé » sur un plant qui a déjà un état est une correction, la mesure tombe avec lui)"
+    },
+    {
+      "id": "DI-168",
+      "description": "« non observé » sur un plant absent : correction annoncée (aucune mesure à perdre).",
+      "entree": {
+        "etat_courant": "absent",
+        "phrase": "non observé"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "non_observe"
+        },
+        "correction": true,
+        "annonce_vocale": true,
+        "ligne_ajoutee": true
+      },
+      "source": "docs/spec.md § 4.3 et § 6 (un plant non observé ne porte aucune mesure) ; docs/spec.md § 5 et l. 110 (la ligne etat porte état, cause, détail, hauteur ; l'état courant suit remplace_uuid) ; pilotage/journal.md, 2026-10-21, décisions n° 10 et n° 12 de Pascal (« non observé » sur un plant qui a déjà un état est une correction, la mesure tombe avec lui)"
+    },
+    {
+      "id": "DI-169",
+      "description": "« non observé » sur un plant sans état : première saisie, pas une correction (rien n'est annoncé).",
+      "entree": {
+        "etat_courant": null,
+        "phrase": "non observé"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "etat",
+          "etat": "non_observe"
+        },
+        "correction": false,
+        "annonce_vocale": false,
+        "ligne_ajoutee": true
+      },
+      "source": "docs/spec.md § 4.3 et § 5 (non_observe est une valeur de etat) ; pilotage/journal.md, 2026-10-21, décisions n° 10 et n° 12 de Pascal (la correction suppose un état déjà saisi)"
     }
   ]
 }
