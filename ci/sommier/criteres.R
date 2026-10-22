@@ -238,9 +238,21 @@ controle_f3 <- function(depart_gpkg, export_gpkg, couches_ajoutees,
                               AND name LIKE 'gpkg\\_%' ESCAPE '\\'")$name
   ge <- DBI::dbGetQuery(e, "SELECT name FROM sqlite_master WHERE type = 'table'
                               AND name LIKE 'gpkg\\_%' ESCAPE '\\'")$name
-  for (t in setdiff(ge, gd))
-    if (!t %in% TABLES_EXTENSION_SCHEMA)
+  for (t in setdiff(ge, gd)) {
+    if (!t %in% TABLES_EXTENSION_SCHEMA) {
       fautes <- c(fautes, paste0("F3 : table ", t, " ajoutée"))
+      next
+    }
+    # Table de l'extension Schema créée par l'export (absente du départ) : sa
+    # création est tolérée, ses lignes ne le sont que sur les six couches
+    # (mission 028 : trou trouvé en écrivant le test de la 026).
+    sup <- table_complete(e, t)
+    ok <- ajout_permis(t, sup, couches_ajoutees)
+    if (any(!ok))
+      fautes <- c(fautes, sprintf("F3 : %s : %d ajout(s) non permis (%s)", t, sum(!ok),
+                                  paste(utils::head(cles_lignes(sup[!ok, , drop = FALSE]), 3),
+                                        collapse = " | ")))
+  }
   for (t in gd) {
     if (!t %in% ge) { fautes <- c(fautes, paste0("F3 : table ", t, " retirée")); next }
     # feature_count : vérifié à part (départ + ajouts comptés par F2).

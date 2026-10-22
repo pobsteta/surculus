@@ -33,10 +33,46 @@ monte un service PostGIS éphémère et lance `verifier.R`.
      le support de l'extension Schema (`gpkg_data_columns`,
      `gpkg_data_column_constraints`). Une ligne `gpkg_schema` de `gpkg_extensions`
      n'est admise que si sa `table_name` est l'une des six couches ou l'une de ces
-     deux tables ; sur une couche de sommieR, elle est refusée.
+     deux tables ; sur une couche de sommieR, elle est refusée. Les lignes d'une table de
+     l'extension Schema créée par l'export (absente du départ) ne sont permises que sur
+     les six couches (mission 028 : ce cas n'était pas vérifié).
      `gpkg_ogr_contents.feature_count` n'est pas normalisé : il est vérifié, pour
      chaque couche de départ, égal à son nombre de départ plus les lignes
      ajoutées comptées par F2.
+   - **F4** (mission 028, `f4.R`, option `--registre-attendu`) : le registre de sommieR,
+     après l'import, porte exactement les valeurs de
+     `fixtures/export/registre-attendu-couchey.json`, écrites à la main par le testeur
+     (mission 027) : `nb_total`, `nb_vivants`, `nb_abroutis`, `h_moy_cm` et `visite_le`
+     de chaque contrôle écrit, retrouvé par le code de sa placette
+     (`payload.placette_id` vers `v_placette.code_placette`) ; un contrôle attendu
+     absent, en double, ou écrit sans attente est un écart. **Le `point` n'est pas lu
+     au registre** : la position mesurée n'y arrive pas dans sommieR 0.31.1
+     (`R/registre6.R:150-180`, `R/travaux_terrain.R:156`, `R/travaux_qfield.R:262-277`,
+     `inst/sql/003_geometrie.sql:26-31` ; le résumé du job le dit). Il est comparé à la
+     couche `positions_controles` du GeoPackage exporté (docs/spec.md l. 259), avec la
+     tolérance de 0,5 m (décision de Pascal, mission 027, `tolerance_m` du JSON) ;
+     pour P35-02, sans mesure, au piquet, lu dans la couche `placettes` de l'export.
+     Source de ce choix : pilotage/journal.md, 2026-10-22, décision de Pascal
+     (mission 028). Coordonnées : `lon` puis `lat`, degrés WGS 84 ; les couches de
+     l'export (EPSG:2154) sont converties par sf ; chaque point doit tomber dans le
+     rectangle de la France du JSON. **Hypothèse** : le fuseau horaire du processus
+     R est celui de l'export (`visite_le` des couches est une heure locale lue par
+     sommieR) ; en CI, les deux sont en UTC.
+   - **F5** (mission 028, `sabotage.R`) : chaque contrôle F1 à F4 est rejoué sur une
+     copie sabotée de l'export et **doit passer au rouge** ; le résumé du job donne,
+     par sabotage, le contrôle visé et son message. Un sabotage resté vert est un
+     écart (un contrôle qui ne contrôle rien) et fait échouer le job.
+
+     | Sabotage | Contrôle visé |
+     |---|---|
+     | un contrôle retiré de la couche `controles` de l'export | F1 (import : 1 contrôle, export : 2) |
+     | une ligne existante modifiée (`codes`) | F2 |
+     | un déclencheur ajouté (sur `codes`) | F3 |
+     | `nb_total` de P35-01 + 1, puis import par sommieR | F4 (total) |
+     | point de `positions_controles` déplacé de 5 m (> 0,5 m) | F4 (point) |
+
+     Le sabotage « total faux » retire d'abord les déclencheurs R-tree d'UPDATE de
+     `controles` de la **copie** (RSQLite n'a pas `ST_IsEmpty`) ; F3 n'y est pas rejoué.
    - **Seule exclusion** de F3 : `gpkg_contents.last_change`, qui change à chaque
      écriture (décision de Pascal, 2026-10-21). Rien d'autre n'est toléré.
    - (b) schéma des couches de sommieR de l'export contre `inst/qgis/travaux.gpkg`
@@ -44,7 +80,7 @@ monte un service PostGIS éphémère et lance `verifier.R`.
    - **Témoin « sans »**, simple **avertissement** : le même export privé de ses six
      couches s'importe avec le même bilan (`bilan-avec.json`, `bilan-sans.json`). Une
      différence s'affiche dans `resume.md` et dans le résumé du job, sans faire échouer
-     le job. Le verdict tient à F1, F2, F3, (b), (c) et à l'auto-test du retrait. Ce
+     le job. Le verdict tient à F1 à F5, (b), (c) et à l'auto-test du retrait. Ce
      n'est plus le critère (a) : il ne mesure presque rien, et il **deviendra rouge
      par construction au lot 2 de sommieR**, quand l'import lira les plants.
    - Le résumé du job est `sortie/resume.md` (écrit même en cas d'écart).
@@ -55,7 +91,7 @@ monte un service PostGIS éphémère et lance `verifier.R`.
    `gpkg_contents`, `gpkg_geometry_columns`, `gpkg_data_columns`,
    `gpkg_extensions`, `gpkg_metadata_reference`, `gpkg_ogr_contents`).
 4. **Sans `--avec`** (usage local seulement ; la CI le fournit toujours) : le retrait
-   est éprouvé, F1, F2 et F3 ne sont **pas mesurés**, et le script le dit dans son
+   est éprouvé, F1 à F5 ne sont **pas mesurés**, et le script le dit dans son
    message. **Avec `--avec`**, un import qui n'écrit rien (travaux + placettes +
    contrôles = 0) est un écart : un vert qui ne mesure rien doit le dire.
 
@@ -66,10 +102,18 @@ géométrique n'est couvert que par `test-criteres.R`. `feature_count` vaut NULL
 modèle de sommieR : en CI, seul « reste NULL » est mesuré, pas « départ + ajouts »
 (cette seconde règle n'est couverte que par `test-criteres.R`).
 
-**Limite de F2 (à lever par la mission 027)** : les UUID attendus sont ceux du
-`bilan-export.json`, calculés par `uuidDe` de `ExporterScenario`, c'est-à-dire par le
-code même que F2 contrôle. Un UUID faux de la même façon des deux côtés passerait.
-Le registre attendu, écrit à la main (mission 027), lèvera ce cercle.
+**Limite de F2** : les UUID attendus sont ceux du `bilan-export.json`, calculés par
+`uuidDe` de `ExporterScenario`, c'est-à-dire par le code même que F2 contrôle. Un UUID
+faux de la même façon des deux côtés passerait. F4 (mission 028) lève en partie ce
+cercle : les valeurs du registre sont comparées à des attentes écrites à la main, mais
+les UUID eux-mêmes ne le sont pas.
+
+**Ce qui a été vu rouge, mission 028.** En local (R, PostGIS de la mission en conteneur,
+export réel du scénario Couchey) : F4 vert sur l'export réel, 12 lignes conformes
+(écart de position de P35-01 : 0,018 m) ; F5, cinq sabotages sur cinq détectés, avec
+le message de chaque contrôle ; `test-criteres.R` mis en défaut par dix mutations du
+code (tolérance ignorée, totaux non comparés, lon et lat inversées, etc.). Ce qui ne se
+voit que dans le job de la PR : la même chose sur le runner GitHub (UTC, PostGIS 16-3.4).
 
 **Critère (b) resserré par rapport à l'ADR 0007** : l'ADR parle de champs, types,
 géométrie et `srs_id` ; la comparaison porte aussi sur `notnull`, `pk` et les
@@ -96,5 +140,5 @@ Le workflow, entre « Préparer » et « Rejouer », installe le JDK 21 et lance
 écrit `ci/sommier/export-surculus/travaux.gpkg` (variable `EXPORT_SURCULUS`),
 `export-surculus.zip` et `ci/sommier/bilan-export.json`. L'étape « Rejouer »
 exige l'export et son bilan : s'ils manquent, le travail échoue. Le résumé du job
-affiche F1, F2 et F3 avec leur verdict, les compteurs de F1 (attendu et mesuré) et les
+affiche F1 à F4 avec leur verdict, le registre ligne à ligne, les sabotages de F5, les compteurs de F1 (attendu et mesuré) et les
 lignes ajoutées par couche ; le détail reste dans l'artefact `bilans-import-sommier`.

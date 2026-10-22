@@ -260,7 +260,12 @@ importer_et_bilanter <- function(dossier, nom_base, base_modele, foret_id) {
   bilan <- sommieR::sommier_importer_qfield_travaux(
     con, foret_id, dossier, depot, auteur = "ci-import-sommier")
   registre <- etat_registre(con, foret_id)
+  # Code de chaque placette (F4 : payload.placette_id -> v_placette.code_placette).
+  codes_placettes <- DBI::dbGetQuery(
+    con, "SELECT id::text AS id, code_placette FROM v_placette
+           WHERE foret_id = $1 ORDER BY code_placette", params = list(foret_id))
   list(
+    codes_placettes = codes_placettes,
     dossier_importe = basename(normalizePath(dossier)),
     travaux = bilan$travaux, placettes = bilan$placettes,
     controles = bilan$controles, deja_presents = bilan$deja_presents,
