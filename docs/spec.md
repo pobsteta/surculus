@@ -40,7 +40,7 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
   de volume et dictée pour tout ce qui se répète, vibration et synthèse vocale en retour.
 * GNSS : récepteur RTK u-blox ZED-F9P en Bluetooth (SPP), corrections NTRIP Centipède
   quand le réseau passe ; repli sur le GNSS du téléphone, précision affichée et
-  enregistrée. **[ADR à venir : GNSS et repères]**
+  enregistrée. ([ADR 0003](adr/0003-gnss-et-reperes.md))
 * Pointage d'un plant sans RTK fixe : distance et azimut depuis le piquet. **Matériel de
   pointage à nommer par Pascal** (boussole de visée, télémètre, ruban).
 * **Hors ligne de bout en bout** : carte, ortho, dictée, contrôles, alertes (ortho :
@@ -138,7 +138,7 @@ point à Brest et à Strasbourg.
   mission 025). « climat » et « indéterminé » mènent au même groupe DSF ; « mangé » porte
   le détail « abroutissement » sur un plant sain, atteint ou mort. Une phrase porte une
   seule commande ; « hauteur » va de 1 à 400 cm.
-  **[ADR à venir : stack, dont moteur de dictée]**
+  ([ADR 0004](adr/0004-stack-kotlin-compose-vosk.md))
 * **Totaux déduits des plants** et écrits dans `controles` pour l'import 0.31.1 :
   `nb_total` (sains + atteints + morts + absents, **hors non observés et hors plants
   remplacés**), `nb_vivants` (sains + atteints : un plant atteint compte vivant, arbitrage
@@ -233,7 +233,7 @@ Règles du brief (arbitrages de Pascal ; sources dans `docs/referentiels/seuils-
 * Fusion des tournées de plusieurs opérateurs : `<code-tournée>-<appareil>-<horodatage>.sursync` (sans nom de propriétaire ni d'agent, ADR 0005),
   **union sur l'UUID**, idempotente, comme les `.marsync` de Marculus.
 * Export `<tournée>.zip` : `travaux.gpkg` complété, `DCIM/`. La tournée passe *rendue*
-  et reste consultable. **[ADR à venir : format d'échange et fusion]**
+  et reste consultable. ([format d'échange](formats/sursync-v1.md) ; la fusion relève de l'ADR 0006, réservée et non écrite, voir [l'index](adr/README.md))
 
 ## 5. Modèle de données
 
@@ -469,8 +469,9 @@ jamais dans la base de sommieR.
    de plants, leurs lignes (écartement, orientation, essence), leur date de réception et
    leurs cloisonnements ? À ajouter au brief `vers-sommier`.
 5. **Bibliothèques communes** : forme et calendrier de l'extraction (Marculus et Groma
-   sont sous GPL-3.0-or-later). **[ADR à venir]**
+   sont sous GPL-3.0-or-later). **[ADR 0008 réservée, non écrite : voir [l'index des ADR](adr/README.md)]**
 6. **Identifiant d'application** : `io.github.pobsteta.surculus` ou `fr.nemeton.surculus`.
+   *Ajouté le 2026-10-22 : tranchée par l'[ADR 0004](adr/0004-stack-kotlin-compose-vosk.md) (`io.github.pobsteta.surculus`).*
 7. **Briefs vers sommieR** à mettre à jour : nouvelles couches (`etats_plants` avec
    états du DSF et `non_observe`, `constats_reprise`, `vides`), décision « hors
    entreprise », table de correspondance des codes, `montant_eur` facultatif.

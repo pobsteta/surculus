@@ -163,3 +163,17 @@ et le point en WGS 84 (`lon`, `lat`, `tolerance_m` = 0,5 m, décision de Pascal 
 les coordonnées des placettes viennent de sommieR (`R/demo.R` l. 363-364, commit fd92078, sommieR 0.31.1 (DESCRIPTION)),
 hypothèse : la CI importe cette version. Chaque point doit tomber dans le rectangle de `docs/spec.md` § 10, point 9 (domaine d'usage d'EPSG:2154).
 La comparaison à l'export relève de la mission 028.
+
+## Copies voulues de l'emprise de la France
+
+Ajouté le 2026-10-22. Le rectangle du domaine d'usage d'EPSG:2154 existe à plusieurs endroits, **voulus** :
+
+* `core/.../core/geo/PointLambert93.kt` : `EmpriseLambert93.FRANCE_METROPOLITAINE` (Lambert-93, mètres) et
+  `EmpriseDegres.FRANCE_METROPOLITAINE` (degrés, `BBOX[41.15,-9.86,51.56,10.38]`). La source (registre EPSG, `projinfo`)
+  est écrite dans le commentaire du code, qui fait foi ;
+* `fixtures/acceptation-export/repere-et-france.json` : **recopie les bornes en Lambert-93** (l. 245 et suivantes,
+  avec leur source), pour que le `testeur` les attende sans lire le code ;
+* `fixtures/regles/emprise-et-france.json` : des cas (Brest, etc.) qui **ne recopient pas le rectangle** ; ils vérifient
+  qu'un point français y tombe et qu'un point hors de France n'y tombe pas.
+
+Si le rectangle change (contour officiel ADMIN-EXPRESS, spec § 10 question 9), on modifie le code, puis la recopie de `repere-et-france.json`.

@@ -107,3 +107,18 @@ nouveau.
 ## Question de contrôle
 
 Cette décision tient-elle nos six valeurs, et que sommes-nous prêts à payer pour cela ?
+
+## Après la mission 032 (2026-10-21, ajout, rien n'est effacé plus haut)
+
+La mission 032 (PR #56) précise le journal et sa projection. Décisions de Pascal au journal du
+2026-10-21 (entrées « mission 032 ») ; elles ne sont pas recopiées ici :
+
+- la projection est tenue **par clé (tournée, objet, type)**, et les lignes sans tournée forment
+  leur propre état ;
+- un `remplace_uuid` ou une annulation vers une autre tournée est sans effet, avec l'anomalie
+  `remplace_autre_tournee` (une seule anomalie signalée quand plusieurs différences coexistent) ;
+- le dépôt refuse par défaut un code de tournée vide (`tourneeObligatoire = true`) ;
+- la base passe en version 4 ; la migration 3→4 recrée `projection` (table dérivée) depuis le
+  journal, sans écrire dans `journal` ni `refus_journal`.
+
+L'ADR 0006 (fusion), citée à la section Sources, est réservée et non écrite : voir l'[index](README.md).

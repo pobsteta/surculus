@@ -72,7 +72,7 @@ Sans les quatre secrets, pas d'APK (décision a).
    - `RELEASE_KEY_PASSWORD`.
 
 Un des quatre manquant équivaut à l'absence de clé. Décision de fond (conservation de la clé,
-distribution) : ADR 0010, à venir.
+distribution) : ADR 0010, à venir (réservée, non écrite : voir [l'index des ADR](adr/README.md)).
 
 En local avec clé : passer `RELEASE_KEYSTORE`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`,
 `RELEASE_KEY_PASSWORD` dans l'environnement. Si `RELEASE_KEYSTORE` pointe vers un fichier absent,
@@ -88,3 +88,16 @@ droit, et sa seule cible d'écriture est cette branche. Les actions du job qui �
 
 La branche `badges` n'existe qu'après le premier passage de `badges.yml` : le badge du README
 s'affiche cassé jusque-là. Si une protection de branche couvre toutes les branches, exclure `badges`.
+
+## L'essai de fumée sur émulateur
+
+Ajouté le 2026-10-22. Avant de publier, `.github/workflows/release.yml` (étapes « Activer KVM » puis
+« Essai de fumée de l'APK release sur émulateur », vers la l. 115) lance l'application sur un
+émulateur x86_64 : elle écrit une tournée de démonstration (sqlite-jdbc, fonctions `ST_*` en Kotlin,
+index rtree) puis la relit. Il tourne sur le type de build `fumee`, calqué sur la release, avec
+R8 et `proguard-fumee.pro`. **La release ne part pas si l'essai échoue.**
+
+Limites, dites dans le workflow : x86_64 seulement (le chemin ARM n'est jamais exécuté en CI,
+Pascal l'essaie sur téléphone) ; `proguard-fumee.pro` garde aussi `:gpkg`, `:core`, `kotlin.**`
+et `kotlinx.**`, donc l'essai n'éprouve pas R8 sur ces classes. La décision est dans l'[ADR 0011](adr/0011-ecriture-geopackage-sur-appareil.md) ;
+le workflow fait foi pour le détail.
