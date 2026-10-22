@@ -107,3 +107,12 @@ d'où le module **`:gpkg` en JVM** (arbitrage de Pascal), plutôt que Robolectri
 ## Question de contrôle
 
 Cette décision tient-elle nos six valeurs, et que sommes-nous prêts à payer pour cela ?
+
+## Après le 2026-10-22 (ajout, rien n'est effacé plus haut)
+
+- **osmdroid est archivé** (constat et date dans l'[ADR 0009](0009-carte-hors-ligne.md)
+  et dans `docs/dependances.md`). La l. 11 ci-dessus cite osmdroid sans le dire. Le réexamen de
+  cette ADR face à osmdroid archivé **n'est pas fait** : il reste au bac à sable, pour le
+  `contradicteur` (journal du 2026-10-21, ADR 0009). La mission 011 est partie sur osmdroid.
+- **La commande de tests de la l. 15 est périmée** (sans `:data`) : la mention du 2026-10-17 plus
+  bas l'a déjà corrigée. La source qui fait foi est `.claude/test-command`.

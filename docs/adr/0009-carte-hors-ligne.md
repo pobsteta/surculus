@@ -137,3 +137,11 @@ ajoutée.
 ## Question de contrôle
 
 Cette décision tient-elle nos six valeurs, et que sommes-nous prêts à payer pour cela ?
+
+## Après les décisions de Pascal du 2026-10-21 (ajout, rien n'est effacé plus haut)
+
+La mention de la section « Valeurs sacrifiées » (« option "Wi-Fi seulement" à prévoir dans la
+011 ») est **dépassée** : la mission 011, fusionnée (PR #51), la livre, et Pascal a décidé que
+**« Wi-Fi seulement » est activé par défaut**. Les décisions (a) à (d) de la mission 011 sont au
+journal du 2026-10-21 (`pilotage/journal.md`, entrée « mission 011 · (a) … ») et dans
+`pilotage/missions/011-ecrans-tournees-carte-guidage.md`. Elles ne sont pas recopiées ici.

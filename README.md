@@ -15,9 +15,11 @@ elle suit **plant par plant**, sur des placettes fixes, ce qui a repris d'un pas
 l'autre, et relève les travaux faits, pour les rendre au sommier forestier (sommieR).
 
 > **État : en développement (tranche 1).** Le domaine (contrôle de placette, repères,
-> journal des saisies) et l'export GeoPackage sont faits et testés ; les écrans de
-> tournée et de contrôle sont à venir. L'APK publié contient un écran d'essai GNSS.
-> L'avancement est dans [`pilotage/kanban.md`](pilotage/kanban.md).
+> journal des saisies), l'export GeoPackage et les écrans de l'accueil de l'APK sont
+> faits et testés : **Tournées** (avec Carte et Guidage, mission 011), **Restaurer une
+> tournée** (mission 009) et **Essai GNSS** (mission 018). L'écran du contrôle de placette
+> (mission 012) n'est pas encore livré. **Ce qui est livré, en cours ou planifié se lit dans
+> [`pilotage/kanban.md`](pilotage/kanban.md)**, seule source de l'avancement.
 
 ## Pour qui, pour quoi
 
@@ -42,13 +44,17 @@ dans [`docs/publier.md`](docs/publier.md).
 
 ## Construire et tester
 
-JDK 17 et SDK Android requis.
+JDK 17 ou plus (bytecode cible 17, `core/build.gradle.kts` ; testé avec 21, comme la CI,
+`.github/workflows/ci.yml`) et SDK Android requis.
 
 ```sh
 ./gradlew :core:test :gpkg:test :data:testDebugUnitTest :app:assembleDebug :app:lintDebug
 ```
 
-C'est la commande de tests du projet (`.claude/test-command`), rejouée par la CI.
+C'est la commande de tests du projet (`.claude/test-command`, qui fait foi), rejouée par la CI.
+
+La carte repose sur osmdroid, **archivé** : constat, date et suite dans
+[l'ADR 0009](docs/adr/0009-carte-hors-ligne.md) (le réexamen de l'ADR 0004 n'est pas fait).
 
 | Module | Rôle |
 |---|---|
@@ -58,7 +64,7 @@ C'est la commande de tests du projet (`.claude/test-command`), rejouée par la C
 | `:app` | Écrans Jetpack Compose, service GNSS |
 
 Architecture : [`docs/architecture.md`](docs/architecture.md) · décisions :
-[`docs/adr/`](docs/adr/) · référentiels sourcés : [`docs/referentiels/`](docs/referentiels/) ·
+[`docs/adr/`](docs/adr/README.md) (index : ce qui est décidé, ce qui ne l'est pas encore) · référentiels sourcés : [`docs/referentiels/`](docs/referentiels/) ·
 cas de test partagés avec sommieR : [`fixtures/`](fixtures/).
 
 ## Comment ce projet est développé

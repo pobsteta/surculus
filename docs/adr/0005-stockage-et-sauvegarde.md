@@ -107,3 +107,16 @@ nouveau.
 ## Question de contrôle
 
 Cette décision tient-elle nos six valeurs, et que sommes-nous prêts à payer pour cela ?
+
+## Après la mission 032 (2026-10-21, ajout, rien n'est effacé plus haut)
+
+La mission 032 (PR #56) précise le journal et sa projection. Le détail et les auteurs sont au
+`pilotage/journal.md` (numéros de ligne lus sur `main` le 2026-10-22) :
+
+- plan du `dev` (projection par clé tournée, objet, type ; migration Room 3→4 ; refus du code
+  vide), l. 172 ; confirmé par le `relecteur`, l. 183 ;
+- décisions de Pascal : l. 173 (`remplace_autre_tournee`, dépôt strict par défaut) et l. 184
+  (une seule anomalie, lignes sans tournée, numéros de version) ;
+- migration 3→4 acceptée par l'orchestrateur, l. 174.
+
+L'ADR 0006 (fusion), citée à la section Sources, est réservée et non écrite : voir l'[index](README.md).
