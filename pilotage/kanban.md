@@ -53,22 +53,18 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **013** dictée Vosk (`dev`) : part après les cas des décisions 11 et 12 (testeur) et le
-  retrait de l'hypothèse DI-303.
+- **013** dictée Vosk (`dev`) : les cas des décisions 11 et 12 sont écrits (PR #63) ; part
+  après le retrait de l'hypothèse DI-303.
 
 ## Planifié
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Cycle 8, lancé le 2026-10-22 (deux missions, réglage du bilan) :**
+**Cycle 8, lancé le 2026-10-22 (028 et 036, puis 033 ; au plus deux missions de code à la fois, réglage du bilan) :**
 
-- **028** registre attendu et sabotage en CI (`dev`, appuyer) : F4 compare les totaux au
-  registre et le point à `positions_controles` de l'export (décision de Pascal du
-  2026-10-22) ; en revue, PR #64, après cette PR de pilotage.
 - **033** placettes colorées selon `etat_suivi` (`afficheur`, appuyer) : couleurs, légende
-  avec décomptes (décisions de Pascal du 2026-10-22) ; en cours.
-- **036** cas des décisions 11 et 12 de la dictée (`testeur`, appuyer) : en revue,
-  PR #63, à fusionner après cette PR de pilotage.
+  avec décomptes, libellé « travaux à prévoir » (décisions de Pascal du 2026-10-22) ; en
+  revue, PR #65, après cette PR de pilotage.
 
 **Attendent le plafond :**
 
@@ -80,6 +76,10 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
 
 ## Terminé
+
+- Cycle 8, 2026-10-22 : **028** registre attendu (F4) et sabotages (F5) dans la CI d'import
+  (PR #64) ; **036** cas des décisions 11 et 12 de la dictée (PR #63) ; pilotage et brief
+  vers sommieR sur la position mesurée du contrôle (PR #62) — Pascal.
 
 - Cycle 7, 2026-10-22 : **034** trous de mémoire du bilan, README, spec, index des ADR
   (PR #58) ; **035** test de forme des CSV de `docs/referentiels/`, vu rouge 9 sur 9
