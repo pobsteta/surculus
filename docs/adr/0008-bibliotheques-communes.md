@@ -1,9 +1,9 @@
 # ADR 0008 — Style commun avec Marculus et Groma, par la bibliothèque `terrain`
 
 - **Date :** 2026-10-22 (réécrite le même jour après la critique du `contradicteur`)
-- **Statut :** acceptée (Pascal, 2026-10-23 : « Je valide les 6 propositions »), sauf la
-  question 3 (successeur de `terrain`), qui reste ouverte ; coûts du crible F, A, C et É à
-  confirmer par Pascal
+- **Statut :** acceptée (Pascal, 2026-10-23 : « Je valide les 6 propositions »), sans successeur de `terrain`
+  pour l'instant (risque assumé, question 3) ; coûts du crible F, A, C et É à confirmer par
+  Pascal
 - **Proposée par :** Claude (orchestrateur)
 - **Tranchée par :** Pascal
 
@@ -118,7 +118,7 @@ soumise à l'essai au soleil, puis à Pascal.
 | Lettre | Question | Réponse (une ligne) | Ce que ça coûte | Prêts à payer ? |
 |---|---|---|---|---|
 | **F**rugale | La plus simple qui tienne ? | Des jetons en `Long` et un test JVM ; pas d'Android dans `terrain` | Quelques dizaines de lignes d'adaptation par application | **à confirmer par Pascal** (déduit de son acceptation, pas d'une réponse explicite) |
-| **R**esponsable | Qui fait quoi ? | Pascal maintient `terrain` ; l'orchestrateur écrit le brief vers `terrain` ; un `dev` de Surculus fait l'adaptation, le `testeur` le test d'égalité depuis cette ADR | `terrain` n'a ni `testeur` séparé ni `relecteur` (règles de ce dépôt seulement) ; aucun successeur désigné pour `terrain` | **ouvert** : successeur à désigner par Pascal (question 3) |
+| **R**esponsable | Qui fait quoi ? | Pascal maintient `terrain` ; l'orchestrateur écrit le brief vers `terrain` ; un `dev` de Surculus fait l'adaptation, le `testeur` le test d'égalité depuis cette ADR | `terrain` n'a ni `testeur` séparé ni `relecteur` (règles de ce dépôt seulement) ; aucun successeur désigné pour `terrain` | oui : aucun successeur pour l'instant, risque assumé par Pascal (question 3), à revoir à chaque bilan |
 | **A**nticiper | Si l'imprévu arrive ? | Version épinglée par **SHA de commit** (JitPack accepte « release tag, commit hash or `master-SNAPSHOT` », docs.jitpack.io), d'un commit **publié depuis plus de 7 jours** (avant, un artefact public peut être reconstruit) et déjà construit par JitPack (il construit à la demande, là où il a déjà échoué : `terrain/README.md` l. 50-51) ; repli par `publishToMavenLocal` sans réseau ; comme JitPack ne joue pas les tests, le test de contraste est **rejoué dans Surculus** sur les jetons reçus | Une étape de plus à chaque montée de version ; Gradle ne vérifie pas les dépendances (pas de `verification-metadata.xml`) ; `docs/dependances.md` l. 20 et `NOTICE` à mettre à jour par la mission | **à confirmer par Pascal** (déduit de son acceptation, pas d'une réponse explicite) |
 | **N**ovateur | Toutes les idées ? | Cinq options, dont la génération par Material Color Utilities | — | — |
 | **C**oût | Que coûte-t-elle à l'ensemble ? | Une mission dans `terrain` (`terrain-style`), puis une mission Surculus en « appuyer » après le terrain de Pascal ; Marculus et Groma prennent les mêmes jetons, demandés par un brief dans chaque dépôt (question 1) | Aucun délai sur la 012 ; rien avant le retour de Couchey. Le bouton principal de Marculus et de Groma change de vert ; la mise en œuvre revient à leurs dépôts. La mission dans `terrain` se fait hors de ce dépôt ; à compter dans le plafond humain de `pilotage/equipe.md` (proposition de l'orchestrateur) | mêmes jetons : oui (Pascal, question 1) ; le reste **à confirmer par Pascal** (déduit) |
@@ -150,8 +150,11 @@ Pascal a validé les propositions de l'orchestrateur sur les six questions (« J
    exemptés. *Rappel, hors de la décision : 1.4.11 demande déjà 3:1 pour ce qui n'est pas
    du texte ; les seuils en sp reposent sur l'hypothèse non sourcée 1 sp ≈ 1 px CSS
    (inventaire).*
-3. **Le successeur de `terrain`** : **reste ouvert**. L'orchestrateur n'avait rien à
-   proposer ; seul Pascal peut le nommer. Le crible (lettre R) le garde ouvert.
+3. **Le successeur de `terrain`** : **aucun pour l'instant**, risque assumé par Pascal
+   (2026-10-23 : « Pour l'instant personne repre[nd] »). Pascal maintient `terrain` ; le
+   dépôt est public sous GPL-3.0 (vérifié le 2026-10-23) et se reconstruit sans réseau
+   (`publishToMavenLocal`) : un tiers peut reprendre le code, mais personne ne s'y est
+   engagé. À revoir à chaque bilan.
 4. **L'option** : **B étendue avec E** : rôles générés une fois par Material Color
    Utilities depuis `VertMarculus`, niveau de contraste 0,5, `SPEC_2021`, valeurs figées
    dans `terrain-style` avec le script, le commit de la bibliothèque et ces réglages ; le

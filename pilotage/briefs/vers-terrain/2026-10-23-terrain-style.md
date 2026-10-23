@@ -45,7 +45,8 @@ Un module **Kotlin pur, JVM 17**, `terrain-style`, sans Android ni Compose (règ
 
 ## Ouvert
 
-- **Le successeur de `terrain`** : à désigner par Pascal (ADR 0008, question 3).
+- **Le successeur de `terrain`** : aucun pour l'instant, risque assumé par Pascal (ADR 0008,
+  question 3, 2026-10-23).
 - JitPack construit sans les tests (`jitpack.yml`, `-x test`) ; la CI de `terrain`
   (`.github/workflows/ci.yml`) les joue déjà à chaque push et chaque PR. Surculus rejoue
   quand même le test de contraste sur les jetons reçus.
