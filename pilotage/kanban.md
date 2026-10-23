@@ -9,8 +9,9 @@
 
 _Idées, à trier au prochain `/mission`._
 
-- **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0008
-  (bibliothèques communes), 0010 (voir la carte « clé de signature » au Planifié) ;
+- **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0010
+  (voir la carte « clé de signature » au Planifié), 0012 (briques communes vers `terrain`,
+  réservée, après l'essai d'automne et une table des écarts) ;
   réexamen de l'ADR 0004 (osmdroid archivé depuis le 2024-11-20, ADR 0009) : la 034 n'y
   ajoute qu'un renvoi daté.
 - **Dettes de la 009** : demander `WRITE_EXTERNAL_STORAGE` à l'exécution (Android 8-9)
@@ -44,6 +45,15 @@ _Idées, à trier au prochain `/mission`._
   d'essai d'automne 2026 ; successeur ;
   coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
   fascicule 34 ; URL du guide des chênaies continentales.
+- **Pascal (dans `terrain`, Marculus, Groma)** : déposer les briefs du style commun
+  (`vers-terrain/2026-10-23-terrain-style.md`,
+  `vers-marculus/2026-10-22-readme-terrain-et-style-commun.md`,
+  `vers-groma/2026-10-23-style-commun.md`, ADR 0008). La mission dans `terrain` compte
+  dans le plafond humain (Pascal, 2026-10-23).
+- **Pascal (dans `methode-imperatrice`)** : déposer le brief
+  `vers-methode-imperatrice/2026-10-23-temps-de-la-main.md` (prendre, donner, rendre la
+  main ; v1.0.0) ; corriger le livre pour sa nouvelle édition. Surculus migre
+  `equipe.md` et ses fiches après la 1.0.0.
 - **Pascal (dans sommieR)** : déposer le brief
   `vers-sommier/2026-10-22-position-mesuree-du-controle.md` (le registre ne garde pas la
   position mesurée du contrôle, décision du 2026-10-22).
@@ -60,26 +70,29 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Cycle 8, lancé le 2026-10-22 (028 et 036, puis 033 ; au plus deux missions de code à la fois, réglage du bilan) :**
-
-- **033** placettes colorées selon `etat_suivi` (`afficheur`, appuyer) : couleurs, légende
-  avec décomptes, libellé « travaux à prévoir » (décisions de Pascal du 2026-10-22) ; en
-  revue, PR #65, après cette PR de pilotage.
-
 **Attendent le plafond :**
 
 - **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK de la 011 sur Couchey
   (import, ortho, mode avion, guidage, test des dix secondes) ; restauration de
-  `exemple-v1.sursync` ; comptes de Couchey contre QGIS (029). Chaque essai au journal.
+  `exemple-v1.sursync` ; comptes de Couchey contre QGIS (029) ; **essai au soleil** de la
+  palette actuelle (ADR 0008 : badge du fix, texte orange, pastilles sur ortho claire,
+  marqueur noir de la position, bouton « Retour »). Chaque essai au journal.
 - **Pascal, clé de signature** : dire au journal où est la copie hors du poste et qui
   détient les mots de passe, puis l'ADR 0010.
 - **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
+- **Thème commun** (fiche à écrire ; `dev`, appuyer) : jetons de `terrain-style`, thème
+  clair forcé, légende en noir, palette d'état passée au test 1.4.6, test d'égalité et de
+  contraste rejoués dans Surculus (ADR 0008). Après le retour de Couchey, et après la
+  publication de `terrain-style` (commit épinglé de plus de 7 jours) ; essai au soleil
+  avant fusion.
 
 ## Terminé
 
-- Cycle 8, 2026-10-22 : **028** registre attendu (F4) et sabotages (F5) dans la CI d'import
-  (PR #64) ; **036** cas des décisions 11 et 12 de la dictée (PR #63) ; pilotage et brief
-  vers sommieR sur la position mesurée du contrôle (PR #62) — Pascal.
+- Cycle 8, 2026-10-22 et 23 : **028** registre attendu (F4) et sabotages (F5) dans la CI
+  d'import (PR #64) ; **036** cas des décisions 11 et 12 de la dictée (PR #63) ; **033**
+  placettes colorées selon `etat_suivi`, légende avec décomptes (PR #65) ; brief et spec
+  amendés, style commun et liste du départ (PR #68) ; **ADR 0008** style commun acceptée,
+  briefs vers `terrain`, Marculus et Groma (PR #69) ; pilotage (PR #62, #66, #67) — Pascal.
 
 - Cycle 7, 2026-10-22 : **034** trous de mémoire du bilan, README, spec, index des ADR
   (PR #58) ; **035** test de forme des CSV de `docs/referentiels/`, vu rouge 9 sur 9
@@ -147,3 +160,8 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
 - bilan du AAAA-MM-JJ · livraison · pour qui · ce qu'elle apporte de plus que la précédente
 - bilan du AAAA-MM-JJ · mauvaise nouvelle : … · pour qui · ce qu'elle nous apprend
 ```
+
+- cycle 8 · la carte colore les placettes selon `etat_suivi` (jamais, à jour, travaux à
+  prévoir), avec une légende qui les compte (033) · pour l'agent en forêt · avant, toutes
+  les placettes avaient la même couleur : il voit d'un coup d'œil celles à contrôler
+  d'abord. *(Proposée par l'orchestrateur, à retenir par Pascal.)*
