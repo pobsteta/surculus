@@ -54,7 +54,7 @@ Un module **Kotlin pur, JVM 17**, `terrain-style`, sans Android ni Compose (règ
   `tertiary` se mesure contre une seule surface ; contre `surfaceDim` ou
   `surfaceContainerHighest`, ils peuvent tomber sous 7:1.
 - **Si une valeur générée échoue au test** : ne pas la retoucher à la main. Rendre la liste
-  des couples en échec ; Pascal choisit l'issue (autre niveau de contraste de Material
+  des couples en échec ; Pascal choisit l'issue (sa décision du 2026-10-23) (autre niveau de contraste de Material
   Color Utilities, ou moins de couples testés).
 
 ## Critère d'acceptation

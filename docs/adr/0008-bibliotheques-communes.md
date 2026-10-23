@@ -2,8 +2,8 @@
 
 - **Date :** 2026-10-22 (réécrite le même jour après la critique du `contradicteur`)
 - **Statut :** acceptée (Pascal, 2026-10-23 : « Je valide les 6 propositions »), sans successeur de `terrain`
-  pour l'instant (risque assumé, question 3) ; coûts du crible F, A, C et É à confirmer par
-  Pascal
+  pour l'instant (risque assumé, question 3) ; coûts du crible acceptés par Pascal le
+  2026-10-23
 - **Proposée par :** Claude (orchestrateur)
 - **Tranchée par :** Pascal
 
@@ -117,12 +117,12 @@ soumise à l'essai au soleil, puis à Pascal.
 
 | Lettre | Question | Réponse (une ligne) | Ce que ça coûte | Prêts à payer ? |
 |---|---|---|---|---|
-| **F**rugale | La plus simple qui tienne ? | Des jetons en `Long` et un test JVM ; pas d'Android dans `terrain` | Quelques dizaines de lignes d'adaptation par application | **à confirmer par Pascal** (déduit de son acceptation, pas d'une réponse explicite) |
+| **F**rugale | La plus simple qui tienne ? | Des jetons en `Long` et un test JVM ; pas d'Android dans `terrain` | Quelques dizaines de lignes d'adaptation par application | oui (Pascal, 2026-10-23, « oui aux trois points ») |
 | **R**esponsable | Qui fait quoi ? | Pascal maintient `terrain` ; l'orchestrateur écrit le brief vers `terrain` ; un `dev` de Surculus fait l'adaptation, le `testeur` le test d'égalité depuis cette ADR | `terrain` n'a ni `testeur` séparé ni `relecteur` (règles de ce dépôt seulement) ; aucun successeur désigné pour `terrain` | oui : aucun successeur pour l'instant, risque assumé par Pascal (question 3), à revoir à chaque bilan |
-| **A**nticiper | Si l'imprévu arrive ? | Version épinglée par **SHA de commit** (JitPack accepte « release tag, commit hash or `master-SNAPSHOT` », docs.jitpack.io), d'un commit **publié depuis plus de 7 jours** (avant, un artefact public peut être reconstruit) et déjà construit par JitPack (il construit à la demande, là où il a déjà échoué : `terrain/README.md` l. 50-51) ; repli par `publishToMavenLocal` sans réseau ; comme JitPack ne joue pas les tests, le test de contraste est **rejoué dans Surculus** sur les jetons reçus | Une étape de plus à chaque montée de version ; Gradle ne vérifie pas les dépendances (pas de `verification-metadata.xml`) ; `docs/dependances.md` l. 20 et `NOTICE` à mettre à jour par la mission | **à confirmer par Pascal** (déduit de son acceptation, pas d'une réponse explicite) |
+| **A**nticiper | Si l'imprévu arrive ? | Version épinglée par **SHA de commit** (JitPack accepte « release tag, commit hash or `master-SNAPSHOT` », docs.jitpack.io), d'un commit **publié depuis plus de 7 jours** (avant, un artefact public peut être reconstruit) et déjà construit par JitPack (il construit à la demande, là où il a déjà échoué : `terrain/README.md` l. 50-51) ; repli par `publishToMavenLocal` sans réseau ; comme JitPack ne joue pas les tests, le test de contraste est **rejoué dans Surculus** sur les jetons reçus | Une étape de plus à chaque montée de version ; Gradle ne vérifie pas les dépendances (pas de `verification-metadata.xml`) ; `docs/dependances.md` l. 20 et `NOTICE` à mettre à jour par la mission | oui (Pascal, 2026-10-23, « oui aux trois points ») |
 | **N**ovateur | Toutes les idées ? | Cinq options, dont la génération par Material Color Utilities | — | — |
-| **C**oût | Que coûte-t-elle à l'ensemble ? | Une mission dans `terrain` (`terrain-style`), puis une mission Surculus en « appuyer » après le terrain de Pascal ; Marculus et Groma prennent les mêmes jetons, demandés par un brief dans chaque dépôt (question 1) | Aucun délai sur la 012 ; rien avant le retour de Couchey. Le bouton principal de Marculus et de Groma change de vert ; la mise en œuvre revient à leurs dépôts. La mission dans `terrain` se fait hors de ce dépôt ; à compter dans le plafond humain de `pilotage/equipe.md` (proposition de l'orchestrateur) | mêmes jetons : oui (Pascal, question 1) ; le reste **à confirmer par Pascal** (déduit) |
-| **É**cologique | Que réutilise-t-on, qui réutilisera ? | `terrain` déjà publiée ; une convention de Google pour les rôles ; Marculus et Groma peuvent prendre les mêmes jetons | Groma ne consomme pas encore `terrain` : « commune » à deux applications aujourd'hui | **à confirmer par Pascal** (déduit de son acceptation, pas d'une réponse explicite) |
+| **C**oût | Que coûte-t-elle à l'ensemble ? | Une mission dans `terrain` (`terrain-style`), puis une mission Surculus en « appuyer » après le terrain de Pascal ; Marculus et Groma prennent les mêmes jetons, demandés par un brief dans chaque dépôt (question 1) | Aucun délai sur la 012 ; rien avant le retour de Couchey. Le bouton principal de Marculus et de Groma change de vert ; la mise en œuvre revient à leurs dépôts. La mission dans `terrain` se fait hors de ce dépôt ; à compter dans le plafond humain de `pilotage/equipe.md` (proposition de l'orchestrateur) | oui : mêmes jetons (question 1) ; le reste, Pascal, 2026-10-23 (« oui aux trois points ») |
+| **É**cologique | Que réutilise-t-on, qui réutilisera ? | `terrain` déjà publiée ; une convention de Google pour les rôles ; Marculus et Groma peuvent prendre les mêmes jetons | Groma ne consomme pas encore `terrain` : « commune » à deux applications aujourd'hui | oui (Pascal, 2026-10-23, « oui aux trois points ») |
 
 ## Valeurs sacrifiées
 
@@ -173,10 +173,17 @@ Pascal a validé les propositions de l'orchestrateur sur les six questions (« J
   avec les jetons et test de contraste rejoué dans Surculus, `docs/dependances.md` et
   `NOTICE` ; essai au soleil par Pascal avant la fusion (spec § 3).
 
-Et une proposition : pendant le terrain de Couchey, un premier essai au soleil de la
-palette actuelle (badge du fix, texte orange, pastilles sur une ortho claire, **marqueur
-noir de la position** sur la canopée, bouton « Retour » violet), noté au journal, avant la
-mission plutôt qu'après.
+### Trois points confirmés ensuite (Pascal, 2026-10-23, « oui aux trois points »)
+
+- **Les coûts du crible** F, A, C et É sont acceptés, dont le décompte de la mission dans
+  `terrain` dans le plafond humain.
+- **Si une couleur générée échoue au test de 7:1** : on ne la retouche jamais à la main ;
+  la mission rend la liste des couples en échec, et Pascal choisit l'issue (autre niveau de
+  contraste de Material Color Utilities, ou moins de couples testés).
+- **Essai au soleil à Couchey** : pendant son terrain, Pascal essaie la palette actuelle
+  (badge du fix, texte orange, pastilles sur une ortho claire, **marqueur noir de la
+  position** sur la canopée, bouton « Retour » violet) ; le résultat est noté au journal,
+  avant la mission du thème.
 
 ## Sources
 
