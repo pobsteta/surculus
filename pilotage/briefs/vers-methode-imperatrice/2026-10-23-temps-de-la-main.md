@@ -22,17 +22,23 @@ disent la même chose ; la correction du livre (« Les trois temps de la main »
 ## Demandé dans le plugin (découle de la décision de Pascal)
 
 1. Remplacer les trois termes dans :
-   - `skills/methode/SKILL.md` (l. 58-60, règle de staffing ; l. 76-85, les trois temps) ;
-   - `skills/mission/SKILL.md` (description l. 3 si elle les nomme, l. 29-31, l. 36-38) ;
+   - `skills/methode/SKILL.md` (l. 58-60, règle de staffing ; l. 62, « Trois oui : on
+     lâche » ; l. 76-85, les trois temps) ;
+   - `skills/mission/SKILL.md` (description l. 3 si elle les nomme, l. 29-31, l. 36-38,
+     l. 53 « les missions tenues ») ;
    - `skills/mission/fiche-mission.md` l. 20 ;
    - `skills/bilan/SKILL.md` l. 35 ;
    - `skills/boucle/SKILL.md` l. 36 et l. 46 (« missions explicitement « lâchées » ») ;
    - `agents/dev.md` l. 25 ;
    - le README, s'il les nomme.
 
-   Ne changent pas : « Plier ou tenir » ; les emplois courants du verbe
-   (`skills/boucle/SKILL.md` l. 8 « rythme que Pascal peut tenir », l. 52 « Tenir la
-   mémoire ») ; l'historique du dépôt (`docs/brief.md`, `pilotage/missions/`, journal).
+   Ne changent pas : « Plier ou tenir » ; les emplois courants des verbes, sans rapport
+   avec les temps de la main (par exemple `skills/boucle/SKILL.md` l. 8 « rythme que
+   Pascal peut tenir », l. 52 « Tenir la mémoire » ; `skills/bilan/SKILL.md` l. 27
+   « rythme tenu », l. 30 « appuyé sur un fait », citation du livre vérifiée par
+   `tests/test_alignement_livre.py` ; `skills/methode/SKILL.md` l. 31 « Tenu par » ;
+   `agents/acquereur.md` l. 22 ; `skills/demarrer/gabarit-claude.md` l. 9 « Tu tiens
+   l'étape ») ; l'historique du dépôt (`docs/brief.md`, `pilotage/missions/`, journal).
 2. **Version** : un renommage est une rupture selon le README (l. 83) → **`1.0.0`**.
 
 ## Proposé par l'orchestrateur, à trancher par Pascal dans ce dépôt
@@ -53,6 +59,12 @@ disent la même chose ; la correction du livre (« Les trois temps de la main »
    l'ancien et le nouveau terme dans une fiche (« tenir » = « prendre la main »), pour
    que les projets en service aient le temps de migrer ; un test le vérifie.
 
+5. **« On revient en arrière, on ne lâche pas »** (`skills/methode/SKILL.md` l. 88,
+   `agents/dev.md` l. 15) répond à « Ne pas lâcher » (3e question, l. 60). Question de
+   sens pour Pascal : la renommer (« on ne rend pas la main ») ou la garder comme emploi
+   courant ? L'orchestrateur propose de la renommer, pour que la 3e question et cette
+   phrase disent la même chose.
+
 ## Ce qui suivra dans Surculus
 
 Après la publication de la `1.0.0` : migration de `pilotage/equipe.md`, des fiches de
@@ -62,7 +74,10 @@ Rien ne change avant.
 
 ## Critère d'acceptation
 
-`grep -rniE "\b(tenir|tiens|tenu|appuy|lâch|lach)" skills/ agents/` ne renvoie plus,
-pour ces notions, que « Plier ou tenir », les emplois courants listés au point 1 et la
-règle de transition si Pascal la retient ; la règle de staffing et le tableau des temps
-donnent la même définition de chaque terme ; la `1.0.0` est publiée.
+Dans `skills/` et `agents/`, **aucune occurrence de « tenir », « appuyer » ou « lâcher »
+(formes fléchies comprises) n'est employée au sens des temps de la main**, hors règle de
+transition si Pascal la retient. Pour le vérifier :
+`grep -rniE "\b(tenir|tiens|tient|tenu|appuy|lâch|lach)" skills/ agents/`, puis chaque ligne
+renvoyée est soit « Plier ou tenir », soit un emploi courant (point 1), soit la phrase
+du point 5 si Pascal la garde. La règle de staffing et le tableau des temps donnent la
+même définition de chaque terme ; la `1.0.0` est publiée.
