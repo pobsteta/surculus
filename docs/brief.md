@@ -81,7 +81,7 @@ travaux au départ ; recopié mot pour mot de sa réponse dans la session) :
 - **Style commun** avec Marculus et Groma, pour la cohérence du projet nemeton, **sans
   jamais passer devant la lisibilité au soleil** (règles dans la spec, § 3). Le thème
   viendra de la bibliothèque commune `terrain`, pas d'une copie ; forme et calendrier
-  dans l'ADR 0008, à trancher par Pascal.
+  dans l'ADR 0008, acceptée par Pascal le 2026-10-23.
 - **Plant atteint** : un plant atteint (abrouti, malade) compte comme **vivant** dans le
   taux ; l'atteinte et sa cause sont notées à part pour le gestionnaire.
 

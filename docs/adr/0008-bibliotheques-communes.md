@@ -1,16 +1,19 @@
 # ADR 0008 — Style commun avec Marculus et Groma, par la bibliothèque `terrain`
 
 - **Date :** 2026-10-22 (réécrite le même jour après la critique du `contradicteur`)
-- **Statut :** proposée
+- **Statut :** acceptée (Pascal, 2026-10-23 : « Je valide les 6 propositions »), sauf la
+  question 3 (successeur de `terrain`), qui reste ouverte
 - **Proposée par :** Claude (orchestrateur)
 - **Tranchée par :** Pascal
 
 ## La décision en une phrase
 
 Le style commun des trois applications est un **schéma de couleurs Material 3 complet**
-(tous les rôles, en thème clair), tenu dans un module **Kotlin pur `terrain-style`** de la
-bibliothèque `terrain` avec un test de contraste sur **chaque couple texte / fond** ;
-Surculus le reprend tel quel, thème clair forcé, et garde à part sa palette d'état.
+(tous les rôles, en thème clair), **généré une fois par Material Color Utilities depuis
+`VertMarculus` puis figé**, tenu dans un module **Kotlin pur `terrain-style`** de la
+bibliothèque `terrain` avec un test de contraste **WCAG 2.2, 1.4.6** sur **chaque couple
+texte / fond** ; Surculus le reprend tel quel, thème clair forcé, et garde à part sa
+palette d'état ; Marculus et Groma prennent les mêmes jetons.
 
 ## Périmètre
 
@@ -92,8 +95,8 @@ canopée sombre ; les contours des polygones (l. 217-219).
 | Option | Ce que c'est | Pour | Contre |
 |---|---|---|---|
 | A | Module **Android Compose** `terrain-theme` (un `MaterialTheme` partagé) | Une seule source prête à l'emploi | Contraire à la règle « Kotlin pur » de `terrain` (README l. 20) ; construction Android sur JitPack ; impose Compose et sa version aux trois applications |
-| **B étendue (proposée)** | Module Kotlin pur `terrain-style` : **tous les rôles** du schéma Material 3 en ARGB (`Long`), en clair (et en sombre si Marculus le garde) ; un test parcourt **tous les couples** rôle « on » / rôle de fond, **et** `primary`, `secondary`, `tertiary`, `error` employés en texte sur `surface`, `surfaceContainer*` et `surfaceDim` (cas des boutons à contour et des champs), plus les couleurs d'état ; chaque application recopie les rôles 1:1 dans son `ColorScheme`, et un test de l'application vérifie l'égalité avec les jetons | Style commun réel (les rôles, pas seulement trois couleurs) ; testable en JVM ; respecte la règle de `terrain` | Une adaptation de quelques dizaines de lignes par application, tenue par son test d'égalité |
-| **E (avec B)** | Les valeurs des rôles sont **générées** une fois par Material Color Utilities (Google, Apache-2.0) depuis la couleur de départ `VertMarculus`, au niveau de contraste 0,5 (« medium »), puis **figées** dans `terrain-style` ; y sont inscrits le script de génération, le commit de la bibliothèque, la version du schéma (`SPEC_2021`), le niveau de contraste et la couleur de départ ; le test de contraste reste juge | Convention publiée plutôt qu'invention : dans `ColorSpec2021`, à ce niveau, `onPrimary`, `onSurface` et `onError` visent 11:1, `onSurfaceVariant` et `onPrimaryContainer` 7:1, et `primary`, `secondary`, `tertiary`, `error` 7:1 contre la surface (`ColorSpec2021.java`, `ContrastCurve.java`) | **Pas d'artefact Java officiel** (le README renvoie à MDC-Android) : valeurs figées depuis les sources, aucune dépendance à l'exécution ; les courbes changent d'une version du schéma à l'autre (`ColorSpec2025` : `onPrimary` 6, `onSurfaceVariant` 4,5 ; `MaterialDynamicColors` est passé à `ColorSpec2026`) ; teintes qui s'écartent des trois couleurs actuelles |
+| **B étendue (retenue)** | Module Kotlin pur `terrain-style` : **tous les rôles** du schéma Material 3 en ARGB (`Long`), en clair (et en sombre si Marculus le garde) ; un test parcourt **tous les couples** rôle « on » / rôle de fond, **et** `primary`, `secondary`, `tertiary`, `error` employés en texte sur `surface`, `surfaceContainer*` et `surfaceDim` (cas des boutons à contour et des champs), plus les couleurs d'état ; chaque application recopie les rôles 1:1 dans son `ColorScheme`, et un test de l'application vérifie l'égalité avec les jetons | Style commun réel (les rôles, pas seulement trois couleurs) ; testable en JVM ; respecte la règle de `terrain` | Une adaptation de quelques dizaines de lignes par application, tenue par son test d'égalité |
+| **E (retenue, avec B)** | Les valeurs des rôles sont **générées** une fois par Material Color Utilities (Google, Apache-2.0) depuis la couleur de départ `VertMarculus`, au niveau de contraste 0,5 (« medium »), puis **figées** dans `terrain-style` ; y sont inscrits le script de génération, le commit de la bibliothèque, la version du schéma (`SPEC_2021`), le niveau de contraste et la couleur de départ ; le test de contraste reste juge | Convention publiée plutôt qu'invention : dans `ColorSpec2021`, à ce niveau, `onPrimary`, `onSurface` et `onError` visent 11:1, `onSurfaceVariant` et `onPrimaryContainer` 7:1, et `primary`, `secondary`, `tertiary`, `error` 7:1 contre la surface (`ColorSpec2021.java`, `ContrastCurve.java`) | **Pas d'artefact Java officiel** (le README renvoie à MDC-Android) : valeurs figées depuis les sources, aucune dépendance à l'exécution ; les courbes changent d'une version du schéma à l'autre (`ColorSpec2025` : `onPrimary` 6, `onSurfaceVariant` 4,5 ; `MaterialDynamicColors` est passé à `ColorSpec2026`) ; teintes qui s'écartent des trois couleurs actuelles |
 | C | Troisième copie du `Theme.kt` de Marculus | Immédiat | Écartée par Pascal le 2026-10-22 |
 | D | Cohérence par le nom, l'icône, la typographie et les formes seulement | Aucun risque au soleil | Ne donne pas les couleurs communes demandées |
 
@@ -101,49 +104,65 @@ canopée sombre ; les contours des polygones (l. 217-219).
 reste propre à Surculus (spec § 3). Là où elle porte du **texte**
 (alertes, badge, et la légende de la carte, `EcranCarte.kt` l. 279-281, qui reprend les
 couleurs des pastilles), elle échoue à la règle de contraste : l'orange (4,78:1) échoue
-quelle que soit la réponse à la question 2. Comment le résoudre sans toucher ce que Pascal a
-gardé est la question 6 : la lecture de l'orchestrateur, **à confirmer par Pascal**, est que
-« couleurs de la 033 gardées » vise les pastilles, et que leurs couleurs en texte peuvent être
-foncées (au prix d'une légende un peu plus sombre que ses pastilles) ou remplacées par du
-noir à côté d'une pastille de couleur.
+quelle que soit la réponse à la question 2. Décision de Pascal (question 6, 2026-10-23) :
+« couleurs de la 033 gardées » vise **les pastilles seules** ; la légende de la carte est
+écrite **en noir à côté de sa pastille de couleur**. Les autres textes de la palette d'état
+(alertes, badge, écran d'essai) passent le même test de contraste que les jetons.
 
 ## Le crible FRANCE
 
 | Lettre | Question | Réponse (une ligne) | Ce que ça coûte | Prêts à payer ? |
 |---|---|---|---|---|
-| **F**rugale | La plus simple qui tienne ? | Des jetons en `Long` et un test JVM ; pas d'Android dans `terrain` | Quelques dizaines de lignes d'adaptation par application | à trancher par Pascal |
-| **R**esponsable | Qui fait quoi ? | Pascal maintient `terrain` ; l'orchestrateur écrit le brief vers `terrain` ; un `dev` de Surculus fait l'adaptation, le `testeur` le test d'égalité depuis cette ADR | `terrain` n'a ni `testeur` séparé ni `relecteur` (règles de ce dépôt seulement) ; aucun successeur désigné pour `terrain` | question 3 à Pascal |
-| **A**nticiper | Si l'imprévu arrive ? | Version épinglée par **SHA de commit** (JitPack accepte « release tag, commit hash or `master-SNAPSHOT` », docs.jitpack.io), d'un commit **publié depuis plus de 7 jours** (avant, un artefact public peut être reconstruit) et déjà construit par JitPack (il construit à la demande, là où il a déjà échoué : `terrain/README.md` l. 50-51) ; repli par `publishToMavenLocal` sans réseau ; comme JitPack ne joue pas les tests, le test de contraste est **rejoué dans Surculus** sur les jetons reçus | Une étape de plus à chaque montée de version ; Gradle ne vérifie pas les dépendances (pas de `verification-metadata.xml`) ; `docs/dependances.md` l. 20 et `NOTICE` à mettre à jour par la mission | à trancher par Pascal |
+| **F**rugale | La plus simple qui tienne ? | Des jetons en `Long` et un test JVM ; pas d'Android dans `terrain` | Quelques dizaines de lignes d'adaptation par application | oui (Pascal, 2026-10-23) |
+| **R**esponsable | Qui fait quoi ? | Pascal maintient `terrain` ; l'orchestrateur écrit le brief vers `terrain` ; un `dev` de Surculus fait l'adaptation, le `testeur` le test d'égalité depuis cette ADR | `terrain` n'a ni `testeur` séparé ni `relecteur` (règles de ce dépôt seulement) ; aucun successeur désigné pour `terrain` | **ouvert** : successeur à désigner par Pascal (question 3) |
+| **A**nticiper | Si l'imprévu arrive ? | Version épinglée par **SHA de commit** (JitPack accepte « release tag, commit hash or `master-SNAPSHOT` », docs.jitpack.io), d'un commit **publié depuis plus de 7 jours** (avant, un artefact public peut être reconstruit) et déjà construit par JitPack (il construit à la demande, là où il a déjà échoué : `terrain/README.md` l. 50-51) ; repli par `publishToMavenLocal` sans réseau ; comme JitPack ne joue pas les tests, le test de contraste est **rejoué dans Surculus** sur les jetons reçus | Une étape de plus à chaque montée de version ; Gradle ne vérifie pas les dépendances (pas de `verification-metadata.xml`) ; `docs/dependances.md` l. 20 et `NOTICE` à mettre à jour par la mission | oui (Pascal, 2026-10-23) |
 | **N**ovateur | Toutes les idées ? | Cinq options, dont la génération par Material Color Utilities | — | — |
-| **C**oût | Que coûte-t-elle à l'ensemble ? | Une mission dans `terrain` (`terrain-style`), puis une mission Surculus en « appuyer » après le terrain de Pascal ; Marculus et Groma suivent s'ils le veulent | Aucun délai sur la 012 ; rien avant le retour de Couchey. Si Marculus et Groma prennent les jetons, leur bouton principal change : ce coût est le leur et la décision revient à leurs dépôts. La mission dans `terrain` se fait hors de ce dépôt ; à compter dans le plafond humain de `pilotage/equipe.md` (proposition de l'orchestrateur) | à trancher par Pascal |
-| **É**cologique | Que réutilise-t-on, qui réutilisera ? | `terrain` déjà publiée ; une convention de Google pour les rôles ; Marculus et Groma peuvent prendre les mêmes jetons | Groma ne consomme pas encore `terrain` : « commune » à deux applications aujourd'hui | à trancher par Pascal |
+| **C**oût | Que coûte-t-elle à l'ensemble ? | Une mission dans `terrain` (`terrain-style`), puis une mission Surculus en « appuyer » après le terrain de Pascal ; Marculus et Groma suivent s'ils le veulent | Aucun délai sur la 012 ; rien avant le retour de Couchey. Si Marculus et Groma prennent les jetons, leur bouton principal change : ce coût est le leur et la décision revient à leurs dépôts. La mission dans `terrain` se fait hors de ce dépôt ; à compter dans le plafond humain de `pilotage/equipe.md` (proposition de l'orchestrateur) | oui (Pascal, 2026-10-23) ; Marculus et Groma prennent les jetons (question 1) |
+| **É**cologique | Que réutilise-t-on, qui réutilisera ? | `terrain` déjà publiée ; une convention de Google pour les rôles ; Marculus et Groma peuvent prendre les mêmes jetons | Groma ne consomme pas encore `terrain` : « commune » à deux applications aujourd'hui | oui (Pascal, 2026-10-23) |
 
 ## Valeurs sacrifiées
 
 - **Le mode sombre** dans Surculus : thème clair forcé (Pascal, 2026-10-22).
-- **L'identité exacte avec Marculus, si Marculus ne change pas** : blanc sur `VertVif`
-  (5,17:1) ne tient pas la règle de contraste ; soit Marculus et Groma prennent les mêmes
-  jetons, soit les boutons de Surculus sont d'un autre vert (question 1).
+- **Les couleurs actuelles de Marculus et Groma** : blanc sur `VertVif` (5,17:1) ne tient
+  pas la règle de contraste ; les deux applications prennent les jetons générés, et leur
+  bouton principal change de vert (question 1).
+- **Les teintes exactes choisies à la main** : les rôles viennent de Material Color
+  Utilities et peuvent s'écarter des trois couleurs actuelles (option E).
+- **La couleur du texte de la légende** : la légende est écrite en noir, seule la pastille
+  porte la couleur (question 6).
 - **La correction unique des autres briques**, d'ici l'ADR ultérieure : les copies restent.
 
-## Ce qui reste à trancher par Pascal
+## Décision de Pascal (2026-10-23)
 
-1. **Les couleurs de Marculus et Groma** : si `VertVif` ne porte plus de texte blanc,
-   Marculus et Groma prennent-ils les mêmes jetons (briefs vers eux), ou acceptes-tu que
-   les boutons de Surculus soient d'un autre vert ?
-2. **La règle de contraste** : 7:1 pour **tout** texte, grand texte, badge et éléments
-   désactivés compris (règle propre au projet, plus stricte que la norme) ; ou **WCAG 2.2,
-   1.4.6 tel qu'écrit** (7:1, mais 4,5:1 pour le grand texte, éléments désactivés exemptés).
-3. **Le successeur de `terrain`** : qui, à part toi, peut la maintenir et la reconstruire
-   si JitPack échoue ou si tu passes la main ?
-4. **L'option** : B étendue seule, ou B avec E (rôles générés par Material Color
-   Utilities, valeurs figées depuis les sources).
-5. **Le grand texte**, si tu retiens 1.4.6 tel qu'écrit : jugé avec la taille de police du
-   téléphone à 100 %, ou chaque texte tient 7:1 quelle que soit la taille choisie par
-   l'agent ?
-6. **« Couleurs de la 033 gardées »** : les pastilles seules (la légende et les alertes en
-   texte peuvent alors être foncées, ou écrites en noir à côté d'une pastille), ou aussi la
-   légende en texte (il faut alors une autre issue pour l'orange, à 4,78:1) ?
+Pascal a validé les propositions de l'orchestrateur sur les six questions (« Je valide les
+6 propositions »), telles que l'orchestrateur les lui a posées dans la session :
+
+1. **Les couleurs de Marculus et Groma** : les trois applications prennent **les mêmes
+   jetons**, demandés par un brief dans chaque dépôt
+   (`pilotage/briefs/vers-marculus/2026-10-22-readme-terrain-et-style-commun.md`,
+   `pilotage/briefs/vers-groma/2026-10-23-style-commun.md`).
+2. **La règle de contraste** : **WCAG 2.2, 1.4.6 tel qu'écrit** : 7:1 pour le texte,
+   4,5:1 pour le grand texte (au moins 24 sp, ou 18,7 sp en gras), éléments désactivés
+   exemptés ; 3:1 pour ce qui n'est pas du texte (1.4.11).
+3. **Le successeur de `terrain`** : **reste ouvert**. L'orchestrateur n'avait rien à
+   proposer ; seul Pascal peut le nommer. Le crible (lettre R) le garde ouvert.
+4. **L'option** : **B étendue avec E** : rôles générés une fois par Material Color
+   Utilities depuis `VertMarculus`, niveau de contraste 0,5, `SPEC_2021`, valeurs figées
+   dans `terrain-style` avec le script, le commit de la bibliothèque et ces réglages ; le
+   test de contraste reste juge.
+5. **Le grand texte** : jugé avec la police du téléphone **à 100 %** (1 sp ≈ 1 px CSS).
+   Un agent qui agrandit la police agrandit le texte sans en baisser le contraste.
+6. **« Couleurs de la 033 gardées »** : **les pastilles seules**. La légende est écrite en
+   noir à côté de sa pastille de couleur ; l'orange ne porte plus de texte dans la légende.
+
+### Suite
+
+- Brief vers `terrain` : module `terrain-style`
+  (`pilotage/briefs/vers-terrain/2026-10-23-terrain-style.md`).
+- Mission Surculus du thème, en « appuyer », **après le retour de Couchey** : reprise des
+  jetons, thème clair forcé, légende en noir, palette d'état passée au test, test d'égalité
+  avec les jetons et test de contraste rejoué dans Surculus, `docs/dependances.md` et
+  `NOTICE` ; essai au soleil par Pascal avant la fusion (spec § 3).
 
 Et une proposition : pendant le terrain de Couchey, un premier essai au soleil de la
 palette actuelle (badge du fix, texte orange, pastilles sur une ortho claire, **marqueur
