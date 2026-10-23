@@ -162,6 +162,6 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
 ```
 
 - cycle 8 · la carte colore les placettes selon `etat_suivi` (jamais, à jour, travaux à
-  prévoir), avec une légende qui les compte (033) · pour l'agent en forêt · avant, toutes
+  prévoir), avec une légende qui les compte (033) · pour le forestier en forêt · avant, toutes
   les placettes avaient la même couleur : il voit d'un coup d'œil celles à contrôler
   d'abord. *(Proposée par l'orchestrateur, à retenir par Pascal.)*
