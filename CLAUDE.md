@@ -34,7 +34,7 @@ cavalière. **Pascal garde les rênes, la décision et l'effort.**
 | Les décisions d'architecture | `docs/adr/NNNN-titre.md` (gabarit : `adr-france.md` du skill `imperatrice:brief`) |
 | L'avancement | `pilotage/kanban.md` |
 | La mémoire du projet | `pilotage/journal.md` — **ajout seul, on n'efface jamais** |
-| Les messages aux autres dépôts | `pilotage/briefs/vers-*/` |
+| Les messages aux autres dépôts | `pilotage/briefs/vers-*/` (source), envoyés par issue et par note dans `~/dev/briefs/vers-<cible>/` |
 | Les codes travaux et référentiels | `docs/referentiels/` |
 
 Un lien plutôt qu'une copie. Si une information existe à deux endroits, l'un des deux est faux.
