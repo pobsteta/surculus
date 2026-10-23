@@ -45,15 +45,12 @@ _Idées, à trier au prochain `/mission`._
   d'essai d'automne 2026 ; successeur ;
   coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
   fascicule 34 ; URL du guide des chênaies continentales.
-- **Pascal (dans `terrain`, Marculus, Groma)** : déposer les briefs du style commun
-  (`vers-terrain/2026-10-23-terrain-style.md`,
-  `vers-marculus/2026-10-22-readme-terrain-et-style-commun.md`,
-  `vers-groma/2026-10-23-style-commun.md`, ADR 0008). La mission dans `terrain` compte
-  dans le plafond humain (Pascal, 2026-10-23).
-- **Pascal (dans `methode-imperatrice`)** : déposer le brief
-  `vers-methode-imperatrice/2026-10-23-temps-de-la-main.md` (prendre, donner, rendre la
-  main ; v1.0.0) ; corriger le livre pour sa nouvelle édition. Surculus migre
-  `equipe.md` et ses fiches après la 1.0.0.
+- **Briefs envoyés par issue le 2026-10-23** (ordre de Pascal) : style commun vers
+  `terrain` (pobsteta/terrain#1, `terrain-style`, à faire en premier), Marculus
+  (pobsteta/marculus#2) et Groma (pobsteta/groma#57) ; temps de la main vers la méthode
+  (pobsteta/methode-imperatrice#18 ; Pascal y tranche les points 3 à 5, et corrige le
+  livre). La mission dans `terrain` compte dans le plafond humain (Pascal, 2026-10-23).
+  Surculus migre `equipe.md` et ses fiches après la 1.0.0 du plugin.
 - **Pascal (dans sommieR)** : déposer le brief
   `vers-sommier/2026-10-22-position-mesuree-du-controle.md` (le registre ne garde pas la
   position mesurée du contrôle, décision du 2026-10-22).
