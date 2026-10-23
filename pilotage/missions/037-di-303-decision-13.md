@@ -9,7 +9,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Retirer de DI-303 (`fixtures/dictee/modele.json`) le champ `hypothese` et citer à sa place la décision 13 de Pascal comme source, sans lire de code, pour que la 013 n'hérite d'aucune règle supposée.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** retirer le champ `hypothese` de DI-303 et citer la décision 13 de Pascal (2026-10-21, journal l. 114) dans sa `source`, sans toucher à l'entrée ni à l'attendu.
 
 ## Vérifié à la source
 

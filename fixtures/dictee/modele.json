@@ -54,8 +54,7 @@
       "attendu": {
         "accepte": true
       },
-      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3",
-      "hypothese": "Règle supposée, non écrite dans l'ADR 0004 : la comparaison de l'empreinte ignore la casse (l'hexadécimal n'y est pas sensible). À confirmer par Pascal."
+      "source": "docs/adr/0004 (modèle : nom exact et somme SHA-256 inscrits dans docs/dependances.md, importable par fichier) ; docs/spec.md § 4.3 ; décision 13 de Pascal, 2026-10-21 (pilotage/journal.md:114) : l'empreinte SHA-256 du modèle est comparée sans tenir compte de la casse"
     },
     {
       "id": "DI-304",
