@@ -1,5 +1,7 @@
 # Brief Marculus — extraire les bibliothèques communes de terrain
 
+> **Statut** : traité le 2026-10-17 par la session `marculus` : licence GPL-3.0-or-later, puis bibliothèque `terrain` (github.com/pobsteta/terrain, JitPack) de v0.1.2 (`terrain-gnss`, Marculus `3377464`) à v0.5.0 (`terrain-journal`, `-gpkg`, `-voix`, `-carte`, Marculus `87c3cf4`). Copie classée : `~/dev/briefs/traites/2026-10-17-traite-bibliotheques-communes.md` ; réponses : `~/dev/briefs/vers-surculus/2026-10-17-terrain-gnss-publie.md` et `~/dev/briefs/vers-groma/2026-10-17-bibliotheques-terrain.md`. Déplacement de ce fichier laissé à la session Surculus.
+
 *Établi le 15 octobre 2026 depuis le dépôt `surculus`, à partir de Marculus
 (`87f5720`) et de Groma (`af551dc`). Concerne aussi Groma, qui adoptera les
 mêmes bibliothèques dans un second temps.*
