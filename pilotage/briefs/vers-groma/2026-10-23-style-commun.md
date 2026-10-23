@@ -22,7 +22,7 @@ les 7:1 que demande le texte des boutons.
 - Remplacer les rôles de `Theme.kt` par les jetons de `terrain-style`, recopiés 1:1 dans
   le `ColorScheme`, avec un test qui vérifie l'égalité.
 - Le mode sombre reste le choix de Groma ; s'il le garde, `terrain-style` fournit aussi
-  les rôles sombres (le dire au brief vers `terrain`).
+  les rôles sombres.
 
 Le bouton principal change de vert : c'est le coût accepté par Pascal.
 

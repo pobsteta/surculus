@@ -2,7 +2,8 @@
 
 - **Date :** 2026-10-22 (réécrite le même jour après la critique du `contradicteur`)
 - **Statut :** acceptée (Pascal, 2026-10-23 : « Je valide les 6 propositions »), sauf la
-  question 3 (successeur de `terrain`), qui reste ouverte
+  question 3 (successeur de `terrain`), qui reste ouverte ; coûts du crible F, A, C et É à
+  confirmer par Pascal
 - **Proposée par :** Claude (orchestrateur)
 - **Tranchée par :** Pascal
 
