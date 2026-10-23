@@ -107,18 +107,21 @@ couleurs des pastilles), elle échoue à la règle de contraste : l'orange (4,78
 quelle que soit la réponse à la question 2. Décision de Pascal (question 6, 2026-10-23) :
 « couleurs de la 033 gardées » vise **les pastilles seules** ; la légende de la carte est
 écrite **en noir à côté de sa pastille de couleur**. Les autres textes de la palette d'état
-(alertes, badge, écran d'essai) passent le même test de contraste que les jetons.
+(alertes, badge du fix, écran d'essai) devront tenir la même règle de contraste : **la
+manière n'est pas décidée** (couleur foncée, texte noir à côté d'une pastille, autre fond
+pour le badge blanc sur orange à 5,03:1). Elle sera proposée par la mission du thème et
+soumise à l'essai au soleil, puis à Pascal.
 
 ## Le crible FRANCE
 
 | Lettre | Question | Réponse (une ligne) | Ce que ça coûte | Prêts à payer ? |
 |---|---|---|---|---|
-| **F**rugale | La plus simple qui tienne ? | Des jetons en `Long` et un test JVM ; pas d'Android dans `terrain` | Quelques dizaines de lignes d'adaptation par application | oui (Pascal, 2026-10-23) |
+| **F**rugale | La plus simple qui tienne ? | Des jetons en `Long` et un test JVM ; pas d'Android dans `terrain` | Quelques dizaines de lignes d'adaptation par application | **à confirmer par Pascal** (déduit de son acceptation, pas d'une réponse explicite) |
 | **R**esponsable | Qui fait quoi ? | Pascal maintient `terrain` ; l'orchestrateur écrit le brief vers `terrain` ; un `dev` de Surculus fait l'adaptation, le `testeur` le test d'égalité depuis cette ADR | `terrain` n'a ni `testeur` séparé ni `relecteur` (règles de ce dépôt seulement) ; aucun successeur désigné pour `terrain` | **ouvert** : successeur à désigner par Pascal (question 3) |
-| **A**nticiper | Si l'imprévu arrive ? | Version épinglée par **SHA de commit** (JitPack accepte « release tag, commit hash or `master-SNAPSHOT` », docs.jitpack.io), d'un commit **publié depuis plus de 7 jours** (avant, un artefact public peut être reconstruit) et déjà construit par JitPack (il construit à la demande, là où il a déjà échoué : `terrain/README.md` l. 50-51) ; repli par `publishToMavenLocal` sans réseau ; comme JitPack ne joue pas les tests, le test de contraste est **rejoué dans Surculus** sur les jetons reçus | Une étape de plus à chaque montée de version ; Gradle ne vérifie pas les dépendances (pas de `verification-metadata.xml`) ; `docs/dependances.md` l. 20 et `NOTICE` à mettre à jour par la mission | oui (Pascal, 2026-10-23) |
+| **A**nticiper | Si l'imprévu arrive ? | Version épinglée par **SHA de commit** (JitPack accepte « release tag, commit hash or `master-SNAPSHOT` », docs.jitpack.io), d'un commit **publié depuis plus de 7 jours** (avant, un artefact public peut être reconstruit) et déjà construit par JitPack (il construit à la demande, là où il a déjà échoué : `terrain/README.md` l. 50-51) ; repli par `publishToMavenLocal` sans réseau ; comme JitPack ne joue pas les tests, le test de contraste est **rejoué dans Surculus** sur les jetons reçus | Une étape de plus à chaque montée de version ; Gradle ne vérifie pas les dépendances (pas de `verification-metadata.xml`) ; `docs/dependances.md` l. 20 et `NOTICE` à mettre à jour par la mission | **à confirmer par Pascal** (déduit de son acceptation, pas d'une réponse explicite) |
 | **N**ovateur | Toutes les idées ? | Cinq options, dont la génération par Material Color Utilities | — | — |
-| **C**oût | Que coûte-t-elle à l'ensemble ? | Une mission dans `terrain` (`terrain-style`), puis une mission Surculus en « appuyer » après le terrain de Pascal ; Marculus et Groma suivent s'ils le veulent | Aucun délai sur la 012 ; rien avant le retour de Couchey. Si Marculus et Groma prennent les jetons, leur bouton principal change : ce coût est le leur et la décision revient à leurs dépôts. La mission dans `terrain` se fait hors de ce dépôt ; à compter dans le plafond humain de `pilotage/equipe.md` (proposition de l'orchestrateur) | oui (Pascal, 2026-10-23) ; Marculus et Groma prennent les jetons (question 1) |
-| **É**cologique | Que réutilise-t-on, qui réutilisera ? | `terrain` déjà publiée ; une convention de Google pour les rôles ; Marculus et Groma peuvent prendre les mêmes jetons | Groma ne consomme pas encore `terrain` : « commune » à deux applications aujourd'hui | oui (Pascal, 2026-10-23) |
+| **C**oût | Que coûte-t-elle à l'ensemble ? | Une mission dans `terrain` (`terrain-style`), puis une mission Surculus en « appuyer » après le terrain de Pascal ; Marculus et Groma prennent les mêmes jetons, demandés par un brief dans chaque dépôt (question 1) | Aucun délai sur la 012 ; rien avant le retour de Couchey. Le bouton principal de Marculus et de Groma change de vert ; la mise en œuvre revient à leurs dépôts. La mission dans `terrain` se fait hors de ce dépôt ; à compter dans le plafond humain de `pilotage/equipe.md` (proposition de l'orchestrateur) | mêmes jetons : oui (Pascal, question 1) ; le reste **à confirmer par Pascal** (déduit) |
+| **É**cologique | Que réutilise-t-on, qui réutilisera ? | `terrain` déjà publiée ; une convention de Google pour les rôles ; Marculus et Groma peuvent prendre les mêmes jetons | Groma ne consomme pas encore `terrain` : « commune » à deux applications aujourd'hui | **à confirmer par Pascal** (déduit de son acceptation, pas d'une réponse explicite) |
 
 ## Valeurs sacrifiées
 
@@ -143,14 +146,16 @@ Pascal a validé les propositions de l'orchestrateur sur les six questions (« J
    `pilotage/briefs/vers-groma/2026-10-23-style-commun.md`).
 2. **La règle de contraste** : **WCAG 2.2, 1.4.6 tel qu'écrit** : 7:1 pour le texte,
    4,5:1 pour le grand texte (au moins 24 sp, ou 18,7 sp en gras), éléments désactivés
-   exemptés ; 3:1 pour ce qui n'est pas du texte (1.4.11).
+   exemptés. *Rappel, hors de la décision : 1.4.11 demande déjà 3:1 pour ce qui n'est pas
+   du texte ; les seuils en sp reposent sur l'hypothèse non sourcée 1 sp ≈ 1 px CSS
+   (inventaire).*
 3. **Le successeur de `terrain`** : **reste ouvert**. L'orchestrateur n'avait rien à
    proposer ; seul Pascal peut le nommer. Le crible (lettre R) le garde ouvert.
 4. **L'option** : **B étendue avec E** : rôles générés une fois par Material Color
    Utilities depuis `VertMarculus`, niveau de contraste 0,5, `SPEC_2021`, valeurs figées
    dans `terrain-style` avec le script, le commit de la bibliothèque et ces réglages ; le
    test de contraste reste juge.
-5. **Le grand texte** : jugé avec la police du téléphone **à 100 %** (1 sp ≈ 1 px CSS).
+5. **Le grand texte** : jugé avec la police du téléphone **à 100 %** (même hypothèse, 1 sp ≈ 1 px CSS, à vérifier).
    Un agent qui agrandit la police agrandit le texte sans en baisser le contraste.
 6. **« Couleurs de la 033 gardées »** : **les pastilles seules**. La légende est écrite en
    noir à côté de sa pastille de couleur ; l'orange ne porte plus de texte dans la légende.
