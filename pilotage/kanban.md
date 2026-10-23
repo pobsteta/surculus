@@ -11,7 +11,8 @@ _Idées, à trier au prochain `/mission`._
 
 - **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0010
   (voir la carte « clé de signature » au Planifié), 0012 (briques communes vers `terrain`,
-  réservée, après l'essai d'automne et une table des écarts) ;
+  réservée, après l'essai d'automne et une table des écarts ; entrée : réponse de Marculus
+  du 2026-10-17, `~/dev/briefs/traites/2026-10-23-traite-terrain-gnss-publie.md`) ;
   réexamen de l'ADR 0004 (osmdroid archivé depuis le 2024-11-20, ADR 0009) : la 034 n'y
   ajoute qu'un renvoi daté.
 - **Dettes de la 009** : demander `WRITE_EXTERNAL_STORAGE` à l'exécution (Android 8-9)
@@ -45,7 +46,8 @@ _Idées, à trier au prochain `/mission`._
   d'essai d'automne 2026 ; successeur ;
   coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
   fascicule 34 ; URL du guide des chênaies continentales.
-- **Briefs envoyés par issue le 2026-10-23** (ordre de Pascal) : style commun vers
+- **Briefs envoyés par issue et par note dans `~/dev/briefs/vers-*/` le 2026-10-23**
+  (ordre de Pascal ; désormais les deux canaux) : style commun vers
   `terrain` (pobsteta/terrain#1, `terrain-style`, à faire en premier), Marculus
   (pobsteta/marculus#2) et Groma (pobsteta/groma#57) ; temps de la main vers la méthode
   (pobsteta/methode-imperatrice#18 ; Pascal y tranche les points 3 à 5, et corrige le
