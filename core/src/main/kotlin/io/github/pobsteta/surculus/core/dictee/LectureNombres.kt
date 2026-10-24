@@ -69,6 +69,8 @@ object LectureNombres {
         if (r == listOf("et", "un")) return base + 1
         if (r == listOf("et", "onze") && base == 60) return 71
         val s = sousVingt(r) ?: return null
+        // « un » et « onze » ne se disent qu'avec « et » (vingt et un, soixante et onze), traités plus haut.
+        if (s == 1 || (base == 60 && s == 11)) return null
         return if (base == 60 || s in 1..9) base + s else null
     }
 }

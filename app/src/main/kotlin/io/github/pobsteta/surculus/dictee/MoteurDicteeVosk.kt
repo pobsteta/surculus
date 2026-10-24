@@ -27,12 +27,14 @@ import java.io.File
 class MoteurDicteeVosk(private val dossierModele: File) : MoteurDictee {
     private var modele: Model? = null
     private var service: SpeechService? = null
+    private var recognizer: Recognizer? = null
 
     override fun demarrer(ecouteur: EcouteurDictee) {
         arreter()
         try {
             val m = modele ?: Model(dossierModele.absolutePath).also { modele = it }
             val reco = Recognizer(m, FREQUENCE_HZ, Grammaire.jsonVosk())
+            recognizer = reco
             val s = SpeechService(reco, FREQUENCE_HZ)
             service = s
             s.startListening(object : RecognitionListener {
@@ -46,15 +48,18 @@ class MoteurDicteeVosk(private val dossierModele: File) : MoteurDictee {
             })
         } catch (e: Exception) {
             // Modèle absent ou illisible, micro refusé : message lisible, jamais d'exception muette.
-            service = null
+            arreter()
             ecouteur.surErreur(e.message ?: "dictée impossible")
         }
     }
 
+    /** Arrête le service puis ferme le [Recognizer] : `SpeechService` (vosk-android 0.3.75) ne le ferme jamais. */
     override fun arreter() {
         service?.stop()
         service?.shutdown()
         service = null
+        recognizer?.close()
+        recognizer = null
     }
 
     /** Libère aussi le modèle (quelques dizaines de Mo en mémoire). */

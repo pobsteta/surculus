@@ -27,7 +27,7 @@ class DicteeUnitairesTest {
 
     @Test
     fun `hors de 1 a 400 ou mal forme, pas de nombre`() {
-        for (t in listOf("", "zéro", "quatre cent un", "cinq cents", "mille", "deux cents vingt", "vingt dix", "-", "vingt-", "quatre vingts un", "un cent")) {
+        for (t in listOf("", "zéro", "quatre cent un", "cinq cents", "mille", "deux cents vingt", "vingt dix", "-", "vingt-", "quatre vingts un", "un cent", "vingt un", "trente un", "soixante un", "soixante onze", "soixante-onze")) {
             assertNull(LectureNombres.analyser(t), t)
         }
     }
