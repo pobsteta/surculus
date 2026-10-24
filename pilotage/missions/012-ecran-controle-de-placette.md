@@ -60,6 +60,9 @@ dictée** de la 013 sur l'écran du contrôle, car aucune autre mission ne la re
 - Brancher `MoteurDicteeVosk` et `AnalyseurDictee.appliquer` (mission 013, PR #75) sur le
   plant courant ; demande de `RECORD_AUDIO` à l'exécution, avec refus expliqué à l'écran
   et à la voix.
+- **Refus dits à la voix** : chaque refus de `AnalyseurDictee.appliquer` est annoncé par la
+  synthèse vocale, dont « hauteur » sans état (« l'état d'abord », décision de Pascal du
+  2026-10-24, spec § 4.3).
 - **Import du modèle** par fichier (`ModeleVoskImport`), depuis un bouton de l'application,
   sans réseau ; refus visible d'un fichier altéré.
 - La phrase de mission sera réécrite au lancement, avec ce périmètre, et redite par
