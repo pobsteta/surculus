@@ -192,8 +192,10 @@ Pascal a validé les propositions de l'orchestrateur sur les six questions (« J
   2026-10-23 à 13:15) sans attendre ; JitPack l'a déjà construit (`build.log` et
   `terrain-style-d840329.pom` lus le 2026-10-24). Le risque que couvrait la ligne **A** du
   crible demeure (un artefact public reconstruit dans ses 7 premiers jours) ; il est tenu
-  par le test d'égalité et le test de contraste rejoués dans Surculus : un artefact
-  reconstruit qui changerait une valeur fait échouer la CI. La ligne A se lit avec cet
+  par le test d'égalité rejoué dans Surculus, à condition qu'il compare à des **valeurs
+  littérales** écrites dans Surculus (un thème qui lirait `StyleTerrain` à l'exécution se
+  comparerait à lui-même) : un artefact reconstruit qui changerait une valeur fait alors
+  échouer la CI. Le test de contraste ne voit qu'un changement qui passe sous le seuil. La ligne A se lit avec cet
   amendement.
 - **Réglages de `terrain-style` décidés par Pascal dans le dépôt `terrain`**, recopiés par
   l'orchestrateur (`terrain/pilotage/journal.md`, 2026-10-23, l. 25 et 28 ;
@@ -203,6 +205,9 @@ Pascal a validé les propositions de l'orchestrateur sur les six questions (« J
     identique à `error`) ;
   - **couleurs sémantiques communes** : erreur = `error` de Material ; réussi `#0F8558` ;
     alerte `#E2AA00` avec texte noir, le jaune étant interdit en texte.
+  - **`reussi` est provisoire** : `terrain` peut le changer en v0.6.1 après son essai au
+    soleil du 2026-10-30 (repli `#00843D`, `terrain/README.md` l. 169-171). Épingler
+    `d840329` prend donc ce vert provisoire.
 - **La palette d'état de Surculus** : la manière reste à proposer par la mission du thème
   (paragraphe « La palette d'état » ci-dessus), qui peut s'appuyer sur ces couleurs
   sémantiques pour les textes ; les pastilles de la 033 ne changent pas (question 6).

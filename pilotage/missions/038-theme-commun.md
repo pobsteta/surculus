@@ -8,7 +8,7 @@
 
 ## Mission
 
-**En une phrase (quoi, et pourquoi) :** Donner à Surculus le schéma clair de `terrain-style` (épinglé à `d840329`), recopié 1:1 dans un `ColorScheme` en thème clair forcé, écrire la légende de la carte en noir à côté de sa pastille et faire passer chaque texte de la palette d'état à 7:1, pour que les trois applications de nemeton aient le même style sans jamais perdre la lisibilité au soleil.
+**En une phrase (quoi, et pourquoi) :** Donner à Surculus le schéma clair de `terrain-style` (épinglé à `d840329`), recopié 1:1 dans un `ColorScheme` en thème clair forcé, écrire la légende de la carte en noir à côté de sa pastille et faire passer chaque texte de la palette d'état au seuil de WCAG 2.2, 1.4.6 (7:1, 4,5:1 pour le grand texte), pour que les trois applications de nemeton aient le même style sans jamais perdre la lisibilité au soleil.
 
 **Redite par l'agent :** _à remplir par l'agent avant d'agir._
 
@@ -18,14 +18,15 @@ Constats vérifiés par l'orchestrateur sur `main` (5b4e3dc) et sur `terrain` (`
 
 | Constat | Lu à | Source du constat |
 |---|---|---|
-| `terrain-style` v0.6.0 : `StyleTerrain.clair` / `.sombre` (`Schema`, tous les rôles en ARGB `Long`), `Contraste` (rapport WCAG 2.2), couleurs sémantiques (`Semantique.kt` : réussi, alerte) ; rôles interdits en texte listés en tête de `StyleTerrain.kt` | `terrain/terrain-style/src/main/kotlin/fr/nemeton/terrain/style/` (`StyleTerrain.kt` l. 1-22, `Semantique.kt`, `Contraste.kt`, `Schema.kt`) | orchestrateur |
-| Coordonnée JitPack : `com.github.pobsteta.terrain:terrain-style:<sha court>` ; dépôt Maven `https://jitpack.io` | `terrain/README.md` l. 40-55 | orchestrateur |
+| `terrain-style` v0.6.0 : `StyleTerrain.clair` / `.sombre` (`Schema`, tous les rôles en ARGB `Long`), `Contraste` (rapport WCAG 2.2), couleurs sémantiques `reussi` et `alerte` (`Schema.kt` l. 65-66, type `Semantique`) ; rôles interdits en texte listés en tête de `StyleTerrain.kt` | `terrain/terrain-style/src/main/kotlin/fr/nemeton/terrain/style/` (`StyleTerrain.kt` l. 1-22, `Semantique.kt`, `Contraste.kt`, `Schema.kt`) | orchestrateur |
+| Coordonnée JitPack : `com.github.pobsteta.terrain:terrain-style:<sha court>` ; dépôt `https://jitpack.io` filtré par `includeGroup("com.github.pobsteta.terrain")` | `terrain/README.md` l. 27-46 (dépôt, l. 34) et 163-166 (SHA court) | orchestrateur |
 | JitPack a construit `d840329` (`build.log`, `terrain-style-d840329.pom` : HTTP 200) | `https://jitpack.io/com/github/pobsteta/terrain/d840329/build.log` | orchestrateur |
 | Surculus n'a pas de thème : `MaterialTheme { … }` sans `colorScheme` | `app/src/main/kotlin/io/github/pobsteta/surculus/MainActivity.kt:42` | orchestrateur |
 | La palette d'état : `Palette` (vert `#0B6B2E`, orange `#B45300`, rouge `#B00020`, noir, blanc), recopiée dans l'écran d'essai | `app/src/main/kotlin/io/github/pobsteta/surculus/carte/Palette.kt:15-38` ; `app/src/main/kotlin/io/github/pobsteta/surculus/essai/EcranEssaiGnss.kt:73-77` | orchestrateur |
-| Textes en couleur d'état : légende de la carte, anomalies, refus, hors France, badge du fix (blanc sur la teinte), guidage, ortho | `carte/EcranCarte.kt:86, 196, 198, 279-287, 298` ; `carte/Commun.kt:71-74` ; `carte/EcranGuidage.kt:70, 150-162, 216-218` ; `tournee/EcranTournees.kt:125, 159-173` (sous `app/src/main/kotlin/io/github/pobsteta/surculus/`) | orchestrateur |
+| Textes en couleur d'état : légende de la carte, anomalies, refus, hors France, badge du fix (blanc sur la teinte), guidage, ortho | `carte/EcranCarte.kt:86, 196, 198, 279-287, 298` ; `carte/Commun.kt:71-74` ; `carte/EcranGuidage.kt:70, 76, 150-162, 204, 206, 216-218` ; `tournee/EcranTournees.kt:125, 159-176` ; écran d'essai : `essai/EcranEssaiGnss.kt:162-163, 170, 180, 267-279` (blanc sur la teinte du fix) (sous `app/src/main/kotlin/io/github/pobsteta/surculus/`) | orchestrateur |
 | Contrastes déjà mesurés : orange 4,78:1 en texte, blanc sur orange 5,03:1 | `docs/adr/0008-bibliotheques-communes.md`, « La palette d'état » | orchestrateur (ADR) |
-| Dépôts Maven du projet : `google()` et `mavenCentral()` seulement | `settings.gradle.kts:10, 19` | orchestrateur |
+| **Valeur provisoire** : `reussi` (`#0F8558`) peut changer en v0.6.1 après l'essai au soleil de `terrain` du 2026-10-30 (repli `#00843D`) | `terrain/README.md` l. 169-171 ; `terrain/docs/adr/0002-couleurs-semantiques.md` | orchestrateur (relecture de la PR #74) |
+| Dépôts des dépendances du projet : `google()` et `mavenCentral()` seulement | `settings.gradle.kts:15-21` | orchestrateur |
 
 Règles, avec leur auteur :
 - **ADR 0008**, décisions 1, 2, 4, 5 et 6, « Trois points confirmés ensuite » et amendements du 2026-10-24 : Pascal.
@@ -42,6 +43,10 @@ Règles, avec leur auteur :
 | A-t-il les moyens ? | oui : `terrain-style` publié, JitPack construit ; l'essai au soleil est à Pascal | |
 
 **Temps de la main :** **appuyer** : avant de toucher aux textes de la palette d'état, l'agent rend à l'orchestrateur un tableau : chaque texte (fichier:ligne), sa couleur et son fond, son contraste, la manière proposée (couleur foncée, texte noir à côté d'une pastille, rôle de `terrain-style`, couleur sémantique) et le contraste obtenu. Pascal valide avant le code.
+
+## Ma réponse d'abord
+
+_Rempli par Pascal seul, avant de lire le travail de l'agent. L'orchestrateur ne le remplit pas._
 
 ## L'Homme
 
@@ -60,7 +65,7 @@ Règles, avec leur auteur :
 
 ## Tests
 
-- **Égalité** : un test JVM vérifie que chaque rôle du `ColorScheme` de Surculus vaut le rôle de `StyleTerrain.clair`, rôle par rôle ; **vu rouge** une fois (un rôle changé, non commité).
+- **Égalité** : un test JVM vérifie, rôle par rôle, que le `ColorScheme` de Surculus vaut des **valeurs littérales** écrites dans Surculus (dans le thème ou dans le test), recopiées de `StyleTerrain.clair` à `d840329`, et que `StyleTerrain.clair` les vaut aussi : c'est la seule garde contre un artefact reconstruit (verrou des 7 jours levé, ADR 0008 amendée) ; **vu rouge** une fois (un rôle changé, non commité).
 - **Contraste rejoué** : un test parcourt les couples texte / fond que l'application emploie (rôles « on » sur leurs fonds, et chaque texte de la palette d'état sur son fond) avec `Contraste` de `terrain-style` : 7:1, 4,5:1 pour le grand texte (au moins 24 sp, ou 18,7 sp en gras) ; **vu rouge** une fois (l'orange actuel en texte).
 - La légende de la carte : texte en noir, pastille en couleur, vérifié par un test ou une capture.
 - Commande du projet : `.claude/test-command`.
@@ -68,11 +73,12 @@ Règles, avec leur auteur :
 
 ## Terrain
 
-- **Échantillon que Pascal vérifiera :** l'APK de la branche, au soleil, sur les écrans Tournées, Carte (légende, badge du fix, pastilles sur ortho claire) et Guidage ; résultat noté au journal **avant la fusion** (spec § 3, ADR 0008).
+- **Échantillon que Pascal vérifiera :** l'APK de la branche, au soleil, sur les écrans Tournées, Carte (légende, badge du fix, pastilles sur ortho claire), Guidage et Essai GNSS ; résultat noté au journal **avant la fusion** (spec § 3, ADR 0008).
 
 ## Qui veille, qui tranche
 
 - **Relecteur :** `relecteur`, puis Pascal. **Qui tranche :** Pascal.
+- **Critère d'arrêt de la relecture :** 3 allers-retours ; au-delà, la décision remonte à Pascal.
 - **Point de suivi :** à la remise du tableau de la palette d'état, puis à l'ouverture de la PR.
 
 ## Comment saura-t-on que ça marche ?
