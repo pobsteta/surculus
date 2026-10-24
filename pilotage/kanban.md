@@ -37,6 +37,10 @@ _Idées, à trier au prochain `/mission`._
   à part, après 012 » (Pascal, 2026-10-22 ; l'option proposait de faire primer l'état local
   sur `etat_suivi`) ; travaux et vides au bac à sable (Pascal, même jour), à dessiner quand
   l'app les saisira (la tournée de sommieR n'en porte aucun).
+- **Pascal (ADR 0008)** : note de Marculus du 2026-10-24 (`~/dev/briefs/vers-surculus/`) :
+  `terrain-style` v0.6.0 fait disparaître le vert, Marculus l'a annulé ; le thème actuel de
+  Marculus (5,17:1) a été jugé « parfait » au soleil. L'ADR 0008 (mêmes jetons, 7:1)
+  tient-elle ? À trancher avant la 038.
 - **Maintenance** : le commentaire du test « ECART terrain-voix »
   (`core/src/test/.../dictee/InstallationModeleTest.kt` l. 86) dit « brief à venir » ; le
   faire pointer vers pobsteta/terrain#23 à la prochaine mission de code (Pascal, 2026-10-24).
@@ -65,8 +69,7 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **039** cas de « hauteur » dans `fixtures/dictee/` (`testeur`) : refusée sans état,
-  acceptée sur un plant mort (Pascal, 2026-10-24).
+_Rien en attente._
 
 ## Planifié
 
@@ -92,8 +95,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 ## Terminé
 
 - Cycle 9, 2026-10-23 et 24 : **037** DI-303 suit la décision 13 (PR #73) ; **013** dictée
-  Vosk à grammaire fermée, `terrain-voix` épinglé (PR #75) ; ADR 0008 amendée, fiche 038
-  (PR #74) — Pascal.
+  Vosk à grammaire fermée, `terrain-voix` épinglé (PR #75) ; **039** cas de « hauteur »
+  (PR #78) ; ADR 0008 amendée, fiche 038 (PR #74) ; décisions (PR #76) ; brief vers
+  `terrain`, pobsteta/terrain#23 (PR #77) — Pascal.
 
 - Cycle 8, 2026-10-22 et 23 : **028** registre attendu (F4) et sabotages (F5) dans la CI
   d'import (PR #64) ; **036** cas des décisions 11 et 12 de la dictée (PR #63) ; **033**
@@ -172,3 +176,7 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   prévoir), avec une légende qui les compte (033) · pour le forestier en forêt · avant, toutes
   les placettes avaient la même couleur : il voit d'un coup d'œil celles à contrôler
   d'abord. *(Retenue par Pascal le 2026-10-23.)*
+- cycle 9 · mauvaise nouvelle : le moteur de dictée (013) et ses 167 cas sont prêts, mais
+  le forestier ne peut pas encore dicter en forêt, aucun écran ne l'appelle avant la 012 · pour
+  le forestier en forêt · découper une fonction sans son écran ne livre rien sur le terrain.
+  *(Proposée par l'orchestrateur, close par Pascal le 2026-10-24 : « fusionne et clos ».)*
