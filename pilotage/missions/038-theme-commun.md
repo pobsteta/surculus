@@ -16,7 +16,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Donner à Surculus le thème de Marculus v0.65.0 (VertVif `#3E7A40`, VertMarculus `#374742`, Crème `#F5EBD8`, les autres rôles aux valeurs par défaut de Material 3), écrit en valeurs littérales pour le clair et le sombre, appliqué en thème clair forcé et vérifié rôle par rôle par un test, pour que Surculus ait le même vert que Marculus et Groma avant même la publication de `terrain-style` v0.6.1.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Je recopie dans Surculus le thème de Marculus v0.65.0 (VertVif, VertMarculus, Crème, le reste par défaut de Material 3) en valeurs littérales, clair et sombre, je l'applique en clair forcé, et un test vérifie chaque rôle ; le but est que Surculus ait le même vert que Marculus et Groma sans attendre `terrain-style` v0.6.1.
 
 ## Vérifié à la source
 
