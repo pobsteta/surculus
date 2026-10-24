@@ -79,7 +79,10 @@ _Idées, à trier au prochain `/mission`._
   2026-10-24 : valeurs de Marculus v0.65.0 en littéral, clair et sombre, thème clair
   forcé, test d'égalité rôle par rôle (ADR 0008, amendement du soir). Essai au soleil de
   l'APK de la branche par Pascal avant fusion. Fiche :
-  `pilotage/missions/038-theme-commun.md`.
+  `pilotage/missions/038-theme-commun.md`. PR #81 relue, prête ; attend l'essai avec la 040.
+- **040** accueil sur la liste des tournées, menu à trois points comme Marculus (`dev`,
+  appuyer), en cours depuis le 2026-10-24, sur la branche de la 038. Fiche :
+  `pilotage/missions/040-accueil-tournees.md`.
 
 ## Planifié
 

@@ -13,6 +13,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,13 +69,13 @@ import kotlinx.coroutines.withContext
  * Liste des tournées (spec § 4.1) : pour chacune, la forêt en grand, puis qui l'a préparée et quand, le nombre de
  * contrôles, et l'état de l'ortho (ADR 0009). Un appui ouvre la carte. Source : le `travaux.gpkg` de chaque tournée.
  *
- * La place du bouton « Restaurer une tournée » (mission 009) est tenue par l'accueil, qui garde ce bouton.
+ * Accueil de l'application (mission 040) : barre « Surculus » et menu à trois points (Essai GNSS, Restaurer une tournée).
  */
 /** Message de l'écran ; [refus] (et non un mot du texte) décide de la couleur. */
 private data class MessageTournees(val texte: String, val refus: Boolean)
 
 @Composable
-fun EcranTournees(onOuvrir: (String) -> Unit, onRetour: () -> Unit) {
+fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauration: () -> Unit) {
     val ctx = LocalContext.current
     val portee = rememberCoroutineScope()
     var lignes by remember { mutableStateOf<List<LigneTournee>?>(null) }
@@ -105,42 +119,82 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onRetour: () -> Unit) {
         if (uri != null) importer { DepotTournees.importerDossier(ctx, uri) }
     }
 
-    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour), fontSize = 18.sp) }
-            Text(stringResource(R.string.tournees_titre), fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = { choisirDossier.launch(null) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
-                Text(stringResource(R.string.tournees_importer_dossier), fontSize = 18.sp)
+    Column(Modifier.fillMaxSize()) {
+        BandeauAccueil(onEssai = onEssai, onRestauration = onRestauration)
+        Column(Modifier
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+            .padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = { choisirDossier.launch(null) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
+                    Text(stringResource(R.string.tournees_importer_dossier), fontSize = 18.sp)
+                }
+                Button(onClick = { choisirZip.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
+                    Text(stringResource(R.string.tournees_importer_zip), fontSize = 18.sp)
+                }
             }
-            Button(onClick = { choisirZip.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
-                Text(stringResource(R.string.tournees_importer_zip), fontSize = 18.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.tournees_wifi), fontSize = 18.sp)
+                Switch(checked = wifi, onCheckedChange = { wifi = it; ReglagesOrtho.definirWifiSeulement(ctx, it) })
             }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.tournees_wifi), fontSize = 18.sp)
-            Switch(checked = wifi, onCheckedChange = { wifi = it; ReglagesOrtho.definirWifiSeulement(ctx, it) })
-        }
-        message?.let { Text(it.texte, fontSize = 16.sp, color = if (it.refus) Palette.Rouge else Palette.Noir) }
+            message?.let { Text(it.texte, fontSize = 16.sp, color = if (it.refus) Palette.Rouge else Palette.Noir) }
 
-        val toutes = lignes
-        if (toutes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            items(toutes.orEmpty(), key = { it.id }) { ligne ->
-                LigneDeTournee(ligne, onOuvrir = { onOuvrir(ligne.id) }, onOrtho = {
-                    // La lecture du gpkg (emprise) se fait hors du fil principal.
-                    portee.launch {
-                        val refus = withContext(Dispatchers.IO) { DepotTournees.planifierOrtho(ctx, ligne.dossier, remplacer = true) }
-                        message = when (refus) {
-                            is ZoneTuiles.Resultat.HorsFrance -> MessageTournees(ressources.getString(R.string.ortho_refus_hors_france), refus = true)
-                            is ZoneTuiles.Resultat.TropGrande -> MessageTournees(ressources.getString(R.string.ortho_refus_trop_grande, refus.nombre.toInt()), refus = true)
-                            else -> MessageTournees(ressources.getString(R.string.ortho_planifiee), refus = false)
+            val toutes = lignes
+            if (toutes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                items(toutes.orEmpty(), key = { it.id }) { ligne ->
+                    LigneDeTournee(ligne, onOuvrir = { onOuvrir(ligne.id) }, onOrtho = {
+                        // La lecture du gpkg (emprise) se fait hors du fil principal.
+                        portee.launch {
+                            val refus = withContext(Dispatchers.IO) { DepotTournees.planifierOrtho(ctx, ligne.dossier, remplacer = true) }
+                            message = when (refus) {
+                                is ZoneTuiles.Resultat.HorsFrance -> MessageTournees(ressources.getString(R.string.ortho_refus_hors_france), refus = true)
+                                is ZoneTuiles.Resultat.TropGrande -> MessageTournees(ressources.getString(R.string.ortho_refus_trop_grande, refus.nombre.toInt()), refus = true)
+                                else -> MessageTournees(ressources.getString(R.string.ortho_planifiee), refus = false)
+                            }
+                            version++
                         }
-                        version++
-                    }
-                })
-                HorizontalDivider()
+                    })
+                    HorizontalDivider()
+                }
+            }
+        }
+    }
+}
+
+/** Barre de l'accueil : titre « Surculus » et menu à trois points (cible de 48 dp, comme le IconButton de Material 3). */
+@Composable
+private fun BandeauAccueil(onEssai: () -> Unit, onRestauration: () -> Unit) {
+    var menu by remember { mutableStateOf(false) }
+    val menuDesc = stringResource(R.string.tournees_menu)
+    Surface(color = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
+        Row(
+            Modifier.fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
+                .height(56.dp).padding(start = 16.dp, end = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                stringResource(R.string.app_name),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                modifier = Modifier.weight(1f),
+            )
+            Box {
+                IconButton(onClick = { menu = true }) {
+                    // « ⋮ » plutôt que material-icons-core : pas de dépendance de plus (mission 040).
+                    Text("⋮", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { contentDescription = menuDesc })
+                }
+                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.essai_ouvrir), fontSize = 18.sp) },
+                        onClick = { menu = false; onEssai() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.restauration_ouvrir), fontSize = 18.sp) },
+                        onClick = { menu = false; onRestauration() },
+                    )
+                }
             }
         }
     }
