@@ -37,6 +37,9 @@ _Idées, à trier au prochain `/mission`._
   à part, après 012 » (Pascal, 2026-10-22 ; l'option proposait de faire primer l'état local
   sur `etat_suivi`) ; travaux et vides au bac à sable (Pascal, même jour), à dessiner quand
   l'app les saisira (la tournée de sommieR n'en porte aucun).
+- **Maintenance** : le commentaire du test « ECART terrain-voix »
+  (`core/src/test/.../dictee/InstallationModeleTest.kt` l. 86) dit « brief à venir » ; le
+  faire pointer vers pobsteta/terrain#23 à la prochaine mission de code (Pascal, 2026-10-24).
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
   de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
@@ -62,8 +65,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **013** dictée Vosk (`dev`) : préalables levés (036, PR #63 ; 037, PR #73) ; attend que
-  Pascal dise où écrire la décision 13 (spec § 4.3 proposée).
+- **039** cas de « hauteur » dans `fixtures/dictee/` (`testeur`) : refusée sans état,
+  acceptée sur un plant mort (Pascal, 2026-10-24).
 
 ## Planifié
 
@@ -82,12 +85,15 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **038** thème commun (`dev`, appuyer) : jetons de `terrain-style` épinglés à
   `d840329` (verrou des 7 jours levé par Pascal le 2026-10-24), thème clair forcé, légende
   en noir, palette d'état passée au test 1.4.6, tests d'égalité et de contraste rejoués
-  dans Surculus (ADR 0008 amendée). Après l'essai au soleil de Couchey ; essai au soleil de
-  la branche avant fusion.
+  dans Surculus (ADR 0008 amendée). Après l'essai au soleil de Couchey (ordre maintenu par
+  Pascal le 2026-10-24) ; épinglage malgré `reussi` provisoire ; essai au soleil de la
+  branche avant fusion.
 
 ## Terminé
 
-- Cycle 9, 2026-10-23 : **037** DI-303 suit la décision 13 (PR #73) — Pascal.
+- Cycle 9, 2026-10-23 et 24 : **037** DI-303 suit la décision 13 (PR #73) ; **013** dictée
+  Vosk à grammaire fermée, `terrain-voix` épinglé (PR #75) ; ADR 0008 amendée, fiche 038
+  (PR #74) — Pascal.
 
 - Cycle 8, 2026-10-22 et 23 : **028** registre attendu (F4) et sabotages (F5) dans la CI
   d'import (PR #64) ; **036** cas des décisions 11 et 12 de la dictée (PR #63) ; **033**

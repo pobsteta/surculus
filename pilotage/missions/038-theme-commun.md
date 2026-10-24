@@ -4,7 +4,8 @@
 > `fiche-mission.md` du skill `imperatrice:mission`. Décidée par Pascal : ADR 0008
 > (acceptée le 2026-10-23, amendée le 2026-10-24 : verrou des 7 jours levé, « fais sauter
 > le verrou des 7 jours et continue »). **Lancement : après l'essai au soleil de Couchey**
-> (ADR 0008, « Trois points confirmés ensuite »), sauf décision contraire de Pascal.
+> (ADR 0008, « Trois points confirmés ensuite » ; ordre maintenu par Pascal le 2026-10-24).
+> Épinglage à `d840329` malgré `reussi` provisoire : oui (Pascal, 2026-10-24).
 
 ## Mission
 
