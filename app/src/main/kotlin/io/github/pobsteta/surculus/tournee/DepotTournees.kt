@@ -40,7 +40,7 @@ data class LigneTournee(
     val rendue: Boolean get() = false
 
     val champs: ChampsTournee
-        get() = ChampsTournee(foret, tournee?.projet?.operateur, tournee?.projet?.prepareLe, dossier.name)
+        get() = ChampsTournee(foret, tournee?.projet?.operateur, tournee?.projet?.prepareLe, dossier.name, tournee?.projet?.nom)
 }
 
 /** La tournée ouverte sur la carte : le fichier, ses placettes et ses surfaces. */

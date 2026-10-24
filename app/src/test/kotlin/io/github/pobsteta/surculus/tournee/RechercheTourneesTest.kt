@@ -56,6 +56,43 @@ class RechercheTourneesTest {
         assertEquals(listOf(1, 3), ouvertes)
     }
 
+    @Test fun `message de liste vide selon la puce et la recherche`() {
+        assertEquals(MessageVide.AUCUNE_TROUVEE, messageVide("couchey", voirRendues = false))
+        assertEquals(MessageVide.AUCUNE_TROUVEE, messageVide("couchey", voirRendues = true))
+        assertEquals(MessageVide.AUCUNE_RENDUE, messageVide("", voirRendues = true))
+        // Puce éteinte, recherche vide, liste vide : toutes les tournées sont rendues, on ne dit pas « aucune rendue ».
+        assertEquals(MessageVide.AUCUNE_OUVERTE, messageVide("  ", voirRendues = false))
+    }
+
+    @Test fun `champs de la ligne - foret, operateur, date et dossier a leur place`() {
+        val t = io.github.pobsteta.surculus.gpkg.Tournee(
+            epsg = io.github.pobsteta.surculus.core.reperes.CodeEpsg.RGF93_V1_LAMBERT93, srsId = 2154, couches = emptyList(), placettes = emptyList(),
+            controles = emptyList(), empriseForet = null,
+            projet = io.github.pobsteta.surculus.gpkg.ProjetLu("Nom", "Foret X", "Operateur Y", "2026-10-12", null, null),
+            plants = emptyList(), etats = emptyList(),
+        )
+        val l = LigneTournee(File("dossier-z"), t, null, OrthoTournee(EtatOrtho.Absente, null, null))
+        assertEquals(ChampsTournee("Foret X", "Operateur Y", "2026-10-12", "dossier-z", "Nom"), l.champs)
+    }
+
+    @Test fun `le nom du projet est cherche meme quand la foret existe`() {
+        val c = ChampsTournee("Foret X", "Operateur Y", "2026-10-12", "dossier-z", "Plantation Printemps")
+        assertTrue(correspond(c, "printemps"))
+        assertTrue(correspond(c, "foret x"))
+        assertFalse(correspond(c.copy(nomProjet = null), "printemps"))
+    }
+
+    @Test fun `oe et ae ligatures valent oe et ae des deux cotes`() {
+        val c = ChampsTournee("Forêt du Bœuf", null, null, "d", "Cæsar")
+        assertTrue(correspond(c, "boeuf"))
+        assertTrue(correspond(c, "BŒUF"))
+        assertTrue(correspond(c, "bœuf"))
+        assertTrue(correspond(c, "caesar"))
+        assertTrue(correspond(c, "cæsar"))
+        assertTrue(correspond(ChampsTournee("Forêt du Boeuf", null, null, "d"), "bœuf"))
+        assertFalse(correspond(ChampsTournee("Strasse", null, null, "d"), "straße"))
+    }
+
     @Test fun `aucune tournee n'est rendue tant que l'export n'existe pas`() {
         val l = LigneTournee(File("x"), null, "refus", OrthoTournee(EtatOrtho.Absente, null, null))
         assertFalse(l.rendue)
