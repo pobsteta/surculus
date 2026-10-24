@@ -157,8 +157,8 @@ point à Brest et à Strasbourg.
   mission 025). « climat » et « indéterminé » mènent au même groupe DSF ; « mangé » porte
   le détail « abroutissement » sur un plant sain, atteint ou mort. Une phrase porte une
   seule commande ; « hauteur » va de 1 à 400 cm. « hauteur » dite sur un plant qui n'a pas
-  encore d'état est refusée, et la voix demande l'état d'abord (décision de Pascal,
-  2026-10-24).
+  encore d'état est refusée, et la voix demande l'état d'abord ; elle est acceptée sur un
+  plant mort (décisions de Pascal, 2026-10-24).
   ([ADR 0004](adr/0004-stack-kotlin-compose-vosk.md))
 * **Totaux déduits des plants** et écrits dans `controles` pour l'import 0.31.1 :
   `nb_total` (sains + atteints + morts + absents, **hors non observés et hors plants

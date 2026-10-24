@@ -23,7 +23,7 @@
 
 - **Agent :** `afficheur`
 - **Modèle :** sonnet
-- **Ce qui ne lui est pas demandé :** pas la dictée (013), pas l'essai écran éteint (014).
+- **Ce qui ne lui est pas demandé :** pas le moteur de dictée lui-même (013), pas l'essai écran éteint (014).
 
 ## Harnais
 
@@ -51,3 +51,18 @@
 ## Comment saura-t-on que ça marche ?
 
 moins de 10 minutes en médiane sur 10 placettes déjà pointées (critère de la tranche 1).
+
+## Périmètre élargi le 2026-10-24
+
+Décision de Pascal (2026-10-24, « 2. oui », relecture de la PR #75) : la 012 **branche la
+dictée** de la 013 sur l'écran du contrôle, car aucune autre mission ne la relie à l'interface.
+
+- Brancher `MoteurDicteeVosk` et `AnalyseurDictee.appliquer` (mission 013, PR #75) sur le
+  plant courant ; demande de `RECORD_AUDIO` à l'exécution, avec refus expliqué à l'écran
+  et à la voix.
+- **Import du modèle** par fichier (`ModeleVoskImport`), depuis un bouton de l'application,
+  sans réseau ; refus visible d'un fichier altéré.
+- La phrase de mission sera réécrite au lancement, avec ce périmètre, et redite par
+  l'agent.
+- **Échantillon terrain ajouté** : dicter une placette en forêt, vent compris ; importer le
+  zip officiel, puis un zip altéré, qui doit être refusé.
