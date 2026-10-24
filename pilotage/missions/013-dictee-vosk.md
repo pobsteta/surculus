@@ -59,3 +59,19 @@ les mots de la grammaire sont reconnus sur le terrain.
 - **Avant de lancer la 013**, le `testeur` ajoute les cas des décisions 11 et 12 du
   2026-10-21 (même état redit : aucune ligne et confirmation vocale ; « non observé » sur
   un plant qui a un état : correction) et retire l'hypothèse de DI-303 (décision 13).
+
+## Moyens ajoutés le 2026-10-24
+
+- **Préalables levés** : cas des décisions 11 et 12 (mission 036, PR #63) ; DI-303 sans
+  hypothèse (mission 037, PR #73). Tous les cas de `fixtures/dictee/` sont à brancher **sans
+  les modifier**.
+- **Décision 13** écrite dans la spec § 4.3 (Pascal, 2026-10-24 : « oui au 3 ») : empreinte
+  comparée sans tenir compte de la casse.
+- **À regarder d'abord** : pendant la 037, la commande de tests a échoué deux fois en local
+  avant de passer (`:app:stripDebugDebugSymbols` sur `libjnidispatch.so`, et une
+  `NoSuchFileException` sur `in-progress-results-generic.bin`) ; la CI ne le reproduit pas.
+  La 013 touche la chaîne Vosk/JNA : si l'échec revient, le rapport le dit avec la sortie,
+  sans le masquer.
+- **Ma réponse d'abord** : _rempli par Pascal seul, avant de lire le travail de l'agent._
+- **Critère d'arrêt de la relecture** : 3 allers-retours ; au-delà, la décision remonte à
+  Pascal.
