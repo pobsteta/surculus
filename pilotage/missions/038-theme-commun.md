@@ -1,38 +1,39 @@
-# Mission 038 — Thème commun par `terrain-style`
+# Mission 038 — Thème commun : le vert de Marculus
 
 > Fiche écrite par l'orchestrateur le 2026-10-24, à partir du gabarit
-> `fiche-mission.md` du skill `imperatrice:mission`. Décidée par Pascal : ADR 0008
-> (acceptée le 2026-10-23, amendée le 2026-10-24 : verrou des 7 jours levé, « fais sauter
-> le verrou des 7 jours et continue »). **Lancement : après l'essai au soleil de Couchey**
-> (ADR 0008, « Trois points confirmés ensuite » ; ordre maintenu par Pascal le 2026-10-24).
-> Épinglage à `d840329` malgré `reussi` provisoire : oui (Pascal, 2026-10-24).
+> `fiche-mission.md` du skill `imperatrice:mission`, puis **réécrite le même jour** après
+> la décision de Pascal rapportée par la session `marculus`
+> (`~/dev/briefs/vers-surculus/2026-10-24-marculus-palette-commune-vert-marculus.md`) :
+> « je veux que Marculus, groma et surculus utilise terrain-style mais avec un terrain-style
+> qui conserve les couleurs actuelles de vert de marculus ». ADR 0008, amendement du
+> 2026-10-24 (soir). La première version (jetons de `d840329`, règle 7:1, palette d'état)
+> est dans l'historique git de ce fichier.
+> **Lancement : tout de suite**, avant l'essai au soleil de Couchey (Pascal, 2026-10-24 :
+> « Coder d'abord ») ; **valeurs recopiées de Marculus v0.65.0**, sans attendre
+> `terrain-style` v0.6.1, qui n'est pas publiée (Pascal, 2026-10-24 : « Valeurs de Marculus »).
 
 ## Mission
 
-**En une phrase (quoi, et pourquoi) :** Donner à Surculus le schéma clair de `terrain-style` (épinglé à `d840329`), recopié 1:1 dans un `ColorScheme` en thème clair forcé, écrire la légende de la carte en noir à côté de sa pastille et faire passer chaque texte de la palette d'état au seuil de WCAG 2.2, 1.4.6 (7:1, 4,5:1 pour le grand texte), pour que les trois applications de nemeton aient le même style sans jamais perdre la lisibilité au soleil.
+**En une phrase (quoi, et pourquoi) :** Donner à Surculus le thème de Marculus v0.65.0 (VertVif `#3E7A40`, VertMarculus `#374742`, Crème `#F5EBD8`, les autres rôles aux valeurs par défaut de Material 3), écrit en valeurs littérales pour le clair et le sombre, appliqué en thème clair forcé et vérifié rôle par rôle par un test, pour que Surculus ait le même vert que Marculus et Groma avant même la publication de `terrain-style` v0.6.1.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Je recopie dans Surculus le thème de Marculus v0.65.0 (VertVif, VertMarculus, Crème, le reste par défaut de Material 3) en valeurs littérales, clair et sombre, je l'applique en clair forcé, et un test vérifie chaque rôle ; le but est que Surculus ait le même vert que Marculus et Groma sans attendre `terrain-style` v0.6.1.
 
 ## Vérifié à la source
 
-Constats vérifiés par l'orchestrateur sur `main` (5b4e3dc) et sur `terrain` (`d840329`), le 2026-10-24.
+Constats vérifiés par l'orchestrateur le 2026-10-24, sur `main` (5e9a9fb).
 
 | Constat | Lu à | Source du constat |
 |---|---|---|
-| `terrain-style` v0.6.0 : `StyleTerrain.clair` / `.sombre` (`Schema`, tous les rôles en ARGB `Long`), `Contraste` (rapport WCAG 2.2), couleurs sémantiques `reussi` et `alerte` (`Schema.kt` l. 65-66, type `Semantique`) ; rôles interdits en texte listés en tête de `StyleTerrain.kt` | `terrain/terrain-style/src/main/kotlin/fr/nemeton/terrain/style/` (`StyleTerrain.kt` l. 1-22, `Semantique.kt`, `Contraste.kt`, `Schema.kt`) | orchestrateur |
-| Coordonnée JitPack : `com.github.pobsteta.terrain:terrain-style:<sha court>` ; dépôt `https://jitpack.io` filtré par `includeGroup("com.github.pobsteta.terrain")` | `terrain/README.md` l. 27-46 (dépôt, l. 34) et 163-166 (SHA court) | orchestrateur |
-| JitPack a construit `d840329` (`build.log`, `terrain-style-d840329.pom` : HTTP 200) | `https://jitpack.io/com/github/pobsteta/terrain/d840329/build.log` | orchestrateur |
+| Thème de Marculus : `VertMarculus = 0xFF374742`, `VertVif = 0xFF3E7A40`, `Creme = 0xFFF5EBD8` ; clair : `primary` VertVif, `onPrimary` blanc, `primaryContainer` VertMarculus, `onPrimaryContainer` Crème, `secondary` VertMarculus ; sombre : idem sauf `secondary` Crème ; tout le reste par défaut (`lightColorScheme()` / `darkColorScheme()`) | `marculus`, tag `v0.65.0`, `app/src/main/kotlin/io/github/pobsteta/marculus/ui/theme/Theme.kt` l. 10-28 | orchestrateur |
+| Même BOM Compose des deux côtés : `composeBom = "2026.02.01"`, donc mêmes valeurs par défaut | Surculus `gradle/libs.versions.toml` l. 24 ; Marculus l. 5 | orchestrateur |
+| `terrain-style` v0.6.1 n'existe pas : dernier tag v0.6.0 ; sur `main` (`c13e539`), `StyleTerrain.clair` a toujours `primary = 0xFF202F2B` | `terrain`, `git tag`, `terrain-style/src/main/kotlin/fr/nemeton/terrain/style/StyleTerrain.kt` l. 24 | orchestrateur |
 | Surculus n'a pas de thème : `MaterialTheme { … }` sans `colorScheme` | `app/src/main/kotlin/io/github/pobsteta/surculus/MainActivity.kt:42` | orchestrateur |
-| La palette d'état : `Palette` (vert `#0B6B2E`, orange `#B45300`, rouge `#B00020`, noir, blanc), recopiée dans l'écran d'essai | `app/src/main/kotlin/io/github/pobsteta/surculus/carte/Palette.kt:15-38` ; `app/src/main/kotlin/io/github/pobsteta/surculus/essai/EcranEssaiGnss.kt:73-77` | orchestrateur |
-| Textes en couleur d'état : légende de la carte, anomalies, refus, hors France, badge du fix (blanc sur la teinte), guidage, ortho | `carte/EcranCarte.kt:86, 196, 198, 279-287, 298` ; `carte/Commun.kt:71-74` ; `carte/EcranGuidage.kt:70, 76, 150-162, 204, 206, 216-218` ; `tournee/EcranTournees.kt:125, 159-176` ; écran d'essai : `essai/EcranEssaiGnss.kt:162-163, 170, 180, 267-279` (blanc sur la teinte du fix) (sous `app/src/main/kotlin/io/github/pobsteta/surculus/`) | orchestrateur |
-| Contrastes déjà mesurés : orange 4,78:1 en texte, blanc sur orange 5,03:1 | `docs/adr/0008-bibliotheques-communes.md`, « La palette d'état » | orchestrateur (ADR) |
-| **Valeur provisoire** : `reussi` (`#0F8558`) peut changer en v0.6.1 après l'essai au soleil de `terrain` du 2026-10-30 (repli `#00843D`) | `terrain/README.md` l. 169-171 ; `terrain/docs/adr/0002-couleurs-semantiques.md` | orchestrateur (relecture de la PR #74) |
-| Dépôts des dépendances du projet : `google()` et `mavenCentral()` seulement | `settings.gradle.kts:15-21` | orchestrateur |
+| Le brief demande l'égalité rôle par rôle avec `StyleTerrain` v0.6.1, clair et sombre | brief ci-dessus, « Critère d'acceptation » et point 1 | session `marculus` |
 
 Règles, avec leur auteur :
-- **ADR 0008**, décisions 1, 2, 4, 5 et 6, « Trois points confirmés ensuite » et amendements du 2026-10-24 : Pascal.
-- **Thème clair forcé**, pas de mode sombre, pas de couleur dynamique : Pascal, 2026-10-22 (ADR 0008, valeurs sacrifiées).
-- **Une couleur qui échoue à 7:1 ne se retouche jamais à la main** : la mission rend la liste, Pascal choisit : Pascal, 2026-10-23.
+- **Vert de Marculus pour les trois applications ; la règle 7:1 et la génération par MCU tombent** : Pascal, 2026-10-24 (ADR 0008, amendement du soir).
+- **Valeurs de Marculus en attendant v0.6.1 ; code avant Couchey** : Pascal, 2026-10-24.
+- **Thème clair forcé**, pas de couleur dynamique : Pascal, 2026-10-22 (ADR 0008, valeurs sacrifiées). Le choix Système / Clair / Sombre de Marculus n'est pas dans cette mission (bac à sable).
 - **Garde-fou = test vu rouge** et **bilan des écarts avant rendu** : Pascal, bilan du 2026-10-21.
 
 ## Les trois questions (règle de staffing)
@@ -40,10 +41,10 @@ Règles, avec leur auteur :
 | Question | Réponse | Conséquence |
 |---|---|---|
 | Peut-il redire la mission en une phrase, avec son but ? | oui | |
-| Sait-il comment faire ? | oui : Compose Material 3, `ColorScheme`, dépendance JitPack ; la manière pour la palette d'état est à **proposer**, pas à trancher | il rend sa proposition avant de la coder |
-| A-t-il les moyens ? | oui : `terrain-style` publié, JitPack construit ; l'essai au soleil est à Pascal | |
+| Sait-il comment faire ? | oui : Compose Material 3, `ColorScheme`, test JVM | |
+| A-t-il les moyens ? | oui : toutes les valeurs sont dans la fiche ; aucune dépendance nouvelle | |
 
-**Temps de la main :** **appuyer** : avant de toucher aux textes de la palette d'état, l'agent rend à l'orchestrateur un tableau : chaque texte (fichier:ligne), sa couleur et son fond, son contraste, la manière proposée (couleur foncée, texte noir à côté d'une pastille, rôle de `terrain-style`, couleur sémantique) et le contraste obtenu. Pascal valide avant le code.
+**Temps de la main :** **appuyer** : l'agent code puis rend ; la relecture et l'essai au soleil de Pascal avant la fusion tiennent la qualité.
 
 ## Ma réponse d'abord
 
@@ -53,35 +54,34 @@ _Rempli par Pascal seul, avant de lire le travail de l'agent. L'orchestrateur ne
 
 - **Agent :** `dev` — **Modèle :** sonnet.
 - **Ce qui ne lui est pas demandé :**
-  - changer la couleur des pastilles de la carte (question 6) ou le marqueur de la position ;
-  - retoucher une valeur de `terrain-style` (s'il en faut une autre, il le dit) ;
-  - ajouter un mode sombre, la couleur dynamique ou `verification-metadata.xml` ;
-  - toucher aux briques GNSS, géodésie, journal, GeoPackage, voix ou carte (ADR 0012).
+  - ajouter `terrain-style` ou JitPack en dépendance du thème (ce sera une petite mission à la publication de v0.6.1) ;
+  - toucher à la palette d'état (`carte/Palette.kt`), aux pastilles, au marqueur de position ou à la légende de la carte ;
+  - ajouter le choix Système / Clair / Sombre ou la couleur dynamique ;
+  - retoucher une valeur de Marculus (s'il en faut une autre, il le dit).
 
 ## Harnais
 
-- **Peut :** ajouter le dépôt JitPack à `settings.gradle.kts`, **filtré** au groupe `com.github.pobsteta.terrain` ; déclarer `terrain-style` à `d840329` dans `gradle/libs.versions.toml` (avec sa source en commentaire, comme les autres lignes) ; écrire le thème de Surculus (`ui/theme/` ou équivalent) et le brancher dans `MainActivity.kt` ; remplacer les couleurs d'état des textes selon le tableau validé ; supprimer la copie de la palette dans `EcranEssaiGnss.kt` au profit de `Palette` ; mettre à jour `docs/dependances.md` et `NOTICE`.
-- **Ne doit pas :** toucher à `main` ; modifier `fixtures/` ; ajouter une autre dépendance.
-- **Sources autorisées :** `docs/adr/0008-bibliotheques-communes.md` ; `docs/spec.md` § 3 ; le dépôt `terrain` (`~/dev/terrain`, en lecture) ; la doc de Compose Material 3.
+- **Peut :** écrire le thème de Surculus (`ui/theme/` ou équivalent, avec la source de chaque valeur en commentaire) et le brancher dans `MainActivity.kt` ; ajouter un test JVM et, s'il manque, la configuration de test du module `app` ; mettre à jour `docs/dependances.md` si une ligne le demande.
+- **Ne doit pas :** toucher à `main` ; modifier `fixtures/` ; ajouter une dépendance d'exécution.
+- **Sources autorisées :** cette fiche ; `docs/adr/0008-bibliotheques-communes.md` ; le dépôt `marculus` (`~/dev/marculus`, en lecture, tag `v0.65.0`) ; la doc de Compose Material 3.
 
 ## Tests
 
-- **Égalité** : un test JVM vérifie, rôle par rôle, que le `ColorScheme` de Surculus vaut des **valeurs littérales** écrites dans Surculus (dans le thème ou dans le test), recopiées de `StyleTerrain.clair` à `d840329`, et que `StyleTerrain.clair` les vaut aussi : c'est la seule garde contre un artefact reconstruit (verrou des 7 jours levé, ADR 0008 amendée) ; **vu rouge** une fois (un rôle changé, non commité).
-- **Contraste rejoué** : un test parcourt les couples texte / fond que l'application emploie (rôles « on » sur leurs fonds, et chaque texte de la palette d'état sur son fond) avec `Contraste` de `terrain-style` : 7:1, 4,5:1 pour le grand texte (au moins 24 sp, ou 18,7 sp en gras) ; **vu rouge** une fois (l'orange actuel en texte).
-- La légende de la carte : texte en noir, pastille en couleur, vérifié par un test ou une capture.
+- **Égalité** : un test JVM vérifie, **rôle par rôle et pour tous les rôles** du `ColorScheme`, que le thème clair et le thème sombre de Surculus valent : les cinq rôles ci-dessus en **valeurs littérales** écrites dans le test, et pour chaque autre rôle la valeur de `lightColorScheme()` / `darkColorScheme()` de la BOM 2026.02.01. **Vu rouge** une fois (un rôle changé, non commité).
+- **Thème appliqué** : un test (ou, à défaut, une capture jointe à la PR) montre que l'application emploie le schéma clair même quand le téléphone est en sombre.
 - Commande du projet : `.claude/test-command`.
-- **Bilan des écarts** : le rapport liste chaque fichier modifié et chaque couple en échec, sans retouche.
+- **Bilan des écarts** : le rapport liste chaque fichier modifié, et chaque texte de l'application dont la couleur change visiblement (notamment ce qui était violet par défaut, dont le bouton « Retour »).
 
 ## Terrain
 
-- **Échantillon que Pascal vérifiera :** l'APK de la branche, au soleil, sur les écrans Tournées, Carte (légende, badge du fix, pastilles sur ortho claire), Guidage et Essai GNSS ; résultat noté au journal **avant la fusion** (spec § 3, ADR 0008).
+- **Échantillon que Pascal vérifiera :** l'APK de la branche, au soleil, sur les écrans Tournées, Carte, Guidage et Essai GNSS ; résultat noté au journal **avant la fusion** (spec § 3).
 
 ## Qui veille, qui tranche
 
 - **Relecteur :** `relecteur`, puis Pascal. **Qui tranche :** Pascal.
 - **Critère d'arrêt de la relecture :** 3 allers-retours ; au-delà, la décision remonte à Pascal.
-- **Point de suivi :** à la remise du tableau de la palette d'état, puis à l'ouverture de la PR.
+- **Point de suivi :** à l'ouverture de la PR.
 
 ## Comment saura-t-on que ça marche ?
 
-Au soleil, Pascal lit chaque texte de la carte et du guidage d'un coup d'œil, et les tests d'égalité et de contraste sont verts dans la CI de Surculus.
+Surculus a le vert de Marculus sur tous ses écrans, le test d'égalité est vert dans la CI, et Pascal juge les écrans lisibles au soleil.

@@ -9,6 +9,10 @@
 
 _Idées, à trier au prochain `/mission`._
 
+- **`terrain-style` v0.6.1** : à sa publication, remplacer la copie littérale du thème
+  (038) par la dépendance ; le test d'égalité doit rester vert.
+- **Choix Système / Clair / Sombre** (Marculus v0.65.0), proposé par la session `marculus`.
+
 - **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0010
   (voir la carte « clé de signature » au Planifié), 0012 (briques communes vers `terrain`,
   réservée, après l'essai d'automne et une table des écarts ; entrée : réponse de Marculus
@@ -71,7 +75,11 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-_Rien en attente._
+- **038** thème commun, le vert de Marculus (`dev`, appuyer), en cours depuis le
+  2026-10-24 : valeurs de Marculus v0.65.0 en littéral, clair et sombre, thème clair
+  forcé, test d'égalité rôle par rôle (ADR 0008, amendement du soir). Essai au soleil de
+  l'APK de la branche par Pascal avant fusion. Fiche :
+  `pilotage/missions/038-theme-commun.md`.
 
 ## Planifié
 
@@ -87,12 +95,8 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **Pascal, clé de signature** : dire au journal où est la copie hors du poste et qui
   détient les mots de passe, puis l'ADR 0010.
 - **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
-- **038** thème commun (`dev`, appuyer) : jetons de `terrain-style` épinglés à
-  `d840329` (verrou des 7 jours levé par Pascal le 2026-10-24), thème clair forcé, légende
-  en noir, palette d'état passée au test 1.4.6, tests d'égalité et de contraste rejoués
-  dans Surculus (ADR 0008 amendée). Après l'essai au soleil de Couchey (ordre maintenu par
-  Pascal le 2026-10-24) ; épinglage malgré `reussi` provisoire ; essai au soleil de la
-  branche avant fusion.
+- **Palette d'état et légende en noir** (sorties de la 038 le 2026-10-24) : après l'essai
+  au soleil de Couchey.
 
 ## Terminé
 

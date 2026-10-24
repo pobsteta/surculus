@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -28,6 +27,7 @@ import io.github.pobsteta.surculus.carte.EcranCarte
 import io.github.pobsteta.surculus.carte.EcranGuidage
 import io.github.pobsteta.surculus.essai.EcranEssaiGnss
 import io.github.pobsteta.surculus.tournee.EcranTournees
+import io.github.pobsteta.surculus.ui.theme.SurculusTheme
 import io.github.pobsteta.surculus.sauvegarde.EcranRestauration
 
 /**
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            SurculusTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     var essai by rememberSaveable { mutableStateOf(false) }
                     var restauration by rememberSaveable { mutableStateOf(false) }

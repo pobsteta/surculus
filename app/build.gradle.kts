@@ -179,6 +179,9 @@ dependencies {
     nativesSqlite("org.xerial:sqlite-jdbc:${libs.versions.sqliteJdbc.get()}:natives-android")
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
+    testImplementation(kotlin("test-junit"))
+    testImplementation(libs.junit4)
+
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
 
