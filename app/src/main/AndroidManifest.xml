@@ -13,6 +13,8 @@
     <!-- Préalable d'un service connectedDevice quand le récepteur est joint en TCP -->
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Dictée hors ligne (Vosk) : le micro, demandé à l'exécution -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Sauvegarde .sursync sous Documents/Surculus/ : MediaStore dès l'API 29 (sans permission), dossier public avant -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 

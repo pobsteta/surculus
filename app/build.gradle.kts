@@ -197,10 +197,11 @@ dependencies {
     implementation(libs.compose.material3)
     debugImplementation(libs.compose.ui.tooling)
 
-    // Dictée hors ligne (ADR 0004) : dépendances seules, aucun code de dictée avant la mission 013.
-    // Elles sont là pour que le contrôle 16 Ko porte dès maintenant sur de vraies bibliothèques natives.
+    // Dictée hors ligne (ADR 0004, mission 013) ; terrain-voix : installation du modèle et grammaire.
+    // Les bibliothèques natives de Vosk passent le contrôle 16 Ko.
     // La JNA doit être tirée en .aar (bibliothèques natives), comme dans Marculus.
     implementation(libs.vosk.android)
+    implementation(libs.terrain.voix)
     implementation(variantOf(libs.jna) { artifactType("aar") })
 }
 

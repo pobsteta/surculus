@@ -17,6 +17,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // terrain-voix (mission 013) : bibliothèque commune de pobsteta, publiée par JitPack (terrain/README.md).
+        maven("https://jitpack.io") { content { includeGroup("com.github.pobsteta.terrain") } }
     }
 }
 

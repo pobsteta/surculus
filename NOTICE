@@ -55,3 +55,12 @@ sqlite-jdbc (Apache-2.0, xerial) et ses bibliothèques natives Android
 
 sqlite-jdbc 3.53.4.0 est tiré de Maven Central ; son classifieur `natives-android` (libsqlitejdbc.so, par ABI)
 est extrait à la compilation vers le jniLibs de l'application (ADR 0011). SQLite est dans le domaine public.
+
+terrain-voix (GPL-3.0-or-later, Pascal Obstétar) : dépendance, aucun code recopié
+-------------------------------------------------------------------------------
+
+Bibliothèque `com.github.pobsteta.terrain:terrain-voix:d840329` (tag v0.6.0 de
+https://github.com/pobsteta/terrain, construite par JitPack), même auteur et même licence que
+Surculus. Surculus en utilise `GrammaireFermee`, `NombresFrancais` et `InstallationModele`
+(mission 013, décision de Pascal du 2026-10-24). L'analyse des phrases, les décisions 10 à 12, le
+contrôle du nom et de l'empreinte du modèle restent écrits dans Surculus (`:core`).
