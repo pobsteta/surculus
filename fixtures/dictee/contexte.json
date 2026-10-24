@@ -611,6 +611,81 @@
         "ligne_ajoutee": true
       },
       "source": "docs/spec.md § 4.3 et § 5 (non_observe est une valeur de etat) ; pilotage/journal.md, 2026-10-21, décisions n° 10 et n° 12 de Pascal (la correction suppose un état déjà saisi)"
+    },
+    {
+      "id": "DI-170",
+      "description": "« hauteur quarante-cinq » sur un plant sans état : refusée (la voix demande l'état d'abord).",
+      "entree": {
+        "etat_courant": null,
+        "phrase": "hauteur quarante-cinq"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (« hauteur » dite sur un plant qui n'a pas encore d'état est refusée, la voix demande l'état d'abord ; acceptée sur un plant mort) ; pilotage/journal.md, 2026-10-24 (décisions de Pascal « oui, refus » et « 1. oui »)"
+    },
+    {
+      "id": "DI-171",
+      "description": "« hauteur quarante-cinq » sur un plant mort : acceptée.",
+      "entree": {
+        "etat_courant": "mort",
+        "phrase": "hauteur quarante-cinq"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 45
+        }
+      },
+      "source": "docs/spec.md § 4.3 (« hauteur » acceptée sur un plant mort) ; docs/spec.md § 6 (hauteur refusée sur un plant absent, non observé : aucune mesure) ; pilotage/journal.md, 2026-10-24 (décision de Pascal « 1. oui »)"
+    },
+    {
+      "id": "DI-172",
+      "description": "« hauteur quarante-cinq » sur un plant mort qui porte déjà une cause : acceptée, la commande reste une hauteur.",
+      "entree": {
+        "etat_courant": "mort",
+        "phrase": "hauteur quarante-cinq",
+        "mesures_courantes": {
+          "cause_groupe": "entomologique"
+        }
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 45
+        }
+      },
+      "source": "docs/spec.md § 4.3 (« hauteur » acceptée sur un plant mort) ; docs/spec.md § 6 (hauteur refusée sur un plant absent, non observé : aucune mesure) ; pilotage/journal.md, 2026-10-24 (décision de Pascal « 1. oui »)"
+    },
+    {
+      "id": "DI-173",
+      "description": "« hauteur un » sur un plant sans état : refusée même pour la borne basse valide (c'est le contexte qui refuse, pas la valeur).",
+      "entree": {
+        "etat_courant": null,
+        "phrase": "hauteur un"
+      },
+      "attendu": {
+        "accepte": false
+      },
+      "source": "docs/spec.md § 4.3 (« hauteur » dite sur un plant qui n'a pas encore d'état est refusée, la voix demande l'état d'abord ; acceptée sur un plant mort) ; pilotage/journal.md, 2026-10-24 (décisions de Pascal « oui, refus » et « 1. oui »)"
+    },
+    {
+      "id": "DI-174",
+      "description": "« hauteur quatre cents » sur un plant mort : acceptée (borne haute, 400 cm).",
+      "entree": {
+        "etat_courant": "mort",
+        "phrase": "hauteur quatre cents"
+      },
+      "attendu": {
+        "accepte": true,
+        "commande": {
+          "type": "hauteur",
+          "hauteur_cm": 400
+        }
+      },
+      "source": "docs/spec.md § 4.3 (« hauteur » acceptée sur un plant mort) ; docs/spec.md § 6 (hauteur refusée sur un plant absent, non observé : aucune mesure) ; pilotage/journal.md, 2026-10-24 (décision de Pascal « 1. oui »)"
     }
   ]
 }

@@ -9,7 +9,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Ajouter à `fixtures/dictee/contexte.json` les cas d'acceptation des deux règles de Pascal du 2026-10-24 sur « hauteur » (refusée sur un plant qui n'a pas encore d'état ; acceptée sur un plant mort), sans lire de code, pour que ces règles soient tenues par les cas du testeur et pas seulement par un test du `dev`.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** J'ajoute à `contexte.json` (DI-170 et suivants) les cas qui disent qu'une « hauteur » sur un plant sans état est refusée et qu'elle est acceptée sur un plant mort, d'après la spec § 4.3 et les décisions de Pascal du 2026-10-24, sans lire de code ni toucher aux cas existants.
 
 ## Vérifié à la source
 
