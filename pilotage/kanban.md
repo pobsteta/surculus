@@ -62,8 +62,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **013** dictée Vosk (`dev`) : les cas des décisions 11 et 12 sont écrits (PR #63) ; part
-  après le retrait de l'hypothèse DI-303.
+- **013** dictée Vosk (`dev`) : préalables levés (036, PR #63 ; 037, PR #73) ; attend que
+  Pascal dise où écrire la décision 13 (spec § 4.3 proposée).
 
 ## Planifié
 
@@ -79,13 +79,14 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **Pascal, clé de signature** : dire au journal où est la copie hors du poste et qui
   détient les mots de passe, puis l'ADR 0010.
 - **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
-- **Thème commun** (fiche à écrire ; `dev`, appuyer) : jetons de `terrain-style`, thème
-  clair forcé, légende en noir, palette d'état passée au test 1.4.6, test d'égalité et de
-  contraste rejoués dans Surculus (ADR 0008). Après le retour de Couchey, et après la
-  publication de `terrain-style` (commit épinglé de plus de 7 jours) ; essai au soleil
-  avant fusion.
-
+- **038** thème commun (`dev`, appuyer) : jetons de `terrain-style` épinglés à
+  `d840329` (verrou des 7 jours levé par Pascal le 2026-10-24), thème clair forcé, légende
+  en noir, palette d'état passée au test 1.4.6, tests d'égalité et de contraste rejoués
+  dans Surculus (ADR 0008 amendée). Après l'essai au soleil de Couchey ; essai au soleil de
+  la branche avant fusion.
 ## Terminé
+
+- Cycle 9, 2026-10-23 : **037** DI-303 suit la décision 13 (PR #73) — Pascal.
 
 - Cycle 8, 2026-10-22 et 23 : **028** registre attendu (F4) et sabotages (F5) dans la CI
   d'import (PR #64) ; **036** cas des décisions 11 et 12 de la dictée (PR #63) ; **033**

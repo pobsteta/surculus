@@ -1,3 +1,5 @@
+> Statut (archiviste Marculus, 2026-10-24) : § 1 traité le 2026-10-24 (PR marculus #8) ; § 2 en attente de `terrain-style`.
+
 # Brief Marculus — qui utilise `terrain`, et le style commun
 
 *Établi le 22 octobre 2026 depuis le dépôt `surculus`, à partir de Marculus (`87c3cf4`),
