@@ -223,6 +223,33 @@ Pascal a validé les propositions de l'orchestrateur sur les six questions (« J
   (archive vide, nom du modèle, empreinte attendue mal formée ou nulle, `[unk]`) sont
   couverts dans `:core` (PR #75) ; les autres briques restent renvoyées à l'ADR 0012.
 
+### Amendement du 2026-10-24 (soir) : le vert de Marculus
+
+- **Décision de Pascal**, rapportée par la session `marculus`
+  (`~/dev/briefs/vers-surculus/2026-10-24-marculus-palette-commune-vert-marculus.md`) :
+  « je veux que Marculus, groma et surculus utilise terrain-style mais avec un terrain-style
+  qui conserve les couleurs actuelles de vert de marculus et qui vont donc s'imposer à groma
+  et surculus ». Raison : Marculus a adopté `terrain-style` v0.6.0 puis l'a annulé, le vert
+  ayant disparu (`primary` `#202F2B` en clair) ; Pascal a jugé « parfait » au soleil le
+  thème actuel de Marculus v0.65.0, en clair et en sombre.
+- **Ce qui reste** : les trois applications prennent les mêmes jetons (question 1), tenus
+  par `terrain-style`.
+- **Ce qui tombe** : la règle « 7:1 pour tout texte » comme règle commune (question 2 : blanc
+  sur `VertVif` vaut 5,17:1) et la génération par Material Color Utilities (question 4, et
+  les réglages de `terrain-style` ci-dessus). Les jetons sont ceux de Marculus v0.65.0
+  (`Theme.kt` l. 10-28) : `primary` `#3E7A40`, `onPrimary` blanc, `primaryContainer`
+  `#374742`, `onPrimaryContainer` `#F5EBD8`, `secondary` `#374742` en clair et `#F5EBD8` en
+  sombre, les autres rôles aux valeurs par défaut de Material 3 (BOM 2026.02.01).
+- **En attendant `terrain-style` v0.6.1** (non publiée le 2026-10-24) : Surculus écrit ces
+  valeurs en littéral, avec un test d'égalité rôle par rôle ; à la publication, une petite
+  mission remplace la copie par la dépendance, et le même test doit rester vert (Pascal,
+  2026-10-24 : « Valeurs de Marculus »).
+- **Ordre avec Couchey : levé** (Pascal, 2026-10-24 : « Coder d'abord ») ; l'essai au soleil
+  se fait sur l'APK de la branche de la 038, avant la fusion.
+- **Ce qui reste ouvert** : la palette d'état et la légende en noir (question 6) sortent de
+  la 038 et attendent l'essai de Couchey ; le thème reste clair forcé dans Surculus (le
+  choix Système / Clair / Sombre de Marculus est au bac à sable).
+
 ## Sources
 
 - `terrain/README.md` l. 12-22 et 84 ; `terrain/jitpack.yml` (tag v0.5.0, `ee98731`).
