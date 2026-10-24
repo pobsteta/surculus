@@ -62,8 +62,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **013** dictée Vosk (`dev`, appuyer) : en revue, PR #75 ; `terrain-voix` épinglé à
-  `d840329` (Pascal, 2026-10-24), « hauteur » sans état refusée.
+- **039** cas de « hauteur » dans `fixtures/dictee/` (`testeur`) : refusée sans état,
+  acceptée sur un plant mort (Pascal, 2026-10-24).
 
 ## Planifié
 
@@ -88,7 +88,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 ## Terminé
 
-- Cycle 9, 2026-10-23 : **037** DI-303 suit la décision 13 (PR #73) — Pascal.
+- Cycle 9, 2026-10-23 et 24 : **037** DI-303 suit la décision 13 (PR #73) ; **013** dictée
+  Vosk à grammaire fermée, `terrain-voix` épinglé (PR #75) ; ADR 0008 amendée, fiche 038
+  (PR #74) — Pascal.
 
 - Cycle 8, 2026-10-22 et 23 : **028** registre attendu (F4) et sabotages (F5) dans la CI
   d'import (PR #64) ; **036** cas des décisions 11 et 12 de la dictée (PR #63) ; **033**
