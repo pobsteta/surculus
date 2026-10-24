@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Accueil -->
-    <string name="tournees_ouvrir">Tournées</string>
+    <string name="tournees_menu">Menu</string>
 
     <!-- Écran Tournées (mission 011, spec § 4.1) -->
-    <string name="tournees_titre">Tournées</string>
     <string name="tournees_retour">‹ Retour</string>
     <string name="tournees_importer_dossier">Ouvrir un dossier</string>
     <string name="tournees_importer_zip">Ouvrir un .zip</string>

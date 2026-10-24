@@ -11,7 +11,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Faire s'ouvrir Surculus directement sur la liste des tournées, avec une barre de titre « Surculus » et un menu à trois points (Essai GNSS, Restaurer une sauvegarde) comme l'accueil de Marculus, pour que le forestier arrive tout de suite à son travail et que les trois applications s'ouvrent de la même façon.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Faire de la liste des tournées l'écran d'accueil de Surculus, avec une barre « Surculus » et un menu à trois points qui ouvre Essai GNSS et Restaurer une tournée, pour que le forestier arrive tout de suite à son travail comme dans Marculus, sans que le retour Android ne le perde.
 
 ## Vérifié à la source
 
@@ -77,3 +77,15 @@ _Rempli par Pascal seul, avant de lire le travail de l'agent. L'orchestrateur ne
 ## Comment saura-t-on que ça marche ?
 
 Pascal ouvre Surculus et voit tout de suite ses tournées, comme dans Marculus ; il trouve Essai GNSS et Restaurer derrière les trois points, et le retour ne le perd jamais.
+
+## Bilan des écarts (agent, 2026-10-24)
+
+| Écran | Aspect | Retour |
+|---|---|---|
+| Accueil (3 gros boutons) | supprimé | sans objet |
+| Tournées | devient l'accueil : barre « Surculus » (fond primaire, 56 dp) + menu « ⋮ » ; titre « Tournées » et bouton « Retour » retirés ; contenu inchangé | retour Android à la racine : quitte l'application |
+| Essai GNSS | inchangé (aucune barre) | retour Android vers Tournées |
+| Restauration | inchangé (aucune barre) | retour Android vers Tournées |
+| Carte, Guidage | inchangés | Guidage vers Carte, Carte vers Tournées (inchangé) |
+
+Icône : caractère « ⋮ » dans un `IconButton` (cible 48 dp), pas de `material-icons-core` : aucune dépendance de plus, ni ligne `dependances.md`/`NOTICE`. Ressources retirées : `tournees_ouvrir`, `tournees_titre`.
