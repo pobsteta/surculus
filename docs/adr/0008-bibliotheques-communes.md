@@ -3,7 +3,7 @@
 - **Date :** 2026-10-22 (réécrite le même jour après la critique du `contradicteur`)
 - **Statut :** acceptée (Pascal, 2026-10-23 : « Je valide les 6 propositions »), sans successeur de `terrain`
   pour l'instant (risque assumé, question 3) ; coûts du crible acceptés par Pascal le
-  2026-10-23 ; amendée le 2026-10-24 (verrou des 7 jours levé, réglages de `terrain-style`)
+  2026-10-23 ; amendée le 2026-10-24 (verrou des 7 jours levé, réglages de `terrain-style`, exception pour la voix)
 - **Proposée par :** Claude (orchestrateur)
 - **Tranchée par :** Pascal
 
@@ -211,6 +211,17 @@ Pascal a validé les propositions de l'orchestrateur sur les six questions (« J
 - **La palette d'état de Surculus** : la manière reste à proposer par la mission du thème
   (paragraphe « La palette d'état » ci-dessus), qui peut s'appuyer sur ces couleurs
   sémantiques pour les textes ; les pastilles de la 033 ne changent pas (question 6).
+- **Épinglage malgré `reussi` provisoire** : oui (Pascal, 2026-10-24) ; si l'essai de
+  `terrain` du 2026-10-30 change ce vert, Surculus passe à la v0.6.1, et le test d'égalité
+  le montre.
+- **Ordre avec Couchey** : maintenu (Pascal, 2026-10-24) : l'essai au soleil de la palette
+  actuelle précède le lancement de la mission 038.
+- **Exception au périmètre : la voix** (Pascal, 2026-10-24 : « prendre terrain-voix dans
+  surculus »). La brique voix n'attend pas l'ADR 0012 : la mission 013 prend
+  `terrain-voix` épinglé à `d840329`, par JitPack limité au groupe
+  `com.github.pobsteta.terrain`. Les écarts de `terrain-voix` avec les cas de Surculus
+  (archive vide, nom du modèle, empreinte attendue mal formée ou nulle, `[unk]`) sont
+  couverts dans `:core` (PR #75) ; les autres briques restent renvoyées à l'ADR 0012.
 
 ## Sources
 

@@ -156,7 +156,9 @@ point à Brest et à Strasbourg.
   absents du vocabulaire de `vosk-model-small-fr-0.22` (décision de Pascal du 2026-10-21,
   mission 025). « climat » et « indéterminé » mènent au même groupe DSF ; « mangé » porte
   le détail « abroutissement » sur un plant sain, atteint ou mort. Une phrase porte une
-  seule commande ; « hauteur » va de 1 à 400 cm.
+  seule commande ; « hauteur » va de 1 à 400 cm. « hauteur » dite sur un plant qui n'a pas
+  encore d'état est refusée, et la voix demande l'état d'abord (décision de Pascal,
+  2026-10-24).
   Le modèle importé n'est accepté que si sa somme SHA-256 est celle de
   `docs/dependances.md`, comparée **sans tenir compte de la casse** (décision 13 de Pascal,
   2026-10-21 ; cas DI-303).
