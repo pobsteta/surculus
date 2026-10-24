@@ -18,6 +18,8 @@ kotlin {
 }
 
 dependencies {
+    // Grammaire fermée, nombres en lettres, installation du modèle (Kotlin pur, JVM 17) : mission 013.
+    implementation(libs.terrain.voix)
     testImplementation(kotlin("test"))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.gson)

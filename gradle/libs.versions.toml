@@ -12,6 +12,7 @@
 # - androidx.test.ext:junit 1.3.0 et androidx.test:runner 1.7.0 : Google Maven, maven-metadata.xml (dernières versions stables, 2026-10-17), essai de fumée de la release.
 # - JUnit Jupiter 6.1.3 et sqlite-jdbc 3.53.4.0 : groma/android/groma-core/build.gradle.kts.
 # - vosk-android 0.3.75 : ADR 0004 ; JNA 5.18.1 : POM de vosk-android 0.3.75 (Maven Central).
+# - terrain-voix d840329 (tag v0.6.0 de pobsteta/terrain, construit par JitPack) : https://github.com/pobsteta/terrain/blob/d840329/README.md (l. 27-46), sources dans terrain-voix/ ; décision de Pascal du 2026-10-24 (mission 013).
 # - Gson 2.14.0 : Maven Central (com.google.code.gson:gson, release du maven-metadata.xml), lecteur JSON des tests de fixtures (mission 002).
 # - WorkManager 2.12.0 : groma/android/app/build.gradle.kts l. 58 (préchargement de l'ortho, mission 011, ADR 0009).
 # - Robolectric 4.17, androidx.test:core 1.7.0, room-testing : marculus/gradle/libs.versions.toml (mission 008, tests du journal Room) ; JUnit 4.13.2 : requis par Robolectric.
@@ -33,6 +34,7 @@ lifecycle = "2.9.4"
 coreKtx = "1.16.0"
 coroutines = "1.10.2"
 vosk = "0.3.75"
+terrainVoix = "d840329"
 jna = "5.18.1"
 junitJupiter = "6.1.3"
 gson = "2.14.0"
@@ -70,6 +72,7 @@ androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 vosk-android = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
+terrain-voix = { group = "com.github.pobsteta.terrain", name = "terrain-voix", version.ref = "terrainVoix" }
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }

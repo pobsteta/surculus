@@ -4,7 +4,6 @@ import io.github.pobsteta.surculus.core.fixtures.Comparaison
 import io.github.pobsteta.surculus.core.fixtures.Depot
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
@@ -13,10 +12,8 @@ import java.io.File
 
 /**
  * Rejeu des cas de `fixtures/dictee/` contre l'implémentation de la mission 013 (port [Dictee]).
- * Désactivé tant que la 013 n'a pas branché [ImplementationDictee] : retirer `@Disabled`, sans toucher
- * aux cas.
+ * Actif depuis la mission 013 ([ImplementationDictee] branchée), sans modification des cas.
  */
-@Disabled("en attente de la mission 013")
 class DicteeRejeuTest {
 
     private fun rejouer(famille: String, appel: (Dictee, io.github.pobsteta.surculus.core.fixtures.CasFixture) -> com.google.gson.JsonObject): List<DynamicTest> {

@@ -157,6 +157,9 @@ point à Brest et à Strasbourg.
   mission 025). « climat » et « indéterminé » mènent au même groupe DSF ; « mangé » porte
   le détail « abroutissement » sur un plant sain, atteint ou mort. Une phrase porte une
   seule commande ; « hauteur » va de 1 à 400 cm.
+  Le modèle importé n'est accepté que si sa somme SHA-256 est celle de
+  `docs/dependances.md`, comparée **sans tenir compte de la casse** (décision 13 de Pascal,
+  2026-10-21 ; cas DI-303).
   ([ADR 0004](adr/0004-stack-kotlin-compose-vosk.md))
 * **Totaux déduits des plants** et écrits dans `controles` pour l'import 0.31.1 :
   `nb_total` (sains + atteints + morts + absents, **hors non observés et hors plants
