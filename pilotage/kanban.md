@@ -62,8 +62,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **013** dictée Vosk (`dev`) : préalables levés (036, PR #63 ; 037, PR #73) ; attend que
-  Pascal dise où écrire la décision 13 (spec § 4.3 proposée).
+- **013** dictée Vosk (`dev`, appuyer) : en revue, PR #75 ; `terrain-voix` épinglé à
+  `d840329` (Pascal, 2026-10-24), « hauteur » sans état refusée.
 
 ## Planifié
 
@@ -82,8 +82,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **038** thème commun (`dev`, appuyer) : jetons de `terrain-style` épinglés à
   `d840329` (verrou des 7 jours levé par Pascal le 2026-10-24), thème clair forcé, légende
   en noir, palette d'état passée au test 1.4.6, tests d'égalité et de contraste rejoués
-  dans Surculus (ADR 0008 amendée). Après l'essai au soleil de Couchey ; essai au soleil de
-  la branche avant fusion.
+  dans Surculus (ADR 0008 amendée). Après l'essai au soleil de Couchey (ordre maintenu par
+  Pascal le 2026-10-24) ; épinglage malgré `reussi` provisoire ; essai au soleil de la
+  branche avant fusion.
 
 ## Terminé
 
