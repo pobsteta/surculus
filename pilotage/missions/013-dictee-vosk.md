@@ -7,7 +7,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Brancher la dictée hors ligne (interface `MoteurDictee` dans `:core`, implémentation Vosk 0.3.75, modèle `vosk-model-small-fr-0.22` importable par fichier avec SHA-256 vérifié) sur la grammaire de la spec, avec un test qui vérifie que chaque mot est dans le vocabulaire du modèle, pour saisir sans les mains.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Je dois écrire l'interface `MoteurDictee` (`:core`) et son implémentation Vosk 0.3.75 (`:app`), avec import par fichier du modèle `vosk-model-small-fr-0.22` accepté seulement si son SHA-256 est le bon (casse ignorée), sur la grammaire fermée de la spec § 4.3, et un test prouvant que chaque mot est dans le vocabulaire du modèle, pour que le forestier saisisse sans les mains, hors ligne (redite du 2026-10-24, `dev`).
 
 ## Les trois questions (règle de staffing)
 
