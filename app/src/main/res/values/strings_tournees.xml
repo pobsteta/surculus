@@ -9,6 +9,12 @@
     <string name="tournees_importer_zip">Ouvrir un .zip</string>
     <string name="tournees_wifi">Ortho : Wi-Fi seulement</string>
     <string name="tournees_vide">Aucune tournée. Ouvrez le dossier ou le .zip de sommieR.</string>
+    <string name="tournees_recherche">Rechercher (forêt, opérateur, date)</string>
+    <string name="tournees_rendues">Rendues (%1$d)</string>
+    <string name="tournees_autres_ouvertes">%1$d autre(s) dans les tournées ouvertes</string>
+    <string name="tournees_autres_rendues">%1$d autre(s) dans les tournées rendues</string>
+    <string name="tournees_aucune_trouvee">Aucune tournée ne correspond.</string>
+    <string name="tournees_aucune_rendue">Aucune tournée rendue.</string>
     <string name="tournees_import_en_cours">Copie de la tournée…</string>
     <string name="tournees_import_ok">Tournée ouverte : %1$s</string>
     <string name="tournees_import_refus">Tournée refusée : %1$s</string>

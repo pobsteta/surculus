@@ -10,7 +10,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Ajouter en tête de la liste des tournées une zone de recherche (forêt, opérateur, date, nom) et une puce « Rendues (n) » qui bascule entre tournées ouvertes et rendues, comme dans Groma et Marculus, pour que le forestier retrouve vite la tournée du jour sans voir celles déjà rendues.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Mettre en tête de la liste des tournées une zone de recherche (forêt, opérateur, date, nom du dossier, sans accents ni casse) et une puce « Rendues (n) » qui bascule entre tournées ouvertes et rendues, pour retrouver vite la tournée du jour ; l'état « rendue » reste porté par un seul point (`LigneTournee.rendue`, toujours faux d'ici l'export), sans rien inventer dans le fichier.
 
 ## Vérifié à la source
 

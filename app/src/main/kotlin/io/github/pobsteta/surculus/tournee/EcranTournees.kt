@@ -18,6 +18,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -78,6 +82,8 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauratio
     var lignes by remember { mutableStateOf<List<LigneTournee>?>(null) }
     var version by remember { mutableIntStateOf(0) }
     var message by remember { mutableStateOf<MessageTournees?>(null) }
+    var recherche by rememberSaveable { mutableStateOf("") }
+    var voirRendues by rememberSaveable { mutableStateOf(false) }
     var occupe by remember { mutableStateOf(false) }
     var wifi by remember { mutableStateOf(ReglagesOrtho.wifiSeulement(ctx)) }
     val ressources = LocalResources.current
@@ -133,10 +139,46 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauratio
         }
         message?.let { Text(it.texte, fontSize = 16.sp, color = if (it.refus) Palette.Rouge else Palette.Noir) }
 
-        val toutes = lignes
-        if (toutes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
+        val toutes = lignes.orEmpty()
+        val trouvees = if (recherche.isBlank()) toutes else toutes.filter { correspond(it.champs, recherche) }
+        val (rendues, ouvertes) = partager(trouvees) { it.rendue }
+        val affichees = if (voirRendues) rendues else ouvertes
+        val autres = if (voirRendues) ouvertes else rendues
+        if (lignes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
+        if (toutes.isNotEmpty()) {
+            // Zone de recherche et puce « Rendues (n) » sur une même ligne, comme Groma et Marculus (mission 041).
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = recherche,
+                    onValueChange = { recherche = it },
+                    label = { Text(stringResource(R.string.tournees_recherche)) },
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = 18.sp),
+                    modifier = Modifier.weight(1f),
+                )
+                FilterChip(
+                    selected = voirRendues,
+                    onClick = { voirRendues = !voirRendues },
+                    label = { Text(stringResource(R.string.tournees_rendues, toutes.count { it.rendue }), fontSize = 16.sp) },
+                    leadingIcon = if (voirRendues) ({ Text("✓", fontSize = 16.sp, fontWeight = FontWeight.Bold) }) else null,
+                )
+            }
+            if (recherche.isNotBlank() && autres.isNotEmpty()) {
+                Text(
+                    stringResource(if (voirRendues) R.string.tournees_autres_ouvertes else R.string.tournees_autres_rendues, autres.size),
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (affichees.isEmpty()) {
+                Text(
+                    stringResource(if (recherche.isNotBlank()) R.string.tournees_aucune_trouvee else R.string.tournees_aucune_rendue),
+                    fontSize = 18.sp,
+                )
+            }
+        }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            items(toutes.orEmpty(), key = { it.id }) { ligne ->
+            items(affichees, key = { it.id }) { ligne ->
                 LigneDeTournee(ligne, onOuvrir = { onOuvrir(ligne.id) }, onOrtho = {
                     // La lecture du gpkg (emprise) se fait hors du fil principal.
                     portee.launch {
