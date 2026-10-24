@@ -82,13 +82,19 @@ _Idées, à trier au prochain `/mission`._
   `pilotage/missions/038-theme-commun.md`. PR #81 relue, prête ; attend l'essai avec la 040.
 - **040** accueil sur la liste des tournées, menu à trois points comme Marculus (`dev`,
   appuyer), en cours depuis le 2026-10-24, sur la branche de la 038. Fiche :
-  `pilotage/missions/040-accueil-tournees.md`.
+  `pilotage/missions/040-accueil-tournees.md`. PR #82, prête après reprise.
+- **041** recherche et puce « Rendues (n) » (`dev`, appuyer), sur la branche de la 040.
+  PR #83, en relecture. Fiche : `pilotage/missions/041-recherche-tournees.md`.
 
 ## Planifié
 
 _En attente sous le plafond humain (3 PR en revue)._
 
 **Attendent le plafond :**
+
+- **042** styles de texte de Marculus et Groma aux tailles de Surculus (`dev`, appuyer : tableau
+  des styles validé par Pascal avant le code). Après la 040 et la 041. Fiche :
+  `pilotage/missions/042-typographie.md`.
 
 - **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK de la 011 sur Couchey
   (import, ortho, mode avion, guidage, test des dix secondes) ; restauration de
