@@ -3,7 +3,7 @@
   "regle": "La commande dictée est confrontée à l'état courant du plant : certaines combinaisons sont refusées par l'application",
   "format": "voir fixtures/README.md (section Dictée)",
   "entree": "etat_courant : sain, atteint, mort, absent, non_observe ou null (aucun état saisi) ; phrase : texte de Vosk",
-  "note": "Ces cas pilotent l'analyseur ET la règle d'application (mission 013 avec 012). La phrase refusée ici est une phrase de la grammaire, refusée pour le contexte seulement. « mangé » : détail « abroutissement » accepté sur sain, atteint ou mort ; refusé sur absent, non observé ou sans état (spec § 6, décision n° 4 corrigée). « remplace » : accepté seulement sur un plant mort ou absent (décision n° 9). Un état dicté sur un plant qui en a déjà un est une correction du journal (`remplace_uuid`), annoncée par la voix (décision n° 10) : l'attendu porte `correction` et `annonce_vocale`. Redire l'état que le plant a déjà n'ajoute aucune ligne et la voix confirme (décision n° 11, étendue à « non observé » le 2026-10-22) : l'attendu porte `ligne_ajoutee` faux et `confirmation_vocale` vrai, sans `correction`. « non observé » sur un plant qui a déjà un état est une correction (décision n° 12) : le journal est en ajout seul, l'ancienne ligne `etat` reste telle quelle, la nouvelle ligne `non_observe` la désigne par `remplace_uuid` et ne porte aucune mesure, donc l'état courant n'en a plus (spec § 5 et l. 347) ; `mesures_courantes` (entrée) donne les mesures du plant, `mesures_conservees` (attendu) dit si l'état courant les garde.",
+  "note": "Ces cas pilotent l'analyseur ET la règle d'application (mission 013 avec 012). La phrase refusée ici est une phrase de la grammaire, refusée pour le contexte seulement. « mangé » : détail « abroutissement » accepté sur sain, atteint ou mort ; refusé sur absent, non observé ou sans état (spec § 6, décision n° 4 corrigée). « remplace » : accepté seulement sur un plant mort ou absent (décision n° 9). Un état dicté sur un plant qui en a déjà un est une correction du journal (`remplace_uuid`), annoncée par la voix (décision n° 10) : l'attendu porte `correction` et `annonce_vocale`. Redire l'état que le plant a déjà n'ajoute aucune ligne et la voix confirme (décision n° 11, étendue à « non observé » le 2026-10-22) : l'attendu porte `ligne_ajoutee` faux et `confirmation_vocale` vrai, sans `correction`. « non observé » sur un plant qui a déjà un état est une correction (décision n° 12) : le journal est en ajout seul, l'ancienne ligne `etat` reste telle quelle, la nouvelle ligne `non_observe` la désigne par `remplace_uuid` et ne porte aucune mesure, donc l'état courant n'en a plus (spec § 5 et l. 347) ; « hauteur » dite sur un plant sans état est refusée (la voix demande l'état d'abord) et acceptée sur un plant mort (DI-170 à DI-174 ; Pascal, 2026-10-24). `mesures_courantes` (entrée) donne les mesures du plant, `mesures_conservees` (attendu) dit si l'état courant les garde.",
   "cas": [
     {
       "id": "DI-100",
@@ -622,7 +622,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 4.3 (« hauteur » dite sur un plant qui n'a pas encore d'état est refusée, la voix demande l'état d'abord ; acceptée sur un plant mort) ; pilotage/journal.md, 2026-10-24 (décisions de Pascal « oui, refus » et « 1. oui »)"
+      "source": "docs/spec.md § 4.3 (l. 159-161 : hauteur dite sur un plant qui n'a pas encore d'état est refusée, et la voix demande l'état d'abord ; elle est acceptée sur un plant mort) ; pilotage/journal.md, 2026-10-24 (décisions de Pascal « oui, refus » et « 1. oui »)"
     },
     {
       "id": "DI-171",
@@ -638,7 +638,7 @@
           "hauteur_cm": 45
         }
       },
-      "source": "docs/spec.md § 4.3 (« hauteur » acceptée sur un plant mort) ; docs/spec.md § 6 (hauteur refusée sur un plant absent, non observé : aucune mesure) ; pilotage/journal.md, 2026-10-24 (décision de Pascal « 1. oui »)"
+      "source": "docs/spec.md § 4.3 (« hauteur » acceptée sur un plant mort) ; pilotage/journal.md, 2026-10-24 (décision de Pascal « 1. oui »)"
     },
     {
       "id": "DI-172",
@@ -657,7 +657,7 @@
           "hauteur_cm": 45
         }
       },
-      "source": "docs/spec.md § 4.3 (« hauteur » acceptée sur un plant mort) ; docs/spec.md § 6 (hauteur refusée sur un plant absent, non observé : aucune mesure) ; pilotage/journal.md, 2026-10-24 (décision de Pascal « 1. oui »)"
+      "source": "docs/spec.md § 4.3 (« hauteur » acceptée sur un plant mort) ; pilotage/journal.md, 2026-10-24 (décision de Pascal « 1. oui »)"
     },
     {
       "id": "DI-173",
@@ -669,7 +669,7 @@
       "attendu": {
         "accepte": false
       },
-      "source": "docs/spec.md § 4.3 (« hauteur » dite sur un plant qui n'a pas encore d'état est refusée, la voix demande l'état d'abord ; acceptée sur un plant mort) ; pilotage/journal.md, 2026-10-24 (décisions de Pascal « oui, refus » et « 1. oui »)"
+      "source": "docs/spec.md § 4.3 (l. 159-161 : hauteur dite sur un plant qui n'a pas encore d'état est refusée, et la voix demande l'état d'abord ; elle est acceptée sur un plant mort) ; pilotage/journal.md, 2026-10-24 (décisions de Pascal « oui, refus » et « 1. oui »)"
     },
     {
       "id": "DI-174",
@@ -685,7 +685,7 @@
           "hauteur_cm": 400
         }
       },
-      "source": "docs/spec.md § 4.3 (« hauteur » acceptée sur un plant mort) ; docs/spec.md § 6 (hauteur refusée sur un plant absent, non observé : aucune mesure) ; pilotage/journal.md, 2026-10-24 (décision de Pascal « 1. oui »)"
+      "source": "docs/spec.md § 4.3 (« hauteur » acceptée sur un plant mort) ; pilotage/journal.md, 2026-10-24 (décision de Pascal « 1. oui »)"
     }
   ]
 }
