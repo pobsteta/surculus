@@ -15,8 +15,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
@@ -123,78 +126,80 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauratio
     }
 
     Column(Modifier.fillMaxSize()) {
-    BandeauAccueil(onEssai = onEssai, onRestauration = onRestauration)
-    Column(Modifier.padding(16.dp).navigationBarsPadding(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = { choisirDossier.launch(null) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
-                Text(stringResource(R.string.tournees_importer_dossier), fontSize = 18.sp)
+        BandeauAccueil(onEssai = onEssai, onRestauration = onRestauration)
+        Column(Modifier
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+            .padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = { choisirDossier.launch(null) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
+                    Text(stringResource(R.string.tournees_importer_dossier), fontSize = 18.sp)
+                }
+                Button(onClick = { choisirZip.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
+                    Text(stringResource(R.string.tournees_importer_zip), fontSize = 18.sp)
+                }
             }
-            Button(onClick = { choisirZip.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
-                Text(stringResource(R.string.tournees_importer_zip), fontSize = 18.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.tournees_wifi), fontSize = 18.sp)
+                Switch(checked = wifi, onCheckedChange = { wifi = it; ReglagesOrtho.definirWifiSeulement(ctx, it) })
             }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.tournees_wifi), fontSize = 18.sp)
-            Switch(checked = wifi, onCheckedChange = { wifi = it; ReglagesOrtho.definirWifiSeulement(ctx, it) })
-        }
-        message?.let { Text(it.texte, fontSize = 16.sp, color = if (it.refus) Palette.Rouge else Palette.Noir) }
+            message?.let { Text(it.texte, fontSize = 16.sp, color = if (it.refus) Palette.Rouge else Palette.Noir) }
 
-        val toutes = lignes.orEmpty()
-        val trouvees = if (recherche.isBlank()) toutes else toutes.filter { correspond(it.champs, recherche) }
-        val (rendues, ouvertes) = partager(trouvees) { it.rendue }
-        val affichees = if (voirRendues) rendues else ouvertes
-        val autres = if (voirRendues) ouvertes else rendues
-        if (lignes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
-        if (toutes.isNotEmpty()) {
-            // Zone de recherche et puce « Rendues (n) » sur une même ligne, comme Groma et Marculus (mission 041).
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = recherche,
-                    onValueChange = { recherche = it },
-                    label = { Text(stringResource(R.string.tournees_recherche)) },
-                    singleLine = true,
-                    textStyle = TextStyle(fontSize = 18.sp),
-                    modifier = Modifier.weight(1f),
-                )
-                FilterChip(
-                    selected = voirRendues,
-                    onClick = { voirRendues = !voirRendues },
-                    label = { Text(stringResource(R.string.tournees_rendues, toutes.count { it.rendue }), fontSize = 16.sp) },
-                    leadingIcon = if (voirRendues) ({ Text("✓", fontSize = 16.sp, fontWeight = FontWeight.Bold) }) else null,
-                )
+            val toutes = lignes.orEmpty()
+            val trouvees = if (recherche.isBlank()) toutes else toutes.filter { correspond(it.champs, recherche) }
+            val (rendues, ouvertes) = partager(trouvees) { it.rendue }
+            val affichees = if (voirRendues) rendues else ouvertes
+            val autres = if (voirRendues) ouvertes else rendues
+            if (lignes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
+            if (toutes.isNotEmpty()) {
+                // Zone de recherche et puce « Rendues (n) » sur une même ligne, comme Groma et Marculus (mission 041).
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = recherche,
+                        onValueChange = { recherche = it },
+                        label = { Text(stringResource(R.string.tournees_recherche)) },
+                        singleLine = true,
+                        textStyle = TextStyle(fontSize = 18.sp),
+                        modifier = Modifier.weight(1f),
+                    )
+                    FilterChip(
+                        selected = voirRendues,
+                        onClick = { voirRendues = !voirRendues },
+                        label = { Text(stringResource(R.string.tournees_rendues, toutes.count { it.rendue }), fontSize = 16.sp) },
+                        leadingIcon = if (voirRendues) ({ Text("✓", fontSize = 16.sp, fontWeight = FontWeight.Bold) }) else null,
+                    )
+                }
+                if (recherche.isNotBlank() && autres.isNotEmpty()) {
+                    Text(
+                        stringResource(if (voirRendues) R.string.tournees_autres_ouvertes else R.string.tournees_autres_rendues, autres.size),
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (affichees.isEmpty()) {
+                    Text(
+                        stringResource(if (recherche.isNotBlank()) R.string.tournees_aucune_trouvee else R.string.tournees_aucune_rendue),
+                        fontSize = 18.sp,
+                    )
+                }
             }
-            if (recherche.isNotBlank() && autres.isNotEmpty()) {
-                Text(
-                    stringResource(if (voirRendues) R.string.tournees_autres_ouvertes else R.string.tournees_autres_rendues, autres.size),
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (affichees.isEmpty()) {
-                Text(
-                    stringResource(if (recherche.isNotBlank()) R.string.tournees_aucune_trouvee else R.string.tournees_aucune_rendue),
-                    fontSize = 18.sp,
-                )
-            }
-        }
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            items(affichees, key = { it.id }) { ligne ->
-                LigneDeTournee(ligne, onOuvrir = { onOuvrir(ligne.id) }, onOrtho = {
-                    // La lecture du gpkg (emprise) se fait hors du fil principal.
-                    portee.launch {
-                        val refus = withContext(Dispatchers.IO) { DepotTournees.planifierOrtho(ctx, ligne.dossier, remplacer = true) }
-                        message = when (refus) {
-                            is ZoneTuiles.Resultat.HorsFrance -> MessageTournees(ressources.getString(R.string.ortho_refus_hors_france), refus = true)
-                            is ZoneTuiles.Resultat.TropGrande -> MessageTournees(ressources.getString(R.string.ortho_refus_trop_grande, refus.nombre.toInt()), refus = true)
-                            else -> MessageTournees(ressources.getString(R.string.ortho_planifiee), refus = false)
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                items(affichees, key = { it.id }) { ligne ->
+                    LigneDeTournee(ligne, onOuvrir = { onOuvrir(ligne.id) }, onOrtho = {
+                        // La lecture du gpkg (emprise) se fait hors du fil principal.
+                        portee.launch {
+                            val refus = withContext(Dispatchers.IO) { DepotTournees.planifierOrtho(ctx, ligne.dossier, remplacer = true) }
+                            message = when (refus) {
+                                is ZoneTuiles.Resultat.HorsFrance -> MessageTournees(ressources.getString(R.string.ortho_refus_hors_france), refus = true)
+                                is ZoneTuiles.Resultat.TropGrande -> MessageTournees(ressources.getString(R.string.ortho_refus_trop_grande, refus.nombre.toInt()), refus = true)
+                                else -> MessageTournees(ressources.getString(R.string.ortho_planifiee), refus = false)
+                            }
+                            version++
                         }
-                        version++
-                    }
-                })
-                HorizontalDivider()
+                    })
+                    HorizontalDivider()
+                }
             }
         }
-    }
     }
 }
 
@@ -205,7 +210,9 @@ private fun BandeauAccueil(onEssai: () -> Unit, onRestauration: () -> Unit) {
     val menuDesc = stringResource(R.string.tournees_menu)
     Surface(color = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
         Row(
-            Modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(start = 16.dp, end = 4.dp),
+            Modifier.fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
+                .height(56.dp).padding(start = 16.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
