@@ -40,7 +40,9 @@ _Idées, à trier au prochain `/mission`._
 - **Pascal (ADR 0008)** : note de Marculus du 2026-10-24 (`~/dev/briefs/vers-surculus/`) :
   `terrain-style` v0.6.0 fait disparaître le vert, Marculus l'a annulé ; le thème actuel de
   Marculus (5,17:1) a été jugé « parfait » au soleil. L'ADR 0008 (mêmes jetons, 7:1)
-  tient-elle ? À trancher avant la 038.
+  tient-elle ? Proposition de l'orchestrateur : trancher au retour de Couchey, avant la 038.
+  Marculus a aussi envoyé un brief à `terrain` pour une palette qui reste verte, et ajouté
+  un choix Système / Clair / Sombre (« utile peut-être pour Surculus »).
 - **Maintenance** : le commentaire du test « ECART terrain-voix »
   (`core/src/test/.../dictee/InstallationModeleTest.kt` l. 86) dit « brief à venir » ; le
   faire pointer vers pobsteta/terrain#23 à la prochaine mission de code (Pascal, 2026-10-24).
