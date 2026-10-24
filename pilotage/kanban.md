@@ -84,6 +84,7 @@ _En attente sous le plafond humain (3 PR en revue)._
   en noir, palette d'état passée au test 1.4.6, tests d'égalité et de contraste rejoués
   dans Surculus (ADR 0008 amendée). Après l'essai au soleil de Couchey ; essai au soleil de
   la branche avant fusion.
+
 ## Terminé
 
 - Cycle 9, 2026-10-23 : **037** DI-303 suit la décision 13 (PR #73) — Pascal.
