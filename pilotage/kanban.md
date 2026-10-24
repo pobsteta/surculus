@@ -37,6 +37,9 @@ _Idées, à trier au prochain `/mission`._
   à part, après 012 » (Pascal, 2026-10-22 ; l'option proposait de faire primer l'état local
   sur `etat_suivi`) ; travaux et vides au bac à sable (Pascal, même jour), à dessiner quand
   l'app les saisira (la tournée de sommieR n'en porte aucun).
+- **Maintenance** : le commentaire du test « ECART terrain-voix »
+  (`core/src/test/.../dictee/InstallationModeleTest.kt` l. 86) dit « brief à venir » ; le
+  faire pointer vers pobsteta/terrain#23 à la prochaine mission de code (Pascal, 2026-10-24).
 - **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
   de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
