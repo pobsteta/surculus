@@ -92,7 +92,7 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 **Attendent le plafond :**
 
-- **042** styles de texte de Marculus et Groma aux tailles de Surculus (`dev`, appuyer : tableau
+- **042** styles et tailles de texte de Marculus (décision du 2026-10-24, seconde) (`dev`, appuyer : tableau
   des styles validé par Pascal avant le code). Après la 040 et la 041. Fiche :
   `pilotage/missions/042-typographie.md`.
 
