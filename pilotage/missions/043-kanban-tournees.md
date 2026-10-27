@@ -11,7 +11,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Ajouter à la liste des tournées une vue Kanban à cinq colonnes, celles de Marculus (Proposée, Validée, Planifiée, Réalisée, Abandonnée), avec glisser-déposer des cartes et un statut minimal imposé par l'avancement, pour que le forestier voie d'un coup d'œil où en est chacune de ses tournées, comme dans Marculus.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Ajouter à la liste des tournées une vue Kanban à cinq colonnes (celles de Marculus), avec glisser-déposer et un statut minimal imposé par l'avancement, pour voir d'un coup d'œil où en est chaque tournée. _(Recopiée par l'orchestrateur depuis le compte rendu du `dev`.)_
 
 ## Vérifié à la source
 
