@@ -64,7 +64,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -173,24 +172,24 @@ fun EcranTournees(
             .padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (!colonnesAffichees) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(onClick = { choisirDossier.launch(null) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
-                    Text(stringResource(R.string.tournees_importer_dossier), fontSize = 18.sp)
+                    Text(stringResource(R.string.tournees_importer_dossier))
                 }
                 Button(onClick = { choisirZip.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
-                    Text(stringResource(R.string.tournees_importer_zip), fontSize = 18.sp)
+                    Text(stringResource(R.string.tournees_importer_zip))
                 }
             }
             if (!colonnesAffichees) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.tournees_wifi), fontSize = 18.sp)
+                Text(stringResource(R.string.tournees_wifi))
                 Switch(checked = wifi, onCheckedChange = { wifi = it; ReglagesOrtho.definirWifiSeulement(ctx, it) })
             }
-            message?.let { Text(it.texte, fontSize = 16.sp, color = if (it.refus) Palette.Rouge else Palette.Noir) }
+            message?.let { Text(it.texte, color = if (it.refus) Palette.Rouge else Palette.Noir) }
 
             val toutes = lignes.orEmpty()
             val trouvees = if (recherche.isBlank()) toutes else toutes.filter { correspond(it.champs, recherche) }
             val (rendues, ouvertes) = partager(trouvees) { it.rendue }
             val affichees = if (voirRendues) rendues else ouvertes
             val autres = if (voirRendues) ouvertes else rendues
-            if (lignes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
+            if (lignes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), style = MaterialTheme.typography.bodyMedium)
             if (toutes.isNotEmpty()) {
                 // Zone de recherche et puce « Rendues (n) » sur une même ligne, comme Groma et Marculus (mission 041).
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -199,15 +198,14 @@ fun EcranTournees(
                         onValueChange = { recherche = it },
                         label = { Text(stringResource(R.string.tournees_recherche)) },
                         singleLine = true,
-                        textStyle = TextStyle(fontSize = 18.sp),
                         modifier = Modifier.weight(1f),
                     )
                     // En colonnes, toutes les tournées sont réparties : pas de puce « Rendues », comme Marculus.
                     if (!colonnesAffichees) FilterChip(
                         selected = voirRendues,
                         onClick = { voirRendues = !voirRendues },
-                        label = { Text(stringResource(R.string.tournees_rendues, toutes.count { it.rendue }), fontSize = 16.sp) },
-                        leadingIcon = if (voirRendues) ({ Text("✓", fontSize = 16.sp, fontWeight = FontWeight.Bold) }) else null,
+                        label = { Text(stringResource(R.string.tournees_rendues, toutes.count { it.rendue }), style = MaterialTheme.typography.labelLarge) },
+                        leadingIcon = if (voirRendues) ({ Text("✓", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold) }) else null,
                     )
                 }
                 if (!colonnesAffichees && recherche.isNotBlank() && autres.isNotEmpty()) {
@@ -217,12 +215,12 @@ fun EcranTournees(
                             autres.size,
                             autres.size,
                         ),
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 if (colonnesAffichees && trouvees.isEmpty()) {
-                    Text(stringResource(R.string.tournees_aucune_trouvee), fontSize = 18.sp)
+                    Text(stringResource(R.string.tournees_aucune_trouvee), style = MaterialTheme.typography.bodyMedium)
                 } else if (!colonnesAffichees && affichees.isEmpty()) {
                     Text(
                         stringResource(
@@ -232,7 +230,7 @@ fun EcranTournees(
                                 MessageVide.AUCUNE_OUVERTE -> R.string.tournees_aucune_ouverte
                             },
                         ),
-                        fontSize = 18.sp,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             }
@@ -281,8 +279,8 @@ private fun BoiteAPropos(onFermer: () -> Unit) {
         title = { Text(stringResource(R.string.apropos_titre)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                Text(texteVersion(versionNom), fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Text(stringResource(R.string.apropos_desc), fontSize = 16.sp)
+                Text(texteVersion(versionNom), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.apropos_desc), style = MaterialTheme.typography.bodyMedium)
                 Text(stringResource(R.string.apropos_licences), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
             }
         },
@@ -293,10 +291,10 @@ private fun BoiteAPropos(onFermer: () -> Unit) {
                     onFermer()
                 },
                 modifier = Modifier.height(48.dp),
-            ) { Text(stringResource(R.string.apropos_github), fontSize = 18.sp) }
+            ) { Text(stringResource(R.string.apropos_github)) }
         },
         dismissButton = {
-            TextButton(onClick = onFermer, modifier = Modifier.height(48.dp)) { Text(stringResource(R.string.apropos_fermer), fontSize = 18.sp) }
+            TextButton(onClick = onFermer, modifier = Modifier.height(48.dp)) { Text(stringResource(R.string.apropos_fermer)) }
         },
     )
 }
@@ -348,25 +346,25 @@ private fun BandeauAccueil(
                 }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.tournees_menu_kanban), fontSize = 18.sp) },
-                        trailingIcon = if (kanbanActif) ({ Text("✓", fontSize = 18.sp, fontWeight = FontWeight.Bold) }) else null,
+                        text = { Text(stringResource(R.string.tournees_menu_kanban)) },
+                        trailingIcon = if (kanbanActif) ({ Text("✓", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold) }) else null,
                         onClick = { menu = false; onActiverKanban() },
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.tournees_menu_plein_ecran), fontSize = 18.sp) },
-                        trailingIcon = if (pleinEcran) ({ Text("✓", fontSize = 18.sp, fontWeight = FontWeight.Bold) }) else null,
+                        text = { Text(stringResource(R.string.tournees_menu_plein_ecran)) },
+                        trailingIcon = if (pleinEcran) ({ Text("✓", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold) }) else null,
                         onClick = { menu = false; onPleinEcran() },
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.essai_ouvrir), fontSize = 18.sp) },
+                        text = { Text(stringResource(R.string.essai_ouvrir)) },
                         onClick = { menu = false; onEssai() },
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.restauration_ouvrir), fontSize = 18.sp) },
+                        text = { Text(stringResource(R.string.restauration_ouvrir)) },
                         onClick = { menu = false; onRestauration() },
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.tournees_menu_apropos), fontSize = 18.sp) },
+                        text = { Text(stringResource(R.string.tournees_menu_apropos)) },
                         onClick = { menu = false; onAPropos() },
                     )
                 }
@@ -383,16 +381,16 @@ private fun LigneDeTournee(ligne: LigneTournee, onOuvrir: () -> Unit, onOrtho: (
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         // 1. La forêt, en grand.
-        Text(ligne.foret ?: ligne.id, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(ligne.foret ?: ligne.id, style = MaterialTheme.typography.titleLarge)
         if (t == null) {
-            Text(stringResource(R.string.tournees_illisible, ligne.refus.orEmpty()), fontSize = 16.sp, color = Palette.Rouge)
+            Text(stringResource(R.string.tournees_illisible, ligne.refus.orEmpty()), style = MaterialTheme.typography.bodyMedium, color = Palette.Rouge)
             return@Column
         }
         val inconnu = stringResource(R.string.tournees_inconnu)
         // 2. Qui, quand.
-        Text(stringResource(R.string.tournees_prepare, t.projet?.prepareLe ?: inconnu, t.projet?.operateur ?: inconnu), fontSize = 16.sp)
+        Text(stringResource(R.string.tournees_prepare, t.projet?.prepareLe ?: inconnu, t.projet?.operateur ?: inconnu), style = MaterialTheme.typography.bodyMedium)
         // 3. Contrôles et état (la tournée est « ouverte » : l'état « rendue » vient avec l'export, mission 006).
-        Text(stringResource(R.string.tournees_saisies, t.controles.size), fontSize = 16.sp)
+        Text(stringResource(R.string.tournees_saisies, t.controles.size), style = MaterialTheme.typography.bodyMedium)
         // 4. L'ortho, en couleur.
         val o = ligne.ortho
         val (texte, couleur) = when (val e = o.etat) {
@@ -402,9 +400,9 @@ private fun LigneDeTournee(ligne: LigneTournee, onOuvrir: () -> Unit, onOrtho: (
             EtatOrtho.Absente -> stringResource(R.string.ortho_absente) to Palette.Rouge
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(texte, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = couleur)
+            Text(texte, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = couleur)
             if (o.etat != EtatOrtho.Complete) {
-                OutlinedButton(onClick = onOrtho, modifier = Modifier.height(48.dp)) { Text(stringResource(R.string.ortho_relancer), fontSize = 14.sp) }
+                OutlinedButton(onClick = onOrtho, modifier = Modifier.height(48.dp)) { Text(stringResource(R.string.ortho_relancer)) }
             }
         }
     }

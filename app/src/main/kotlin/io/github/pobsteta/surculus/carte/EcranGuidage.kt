@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -65,15 +66,15 @@ import kotlin.math.roundToInt
 @Composable
 fun EcranGuidage(id: String, placetteUuid: String, onRetour: () -> Unit) {
     when (val c = chargerTournee(id)) {
-        Chargement.EnCours -> Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture), fontSize = 20.sp) }
+        Chargement.EnCours -> Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
         is Chargement.Refus -> Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(stringResource(R.string.carte_refus, c.message), fontSize = 18.sp, color = Palette.Rouge)
-            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour), fontSize = 18.sp) }
+            Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge)
+            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour)) }
         }
         is Chargement.Pret -> {
             val cible = c.tournee.tournee.placettes.firstOrNull { it.uuid == placetteUuid && it.position != null }
             if (cible == null) {
-                Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), fontSize = 18.sp, color = Palette.Rouge) }
+                Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = Palette.Rouge) }
             } else {
                 GuidagePret(cible, c.tournee.tournee.placettes, onRetour)
             }
@@ -140,16 +141,16 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, o
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour), fontSize = 18.sp) }
+            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour)) }
             BadgeFix(fix)
         }
         // 1. La seule chose à montrer, en grand : la distance.
-        Text(stringResource(R.string.guidage_vers, cible.code.orEmpty()), fontSize = 20.sp)
+        Text(stringResource(R.string.guidage_vers, cible.code.orEmpty()), style = MaterialTheme.typography.titleMedium)
         if (cap == null && fix != null) {
             // Un fix existe mais tombe hors de France : axes inversés, pas une absence de signal.
-            Text(stringResource(R.string.carte_hors_france), fontSize = 22.sp, color = Palette.Rouge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, fontWeight = FontWeight.Bold)
         } else if (cap == null) {
-            Text(stringResource(R.string.guidage_sans_position), fontSize = 22.sp, color = Palette.Rouge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.guidage_sans_position), color = Palette.Rouge, fontWeight = FontWeight.Bold)
         } else {
             Text(
                 Libelles.distance(cap.distanceM),
@@ -159,14 +160,14 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, o
             )
             // 2. Le cap, ou l'arrivée.
             if (cap.arrive) {
-                Text(stringResource(R.string.guidage_arrive), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Palette.Vert)
+                Text(stringResource(R.string.guidage_arrive), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Palette.Vert)
             } else {
                 Text(stringResource(R.string.guidage_cap, Libelles.cap(cap.azimutDeg)), fontSize = 28.sp, fontWeight = FontWeight.Bold)
             }
         }
         // 3. La comparaison : où je suis par rapport à la placette et au cercle de 30 m.
         Radar(position, cible.position!!, Modifier.fillMaxWidth().height(260.dp))
-        Text(stringResource(R.string.guidage_nord), fontSize = 12.sp)
+        Text(stringResource(R.string.guidage_nord), style = MaterialTheme.typography.bodySmall)
 
         if (cap?.arrive == true) {
             val c = confirmation
@@ -181,17 +182,17 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, o
                 onClick = { confirmation = Confirmation.EnCours(0) },
                 enabled = c !is Confirmation.EnCours,
                 modifier = Modifier.fillMaxWidth().height(64.dp),
-            ) { Text(stringResource(R.string.guidage_rattacher), fontSize = 20.sp) }
+            ) { Text(stringResource(R.string.guidage_rattacher)) }
             when (c) {
-                is Confirmation.EnCours -> Text(stringResource(R.string.guidage_moyenne, c.n, SECONDES_DE_MOYENNE), fontSize = 16.sp)
+                is Confirmation.EnCours -> Text(stringResource(R.string.guidage_moyenne, c.n, SECONDES_DE_MOYENNE), style = MaterialTheme.typography.bodyMedium)
                 is Confirmation.Fini -> Resultat(c.verdict)
                 null -> {}
             }
         }
         OutlinedButton(onClick = { son = !son }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
-            Text(stringResource(if (son) R.string.guidage_son_actif else R.string.guidage_son_coupe), fontSize = 18.sp)
+            Text(stringResource(if (son) R.string.guidage_son_actif else R.string.guidage_son_coupe))
         }
-        Text(stringResource(R.string.guidage_rien_enregistre), fontSize = 11.sp)
+        Text(stringResource(R.string.guidage_rien_enregistre), style = MaterialTheme.typography.labelSmall)
     }
 }
 
@@ -201,9 +202,9 @@ private fun Resultat(v: Verdict<Rattache>) {
         is Verdict.Accepte -> {
             val r = v.valeur
             if (r.parIdentite) {
-                Text(stringResource(R.string.guidage_rattache_identite, r.piquet.code, r.distanceM.roundToInt()), fontSize = 18.sp, color = Palette.Orange, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.guidage_rattache_identite, r.piquet.code, r.distanceM.roundToInt()), color = Palette.Orange, fontWeight = FontWeight.Bold)
             } else {
-                Text(stringResource(R.string.guidage_rattache, r.piquet.code, r.distanceM.roundToInt()), fontSize = 18.sp, color = Palette.Vert, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.guidage_rattache, r.piquet.code, r.distanceM.roundToInt()), color = Palette.Vert, fontWeight = FontWeight.Bold)
             }
         }
         is Verdict.Refuse -> {
@@ -213,9 +214,9 @@ private fun Resultat(v: Verdict<Rattache>) {
                 is RefusPlacette.CodeInconnu -> stringResource(R.string.guidage_refus_code, refus.code)
                 else -> refus.message
             }
-            Text(texte, fontSize = 18.sp, color = Palette.Rouge, fontWeight = FontWeight.Bold)
+            Text(texte, color = Palette.Rouge, fontWeight = FontWeight.Bold)
         }
-        is Verdict.AConfirmer -> Text(v.alerte.message, fontSize = 18.sp, color = Palette.Orange)
+        is Verdict.AConfirmer -> Text(v.alerte.message, color = Palette.Orange)
     }
 }
 

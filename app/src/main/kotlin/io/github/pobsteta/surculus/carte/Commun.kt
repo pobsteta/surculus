@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,9 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.pobsteta.surculus.R
@@ -69,8 +68,7 @@ fun BadgeFix(fix: FixGnss?, modifier: Modifier = Modifier) {
     Text(
         text = texte,
         color = Palette.Blanc,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.labelMedium,
         modifier = modifier.clip(RoundedCornerShape(8.dp)).background(Palette.du(fix?.qualite)).padding(horizontal = 12.dp, vertical = 8.dp),
     )
 }

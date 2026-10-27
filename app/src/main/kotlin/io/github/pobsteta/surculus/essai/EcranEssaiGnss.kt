@@ -33,6 +33,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -157,10 +158,10 @@ fun EcranEssaiGnss() {
                 if (etat.enMarche) stringResource(if (etat.connecte) R.string.essai_lien_ok else R.string.essai_lien_attente)
                 else stringResource(R.string.essai_lien_arrete),
             ),
-            fontSize = 16.sp, color = Noir,
+            style = MaterialTheme.typography.bodyMedium, color = Noir,
         )
-        etat.erreur?.let { Text(it, fontSize = 16.sp, color = Rouge) }
-        etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), fontSize = 16.sp, color = Rouge) }
+        etat.erreur?.let { Text(it, color = Rouge) }
+        etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = Rouge) }
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(
@@ -168,21 +169,21 @@ fun EcranEssaiGnss() {
                 enabled = config.appareilBt != null && config.pointMontage.isNotBlank(),
                 modifier = Modifier.weight(1f).height(64.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Vert, contentColor = Blanc),
-            ) { Text(stringResource(R.string.essai_demarrer), fontSize = 20.sp) }
+            ) { Text(stringResource(R.string.essai_demarrer)) }
             OutlinedButton(
                 onClick = { ServiceGnssRtk.arreter(ctx) },
                 modifier = Modifier.weight(1f).height(64.dp),
-            ) { Text(stringResource(R.string.essai_arreter), fontSize = 20.sp, color = Noir) }
+            ) { Text(stringResource(R.string.essai_arreter), color = Noir) }
         }
         if (manquantes.isNotEmpty()) {
             Text(
                 stringResource(R.string.essai_permissions_manquantes, manquantes.joinToString(", ") { it.substringAfterLast('.') }),
-                fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Rouge,
+                fontWeight = FontWeight.Bold, color = Rouge,
             )
         }
-        if (enregistre) Text(stringResource(R.string.essai_enregistre), fontSize = 14.sp, color = Noir)
+        if (enregistre) Text(stringResource(R.string.essai_enregistre), style = MaterialTheme.typography.bodyMedium, color = Noir)
 
-        Text(stringResource(R.string.essai_reglages), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Noir)
+        Text(stringResource(R.string.essai_reglages), style = MaterialTheme.typography.titleMedium, color = Noir)
 
         // Récepteur Bluetooth apparié.
         Box {
@@ -194,14 +195,14 @@ fun EcranEssaiGnss() {
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) {
-                Text(config.appareilBtNom ?: stringResource(R.string.essai_choisir_recepteur), fontSize = 18.sp, color = Noir)
+                Text(config.appareilBtNom ?: stringResource(R.string.essai_choisir_recepteur), color = Noir)
             }
             DropdownMenu(expanded = menuAppareil, onDismissRequest = { menuAppareil = false }) {
                 val appareils = appareilsAppairesRecepteur(ctx)
                 if (appareils.isEmpty()) DropdownMenuItem(text = { Text(stringResource(R.string.essai_aucun_appareil)) }, onClick = { menuAppareil = false })
                 appareils.forEach { (nom, adresse) ->
                     DropdownMenuItem(
-                        text = { Text(nom, fontSize = 18.sp) },
+                        text = { Text(nom) },
                         onClick = { config = config.copy(appareilBt = adresse, appareilBtNom = nom); menuAppareil = false },
                     )
                 }
@@ -226,12 +227,12 @@ fun EcranEssaiGnss() {
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
-            ) { Text(stringResource(R.string.essai_charger_points, config.casterHote), fontSize = 16.sp, color = Noir) }
+            ) { Text(stringResource(R.string.essai_charger_points, config.casterHote), color = Noir) }
             DropdownMenu(expanded = menuPoints, onDismissRequest = { menuPoints = false }) {
                 if (points.isEmpty()) DropdownMenuItem(text = { Text(stringResource(R.string.essai_aucun_point)) }, onClick = { menuPoints = false })
                 points.take(50).forEach { p ->
                     DropdownMenuItem(
-                        text = { Text(p.nom, fontSize = 18.sp) },
+                        text = { Text(p.nom) },
                         onClick = { config = config.copy(pointMontage = p.nom); menuPoints = false },
                     )
                 }
@@ -252,7 +253,7 @@ fun EcranEssaiGnss() {
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
         )
-        Text(stringResource(R.string.essai_compte_aide), fontSize = 14.sp, color = Noir)
+        Text(stringResource(R.string.essai_compte_aide), style = MaterialTheme.typography.bodySmall, color = Noir)
         Spacer(Modifier.height(24.dp))
     }
 }
@@ -270,13 +271,13 @@ fun BlocMesure(a: AffichageEssai) {
     ) {
         Text(a.qualite, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Blanc)
         Text(a.precision, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Blanc)
-        Text(a.ageFix, fontSize = 20.sp, color = Blanc)
-        Text(a.ageCorrections, fontSize = 20.sp, color = Blanc)
-        a.drapeaux.forEach { Text("▲ " + it.texte, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Blanc) }
-        a.lambertX?.let { Text("Lambert-93 · $it", fontSize = 18.sp, color = Blanc) }
-        a.lambertY?.let { Text("Lambert-93 · $it", fontSize = 18.sp, color = Blanc) }
+        Text(a.ageFix, color = Blanc)
+        Text(a.ageCorrections, color = Blanc)
+        a.drapeaux.forEach { Text("▲ " + it.texte, fontWeight = FontWeight.Bold, color = Blanc) }
+        a.lambertX?.let { Text("Lambert-93 · $it", color = Blanc) }
+        a.lambertY?.let { Text("Lambert-93 · $it", color = Blanc) }
         if (a.enFrance == false) {
-            Text(stringResource(R.string.essai_hors_france), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Blanc)
+            Text(stringResource(R.string.essai_hors_france), fontWeight = FontWeight.Bold, color = Blanc)
         }
     }
 }
