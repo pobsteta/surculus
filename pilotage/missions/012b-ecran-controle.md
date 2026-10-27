@@ -107,3 +107,33 @@ navigation, capteur, amendement proposé, questions), Pascal tranche, puis il co
 ## Comment saura-t-on que ça marche ?
 
 Pascal termine une placette sur son téléphone et la voit passer « Contrôlée ».
+
+## Décisions de Pascal sur le plan (2026-10-27, questions posées une par une)
+
+1. **Deux PR** : **012-B1** (navigation et deux portes, arrivée et moyenne, états et causes,
+   « Terminer », « Contrôlée », alerte « déjà terminée », permission de stockage) sur la branche
+   `mission/012b-ecran-controle` ; **012-B2** (boussole, pointage, plan dessiné, regarnis,
+   amendements de la spec § 1, § 3, § 10 et de l'ADR 0003) sur une branche à part, après B1.
+2. **Clavier en secours pour l'azimut** : oui, petit lien « Saisir au clavier » sous la vue
+   Pointer, `SourceAzimut.SAISIE`.
+3. **Unité de l'azimut tapé** : sélecteur degrés / grades à côté du champ, mémorisé par tournée ;
+   la boussole du téléphone reste en degrés.
+4. **Précision faible ou champ perturbé** : avertir sans bloquer (« dessinez un 8 ») ; seuils à
+   fixer à l'essai en forêt.
+5. **Visée** : téléphone à plat, bord haut vers le plant, cap pris à l'appui sur « Pointer »
+   (moyenne de la dernière seconde).
+6. **Précision de la boussole au journal** : non pour l'instant (format v1 inchangé).
+7. **Boutons d'état** : couleur et forme (sain vert ●, atteint orange ▲, mort rouge ✖, absent
+   noir ○), règles de la 063 en sombre.
+8. **Plants anciens** : non dessinés sur le plan, mention en petit ; mission à part pour leurs
+   positions.
+9. **Rattachement par code seul sans fix** : pas en 012-B.
+10. **Moyenne de 5 s** lancée toute seule à l'ouverture, avec décompte.
+11. **« Vide »** : pas de bouton (déjà décidé : « pas encore disponible » à la voix, 012-D).
+12. **Sortie sans « Terminer »** : sans confirmation ; la placette reste « à faire ».
+
+**Ajouts à la 012-B1** (décision de Pascal sur la #107, 2026-10-27) : un test des 4 libellés de la
+légende (symbole en tête, retiré par `substringAfter(' ')`) et le test de sources de la 063
+(`SansPlaqueSourcesTest`) passé en motif multiligne.
+
+La 063 est fusionnée (20740b3) : la B1 part de `main` à jour et utilise son code de couleurs.
