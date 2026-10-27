@@ -39,32 +39,35 @@ object AnciennesTuiles {
     /**
      * Efface `tuiles/` du [dossierTournee]. Idempotent. Aucun lien symbolique n'est jamais suivi : ni [dossierTournee]
      * s'il en est un (rien n'est fait), ni `tuiles`, ni un lien à l'intérieur ; le lien lui-même est supprimé, sa cible
-     * reste. Renvoie vrai si `tuiles/` a été effacé.
+     * reste. Un fichier qui résiste ne coupe pas le parcours. Renvoie vrai si `tuiles/` a été effacé.
      */
     fun effacer(dossierTournee: File): Boolean {
         if (estLien(dossierTournee)) return false
         val tuiles = File(dossierTournee, DOSSIER).toPath()
         if (!Files.exists(tuiles, LinkOption.NOFOLLOW_LINKS)) return false
-        Files.walkFileTree(tuiles, object : SimpleFileVisitor<Path>() {
+        runCatching { Files.walkFileTree(tuiles, object : SimpleFileVisitor<Path>() {
             // Sans FOLLOW_LINKS, un lien (même vers un dossier) arrive ici comme un fichier : supprimé, jamais traversé.
             override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                Files.deleteIfExists(file)
+                runCatching { Files.deleteIfExists(file) }
                 return FileVisitResult.CONTINUE
             }
 
+            // Un dossier illisible ou un fichier qui résiste n'arrête pas le parcours (le lien n'est jamais suivi).
+            override fun visitFileFailed(file: Path, exc: java.io.IOException): FileVisitResult = FileVisitResult.CONTINUE
+
             override fun postVisitDirectory(dir: Path, exc: java.io.IOException?): FileVisitResult {
-                Files.deleteIfExists(dir)
+                runCatching { Files.deleteIfExists(dir) }
                 return FileVisitResult.CONTINUE
             }
-        })
+        }) }
         return !Files.exists(tuiles, LinkOption.NOFOLLOW_LINKS)
     }
 
     private fun tournees(racineTournees: File): List<File> =
         (racineTournees.listFiles { f -> f.isDirectory && !estLien(f) } ?: emptyArray()).toList()
 
-    /** Applique [effacer] à chaque sous-dossier direct (hors liens) de [racineTournees]. Renvoie le nombre de tournées nettoyées. */
-    fun effacerPartout(racineTournees: File): Int = tournees(racineTournees).count { effacer(it) }
+    /** Applique [effacer] à chaque sous-dossier direct (hors liens) de [racineTournees]. Chaque tournée est isolée : l'échec de l'une n'arrête pas les suivantes. Renvoie le nombre de tournées nettoyées. */
+    fun effacerPartout(racineTournees: File): Int = tournees(racineTournees).count { runCatching { effacer(it) }.getOrDefault(false) }
 
     /** Vrai s'il reste un `<tournée>/tuiles` (même lien cassé) dans une tournée de [racineTournees]. */
     fun resteDesTuiles(racineTournees: File): Boolean =

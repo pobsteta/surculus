@@ -127,6 +127,28 @@ class AnciennesTuilesTest {
     }
 
     @Test
+    fun `un fichier non supprimable n'arrete pas les autres tournees`() {
+        val racine = tmp.resolve("tournees").toFile().apply { mkdirs() }
+        val a = tourneeComplete(File(racine, "a"), true)
+        val b = tourneeComplete(File(racine, "b"), true)
+        val verrou = File(a, "tuiles/ign-ortho/19/1")
+        verrou.setWritable(false) // lecture seule : 2.jpg ne peut pas être supprimé
+        try {
+            org.junit.jupiter.api.Assumptions.assumeFalse(
+                Files.isWritable(verrou.toPath()), "droits non applicables (root ?)",
+            )
+            AnciennesTuiles.effacerPartout(racine)
+            assertFalse(existeSansSuivre(File(b, "tuiles")), "la seconde tournée est nettoyée")
+            assertEquals(gardes, contenu(b))
+            assertTrue(File(a, "tuiles/ign-ortho/19/1/2.jpg").isFile)
+            assertTrue(AnciennesTuiles.resteDesTuiles(racine), "le drapeau ne doit pas être posé")
+            assertEquals(gardes, contenu(a).filterNot { it.startsWith("tuiles/") })
+        } finally {
+            verrou.setWritable(true)
+        }
+    }
+
+    @Test
     fun `resteDesTuiles voit un tuiles encore present`() {
         val racine = tmp.resolve("tournees").toFile().apply { mkdirs() }
         tourneeComplete(File(racine, "a"), true)
