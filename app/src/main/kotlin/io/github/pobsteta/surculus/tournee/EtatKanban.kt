@@ -30,9 +30,6 @@ enum class EtatKanban(val libelle: String) {
     }
 }
 
-/** La vue Kanban est désactivée tant que l'utilisateur ne l'a pas activée dans le menu « ⋮ » (comme Marculus). */
-const val VUE_KANBAN_ACTIVE_PAR_DEFAUT = false
-
 /**
  * Nombre de saisies **encore valables** d'une tournée, à partir de sa projection (décision de Pascal, 2026-10-27) : une clé
  * (objet, type) de contrôle, pointage ou état compte une fois si elle a une valeur courante. Une saisie annulée n'a plus de
@@ -81,16 +78,11 @@ interface MagasinKanban {
  * (réponse 1 de Pascal, 2026-10-27). Perdus à la restauration sur un autre téléphone ; accepté.
  */
 class ReglagesKanban(private val magasin: MagasinKanban) {
-    var vueActive: Boolean
-        get() = magasin.lireBooleen(CLE_VUE, VUE_KANBAN_ACTIVE_PAR_DEFAUT)
-        set(v) = magasin.ecrireBooleen(CLE_VUE, v)
-
     fun statut(idTournee: String): EtatKanban = EtatKanban.depuisNom(magasin.lireTexte(PREFIXE_STATUT + idTournee))
 
     fun definirStatut(idTournee: String, statut: EtatKanban) = magasin.ecrireTexte(PREFIXE_STATUT + idTournee, statut.name)
 
     private companion object {
-        const val CLE_VUE = "vue_kanban"
         const val PREFIXE_STATUT = "statut_"
     }
 }

@@ -100,7 +100,6 @@ fun EcranTournees(
     var message by remember { mutableStateOf<MessageTournees?>(null) }
     var recherche by rememberSaveable { mutableStateOf("") }
     var voirRendues by rememberSaveable { mutableStateOf(false) }
-    var kanbanActif by remember { mutableStateOf(false) }
     var modeColonnes by rememberSaveable { mutableStateOf(false) }
     var saisies by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var statuts by remember { mutableStateOf<Map<String, EtatKanban>>(emptyMap()) }
@@ -108,11 +107,9 @@ fun EcranTournees(
     var wifi by remember { mutableStateOf(ReglagesOrtho.wifiSeulement(ctx)) }
     val ressources = LocalResources.current
     val reglagesKanban = remember { DepotTournees.reglagesKanban(ctx) }
-    // Vue Kanban : désactivée par défaut, gardée sur le téléphone (mission 043).
-    LaunchedEffect(Unit) { kanbanActif = withContext(Dispatchers.IO) { reglagesKanban.vueActive } }
     var aPropos by rememberSaveable { mutableStateOf(false) }
     if (aPropos) BoiteAPropos(onFermer = { aPropos = false })
-    val colonnesAffichees = kanbanActif && modeColonnes
+    val colonnesAffichees = modeColonnes
 
     // Recharge la liste ; tant qu'une ortho n'est pas complète, on recompte toutes les 5 s (le préchargement avance).
     LaunchedEffect(version) {
@@ -153,7 +150,6 @@ fun EcranTournees(
     Column(Modifier.fillMaxSize()) {
         BandeauAccueil(
             onParametres = onParametres,
-            kanbanActif = kanbanActif,
             modeColonnes = modeColonnes,
             onAPropos = { aPropos = true },
             onBasculerVue = { modeColonnes = !modeColonnes },
@@ -301,7 +297,6 @@ private fun BoiteAPropos(onFermer: () -> Unit) {
 @Composable
 private fun BandeauAccueil(
     onParametres: () -> Unit,
-    kanbanActif: Boolean,
     modeColonnes: Boolean,
     onAPropos: () -> Unit,
     onBasculerVue: () -> Unit,
@@ -309,14 +304,13 @@ private fun BandeauAccueil(
     var menu by remember { mutableStateOf(false) }
     val menuDesc = stringResource(R.string.tournees_menu)
     BandeauCompact(titre = stringResource(R.string.app_name), actions = {
-        if (kanbanActif) {
-            // Mêmes icônes que Marculus (décision de Pascal, 2026-10-27) : l'icône montre la vue où l'on va passer.
-            IconButton(onClick = onBasculerVue) {
-                Icon(
-                    if (modeColonnes) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewColumn,
-                    contentDescription = stringResource(if (modeColonnes) R.string.tournees_vue_liste else R.string.tournees_vue_colonnes),
-                )
-            }
+        // Toujours visible, sans réglage (mission 050). Mêmes icônes que Marculus (décision de Pascal, 2026-10-27) :
+        // l'icône montre la vue où l'on va passer.
+        IconButton(onClick = onBasculerVue) {
+            Icon(
+                if (modeColonnes) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewColumn,
+                contentDescription = stringResource(if (modeColonnes) R.string.tournees_vue_liste else R.string.tournees_vue_colonnes),
+            )
         }
         Box {
             IconButton(onClick = { menu = true }) {

@@ -10,7 +10,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Retirer de Paramètres la case « Vue Kanban » et rendre le bouton de bascule liste/colonnes toujours visible dans la barre de la liste des tournées, pour que le forestier passe d'une vue à l'autre en un appui, sans réglage préalable.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Retirer de Paramètres la case « Vue Kanban » et rendre toujours visible le bouton liste/colonnes de la barre de la liste des tournées, pour passer d'une vue à l'autre en un appui, sans réglage préalable.
 
 ## Vérifié à la source
 
