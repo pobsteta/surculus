@@ -170,3 +170,22 @@ journal du 2026-10-21 (`pilotage/journal.md`, entrée « mission 011 · (a) … 
   (« pas de réseau ») n'est plus tenue pour les fonds IGN et OSM ; elle reste tenue par l'Ortho
   chantier. Les tuiles déjà préchargées sur les téléphones restent sur le disque, plus lues
   (choix du `dev`, PR #97).
+
+### Amendement du 2026-10-27 (suite) : l'Ortho chantier par défaut quand elle existe
+
+- **Décision de Pascal** (2026-10-27, « 3 oui ») : quand la tournée porte un fichier tuilé
+  d'ortho, la carte s'ouvre sur l'**Ortho chantier**, le seul fond qui marche sans réseau ;
+  sinon sur le Plan IGN (mission 057). Écart volontaire avec Marculus, qui ouvre toujours sur
+  le Plan IGN. Corrige la phrase « la carte s'ouvre sur le Plan IGN » de l'amendement
+  précédent, qui reste écrite comme trace.
+- **Condition** : l'Ortho chantier n'existe que si sommieR livre le fichier tuilé (cible (f)) ;
+  aujourd'hui sommieR livre un `ortho.tif` que Surculus ne lit pas. Tant que ce n'est pas fait,
+  aucune ortho ne s'affiche en forêt sans réseau.
+- **Tranché par Pascal** (2026-10-27, « 2 oui ») : un fond choisi à la main l'emporte à
+  l'ouverture suivante ; l'Ortho chantier est le défaut tant que rien n'a été choisi.
+  Puis (2026-10-27, « 1 oui ») : le fond est mémorisé **tournée par tournée**, sans quoi un
+  fond choisi une fois dans une tournée aurait empêché toutes les autres de s'ouvrir sur leur
+  Ortho chantier. Et (« 2 oui ») : la source et la date de l'Ortho chantier s'affichent
+  (Licence Ouverte, mission 059).
+- **Brief vers sommieR** (décision de Pascal, « 4 oui ») : livrer l'ortho en fichier tuilé
+  EPSG:3857 (cible (f)), seule ortho lisible sans réseau.

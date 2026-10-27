@@ -24,8 +24,6 @@ _Idées, à trier au prochain `/mission`._
   restauration sur deux téléphones après la 011 et la 012.
 - **Pascal (spec § 5)** : l'empreinte des photos au journal exige un type de ligne qui
   n'existe pas ; à trancher avant la mission photo.
-- **Pascal (dans sommieR)** : brief vers sommieR, un seul fichier d'ortho tuilé en
-  EPSG:3857 à la place d'`ortho.tif` (ADR 0009, cible f).
 - **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées
   (export, 032) ; l'essai sur téléphone est sur la carte « terrain avant la 012 ».
 - **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
