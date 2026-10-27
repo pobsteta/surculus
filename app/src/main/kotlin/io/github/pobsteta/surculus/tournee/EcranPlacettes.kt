@@ -51,7 +51,6 @@ import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.carte.Chargement
 import io.github.pobsteta.surculus.carte.Palette
 import io.github.pobsteta.surculus.carte.chargerTournee
-import io.github.pobsteta.surculus.carte.plaqueEtat
 import io.github.pobsteta.surculus.gpkg.EtatSuivi
 import io.github.pobsteta.surculus.gpkg.FormePastille
 import io.github.pobsteta.surculus.gpkg.Pastille
@@ -91,7 +90,8 @@ fun EcranPlacettes(id: String, onRetour: () -> Unit, onCarte: () -> Unit, onPlac
                     Text(
                         pluralStringResource(R.plurals.placettes_compte, ordre.nombre, ordre.nombre, ordre.aFaire.size),
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).plaqueEtat(),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     )
                     if (ordre.nombre == 0) {
                         Text(stringResource(R.string.placettes_vide), modifier = Modifier.padding(16.dp))

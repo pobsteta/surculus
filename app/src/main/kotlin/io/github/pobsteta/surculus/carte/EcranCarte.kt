@@ -536,7 +536,8 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
                 if (d != null) stringResource(R.string.carte_choisie_distance, p.code.orEmpty(), Libelles.distance(d)) else stringResource(R.string.carte_choisie, p.code.orEmpty()),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).plaqueEtat(),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }
 

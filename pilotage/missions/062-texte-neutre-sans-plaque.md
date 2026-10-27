@@ -12,7 +12,7 @@
 
 **En une phrase (quoi, et pourquoi) :** En thème sombre, retirer la plaque blanche (`plaqueEtat()`) sous les textes neutres, qui ne portent pas une couleur d'état, et les écrire dans la couleur du texte du thème (blanc en sombre), en commençant par la ligne de la placette choisie au bas de la carte, pour que le forestier les lise au lieu d'un gris clair sur blanc.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** En thème sombre, la ligne « Placette P35-01 · 10,0 km » de la carte et la ligne « n placettes · k à faire » de l'écran Placettes perdent leur plaque blanche et prennent la couleur de texte du thème (onSurface, blanc en sombre), pour que le forestier les lise ; rien d'autre ne change.
 
 ## Vérifié à la source
 
@@ -24,7 +24,7 @@
 
 Règles :
 - **Ligne de la placette choisie (bas de la carte) : pas de fond blanc, texte blanc en thème sombre** : Pascal, 2026-10-27. En clair, rien ne change.
-- **Même traitement pour « n placettes · k à faire »** (même défaut, même cause : texte neutre sur plaque) : extension proposée par l'orchestrateur, dite à Pascal.
+- **Même traitement pour « n placettes · k à faire »** : Pascal, 2026-10-27 : « idem dans l'affichage des placettes, dans le bandeau du haut "3 placettes - 1 à faire" supprimer le fond blanc et mettre la police en blanc ».
 - **La couleur vient du thème** (`MaterialTheme.colorScheme.onSurface` ou `onBackground`), pas d'un blanc écrit en dur, pour que le clair reste juste.
 - **Ne change pas** les textes en couleur d'état (légende, anomalies, alertes, verdicts du guidage, messages rouges) ni le radar : leur sort attend une décision de Pascal (suite de la plaque blanche).
 - **Contraste** : le texte retenu fait au moins 4,5:1 sur le fond réel, en clair comme en sombre (`ContrasteTest` ou un test voisin).
