@@ -73,45 +73,64 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **Pascal, essai de la release v0.7.45** (2026-10-27, après fusion) : « À propos » affiche
-  0.7.45 ; plein écran ; vue Kanban (icônes, glissé avec des gants, carte restée après
-  réouverture) ; recherche ; import de `Download/couchey-demo-sommier.zip`.
-- **sommieR, démo de Marsannay-la-Côte** : brief envoyé (pobsteta/sommieR#65), attend la
-  livraison pour la seconde tournée d'essai.
+_Aucune mission en cours à la clôture du cycle 10 (2026-10-27, soir)._
 
-- **042** styles et tailles de texte de Marculus (`dev`, appuyer), en cours depuis le
-  2026-10-27 : code direct, trois exceptions (72 sp et 44 sp). Fiche :
-  `pilotage/missions/042-typographie.md`.
-- **045** bouton « Toutes les licences » dans « À propos » (`dev`, appuyer) : PR #88 en
-  relecture. Fiche : `pilotage/missions/045-lien-licences.md`.
+- **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
+  « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
+  `couchey-demo-avec-ortho.zip`, bandeau, cinq boutons, Paramètres (thème en liste,
+  récepteur, voix), en mode avion. Vérifié par capture de l'orchestrateur le 2026-10-27 :
+  accueil, liste et carte conformes ; texte gris sur la plaque blanche en sombre illisible.
+- **sommieR** : démo de Marsannay-la-Côte (pobsteta/sommieR#65) et ortho tuilée EPSG:3857
+  (pobsteta/sommieR#66), briefs envoyés, sans réponse ; session pilotée par Pascal.
 
 ## Planifié
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Attendent le plafond :**
+**Prochaine mission proposée (clôture du cycle 10) :**
 
-- **046** écran Paramètres comme Marculus : Plein écran, Vue Kanban, Essai GNSS, Restaurer ; le menu « ⋮ » ne garde que Paramètres et À propos (`dev`, appuyer). Après la 042. Fiche : `pilotage/missions/046-parametres.md`.
-- **047** récepteur GNSS dans Paramètres, comme Groma (`dev`, appuyer). Après la 046. Fiche : `pilotage/missions/047-recepteur-dans-parametres.md`.
-- **048** voix Vosk depuis Paramètres : téléchargement et fichier (`dev`, appuyer). Après la 046. Fiche : `pilotage/missions/048-voix-vosk.md`.
-- **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK de la 011 sur Couchey
-  (import, ortho, mode avion, guidage, test des dix secondes) ; restauration de
-  `exemple-v1.sursync` ; comptes de Couchey contre QGIS (029) ; **essai au soleil** de la
-  palette actuelle (ADR 0008 : badge du fix, texte orange, pastilles sur ortho claire,
-  marqueur noir de la position, bouton « Retour »). Chaque essai au journal.
+- **Plaque blanche en sombre** (suite de la 051, « on verra plus tard ») : texte gris sur la
+  plaque blanche illisible (« 3 placettes · 1 à faire », « Placette P35-01 · 10,0 km »,
+  captures du 2026-10-27), pastilles vert foncé sur fond noir, six textes sans plaque, aplat
+  de 260 dp sous le radar du guidage ; « légende en noir » et « essai au soleil » de la spec
+  à revoir avec.
+
+**Ensuite, au signal de Pascal :**
+
+- **049** accueil retrouvé au retour (recherche, vue colonnes) ; ne pas réutiliser la clé
+  `vue_kanban`.
+- **052** suites du récepteur et de la voix : erreur du récepteur visible sur la carte,
+  `onTaskRemoved`, autorisations jamais demandées affichées « refusée », `Error` dans
+  `SuiviInstallationVosk`, test de `SuiviInstallationVosk`.
+- **059** source et date de l'Ortho chantier affichées (Licence Ouverte) ; message « ortho
+  illisible » si le fichier ne s'ouvre pas.
+- **Test de rendu des écrans** (Robolectric ou émulateur en CI) : le bandeau caché de la 055
+  a échappé aux tests qui lisent les sources.
+- **Mineurs** : KDoc périmés de `Navigation.kt` l. 36 et 61 ; test « plantation plus âgée
+  que l'itinéraire » sans date ; release v0.7.58 restée en brouillon après la #99.
+- **012** écran du contrôle de placette (`afficheur`, appuyer) : branche la dictée, l'import
+  du modèle et les saisies (`placettesControlees`).
+- **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK sur Couchey (import, ortho,
+  mode avion, guidage, test des dix secondes) ; restauration de `exemple-v1.sursync` ;
+  comptes de Couchey contre QGIS (029) ; essai au soleil. Chaque essai au journal.
 - **Pascal, clé de signature** : dire au journal où est la copie hors du poste et qui
   détient les mots de passe, puis l'ADR 0010.
-- **012** écran du contrôle de placette (`afficheur`, appuyer), après la 032 et le terrain.
-- **Palette d'état et légende en noir** (sorties de la 038 le 2026-10-24) : après l'essai
-  au soleil de Couchey.
 
 ## Terminé
 
-- Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus v0.65.0, clair forcé (PR #81) ;
-  **040** accueil sur la liste des tournées, menu « ⋮ » (PR #82) ; **041** recherche et puce
-  « Rendues » (PR #83) ; **043** vue Kanban des tournées, colonnes et icônes de Marculus
-  (PR #84) ; **044** « À propos » et « Plein écran » (PR #86) ; brief vers sommieR, démo de
-  Marsannay (PR #85) — fusionnées par Pascal ; release v0.7.45.
+- Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus (PR #81) ; **040** accueil sur la
+  liste des tournées (PR #82) ; **041** recherche et « Rendues » (PR #83) ; **043** vue Kanban
+  (PR #84) ; **044** « À propos » et « Plein écran » (PR #86) ; **045** toutes les licences
+  (PR #88) ; **042** styles et tailles de Marculus (PR #89) ; **046** écran Paramètres
+  (PR #90) ; **047** récepteur GNSS dans Paramètres (PR #91) ; **048** voix Vosk, téléchargement
+  et fichier (PR #92) ; **053** bandeau de Marculus (PR #93) ; **050** sans case « Vue Kanban »
+  (PR #94) ; **051** choix du thème (PR #95) ; **054** ouvertures dans le menu « ⋮ » (PR #96) ;
+  **055** fonds de carte de Marculus en ligne (PR #97) ; **056** thème en liste (PR #98) ;
+  **057** suites de la carte (PR #101) ; **058** anciennes tuiles effacées (PR #100) ; **060**
+  bandeau de la carte visible (PR #102) ; **061** forêt, placettes à faire, puis carte, comme
+  Groma (PR #103) ; spec et ADR 0008, 0009 amendées (PR #99) ; briefs vers sommieR (#85, #99)
+  et Groma ; pilotage (#87) — fusionnées sur l'ordre ou l'autorisation de Pascal ; release
+  v0.7.62.
 
 - Cycle 9, 2026-10-23 et 24 : **037** DI-303 suit la décision 13 (PR #73) ; **013** dictée
   Vosk à grammaire fermée, `terrain-voix` épinglé (PR #75) ; **039** cas de « hauteur »
@@ -199,3 +218,9 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   le forestier ne peut pas encore dicter en forêt, aucun écran ne l'appelle avant la 012 · pour
   le forestier en forêt · découper une fonction sans son écran ne livre rien sur le terrain.
   *(Proposée par l'orchestrateur, close par Pascal le 2026-10-24 : « fusionne et clos ».)*
+- cycle 10 · Surculus s'ouvre comme Groma et ressemble à Marculus : la forêt, ses placettes à
+  faire, puis une carte avec les fonds de Marculus, l'Ortho chantier par défaut et les
+  boutons de Groma ; Paramètres, thème et voix comme Marculus · pour le forestier en forêt ·
+  avant, la carte s'ouvrait seule, sans choix de fond ni de placette ; il retrouve ses gestes
+  de Groma et de Marculus. *(Proposée par l'orchestrateur à la clôture du 2026-10-27, à
+  confirmer par Pascal.)*
