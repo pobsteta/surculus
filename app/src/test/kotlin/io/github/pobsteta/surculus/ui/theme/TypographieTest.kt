@@ -55,4 +55,15 @@ class TypographieTest {
         assertEquals(exceptions.sortedWith(ordre), fontSizes().sortedWith(ordre),
             "tailles écrites à la main, hors exceptions : ${fontSizes()}")
     }
+
+    /** La vue Kanban est recopiée de Marculus (ListeContextesScreen.kt l. 335, 377, 646, 652, 656) : mêmes styles. */
+    @Test
+    fun vueKanbanAuxStylesDeMarculus() {
+        val src = sources().first { it.name == "VueKanban.kt" }.readText()
+        fun nb(style: String) = Regex("""typography\.$style\b""").findAll(src).count()
+        assertEquals(3, nb("titleSmall"), "titre de colonne, carte glissée, nom de forêt")
+        assertEquals(2, nb("bodySmall"), "date et nombre de saisies")
+        assertEquals(3, Regex("""titleSmall,\s*fontWeight = FontWeight\.Bold|titleSmall, fontWeight = FontWeight\.Bold""").findAll(src).count())
+        assertEquals(0, nb("titleMedium") + nb("titleLarge"))
+    }
 }
