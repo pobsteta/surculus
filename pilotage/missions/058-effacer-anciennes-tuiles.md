@@ -15,14 +15,14 @@
 
 | Constat | Lu à | Source du constat |
 |---|---|---|
-| Depuis la 055, les tuiles préchargées (`<dossier de tournée>/tuiles/`, `ortho-terminee.txt`) sont laissées sur le disque et ne sont plus lues | compte rendu du `dev` de la 055 ; `app/.../carte/Ortho.kt` l. 11 (`main` 52b457e) | dev, PR #97 |
+| Depuis la 055, les tuiles préchargées (`<dossier de tournée>/tuiles/`) sont laissées sur le disque et ne sont plus lues ; la marque de fin était **dans** `tuiles/` : `tuiles/ortho-terminee.txt` (corrigé après relecture de la PR #100) | `52b457e^:app/.../carte/Ortho.kt` l. 91 (`racine = File(dossierTournee, "tuiles")`) et l. 101 (`marqueFin(racine) = File(racine, "ortho-terminee.txt")`) | dev, PR #97 ; relecteur, PR #100 |
 | `ExportZip.ecrire` zippe tout le dossier de la tournée (`walkTopDown`), donc ces tuiles partiraient vers sommieR à l'export (jusqu'à ~30 000 tuiles par tournée) | `gpkg/src/main/kotlin/io/github/pobsteta/surculus/gpkg/ExportZip.kt` l. 27-35 | relecteur, PR #97 |
 
 Règles, avec leur auteur :
 - **Effacer les anciennes tuiles** : Pascal, 2026-10-27.
-- **N'effacer que ces deux chemins**, nommés exactement, jamais un autre fichier de la tournée (`travaux.gpkg`, `DCIM/`, `ortho.mbtiles`, `ortho.gpkg`, journal, photos). Un test le prouve sur un dossier de tournée complet.
+- **N'effacer que `<dossier de tournée>/tuiles/`** (la marque `ortho-terminee.txt` est dedans ; le chemin à la racine n'a jamais été écrit, il n'est pas effacé : corrigé après relecture de la PR #100), nommé exactement, jamais un autre fichier de la tournée (`travaux.gpkg`, `DCIM/`, `ortho.mbtiles`, `ortho.gpkg`, journal, photos). Un test le prouve sur un dossier de tournée complet.
 - **Quand** : une seule fois, au démarrage ou à l'ouverture de la liste des tournées, en tâche de fond, sans bloquer l'écran ; idempotent (rien à faire la deuxième fois).
-- **Garde-fou à l'export** : `ExportZip` exclut aussi `tuiles/` et `ortho-terminee.txt` s'ils existent encore, pour qu'un dossier non nettoyé ne parte jamais avec eux. Test : un dossier avec `tuiles/` donne un zip sans `tuiles/` ; la CI d'import (F1 à F5) reste verte.
+- **Garde-fou à l'export** : `ExportZip` exclut `tuiles/` et, par précaution, `ortho-terminee.txt` s'ils existent encore, pour qu'un dossier non nettoyé ne parte jamais avec eux. Test : un dossier avec `tuiles/` donne un zip sans `tuiles/` ; la CI d'import (F1 à F5) reste verte.
 - **Garde-fou = test vu rouge** et **bilan des écarts avant rendu** : Pascal, bilan du 2026-10-21.
 
 **Temps de la main :** **appuyer** (effacement irréversible). Fusion autorisée par Pascal si relecture prête et CI verte.

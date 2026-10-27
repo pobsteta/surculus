@@ -69,14 +69,18 @@ object DepotTournees {
     }
 
     /**
-     * Mission 058 : efface une fois les anciennes tuiles d'ortho (`tuiles/`, `ortho-terminee.txt`, plus lues depuis la 055) de chaque
-     * tournée. À appeler hors du fil principal. La marque « fait » n'est posée qu'après un passage sans exception ; sinon
+     * Mission 058 : efface une fois les anciennes tuiles d'ortho (`tuiles/`, plus lues depuis la 055) de chaque
+     * tournée. À appeler hors du fil principal. La marque « fait » n'est posée que si, après le passage, plus aucun `tuiles/` n'existe ; sinon
      * le prochain démarrage recommence (idempotent). Aucune autre donnée de la tournée n'est touchée.
      */
     fun nettoyerAnciennesTuiles(ctx: Context) {
         val prefs = ctx.applicationContext.getSharedPreferences("nettoyage", Context.MODE_PRIVATE)
         if (prefs.getBoolean("anciennes_tuiles_effacees", false)) return
-        if (runCatching { AnciennesTuiles.effacerPartout(racine(ctx)) }.isSuccess) {
+        val fait = runCatching {
+            AnciennesTuiles.effacerPartout(racine(ctx))
+            !AnciennesTuiles.resteDesTuiles(racine(ctx))
+        }.getOrDefault(false)
+        if (fait) {
             prefs.edit().putBoolean("anciennes_tuiles_effacees", true).apply()
         }
     }
