@@ -162,7 +162,7 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, o
             if (cap.arrive) {
                 Text(stringResource(R.string.guidage_arrive), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Palette.Vert)
             } else {
-                Text(stringResource(R.string.guidage_cap, Libelles.cap(cap.azimutDeg)), fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.guidage_cap, Libelles.cap(cap.azimutDeg)), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             }
         }
         // 3. La comparaison : où je suis par rapport à la placette et au cercle de 30 m.

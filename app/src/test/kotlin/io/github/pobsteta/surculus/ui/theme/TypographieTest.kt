@@ -50,9 +50,6 @@ class TypographieTest {
             "EcranGuidage.kt" to "72.sp", // distance à la cible
             "EcranEssaiGnss.kt" to "44.sp", // qualité du fix
             "EcranEssaiGnss.kt" to "44.sp", // précision
-            // Sans équivalent dans Marculus, non tranchées (à Pascal) : gardées à leur taille d'avant la mission 042.
-            "EcranGuidage.kt" to "28.sp", // cap du guidage
-            "EcranTournees.kt" to "28.sp", // glyphe « ⋮ » du menu de la barre
         )
         val ordre = compareBy<Pair<String, String>>({ it.first }, { it.second })
         assertEquals(exceptions.sortedWith(ordre), fontSizes().sortedWith(ordre),

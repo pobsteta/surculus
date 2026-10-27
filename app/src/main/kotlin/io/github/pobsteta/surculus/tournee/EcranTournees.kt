@@ -288,7 +288,7 @@ private fun BoiteAPropos(onFermer: () -> Unit) {
                         onFermer()
                     },
                     modifier = Modifier.height(48.dp),
-                ) { Text(stringResource(R.string.apropos_toutes_licences), fontSize = 18.sp) }
+                ) { Text(stringResource(R.string.apropos_toutes_licences)) }
             }
         },
         confirmButton = {
@@ -347,7 +347,7 @@ private fun BandeauAccueil(
             Box {
                 IconButton(onClick = { menu = true }) {
                     // « ⋮ » en texte depuis la mission 040 ; material-icons-core est là depuis la 043 (icônes de la bascule), le menu n'a pas été changé.
-                    Text("⋮", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { contentDescription = menuDesc })
+                    Text("⋮", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { contentDescription = menuDesc })
                 }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     DropdownMenuItem(
