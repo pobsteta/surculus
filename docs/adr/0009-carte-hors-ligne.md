@@ -159,8 +159,11 @@ journal du 2026-10-21 (`pilotage/journal.md`, entrée « mission 011 · (a) … 
   Marculus : « Fond de carte » (Plan IGN par défaut, Ortho IGN, OpenStreetMap, chargés en ligne au
   fur et à mesure avec le cache d'osmdroid ; Ortho chantier, lue dans le fichier tuilé de la
   tournée quand il existe) et « Couches affichées » (Cadastre IGN, couches de la tournée).
-- **Ce qui est gardé** : la lecture prioritaire d'un `ortho.mbtiles` ou `ortho.gpkg` du dossier
-  de la tournée (devenue l'« Ortho chantier ») ; le contrôle de l'emprise en France ; les
+- **Ce qui est gardé** : la lecture d'un `ortho.mbtiles` ou `ortho.gpkg` du dossier de la
+  tournée, devenue l'« Ortho chantier », proposée dans le menu quand le fichier existe. Elle
+  n'est **plus lue en priorité** : comme Marculus, la carte s'ouvre sur le Plan IGN (correction
+  de l'orchestrateur après la relecture de la PR #97 ; ouvrir sur l'Ortho chantier quand elle
+  existe est posé à Pascal) ; le contrôle de l'emprise en France ; les
   attributions IGN et OSM ; la cible (f), un seul fichier tuilé en EPSG:3857 fourni par sommieR.
 - **Ce qui est payé, dit à Pascal avant sa décision** : en forêt sans réseau, seules l'Ortho
   chantier et les zones déjà regardées avec du réseau s'affichent. La règle de `CLAUDE.md`
