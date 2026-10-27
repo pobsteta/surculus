@@ -1,11 +1,17 @@
 package io.github.pobsteta.surculus
 
 /** Écrans de premier niveau : la liste des tournées est la racine (mission 040). */
-enum class Destination { TOURNEES, ESSAI, RESTAURATION }
+enum class Destination { TOURNEES, PARAMETRES, ESSAI, RESTAURATION }
+
+/** Entrées du menu « ⋮ » de l'accueil (mission 046) : seulement celles-ci, les réglages sont dans Paramètres. */
+enum class EntreeMenu { PARAMETRES, A_PROPOS }
+
+val ENTREES_MENU: List<EntreeMenu> = listOf(EntreeMenu.PARAMETRES, EntreeMenu.A_PROPOS)
 
 /**
  * État de navigation en Kotlin pur (testable sans Compose).
- * Racine : la liste des tournées. Essai GNSS et Restauration s'ouvrent depuis le menu à trois points.
+ * Racine : la liste des tournées. Paramètres s'ouvre depuis le menu à trois points (mission 046) ; Essai GNSS et
+ * Restauration s'ouvrent depuis Paramètres et y ramènent.
  * Une tournée ouverte donne la carte ; une placette choisie donne le guidage.
  */
 data class EtatNavigation(
@@ -15,6 +21,7 @@ data class EtatNavigation(
 ) {
     val estRacine: Boolean get() = destination == Destination.TOURNEES && tourneeId == null
 
+    fun ouvrirParametres() = EtatNavigation(Destination.PARAMETRES)
     fun ouvrirEssai() = EtatNavigation(Destination.ESSAI)
     fun ouvrirRestauration() = EtatNavigation(Destination.RESTAURATION)
     fun ouvrirTournee(id: String) = EtatNavigation(Destination.TOURNEES, tourneeId = id)
@@ -24,6 +31,7 @@ data class EtatNavigation(
     fun retour(): EtatNavigation? = when {
         placetteId != null -> copy(placetteId = null)
         tourneeId != null -> copy(tourneeId = null)
+        destination == Destination.ESSAI || destination == Destination.RESTAURATION -> EtatNavigation(Destination.PARAMETRES)
         destination != Destination.TOURNEES -> EtatNavigation()
         else -> null
     }

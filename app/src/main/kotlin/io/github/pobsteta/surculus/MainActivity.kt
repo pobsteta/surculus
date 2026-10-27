@@ -22,14 +22,15 @@ import androidx.core.view.WindowInsetsControllerCompat
 import io.github.pobsteta.surculus.carte.EcranCarte
 import io.github.pobsteta.surculus.carte.EcranGuidage
 import io.github.pobsteta.surculus.essai.EcranEssaiGnss
+import io.github.pobsteta.surculus.parametres.EcranParametres
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.EcranTournees
 import io.github.pobsteta.surculus.ui.theme.SurculusTheme
 import io.github.pobsteta.surculus.sauvegarde.EcranRestauration
 
 /**
- * Accueil (mission 040) : la liste des tournées (mission 011), avec un menu à trois points (Essai GNSS, mission 018 ;
- * Restaurer une tournée, mission 009). Navigation : [EtatNavigation], testée sans Compose.
+ * Accueil (mission 040) : la liste des tournées (mission 011), avec un menu à trois points (Paramètres, À propos) ;
+ * Paramètres (mission 046) ouvre l'Essai GNSS (mission 018) et la Restauration (mission 009). Navigation : [EtatNavigation], testée sans Compose.
  * Le contrôle des plants (mission 012) viendra après le guidage.
  */
 class MainActivity : ComponentActivity() {
@@ -68,15 +69,19 @@ class MainActivity : ComponentActivity() {
                         } else when (nav.destination) {
                             Destination.ESSAI -> EcranEssaiGnss()
                             Destination.RESTAURATION -> EcranRestauration()
-                            Destination.TOURNEES -> EcranTournees(
-                                onOuvrir = { nav = nav.ouvrirTournee(it) },
-                                onEssai = { nav = nav.ouvrirEssai() },
-                                onRestauration = { nav = nav.ouvrirRestauration() },
+                            Destination.PARAMETRES -> EcranParametres(
                                 pleinEcran = pleinEcran,
                                 onPleinEcran = {
-                                    pleinEcran = !pleinEcran
-                                    reglagesAffichage.pleinEcran = pleinEcran
+                                    pleinEcran = it
+                                    reglagesAffichage.pleinEcran = it
                                 },
+                                onEssai = { nav = nav.ouvrirEssai() },
+                                onRestauration = { nav = nav.ouvrirRestauration() },
+                                onRetour = { nav = nav.retour() ?: nav },
+                            )
+                            Destination.TOURNEES -> EcranTournees(
+                                onOuvrir = { nav = nav.ouvrirTournee(it) },
+                                onParametres = { nav = nav.ouvrirParametres() },
                             )
                         }
                     }
