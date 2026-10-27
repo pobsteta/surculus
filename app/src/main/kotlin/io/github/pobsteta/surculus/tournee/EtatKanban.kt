@@ -7,6 +7,8 @@
  */
 package io.github.pobsteta.surculus.tournee
 
+import io.github.pobsteta.surculus.data.journal.CleProjection
+import io.github.pobsteta.surculus.data.journal.EtatCle
 import io.github.pobsteta.surculus.data.journal.TypeLigne
 
 /**
@@ -32,11 +34,15 @@ enum class EtatKanban(val libelle: String) {
 const val VUE_KANBAN_ACTIVE_PAR_DEFAUT = false
 
 /**
- * Nombre de saisies d'une tournée à partir des types de ses lignes de journal : contrôles, pointages et états. Les annulations
- * et les sauts d'horloge ne sont pas des saisies du forestier.
+ * Nombre de saisies **encore valables** d'une tournée, à partir de sa projection (décision de Pascal, 2026-10-27) : une clé
+ * (objet, type) de contrôle, pointage ou état compte une fois si elle a une valeur courante. Une saisie annulée n'a plus de
+ * valeur courante (« annuler, c'est défaire ») : elle ne compte plus ; une saisie corrigée compte une fois. Les sauts
+ * d'horloge ne sont pas des saisies du forestier.
  */
-fun compterSaisies(typesDesLignes: List<String>): Int =
-    typesDesLignes.count { it == TypeLigne.CONTROLE || it == TypeLigne.POINTAGE || it == TypeLigne.ETAT }
+fun compterSaisies(projection: Map<CleProjection, EtatCle>): Int =
+    projection.count { (cle, etat) ->
+        etat.courant != null && (cle.type == TypeLigne.CONTROLE || cle.type == TypeLigne.POINTAGE || cle.type == TypeLigne.ETAT)
+    }
 
 /**
  * Statut minimal imposé par l'avancement : rendue → Réalisée ; au moins une saisie → Planifiée ; sinon Proposée.

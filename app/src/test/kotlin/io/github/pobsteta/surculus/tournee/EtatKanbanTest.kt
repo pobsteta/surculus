@@ -7,6 +7,8 @@
  */
 package io.github.pobsteta.surculus.tournee
 
+import io.github.pobsteta.surculus.data.journal.LigneJournal
+import io.github.pobsteta.surculus.data.journal.Projection
 import io.github.pobsteta.surculus.data.journal.TypeLigne
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -97,12 +99,43 @@ class EtatKanbanTest {
         assertEquals(EtatKanban.PROPOSEE, relu.statut("t2"))
     }
 
-    @Test fun `seuls controles, pointages et etats sont des saisies`() {
-        assertEquals(0, compterSaisies(emptyList()))
-        assertEquals(0, compterSaisies(listOf(TypeLigne.ANNULATION, TypeLigne.SAUT_HORLOGE)))
+    private var n = 0L
+    private fun ligne(uuid: String, objet: String, type: String, remplace: String? = null) = LigneJournal(
+        uuid = uuid, objetUuid = objet, type = type, valeur = "{}", remplaceUuid = remplace, operateur = "op", appareil = "a1",
+        sequence = ++n, saisiLeUtcMs = 1_000L * n, heureGnssMs = null, monotoneMs = n, demarrage = 1, ageFixMs = null, codeTournee = "T1",
+    )
+    private fun saisies(vararg lignes: LigneJournal) = compterSaisies(Projection.projeter(lignes.toList()).cles)
+
+    @Test fun `aucune ligne, aucune saisie, et un saut d'horloge n'est pas une saisie`() {
+        assertEquals(0, saisies())
+        assertEquals(0, saisies(ligne("h1", "p1", TypeLigne.SAUT_HORLOGE)))
+    }
+
+    @Test fun `une saisie compte une fois, une par objet et par type`() {
+        assertEquals(1, saisies(ligne("c1", "p1", TypeLigne.CONTROLE)))
+        assertEquals(3, saisies(ligne("c1", "p1", TypeLigne.CONTROLE), ligne("c2", "p2", TypeLigne.POINTAGE), ligne("c3", "p3", TypeLigne.ETAT)))
+    }
+
+    @Test fun `une saisie puis son annulation ne comptent pour rien, donc pas de minimum Planifiee`() {
+        val n0 = saisies(ligne("c1", "p1", TypeLigne.CONTROLE), ligne("a1", "p1", TypeLigne.ANNULATION, remplace = "c1"))
+        assertEquals(0, n0)
+        assertEquals(EtatKanban.PROPOSEE, statutMinimal(n0, rendue = false))
+    }
+
+    @Test fun `annuler l'annulation refait la saisie`() {
         assertEquals(
-            3,
-            compterSaisies(listOf(TypeLigne.CONTROLE, TypeLigne.POINTAGE, TypeLigne.ETAT, TypeLigne.ANNULATION, TypeLigne.SAUT_HORLOGE)),
+            1,
+            saisies(
+                ligne("c1", "p1", TypeLigne.CONTROLE),
+                ligne("a1", "p1", TypeLigne.ANNULATION, remplace = "c1"),
+                ligne("a2", "p1", TypeLigne.ANNULATION, remplace = "a1"),
+            ),
         )
+    }
+
+    @Test fun `une saisie corrigee compte une fois`() {
+        val n1 = saisies(ligne("c1", "p1", TypeLigne.CONTROLE), ligne("c2", "p1", TypeLigne.CONTROLE, remplace = "c1"))
+        assertEquals(1, n1)
+        assertEquals(EtatKanban.PLANIFIEE, statutMinimal(n1, rendue = false))
     }
 }

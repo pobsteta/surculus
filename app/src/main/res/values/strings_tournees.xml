@@ -12,8 +12,8 @@
     <string name="apropos_fermer">Fermer</string>
     <!-- Vue Kanban (mission 043) : les libellés des cinq colonnes sont dans EtatKanban.kt -->
     <string name="tournees_menu_kanban">Vue Kanban</string>
-    <string name="tournees_vue_colonnes">Colonnes</string>
-    <string name="tournees_vue_liste">Liste</string>
+    <string name="tournees_vue_colonnes">Vue Kanban</string>
+    <string name="tournees_vue_liste">Vue liste</string>
     <string name="kanban_controles">%1$d contrôles prévus</string>
     <plurals name="kanban_saisies">
         <item quantity="one">%1$d saisie</item>
