@@ -120,6 +120,9 @@ fun EcranTournees(
     if (aPropos) BoiteAPropos(onFermer = { aPropos = false })
     val colonnesAffichees = modeColonnes
 
+    // Mission 058 : nettoyage unique des anciennes tuiles, en tâche de fond (n'attend pas la liste).
+    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { DepotTournees.nettoyerAnciennesTuiles(ctx) } }
+
     // Recharge la liste.
     LaunchedEffect(version) {
         val l = withContext(Dispatchers.IO) { DepotTournees.lister(ctx) }

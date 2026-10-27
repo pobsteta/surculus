@@ -10,6 +10,7 @@ package io.github.pobsteta.surculus.tournee
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
+import io.github.pobsteta.surculus.gpkg.AnciennesTuiles
 import io.github.pobsteta.surculus.gpkg.Cartographie
 import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import io.github.pobsteta.surculus.gpkg.ImportTournee
@@ -64,6 +65,23 @@ object DepotTournees {
         val depot = runCatching { JournalApp.depot(ctx) }.getOrNull() ?: return emptyMap()
         return lignes.associate { l ->
             l.id to (runCatching { compterSaisies(depot.projection(l.id)) }.getOrDefault(0))
+        }
+    }
+
+    /**
+     * Mission 058 : efface une fois les anciennes tuiles d'ortho (`tuiles/`, plus lues depuis la 055) de chaque
+     * tournée. À appeler hors du fil principal. La marque « fait » n'est posée que si, après le passage, plus aucun `tuiles/` n'existe ; sinon
+     * le prochain démarrage recommence (idempotent). Aucune autre donnée de la tournée n'est touchée.
+     */
+    fun nettoyerAnciennesTuiles(ctx: Context) {
+        val prefs = ctx.applicationContext.getSharedPreferences("nettoyage", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("anciennes_tuiles_effacees", false)) return
+        val fait = runCatching {
+            AnciennesTuiles.effacerPartout(racine(ctx))
+            !AnciennesTuiles.resteDesTuiles(racine(ctx))
+        }.getOrDefault(false)
+        if (fait) {
+            prefs.edit().putBoolean("anciennes_tuiles_effacees", true).apply()
         }
     }
 

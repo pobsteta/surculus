@@ -29,8 +29,10 @@ object ExportZip {
         require(Files.isRegularFile(dossier.resolve(GPKG))) { "Pas de $GPKG dans $dossier" }
         val racine = dossier.toFile()
         // Les dossiers comptent aussi, même vides : `DCIM/` de l'aller reste dans le zip (le dossier attendu par l'import).
+        // `tuiles/` et `ortho-terminee.txt` (ortho préchargée avant la 055) ne partent jamais vers sommieR (mission 058).
         val fichiers = racine.walkTopDown().filter { it != racine && (it.isFile || it.isDirectory) }
             .map { it.relativeTo(racine).invariantSeparatorsPath + if (it.isDirectory) "/" else "" }
+            .filterNot { AnciennesTuiles.estAncienne(it) }
             .sortedWith(compareBy<String>({ it != GPKG }, { it }))
             .toList()
         val millis = DATE_FIXE.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
