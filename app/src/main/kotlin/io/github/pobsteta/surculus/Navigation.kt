@@ -3,10 +3,10 @@ package io.github.pobsteta.surculus
 /** Écrans de premier niveau : la liste des tournées est la racine (mission 040). */
 enum class Destination { TOURNEES, PARAMETRES, ESSAI, RESTAURATION }
 
-/** Entrées du menu « ⋮ » de l'accueil (mission 046) : seulement celles-ci, les réglages sont dans Paramètres. */
-enum class EntreeMenu { PARAMETRES, A_PROPOS }
+/** Entrées du menu « ⋮ » de l'accueil (missions 046 et 054) : les deux ouvertures d'abord, comme l'« Importer » de Marculus. */
+enum class EntreeMenu { OUVRIR_DOSSIER, OUVRIR_ZIP, PARAMETRES, A_PROPOS }
 
-val ENTREES_MENU: List<EntreeMenu> = listOf(EntreeMenu.PARAMETRES, EntreeMenu.A_PROPOS)
+val ENTREES_MENU: List<EntreeMenu> = listOf(EntreeMenu.OUVRIR_DOSSIER, EntreeMenu.OUVRIR_ZIP, EntreeMenu.PARAMETRES, EntreeMenu.A_PROPOS)
 
 /**
  * État de navigation en Kotlin pur (testable sans Compose).
