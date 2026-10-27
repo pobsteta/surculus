@@ -12,12 +12,18 @@ val ENTREES_MENU: List<EntreeMenu> = listOf(EntreeMenu.OUVRIR_DOSSIER, EntreeMen
  * État de navigation en Kotlin pur (testable sans Compose).
  * Racine : la liste des tournées. Paramètres s'ouvre depuis le menu à trois points (mission 046) ; Essai GNSS et
  * Restauration s'ouvrent depuis Paramètres et y ramènent.
- * Une tournée ouverte donne la carte ; une placette choisie donne le guidage.
+ * Mission 061, comme Groma : une tournée ouverte donne d'abord ses **placettes** ; la carte s'ouvre depuis une placette
+ * ([centreId]) ou l'icône carte (cadrée sur la tournée) ; une placette choisie sur la carte donne le guidage.
+ * Retours : Guidage, Carte, Placettes, Tournées.
  */
 data class EtatNavigation(
     val destination: Destination = Destination.TOURNEES,
     val tourneeId: String? = null,
     val placetteId: String? = null,
+    /** Vrai quand la carte de la tournée est ouverte (sinon, tournée ouverte = écran « Placettes »). */
+    val carte: Boolean = false,
+    /** Placette sur laquelle la carte est centrée à l'ouverture ; `null` : carte cadrée sur toute la tournée. */
+    val centreId: String? = null,
 ) {
     val estRacine: Boolean get() = destination == Destination.TOURNEES && tourneeId == null
 
@@ -27,26 +33,35 @@ data class EtatNavigation(
     fun ouvrirParametres() = EtatNavigation(Destination.PARAMETRES)
     fun ouvrirEssai() = EtatNavigation(Destination.ESSAI)
     fun ouvrirRestauration() = EtatNavigation(Destination.RESTAURATION)
+    /** Ouvre la tournée sur ses placettes. */
     fun ouvrirTournee(id: String) = EtatNavigation(Destination.TOURNEES, tourneeId = id)
-    fun guider(placette: String) = if (tourneeId == null) this else copy(placetteId = placette)
+
+    /** Ouvre la carte de la tournée ouverte : centrée sur [centre], ou cadrée sur la tournée si `null`. */
+    fun ouvrirCarte(centre: String? = null) = if (tourneeId == null) this else copy(carte = true, centreId = centre, placetteId = null)
+
+    /** Lance le guidage vers [placette] depuis la carte de la tournée. */
+    fun guider(placette: String) = if (tourneeId == null) this else copy(carte = true, placetteId = placette)
 
     /** Un pas en arrière ; `null` = on est à la racine, le retour Android quitte l'application. */
     fun retour(): EtatNavigation? = when {
         placetteId != null -> copy(placetteId = null)
+        carte -> copy(carte = false, centreId = null)
         tourneeId != null -> copy(tourneeId = null)
         destination == Destination.ESSAI || destination == Destination.RESTAURATION -> EtatNavigation(Destination.PARAMETRES)
         destination != Destination.TOURNEES -> EtatNavigation()
         else -> null
     }
 
-    /** Pour `rememberSaveable` (rotation) : `[destination, tourneeId, placetteId]`, chaînes vides pour null. */
-    fun enListe(): List<String> = listOf(destination.name, tourneeId.orEmpty(), placetteId.orEmpty())
+    /** Pour `rememberSaveable` (rotation) : `[destination, tourneeId, placetteId, carte, centreId]`, chaînes vides pour null. */
+    fun enListe(): List<String> = listOf(destination.name, tourneeId.orEmpty(), placetteId.orEmpty(), carte.toString(), centreId.orEmpty())
 
     companion object {
         fun depuisListe(l: List<String>) = EtatNavigation(
             Destination.valueOf(l[0]),
             l[1].ifEmpty { null },
             l[2].ifEmpty { null },
+            carte = l.getOrNull(3) == "true",
+            centreId = l.getOrNull(4)?.ifEmpty { null },
         )
     }
 }

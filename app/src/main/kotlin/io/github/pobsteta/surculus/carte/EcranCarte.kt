@@ -16,7 +16,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,17 +30,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
@@ -51,7 +47,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,6 +62,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -90,6 +87,10 @@ import io.github.pobsteta.surculus.gpkg.ObjetSurfacique
 import io.github.pobsteta.surculus.gpkg.Pastille
 import io.github.pobsteta.surculus.gpkg.PlacetteTournee
 import io.github.pobsteta.surculus.gpkg.decomptes
+import io.github.pobsteta.surculus.gpkg.centrageInitial
+import io.github.pobsteta.surculus.gpkg.cibleNavigation
+import io.github.pobsteta.surculus.gpkg.titreForet
+import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
@@ -107,7 +108,7 @@ import org.osmdroid.views.overlay.TilesOverlay
  * l'ouverture de la tournée : elle ne change pas pendant la tournée. Ni travaux ni vides à ce stade.
  */
 @Composable
-fun EcranCarte(id: String, onRetour: () -> Unit, onGuider: (String) -> Unit) {
+fun EcranCarte(id: String, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit) {
     when (val c = chargerTournee(id)) {
         Chargement.EnCours -> Column {
             BandeauCarte(stringResource(R.string.carte_titre), onRetour)
@@ -131,7 +132,7 @@ fun EcranCarte(id: String, onRetour: () -> Unit, onGuider: (String) -> Unit) {
                     Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
                 }
             } else {
-                CartePrete(c.tournee, ortho, onRetour, onGuider)
+                CartePrete(c.tournee, ortho, centreId, onRetour, onGuider)
             }
         }
     }
@@ -284,7 +285,7 @@ private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
 }
 
 @Composable
-private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour: () -> Unit, onGuider: (String) -> Unit) {
+private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit) {
     val ctx = LocalContext.current
     val (fix, refusee) = rememberFix()
     val carto = ouverte.cartographie
@@ -294,8 +295,10 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour
     var voirUg by remember { mutableStateOf(true) }
     var voirParcelles by remember { mutableStateOf(false) }
     var voirPlacettes by remember { mutableStateOf(true) }
-    var choisie by remember { mutableStateOf<PlacetteTournee?>(null) }
-    var liste by remember { mutableStateOf(false) }
+    // Ouverte depuis une placette de l'écran « Placettes » : elle est déjà la placette choisie (mission 061).
+    val centre = remember(ouverte, centreId) { placettes.firstOrNull { it.uuid == centreId } }
+    var choisie by remember(ouverte, centreId) { mutableStateOf(centre) }
+    val controlees = remember(ouverte) { DepotTournees.placettesControlees(ctx, ouverte.dossier.name) }
 
     // Fond de carte : le choix mémorisé pour cette tournée, sinon l'Ortho chantier si la tournée en a une, sinon le Plan IGN.
     val prefsCarte = remember { ctx.getSharedPreferences(PREFS_CARTE, Context.MODE_PRIVATE) }
@@ -316,7 +319,7 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour
     Column(Modifier.fillMaxSize()) {
         // Bandeau compact : flèche de retour à gauche ; à droite le badge du fix et l'icône « Couches » (comme Marculus).
         BandeauCarte(
-            titre = ouverte.tournee.projet?.foret ?: ouverte.tournee.projet?.nom ?: stringResource(R.string.carte_titre),
+            titre = titreForet(ouverte.tournee.projet?.foret, ouverte.tournee.nomForet, ouverte.dossier.name),
             onRetour = onRetour,
             actions = {
                 BadgeFix(fix)
@@ -360,9 +363,7 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour
 
         // Rogne la carte à ses bords (mission 060) : osmdroid et Compose ne le font pas, la carte recouvrait le bandeau.
         Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
-            if (liste) {
-                ListePlacettes(placettes, distances, onChoisir = { onGuider(it.uuid) }, onFermer = { liste = false })
-            } else {
+            run {
                 val couchesRef = remember(ouverte) { arrayOfNulls<Couches>(1) }
                 AndroidView(
                     modifier = Modifier.fillMaxSize().clipToBounds(),
@@ -401,7 +402,13 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour
                         l.placettes.forEach { m -> m.setOnMarkerClickListener { marqueur, _ -> choisie = marqueur.relatedObject as? PlacetteTournee; true } }
                         l.fondApplique = fondAffiche
                         couchesRef[0] = l
-                        if (emprise != null && !empriseHorsFrance) carte.post { cadrerSur(carte, emprise, (48 * densite).toInt(), animer = false) }
+                        // Ouverte depuis une placette : centrée dessus (si elle tombe en France), sinon cadrée sur la tournée.
+                        val centrage = centrageInitial(centre)
+                        if (centrage != null) {
+                            carte.post { carte.controller.setZoom(ZOOM_RECENTRER); carte.controller.setCenter(GeoPoint(centrage)) }
+                        } else if (emprise != null && !empriseHorsFrance) {
+                            carte.post { cadrerSur(carte, emprise, (48 * densite).toInt(), animer = false) }
+                        }
                         carte
                     },
                     update = { carte ->
@@ -435,15 +442,33 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour
                         carte.onDetach()
                     },
                 )
-                // Les trois boutons de Marculus (`CarteScreen.kt` l. 611-618), au moins 48 dp : zoom avant, zoom arrière,
-                // recentrer. Chez Marculus, `recadrer()` cadre les tiges (sinon les parcelles) ; ici : la position GNSS
-                // si elle existe (zoom 17 au moins, comme `recadrerSur` pour un point), sinon l'emprise de la tournée.
+                // Les boutons de Groma (`EcranCarte.kt` l. 323-389), au moins 48 dp : naviguer vers (la placette choisie, sinon la
+                // prochaine à faire ; inactif s'il n'y en a pas), zoom avant, zoom arrière, maison (cadrer la tournée), cible
+                // (la position GNSS si elle tombe en France, zoom 17 au moins, sinon l'emprise de la tournée : `Recentrage.cible`).
+                val cibleNaviguer = cibleNavigation(choisie, placettes, controlees, fix?.position?.let { Guidage.versLambert93(it) })
                 Column(Modifier.align(Alignment.BottomEnd).padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SmallFloatingActionButton(
+                        onClick = { cibleNaviguer?.let { onGuider(it.uuid) } },
+                        modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics { if (cibleNaviguer == null) disabled() },
+                        containerColor = if (cibleNaviguer != null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = if (cibleNaviguer != null) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    ) {
+                        Icon(Icons.Filled.Navigation, contentDescription = stringResource(R.string.carte_naviguer))
+                    }
                     SmallFloatingActionButton(onClick = { couchesRef[0]?.carte?.controller?.zoomIn() }, modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) {
                         Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.carte_zoom_avant))
                     }
                     SmallFloatingActionButton(onClick = { couchesRef[0]?.carte?.controller?.zoomOut() }, modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) {
                         Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.carte_zoom_arriere))
+                    }
+                    SmallFloatingActionButton(
+                        onClick = {
+                            val carte = couchesRef[0]?.carte ?: return@SmallFloatingActionButton
+                            if (emprise != null && !empriseHorsFrance) cadrerSur(carte, emprise, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
+                        },
+                        modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                    ) {
+                        Icon(Icons.Filled.Home, contentDescription = stringResource(R.string.carte_cadrer_tournee))
                     }
                     SmallFloatingActionButton(
                         onClick = {
@@ -480,49 +505,21 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour
             Text(stringResource(R.string.carte_anomalies, carto.anomalies.size), style = MaterialTheme.typography.bodyMedium, color = Palette.Orange, modifier = Modifier.padding(horizontal = 8.dp).plaqueEtat())
         }
 
-        // L'action : guider vers la placette touchée, sinon ouvrir la liste.
-        val p = choisie
-        Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (p != null) {
-                val d = distances[p.uuid]
-                Button(
-                    onClick = { onGuider(p.uuid) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Palette.Vert),
-                    modifier = Modifier.weight(1f).height(64.dp),
-                ) {
-                    Text(
-                        if (d != null) stringResource(R.string.carte_guider_distance, p.code.orEmpty(), Libelles.distance(d)) else stringResource(R.string.carte_guider, p.code.orEmpty()),
-                    )
-                }
-            } else {
-                Button(onClick = { liste = true }, modifier = Modifier.weight(1f).height(64.dp)) { Text(stringResource(R.string.carte_placettes_liste)) }
-            }
+        // La placette choisie (un appui sur son marqueur, ou l'appui sur l'écran « Placettes ») : son code et sa distance.
+        // L'action est le bouton « naviguer vers » (mission 061) ; plus de bouton « Placettes » sous la carte.
+        choisie?.let { p ->
+            val d = distances[p.uuid]
+            Text(
+                if (d != null) stringResource(R.string.carte_choisie_distance, p.code.orEmpty(), Libelles.distance(d)) else stringResource(R.string.carte_choisie, p.code.orEmpty()),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).plaqueEtat(),
+            )
         }
 
         // Attributions du fond (IGN ou OSM) et du cadastre, en petit ; l'ortho chantier n'en porte pas (comme Marculus).
         FondsCarte.mentions(fondAffiche, voirCadastre).joinToString(" · ").takeIf { it.isNotEmpty() }
             ?.let { Text(it, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)) }
-        }
-    }
-}
-
-@Composable
-private fun ListePlacettes(placettes: List<PlacetteTournee>, distances: Map<String, Double>, onChoisir: (PlacetteTournee) -> Unit, onFermer: () -> Unit) {
-    val triees = remember(placettes, distances) { placettes.sortedWith(compareBy({ distances[it.uuid] ?: Double.MAX_VALUE }, { it.code })) }
-    Column(Modifier.fillMaxSize()) {
-        OutlinedButton(onClick = onFermer, modifier = Modifier.fillMaxWidth().padding(8.dp).height(56.dp)) { Text(stringResource(R.string.carte_fermer_liste)) }
-        LazyColumn {
-            items(triees, key = { it.uuid }) { p ->
-                Row(
-                    Modifier.fillMaxWidth().clickable { onChoisir(p) }.height(64.dp).padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(p.code.orEmpty(), style = MaterialTheme.typography.titleLarge)
-                    Text(distances[p.uuid]?.let { Libelles.distance(it) } ?: "—", style = MaterialTheme.typography.titleLarge)
-                }
-                HorizontalDivider()
-            }
         }
     }
 }

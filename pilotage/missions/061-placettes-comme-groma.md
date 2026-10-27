@@ -15,7 +15,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Reprendre l'enchaînement de Groma : l'accueil montre chaque tournée sous le nom de sa forêt, un appui ouvre l'écran « Placettes » (bandeau avec retour, forêt en titre, icône carte ; placettes à faire d'abord), un appui sur une placette ou sur l'icône carte ouvre la carte avec les boutons naviguer vers, +, −, maison et cible, pour que le forestier choisisse sa placette avant la carte, comme dans Groma.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** La mission ajoute entre l'accueil et la carte un écran « Placettes » (forêt en titre, placettes à faire d'abord, appui sur une placette ou icône carte) et dote la carte des boutons naviguer vers, +, −, maison et cible, pour que le forestier choisisse sa placette avant la carte, comme dans Groma.
 
 ## Vérifié à la source
 

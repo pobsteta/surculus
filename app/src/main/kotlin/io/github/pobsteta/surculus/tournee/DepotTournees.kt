@@ -16,6 +16,7 @@ import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import io.github.pobsteta.surculus.gpkg.ImportTournee
 import io.github.pobsteta.surculus.gpkg.LecteurTournee
 import io.github.pobsteta.surculus.gpkg.Tournee
+import io.github.pobsteta.surculus.gpkg.titreForet
 import io.github.pobsteta.surculus.sauvegarde.JournalApp
 import java.io.File
 import java.time.Instant
@@ -28,7 +29,11 @@ data class LigneTournee(
     val refus: String?,
 ) {
     val id: String get() = dossier.name
-    val foret: String? get() = tournee?.projet?.foret ?: tournee?.projet?.nom
+    /**
+     * Titre de la tournée (mission 061) : le nom de la forêt, `projet.foret`, sinon la couche `foret` (vide dans `projet`
+     * pour la tournée de sommieR), sinon le nom du dossier. `null` si le fichier est refusé.
+     */
+    val foret: String? get() = tournee?.let { titreForet(it.projet?.foret, it.nomForet, dossier.name) }
 
     /**
      * Tournée rendue ? Point unique de l'état (mission 041). Toutes sont « ouvertes » tant que l'export n'écrit pas la
@@ -67,6 +72,14 @@ object DepotTournees {
             l.id to (runCatching { compterSaisies(depot.projection(l.id)) }.getOrDefault(0))
         }
     }
+
+    /**
+     * `uuid` des placettes de la tournée [id] dont un contrôle est déjà saisi : ce qui les sort de « à faire » (mission 061).
+     * VIDE aujourd'hui, faute de source : le journal n'écrit pas encore de contrôle (mission 012) et le format de sa `valeur`
+     * (placette, jour, opérateur : spec § 5) n'est pas encore figé en code. À brancher avec la 012 ; ne rien inventer ici.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun placettesControlees(ctx: Context, id: String): Set<String> = emptySet()
 
     /**
      * Mission 058 : efface une fois les anciennes tuiles d'ortho (`tuiles/`, plus lues depuis la 055) de chaque

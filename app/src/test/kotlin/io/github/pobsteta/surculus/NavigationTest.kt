@@ -71,15 +71,56 @@ class NavigationTest {
         }
     }
 
-    @Test fun `guidage vers carte puis tournees puis quitter`() {
-        val guidage = EtatNavigation().ouvrirTournee("t1").guider("p1")
+    @Test fun `une tournee ouverte donne les placettes, pas la carte`() {
+        val e = EtatNavigation().ouvrirTournee("t1")
+        assertEquals("t1", e.tourneeId)
+        assertEquals(false, e.carte)
+        assertNull(e.placetteId)
+    }
+
+    @Test fun `placettes vers carte centree sur une placette, puis guidage, et les retours dans l'ordre inverse`() {
+        val placettes = EtatNavigation().ouvrirTournee("t1")
+        val carte = placettes.ouvrirCarte("p1")
+        assertTrue(carte.carte)
+        assertEquals("p1", carte.centreId)
+        val guidage = carte.guider("p1")
         assertEquals("p1", guidage.placetteId)
-        val carte = guidage.retour()!!
-        assertEquals("t1", carte.tourneeId)
-        assertNull(carte.placetteId)
-        val liste = carte.retour()!!
-        assertTrue(liste.estRacine)
-        assertNull(liste.retour())
+        // Guidage -> Carte (toujours centrée) -> Placettes -> Tournees -> quitter.
+        assertEquals(carte, guidage.retour())
+        assertEquals(placettes, guidage.retour()!!.retour())
+        assertEquals(EtatNavigation(), guidage.retour()!!.retour()!!.retour())
+        assertTrue(guidage.retour()!!.retour()!!.retour()!!.estRacine)
+        assertNull(guidage.retour()!!.retour()!!.retour()!!.retour())
+    }
+
+    @Test fun `l'icone carte ouvre la carte cadree sur la tournee, sans placette centrale`() {
+        val carte = EtatNavigation().ouvrirTournee("t1").ouvrirCarte()
+        assertTrue(carte.carte)
+        assertNull(carte.centreId)
+        assertEquals(EtatNavigation().ouvrirTournee("t1"), carte.retour())
+    }
+
+    @Test fun `naviguer vers depuis la carte sans placette choisie donne le guidage de la prochaine`() {
+        val guidage = EtatNavigation().ouvrirTournee("t1").ouvrirCarte().guider("p2")
+        assertEquals("p2", guidage.placetteId)
+        assertEquals(EtatNavigation().ouvrirTournee("t1").ouvrirCarte(), guidage.retour())
+    }
+
+    @Test fun `la carte ne s'ouvre pas sans tournee`() {
+        assertEquals(EtatNavigation(), EtatNavigation().ouvrirCarte("p1"))
+        assertEquals(EtatNavigation(), EtatNavigation().guider("p1"))
+    }
+
+    @Test fun `la rotation restitue placettes, carte centree et guidage`() {
+        val etats = listOf(
+            EtatNavigation().ouvrirTournee("t1"),
+            EtatNavigation().ouvrirTournee("t1").ouvrirCarte(),
+            EtatNavigation().ouvrirTournee("t1").ouvrirCarte("p1"),
+            EtatNavigation().ouvrirTournee("t1").ouvrirCarte("p1").guider("p1"),
+        )
+        for (e in etats) assertEquals(e, EtatNavigation.depuisListe(e.enListe()), e.toString())
+        // Une ancienne liste de trois éléments (avant la 061) se relit : tournée ouverte, sur les placettes.
+        assertEquals(EtatNavigation().ouvrirTournee("t1"), EtatNavigation.depuisListe(listOf("TOURNEES", "t1", "")))
     }
 
     @Test fun `la sauvegarde pour la rotation restitue l'etat`() {

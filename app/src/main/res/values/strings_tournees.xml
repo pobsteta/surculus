@@ -82,10 +82,26 @@
     <string name="carte_legende_a_jour">○ %1$d à jour</string>
     <string name="carte_legende_inconnu">\? %1$d sans état</string>
     <string name="carte_anomalies">%1$d surface(s) sans géométrie lisible, non dessinée(s)</string>
-    <string name="carte_placettes_liste">Placettes</string>
-    <string name="carte_fermer_liste">Fermer la liste</string>
-    <string name="carte_guider">Guider vers %1$s</string>
-    <string name="carte_guider_distance">Guider vers %1$s · %2$s</string>
+    <!-- Boutons de la carte (mission 061, comme Groma : naviguer vers, +, −, maison, cible) -->
+    <string name="carte_naviguer">Naviguer vers la placette</string>
+    <string name="carte_cadrer_tournee">Cadrer la tournée</string>
+    <string name="carte_choisie">Placette %1$s</string>
+    <string name="carte_choisie_distance">Placette %1$s · %2$s</string>
+    <!-- Écran « Placettes » (mission 061) -->
+    <string name="placettes_titre">Placettes</string>
+    <string name="placettes_carte">Carte</string>
+    <string name="placettes_vide">Aucune placette dans cette tournée.</string>
+    <string name="placettes_sans_code">Sans code</string>
+    <string name="placettes_a_faire">À faire</string>
+    <string name="placettes_controlee">Contrôlée</string>
+    <string name="placettes_etat_jamais">jamais contrôlée</string>
+    <string name="placettes_etat_a_programmer">travaux à prévoir</string>
+    <string name="placettes_etat_a_jour">à jour</string>
+    <string name="placettes_etat_inconnu">sans état</string>
+    <plurals name="placettes_compte">
+        <item quantity="one">%1$d placette · %2$d à faire</item>
+        <item quantity="other">%1$d placettes · %2$d à faire</item>
+    </plurals>
     <string name="carte_sans_position">Sans position</string>
     <string name="carte_permission">Position du téléphone refusée : la carte reste sans position.</string>
     <string name="carte_hors_france">Position hors de France : vérifier l\'ordre latitude / longitude</string>

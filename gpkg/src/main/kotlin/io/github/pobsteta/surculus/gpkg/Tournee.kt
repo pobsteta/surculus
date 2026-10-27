@@ -98,6 +98,8 @@ data class Tournee(
     val etats: List<EtatLu>,
     /** Codes de la couche `codes` (nomenclature de sommieR) ; vide si la couche l'est. */
     val codesTravaux: Set<String> = emptySet(),
+    /** Nom de la forêt lu dans la colonne `nom` de la couche `foret` (première ligne renseignée) ; `null` si la couche est vide ou sans nom. */
+    val nomForet: String? = null,
 ) {
     val nomsCouches: Set<String> get() = couches.map { it.nom }.toSet()
 

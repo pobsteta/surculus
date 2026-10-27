@@ -28,6 +28,7 @@ import io.github.pobsteta.surculus.gnss.PilotageRecepteur
 import io.github.pobsteta.surculus.gnss.RecepteurService
 import io.github.pobsteta.surculus.parametres.EcranParametres
 import io.github.pobsteta.surculus.tournee.DepotTournees
+import io.github.pobsteta.surculus.tournee.EcranPlacettes
 import io.github.pobsteta.surculus.tournee.EcranTournees
 import io.github.pobsteta.surculus.ui.theme.SurculusTheme
 import io.github.pobsteta.surculus.ui.theme.iconesBarreEtatClaires
@@ -36,7 +37,7 @@ import io.github.pobsteta.surculus.sauvegarde.EcranRestauration
 /**
  * Accueil (mission 040) : la liste des tournées (mission 011), avec un menu à trois points (Paramètres, À propos) ;
  * Paramètres (mission 046) ouvre l'Essai GNSS (mission 018) et la Restauration (mission 009). Navigation : [EtatNavigation], testée sans Compose.
- * Le contrôle des plants (mission 012) viendra après le guidage.
+ * Tournée ouverte : Placettes, puis Carte, puis Guidage (mission 061). Le contrôle des plants (mission 012) viendra après le guidage.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,8 +91,16 @@ class MainActivity : ComponentActivity() {
                         val placetteId = nav.placetteId
                         if (tourneeId != null && placetteId != null) {
                             EcranGuidage(tourneeId, placetteId, onRetour = { nav = nav.retour() ?: nav })
+                        } else if (tourneeId != null && nav.carte) {
+                            EcranCarte(tourneeId, centreId = nav.centreId, onRetour = { nav = nav.retour() ?: nav }, onGuider = { nav = nav.guider(it) })
                         } else if (tourneeId != null) {
-                            EcranCarte(tourneeId, onRetour = { nav = nav.retour() ?: nav }, onGuider = { nav = nav.guider(it) })
+                            // Mission 061, comme Groma : la tournée s'ouvre sur ses placettes, la carte vient d'un appui.
+                            EcranPlacettes(
+                                tourneeId,
+                                onRetour = { nav = nav.retour() ?: nav },
+                                onCarte = { nav = nav.ouvrirCarte() },
+                                onPlacette = { nav = nav.ouvrirCarte(it) },
+                            )
                         } else when (nav.destination) {
                             Destination.ESSAI -> EcranEssaiGnss(onRetour = { nav = nav.retour() ?: nav })
                             Destination.RESTAURATION -> EcranRestauration(onRetour = { nav = nav.retour() ?: nav })

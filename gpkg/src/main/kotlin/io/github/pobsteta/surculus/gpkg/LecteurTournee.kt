@@ -216,6 +216,12 @@ object LecteurTournee {
         } else {
             emptySet()
         }
-        return Tournee(epsg, srsId, couches, placettes, controles, empriseForet, projet, plants, etats, codesTravaux)
+        // Nom de la forêt (mission 061) : `foret.nom`, que sommieR écrit (`R/travaux_qfield.R` l. 96-98). Sert de titre quand `projet.foret` est vide.
+        val nomForet = if (cnx.existeTable("foret")) {
+            runCatching { cnx.lignes("SELECT nom FROM \"foret\" ORDER BY fid").firstNotNullOfOrNull { it.texte("nom")?.takeIf { n -> n.isNotBlank() } } }.getOrNull()
+        } else {
+            null
+        }
+        return Tournee(epsg, srsId, couches, placettes, controles, empriseForet, projet, plants, etats, codesTravaux, nomForet)
     }
 }

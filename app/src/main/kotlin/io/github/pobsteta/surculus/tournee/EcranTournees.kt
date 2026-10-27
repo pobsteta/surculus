@@ -93,7 +93,7 @@ private data class MessageTournees(val texte: String, val refus: Boolean)
 
 /**
  * Liste des tournées (spec § 4.1) : pour chacune, la forêt en grand, puis qui l'a préparée et quand, et le nombre de
- * contrôles. Un appui ouvre la carte. Source : le `travaux.gpkg` de chaque tournée.
+ * contrôles. Un appui ouvre les placettes de la forêt (mission 061). Source : le `travaux.gpkg` de chaque tournée.
  *
  * Accueil de l'application (missions 040 et 054) : barre « Surculus » et menu à trois points (Ouvrir un dossier,
  * Ouvrir un .zip, Paramètres, À propos), disponible aussi en vue colonnes.
