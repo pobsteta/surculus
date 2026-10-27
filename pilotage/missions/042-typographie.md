@@ -7,7 +7,7 @@
 > « 2, les styles de Marculus et groma aux tailles de Surculus », **puis, le même jour,
 > avant tout lancement : « Je veux dans groma et Surculus les tailles de police de
 > Marculus »**. Cette fiche suit la seconde décision.
-> **Lancement :** après la 040 et la 041 (mêmes fichiers) et sous le plafond humain (3 PR en revue).
+> **Lancement :** le 2026-10-27, depuis `main` (a0186c7, missions 040 à 044 fusionnées).
 
 ## Mission
 
@@ -40,7 +40,10 @@ Règles, avec leur auteur :
 | Sait-il comment faire ? | oui : `Typography` de Material 3, `MaterialTheme(typography = …)` | |
 | A-t-il les moyens ? | oui | |
 
-**Temps de la main :** **appuyer** : avant de toucher aux écrans, l'agent rend à l'orchestrateur le tableau : chaque texte (fichier:ligne), sa taille actuelle, le style de Marculus retenu (avec le fichier:ligne de Marculus qui l'emploie pour le même genre de texte) et sa taille nouvelle ; à part, les textes sans équivalent dans Marculus. Pascal valide le tableau, puis l'agent code.
+**Temps de la main :** **appuyer**. **Décisions de Pascal du 2026-10-27** (« 1. oui, 2. code directement ») :
+- l'agent **code directement**, sans tableau validé avant : pour chaque texte, le style que Marculus emploie pour le même genre de texte. Le tableau ci-dessous (2026-10-24) sert de guide ; il date d'avant les missions 040 à 045, l'agent l'applique aussi aux textes ajoutés depuis (liste des tournées, recherche, vue Kanban, « À propos », menu « ⋮ »). Il rend dans la PR le tableau final (fichier:ligne, taille avant, style après) ;
+- **trois exceptions gardées à leur taille** : la distance à la cible du guidage (72 sp, `EcranGuidage.kt`) et les deux grands chiffres de l'écran d'essai GNSS, qualité du fix et précision (44 sp, `EcranEssaiGnss.kt`) ; tout autre texte sans équivalent dans Marculus est rendu dans la PR, sans être choisi par l'agent ;
+- Pascal juge sur la release qui suit la fusion (plus de variante fumée).
 
 ## Ma réponse d'abord
 
@@ -52,7 +55,7 @@ _Rempli par Pascal seul, avant de lire le travail de l'agent. L'orchestrateur ne
 - **Ce qui ne lui est pas demandé :**
   - changer une couleur ou une police ;
   - écrire une `Typography` propre à Surculus ;
-  - toucher aux couleurs de la 038, à la navigation de la 040 ou à la recherche de la 041 ;
+  - toucher aux couleurs de la 038, à la navigation de la 040, à la recherche de la 041, à la logique de la vue Kanban (043) ou des réglages (044) ;
   - ajouter une police embarquée.
 
 ## Harnais
@@ -61,7 +64,7 @@ _Rempli par Pascal seul, avant de lire le travail de l'agent. L'orchestrateur ne
 - **Ne doit pas :** toucher à `main` ; modifier `fixtures/` ; ajouter une dépendance.
 - **Sources autorisées :** cette fiche ; `marculus` et `groma` (`~/dev/`, en lecture) ; la doc de Compose Material 3.
 
-## Tableau des styles (à valider par Pascal)
+## Tableau des styles (guide du 2026-10-24 ; plus à valider avant le code)
 
 _Dressé par l'agent le 2026-10-24, sans toucher au code. 83 occurrences de `fontSize =` dans `app/src/main/kotlin` (base : branche de la 041, après la 038 et la 040). Tailles par défaut de Material 3 (BOM 2026.02.01) : displayLarge 57, displayMedium 45, headlineMedium 28, headlineSmall 24, titleLarge 22, titleMedium 16 (Medium), titleSmall 14 (Medium), bodyLarge 16, bodyMedium 14, bodySmall 12, labelLarge 14 (Medium), labelMedium 12 (Medium), labelSmall 11 (Medium)._
 

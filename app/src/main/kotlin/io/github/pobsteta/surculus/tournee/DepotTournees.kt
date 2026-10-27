@@ -19,6 +19,7 @@ import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import io.github.pobsteta.surculus.gpkg.ImportTournee
 import io.github.pobsteta.surculus.gpkg.LecteurTournee
 import io.github.pobsteta.surculus.gpkg.Tournee
+import io.github.pobsteta.surculus.sauvegarde.JournalApp
 import java.io.File
 import java.time.Instant
 
@@ -58,6 +59,38 @@ object DepotTournees {
         (racine(ctx).listFiles { f -> f.isDirectory && File(f, ImportTournee.NOM_GPKG).isFile } ?: emptyArray())
             .sortedByDescending { it.lastModified() }
             .map { ligne(it) }
+
+    /**
+     * Nombre de saisies encore valables de chaque tournée listée, lu dans la projection du journal.
+     * HYPOTHÈSE (Q2 de la relecture, à trancher avec la mission 012) : `code_tournee` = nom du dossier de la tournée.
+     * À appeler hors du fil principal. Journal illisible : 0 (la vue Kanban ne sert que d'aide, elle ne bloque rien).
+     */
+    fun saisies(ctx: Context, lignes: List<LigneTournee>): Map<String, Int> {
+        val depot = runCatching { JournalApp.depot(ctx) }.getOrNull() ?: return emptyMap()
+        return lignes.associate { l ->
+            l.id to (runCatching { compterSaisies(depot.projection(l.id)) }.getOrDefault(0))
+        }
+    }
+
+    /** Réglages Kanban, gardés dans les préférences privées de l'application (jamais dans le journal ni les fichiers de tournée). */
+    fun reglagesKanban(ctx: Context): ReglagesKanban {
+        val prefs = ctx.applicationContext.getSharedPreferences("kanban", Context.MODE_PRIVATE)
+        return ReglagesKanban(object : MagasinKanban {
+            override fun lireTexte(cle: String) = prefs.getString(cle, null)
+            override fun ecrireTexte(cle: String, valeur: String) { prefs.edit().putString(cle, valeur).apply() }
+            override fun lireBooleen(cle: String, parDefaut: Boolean) = prefs.getBoolean(cle, parDefaut)
+            override fun ecrireBooleen(cle: String, valeur: Boolean) { prefs.edit().putBoolean(cle, valeur).apply() }
+        })
+    }
+
+    /** Réglages d'affichage (plein écran), dans les préférences privées de l'application (mission 044). */
+    fun reglagesAffichage(ctx: Context): ReglagesAffichage {
+        val prefs = ctx.applicationContext.getSharedPreferences("affichage", Context.MODE_PRIVATE)
+        return ReglagesAffichage(object : MagasinAffichage {
+            override fun lireBooleen(cle: String, parDefaut: Boolean) = prefs.getBoolean(cle, parDefaut)
+            override fun ecrireBooleen(cle: String, valeur: Boolean) { prefs.edit().putBoolean(cle, valeur).apply() }
+        })
+    }
 
     fun ligne(dossier: File): LigneTournee {
         val gpkg = File(dossier, ImportTournee.NOM_GPKG)
