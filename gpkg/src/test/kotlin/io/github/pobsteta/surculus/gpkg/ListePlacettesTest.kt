@@ -95,9 +95,10 @@ class ListePlacettesTest {
         val t = LecteurTournee.lire(TourneeDeTest.couchey(dossier))
         val p = assertNotNull(prochaineAFaire(t.placettes, emptySet(), null))
         assertEquals("P35-01", p.code)
-        assertTrue(EmpriseEtFrance.controler(p.position!!).enFrance)
+        val pos = assertNotNull(p.position)
+        assertTrue(EmpriseEtFrance.controler(pos).enFrance)
         // Placette de la Somalie : x et y inversés, hors de France, jamais cadrée comme une placette de Bourgogne.
-        assertTrue(!EmpriseEtFrance.controler(PointLambert93(p.position!!.yMetres, p.position!!.xMetres)).enFrance)
+        assertTrue(!EmpriseEtFrance.controler(PointLambert93(pos.yMetres, pos.xMetres)).enFrance)
     }
 }
 

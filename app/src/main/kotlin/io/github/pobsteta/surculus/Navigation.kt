@@ -27,8 +27,8 @@ data class EtatNavigation(
 ) {
     val estRacine: Boolean get() = destination == Destination.TOURNEES && tourneeId == null
 
-    /** Vrai tant que la carte, le guidage ou l'essai GNSS est ouvert : le récepteur y tourne (mission 047), pas ailleurs. */
-    val recepteurDemande: Boolean get() = tourneeId != null || destination == Destination.ESSAI
+    /** Vrai tant que la carte, le guidage ou l'essai GNSS est ouvert : le récepteur y tourne (mission 047), pas ailleurs, ni sur « Placettes » (décision de Pascal, 2026-10-27, comme Groma). */
+    val recepteurDemande: Boolean get() = (tourneeId != null && carte) || destination == Destination.ESSAI
 
     fun ouvrirParametres() = EtatNavigation(Destination.PARAMETRES)
     fun ouvrirEssai() = EtatNavigation(Destination.ESSAI)

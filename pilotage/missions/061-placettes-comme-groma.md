@@ -55,7 +55,7 @@ Règles, avec leur auteur (Pascal, 2026-10-27) :
 
 ## Terrain
 
-- **Échantillon :** la release qui suit la fusion, tournée `couchey-demo-avec-ortho.zip` : l'accueil dit « Forêt communale de Couchey » ; un appui ouvre la liste des 3 placettes ; un appui sur P35-01 ouvre la carte centrée dessus ; maison cadre la tournée, naviguer vers lance le guidage.
+- **Échantillon :** la release qui suit la fusion, tournée `couchey-demo-avec-ortho.zip` : l'accueil dit « Foret communale de Couchey (jeu de demonstration) » (nom écrit par sommieR) ; un appui ouvre la liste des 3 placettes (P35-03 seule à faire, selon la règle 1a de Pascal du 2026-10-27) ; un appui sur P35-01 ouvre la carte centrée dessus ; maison cadre la tournée, naviguer vers lance le guidage.
 
 ## Qui veille, qui tranche
 

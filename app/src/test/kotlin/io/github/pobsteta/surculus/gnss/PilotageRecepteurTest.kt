@@ -74,7 +74,10 @@ class PilotageRecepteurTest {
     @Test fun `la carte, le guidage et l'essai demandent le recepteur, pas les parametres ni la liste`() {
         assertFalse(EtatNavigation().recepteurDemande)
         assertFalse(EtatNavigation().ouvrirParametres().recepteurDemande)
-        assertTrue(EtatNavigation().ouvrirTournee("t1").recepteurDemande)
+        // Mission 061, décision de Pascal (2026-10-27) : comme Groma, pas de récepteur sur l'écran « Placettes ».
+        assertFalse(EtatNavigation().ouvrirTournee("t1").recepteurDemande)
+        assertTrue(EtatNavigation().ouvrirTournee("t1").ouvrirCarte().recepteurDemande)
+        assertTrue(EtatNavigation().ouvrirTournee("t1").ouvrirCarte("p1").recepteurDemande)
         assertTrue(EtatNavigation().ouvrirTournee("t1").guider("p1").recepteurDemande)
         assertTrue(EtatNavigation().ouvrirParametres().ouvrirEssai().recepteurDemande)
     }
@@ -82,21 +85,23 @@ class PilotageRecepteurTest {
     @Test fun `ouvrir la carte, guider, revenir a la liste, demarre une fois, arrete une fois`() {
         val r = Faux()
         val suivi = Suivi(PilotageRecepteur(r) { true })
-        val carte = EtatNavigation().ouvrirTournee("t1")
+        val placettes = EtatNavigation().ouvrirTournee("t1")
+        val carte = placettes.ouvrirCarte()
+        suivi.aller(placettes)
+        assertEquals(emptyList(), r.appels)
         suivi.aller(carte)
         suivi.aller(carte.guider("p1"))
         suivi.aller(carte)
         assertEquals(listOf("demarrer"), r.appels)
-        val liste = carte.retour()!!
-        suivi.aller(liste)
+        suivi.aller(carte.retour()!!)
         assertEquals(listOf("demarrer", "arreter"), r.appels)
-        assertEquals(Destination.TOURNEES, liste.destination)
+        assertEquals(Destination.TOURNEES, carte.retour()!!.destination)
     }
 
     @Test fun `actif faux, toute la navigation ne demarre jamais le recepteur`() {
         val r = Faux()
         val suivi = Suivi(PilotageRecepteur(r) { false })
-        val carte = EtatNavigation().ouvrirTournee("t1")
+        val carte = EtatNavigation().ouvrirTournee("t1").ouvrirCarte()
         suivi.aller(carte)
         suivi.aller(carte.guider("p1"))
         suivi.aller(EtatNavigation().ouvrirParametres().ouvrirEssai())

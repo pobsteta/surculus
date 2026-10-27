@@ -65,4 +65,19 @@ class EcranPlacettesSourcesTest {
         assertTrue("titreForet(it.projet?.foret, it.nomForet, dossier.name)" in depot)
         assertFalse("projet?.foret ?: tournee?.projet?.nom" in depot)
     }
+
+    @Test
+    fun `les boutons de zoom integres d'osmdroid sont masques, le pincement reste (demande de Pascal)`() {
+        assertTrue("zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)" in carte)
+        assertTrue("carte.setMultiTouchControls(true)" in carte)
+    }
+
+    @Test
+    fun `maison cadre l'emprise ou les placettes et se grise sans rien a cadrer, la choisie survit a la rotation`() {
+        assertTrue("empriseDeCadrage(" in carte)
+        assertTrue("if (cadre == null) disabled()" in carte)
+        assertTrue("rememberSaveable(" in carte && "choisieUuid" in carte)
+        assertTrue("probleme(p)" in carte, "placette sans position ou hors de France : message, pas de navigation")
+        assertTrue("carte_placette_sans_position" in chaines && "carte_placette_hors_france" in chaines)
+    }
 }

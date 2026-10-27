@@ -56,6 +56,7 @@ import androidx.compose.runtime.produceState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,12 +88,16 @@ import io.github.pobsteta.surculus.gpkg.ObjetSurfacique
 import io.github.pobsteta.surculus.gpkg.Pastille
 import io.github.pobsteta.surculus.gpkg.PlacetteTournee
 import io.github.pobsteta.surculus.gpkg.decomptes
+import io.github.pobsteta.surculus.gpkg.ProblemePlacette
 import io.github.pobsteta.surculus.gpkg.centrageInitial
+import io.github.pobsteta.surculus.gpkg.empriseDeCadrage
+import io.github.pobsteta.surculus.gpkg.probleme
 import io.github.pobsteta.surculus.gpkg.cibleNavigation
 import io.github.pobsteta.surculus.gpkg.titreForet
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import org.osmdroid.util.BoundingBox
+import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -296,8 +301,12 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
     var voirParcelles by remember { mutableStateOf(false) }
     var voirPlacettes by remember { mutableStateOf(true) }
     // Ouverte depuis une placette de l'écran « Placettes » : elle est déjà la placette choisie (mission 061).
-    val centre = remember(ouverte, centreId) { placettes.firstOrNull { it.uuid == centreId } }
-    var choisie by remember(ouverte, centreId) { mutableStateOf(centre) }
+    // Toutes les placettes de la tournée, même sans position : une placette sans position touchée dans la liste ouvre la carte
+    // cadrée et le dit, elle ne se perd pas en silence. La choisie survit à une rotation (son uuid est sauvegardé).
+    val toutes = ouverte.tournee.placettes
+    val centre = remember(ouverte, centreId) { toutes.firstOrNull { it.uuid == centreId } }
+    var choisieUuid by rememberSaveable(ouverte.dossier.name, centreId) { mutableStateOf(centreId) }
+    val choisie = toutes.firstOrNull { it.uuid == choisieUuid }
     val controlees = remember(ouverte) { DepotTournees.placettesControlees(ctx, ouverte.dossier.name) }
 
     // Fond de carte : le choix mémorisé pour cette tournée, sinon l'Ortho chantier si la tournée en a une, sinon le Plan IGN.
@@ -311,6 +320,9 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
     // Garde-fou : on ne cadre la carte que sur une emprise en France (sinon : la Somalie, sans alerte).
     val emprise: EmpriseLambert93? = carto.empriseUg ?: ouverte.tournee.empriseForet
     val empriseHorsFrance = remember(emprise) { emprise != null && EmpriseCarte.controler(emprise) is EmpriseCarte.Resultat.HorsFrance }
+    // Ce que « maison » et l'ouverture cadrent : l'emprise de la tournée si elle est en France, sinon les placettes en France
+    // (mission 061) ; `null` : rien à cadrer, « maison » est grisé.
+    val cadre: EmpriseLambert93? = remember(emprise, empriseHorsFrance, toutes) { empriseDeCadrage(if (empriseHorsFrance) null else emprise, toutes) }
     val distances: Map<String, Double> = remember(fix, placettes) {
         val pos = fix?.position?.let { Guidage.versLambert93(it) }
         if (pos == null) emptyMap() else placettes.associate { p -> p.uuid to kotlin.math.hypot(p.position!!.xMetres - pos.xMetres, p.position!!.yMetres - pos.yMetres) }
@@ -372,6 +384,8 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
                         // Fond posé par `update` ; le réseau est utilisé par les fonds en ligne (cache d'osmdroid gardé).
                         val carte = MapView(contexte, fournisseurDeFond(contexte, fondAffiche, if (fondAffiche == Fond.ORTHO) FichierOrtho.ouvrir(ouverte.dossier) else null))
                         carte.setMultiTouchControls(true)
+                        // Pas de + et − d'osmdroid qui apparaissent au zoom : les boutons de la carte suffisent (Marculus, CarteScreen.kt l. 308) ; le pincement reste.
+                        carte.zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
                         carte.maxZoomLevel = zoomMaxDeFond(fondAffiche)
                         carte.isTilesScaledToDpi = true
                         val densite = contexte.resources.displayMetrics.density
@@ -399,15 +413,15 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
                         )
                         l.carte = carte
                         (l.foret + l.ug + l.parcelles + l.placettes + l.position).forEach { carte.overlays.add(it) }
-                        l.placettes.forEach { m -> m.setOnMarkerClickListener { marqueur, _ -> choisie = marqueur.relatedObject as? PlacetteTournee; true } }
+                        l.placettes.forEach { m -> m.setOnMarkerClickListener { marqueur, _ -> choisieUuid = (marqueur.relatedObject as? PlacetteTournee)?.uuid; true } }
                         l.fondApplique = fondAffiche
                         couchesRef[0] = l
                         // Ouverte depuis une placette : centrée dessus (si elle tombe en France), sinon cadrée sur la tournée.
                         val centrage = centrageInitial(centre)
                         if (centrage != null) {
                             carte.post { carte.controller.setZoom(ZOOM_RECENTRER); carte.controller.setCenter(GeoPoint(centrage)) }
-                        } else if (emprise != null && !empriseHorsFrance) {
-                            carte.post { cadrerSur(carte, emprise, (48 * densite).toInt(), animer = false) }
+                        } else if (cadre != null) {
+                            carte.post { cadrerSur(carte, cadre, (48 * densite).toInt(), animer = false) }
                         }
                         carte
                     },
@@ -445,7 +459,7 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
                 // Les boutons de Groma (`EcranCarte.kt` l. 323-389), au moins 48 dp : naviguer vers (la placette choisie, sinon la
                 // prochaine à faire ; inactif s'il n'y en a pas), zoom avant, zoom arrière, maison (cadrer la tournée), cible
                 // (la position GNSS si elle tombe en France, zoom 17 au moins, sinon l'emprise de la tournée : `Recentrage.cible`).
-                val cibleNaviguer = cibleNavigation(choisie, placettes, controlees, fix?.position?.let { Guidage.versLambert93(it) })
+                val cibleNaviguer = cibleNavigation(choisie, toutes, controlees, fix?.position?.let { Guidage.versLambert93(it) })
                 Column(Modifier.align(Alignment.BottomEnd).padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SmallFloatingActionButton(
                         onClick = { cibleNaviguer?.let { onGuider(it.uuid) } },
@@ -464,22 +478,24 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
                     SmallFloatingActionButton(
                         onClick = {
                             val carte = couchesRef[0]?.carte ?: return@SmallFloatingActionButton
-                            if (emprise != null && !empriseHorsFrance) cadrerSur(carte, emprise, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
+                            if (cadre != null) cadrerSur(carte, cadre, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
                         },
-                        modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                        modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics { if (cadre == null) disabled() },
+                        containerColor = if (cadre != null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = if (cadre != null) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     ) {
                         Icon(Icons.Filled.Home, contentDescription = stringResource(R.string.carte_cadrer_tournee))
                     }
                     SmallFloatingActionButton(
                         onClick = {
                             val carte = couchesRef[0]?.carte ?: return@SmallFloatingActionButton
-                            when (val c = Recentrage.cible(fix?.position, emprise)) {
+                            when (val c = Recentrage.cible(fix?.position, cadre)) {
                                 is Recentrage.Cible.Fix -> {
                                     if (carte.zoomLevelDouble < ZOOM_RECENTRER) carte.controller.setZoom(ZOOM_RECENTRER)
                                     carte.controller.animateTo(GeoPoint(c.position.latitude, c.position.longitude))
                                 }
                                 Recentrage.Cible.Emprise ->
-                                    cadrerSur(carte, emprise!!, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
+                                    cadrerSur(carte, cadre!!, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
                                 Recentrage.Cible.Rien -> {}
                             }
                         },
@@ -509,7 +525,14 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
         // L'action est le bouton « naviguer vers » (mission 061) ; plus de bouton « Placettes » sous la carte.
         choisie?.let { p ->
             val d = distances[p.uuid]
-            Text(
+            val probleme = probleme(p)
+            if (probleme != null) {
+                Text(
+                    stringResource(if (probleme == ProblemePlacette.SANS_POSITION) R.string.carte_placette_sans_position else R.string.carte_placette_hors_france, p.code.orEmpty()),
+                    color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).plaqueEtat(),
+                )
+            } else Text(
                 if (d != null) stringResource(R.string.carte_choisie_distance, p.code.orEmpty(), Libelles.distance(d)) else stringResource(R.string.carte_choisie, p.code.orEmpty()),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,

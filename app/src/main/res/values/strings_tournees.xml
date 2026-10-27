@@ -85,6 +85,8 @@
     <!-- Boutons de la carte (mission 061, comme Groma : naviguer vers, +, −, maison, cible) -->
     <string name="carte_naviguer">Naviguer vers la placette</string>
     <string name="carte_cadrer_tournee">Cadrer la tournée</string>
+    <string name="carte_placette_sans_position">Placette %1$s sans position : la carte est cadrée sur la tournée, pas de navigation vers elle.</string>
+    <string name="carte_placette_hors_france">Placette %1$s hors de France : vérifier l\'ordre des axes (x = Est, y = Nord) ; pas de navigation vers elle.</string>
     <string name="carte_choisie">Placette %1$s</string>
     <string name="carte_choisie_distance">Placette %1$s · %2$s</string>
     <!-- Écran « Placettes » (mission 061) -->

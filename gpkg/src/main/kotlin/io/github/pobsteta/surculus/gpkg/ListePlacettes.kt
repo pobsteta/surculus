@@ -7,6 +7,7 @@
  */
 package io.github.pobsteta.surculus.gpkg
 
+import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
 import io.github.pobsteta.surculus.core.geo.PointLambert93
 
 /**
@@ -17,16 +18,17 @@ fun titreForet(projetForet: String?, nomCoucheForet: String?, dossier: String): 
     projetForet?.takeIf { it.isNotBlank() } ?: nomCoucheForet?.takeIf { it.isNotBlank() } ?: dossier
 
 /**
- * « À faire » : un contrôle prévu dans cette tournée et pas encore saisi (décision de Pascal, 2026-10-27, « 1 oui »).
+ * « À faire » (décision de Pascal, 2026-10-27, « 1a ») : une placette dont l'`etat_suivi` **n'est pas** `a_jour` et qui
+ * n'est pas encore saisie dans cette tournée. Les `a_jour` passent en bas avec les saisies, grisées : un `a_jour` ancien
+ * (dernier contrôle lointain) reste « à jour », on ne recalcule rien (l'état vient de sommieR). `jamais`, `a_programmer` et
+ * un état inconnu sont « à faire ».
  *
- * Ce qui est lisible aujourd'hui : le `travaux.gpkg` ne porte aucun « contrôle prévu » par placette ; la liste du départ
- * de sommieR est celle des placettes de la tournée (spec § 4.1), `etat_suivi` est figé à la préparation et `a_programmer`
- * dit un besoin de travaux, pas une placette due. **Prévue = toute placette de la tournée.** « Saisi » = un contrôle de
- * cette tournée au journal des saisies pour cette placette : [controlees] porte les `uuid` de ces placettes.
- * Hypothèse à confirmer par Pascal (voir la PR) : le journal n'écrit pas encore de contrôle (mission 012), donc
- * [controlees] est vide aujourd'hui et toutes les placettes sont « à faire ».
+ * « Saisie » = un contrôle de cette tournée au journal pour cette placette : [controlees] porte les `uuid` de ces placettes,
+ * **propres à la tournée** : une saisie dans une tournée ne rend pas la placette faite dans une autre (critère (d)). Le
+ * journal n'écrit pas encore de contrôle (mission 012) : [controlees] est vide aujourd'hui.
  */
-fun estAFaire(placette: PlacetteTournee, controlees: Set<String>): Boolean = placette.uuid !in controlees
+fun estAFaire(placette: PlacetteTournee, controlees: Set<String>): Boolean =
+    placette.etatSuivi != EtatSuivi.A_JOUR && placette.uuid !in controlees
 
 /** Les placettes de la liste : « à faire » d'abord, puis les autres ; dans chaque groupe, ordre du code puis de l'`uuid`. */
 data class PlacettesOrdonnees(val aFaire: List<PlacetteTournee>, val autres: List<PlacetteTournee>) {
@@ -47,17 +49,28 @@ fun ordonnerPlacettes(placettes: List<PlacetteTournee>, controlees: Set<String>)
  * aucune (le bouton est alors inactif). Seules les placettes qui ont un code et une position sont atteignables par le guidage.
  */
 fun prochaineAFaire(placettes: List<PlacetteTournee>, controlees: Set<String>, depuis: PointLambert93?): PlacetteTournee? {
-    val candidates = ordonnerPlacettes(placettes, controlees).aFaire.filter { it.position != null && it.code != null }
+    val candidates = ordonnerPlacettes(placettes, controlees).aFaire.filter { probleme(it) == null }
     if (depuis == null) return candidates.firstOrNull()
     return candidates.minByOrNull { kotlin.math.hypot(it.position!!.xMetres - depuis.xMetres, it.position!!.yMetres - depuis.yMetres) }
 }
 
+/** Pourquoi on ne peut pas naviguer vers une placette. */
+enum class ProblemePlacette { SANS_POSITION, HORS_FRANCE }
+
+/** `null` si le guidage peut aller à la placette : un code, une position (Lambert-93, x = Est, y = Nord) qui tombe en France. */
+fun probleme(p: PlacetteTournee): ProblemePlacette? {
+    val pos = p.position ?: return ProblemePlacette.SANS_POSITION
+    if (p.code == null) return ProblemePlacette.SANS_POSITION
+    return if (io.github.pobsteta.surculus.core.placette.EmpriseEtFrance.controler(pos).enFrance) null else ProblemePlacette.HORS_FRANCE
+}
+
 /**
- * La placette vers laquelle « naviguer vers » lance le guidage (mission 061, « 2 oui » de Pascal, 2026-10-27) : la placette
- * [choisie] sur la carte ; sinon la [prochaineAFaire]. `null` : aucune, le bouton est inactif.
+ * La placette vers laquelle « naviguer vers » lance le guidage (mission 061, « 2 oui » de Pascal) : la placette [choisie] sur
+ * la carte, **seulement si elle est atteignable** (jamais une autre en silence : sinon `null`, bouton inactif et message) ;
+ * sans placette choisie, la [prochaineAFaire]. `null` : aucune, le bouton est inactif.
  */
 fun cibleNavigation(choisie: PlacetteTournee?, placettes: List<PlacetteTournee>, controlees: Set<String>, depuis: PointLambert93?): PlacetteTournee? =
-    choisie ?: prochaineAFaire(placettes, controlees, depuis)
+    if (choisie != null) choisie.takeIf { probleme(it) == null } else prochaineAFaire(placettes, controlees, depuis)
 
 /**
  * Où centrer la carte à l'ouverture depuis une placette : sa position (Lambert-93, x = Est, y = Nord, mètres), **seulement
@@ -65,3 +78,20 @@ fun cibleNavigation(choisie: PlacetteTournee?, placettes: List<PlacetteTournee>,
  */
 fun centrageInitial(centre: PlacetteTournee?): PointLambert93? =
     centre?.position?.takeIf { io.github.pobsteta.surculus.core.placette.EmpriseEtFrance.controler(it).enFrance }
+
+/**
+ * Ce que le bouton « maison » cadre (mission 061, « 2 oui ») : l'[emprise] de la tournée (UG, sinon forêt) si elle existe ;
+ * sinon la boîte des placettes de la tournée **qui tombent en France** (élargie de [MARGE_M] mètres : une seule placette ne
+ * fait pas une surface) ; `null` s'il n'y a rien à cadrer (bouton grisé).
+ */
+fun empriseDeCadrage(emprise: EmpriseLambert93?, placettes: List<PlacetteTournee>): EmpriseLambert93? {
+    if (emprise != null) return emprise
+    val pts = placettes.mapNotNull { it.position }.filter { io.github.pobsteta.surculus.core.placette.EmpriseEtFrance.controler(it).enFrance }
+    if (pts.isEmpty()) return null
+    return EmpriseLambert93(
+        pts.minOf { it.xMetres } - MARGE_M, pts.minOf { it.yMetres } - MARGE_M,
+        pts.maxOf { it.xMetres } + MARGE_M, pts.maxOf { it.yMetres } + MARGE_M,
+    )
+}
+
+const val MARGE_M = 50.0
