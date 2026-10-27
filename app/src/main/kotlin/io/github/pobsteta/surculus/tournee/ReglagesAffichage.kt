@@ -7,6 +7,8 @@
  */
 package io.github.pobsteta.surculus.tournee
 
+import io.github.pobsteta.surculus.ui.theme.ChoixTheme
+
 /** Dépôt du projet et liste complète des dépendances et licences (mission 045), sur la branche `main`. */
 const val URL_GITHUB = "https://github.com/pobsteta/surculus"
 const val URL_LICENCES = "https://github.com/pobsteta/surculus/blob/main/docs/dependances.md"
@@ -25,6 +27,8 @@ fun texteVersion(versionName: String?): String =
 interface MagasinAffichage {
     fun lireBooleen(cle: String, parDefaut: Boolean): Boolean
     fun ecrireBooleen(cle: String, valeur: Boolean)
+    fun lireTexte(cle: String): String?
+    fun ecrireTexte(cle: String, valeur: String)
 }
 
 /** Réglages d'affichage, **gardés sur le téléphone seulement** (comme les réglages Kanban de la mission 043). */
@@ -33,7 +37,13 @@ class ReglagesAffichage(private val magasin: MagasinAffichage) {
         get() = magasin.lireBooleen(CLE_PLEIN_ECRAN, PLEIN_ECRAN_PAR_DEFAUT)
         set(v) = magasin.ecrireBooleen(CLE_PLEIN_ECRAN, v)
 
+    /** Thème (mission 051) : [ChoixTheme.SYSTEME] par défaut, comme Marculus ; gardé sous la clé « theme ». */
+    var choixTheme: ChoixTheme
+        get() = ChoixTheme.depuis(magasin.lireTexte(CLE_THEME))
+        set(v) = magasin.ecrireTexte(CLE_THEME, v.name)
+
     private companion object {
         const val CLE_PLEIN_ECRAN = "plein_ecran"
+        const val CLE_THEME = "theme"
     }
 }

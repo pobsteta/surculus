@@ -53,7 +53,9 @@ class MainActivity : ComponentActivity() {
                     controleur.show(WindowInsetsCompat.Type.systemBars())
                 }
             }
-            SurculusTheme {
+            // Thème (mission 051) : Système par défaut, gardé sur le téléphone ; le changement s'applique tout de suite.
+            var choixTheme by remember { mutableStateOf(reglagesAffichage.choixTheme) }
+            SurculusTheme(choixTheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     // Survit à une rotation : écran, tournée ouverte (nom de son dossier), placette guidée (uuid).
                     var nav by rememberSaveable(
@@ -86,6 +88,11 @@ class MainActivity : ComponentActivity() {
                                 onPleinEcran = {
                                     pleinEcran = it
                                     reglagesAffichage.pleinEcran = it
+                                },
+                                choixTheme = choixTheme,
+                                onChoixTheme = {
+                                    choixTheme = it
+                                    reglagesAffichage.choixTheme = it
                                 },
                                 onEssai = { nav = nav.ouvrirEssai() },
                                 onRestauration = { nav = nav.ouvrirRestauration() },

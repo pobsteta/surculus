@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.carte.Palette
+import io.github.pobsteta.surculus.carte.plaqueEtat
 import io.github.pobsteta.surculus.carte.ReglagesOrtho
 import io.github.pobsteta.surculus.core.carte.EtatOrtho
 import io.github.pobsteta.surculus.core.carte.ZoneTuiles
@@ -173,7 +174,7 @@ fun EcranTournees(
                 Text(stringResource(R.string.tournees_wifi))
                 Switch(checked = wifi, onCheckedChange = { wifi = it; ReglagesOrtho.definirWifiSeulement(ctx, it) })
             }
-            message?.let { Text(it.texte, color = if (it.refus) Palette.Rouge else Palette.Noir) }
+            message?.let { Text(it.texte, color = if (it.refus) Palette.Rouge else Palette.Noir, modifier = Modifier.plaqueEtat()) }
 
             val toutes = lignes.orEmpty()
             val trouvees = if (recherche.isBlank()) toutes else toutes.filter { correspond(it.champs, recherche) }

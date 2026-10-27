@@ -7,9 +7,39 @@
  */
 package io.github.pobsteta.surculus.carte
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.core.gnss.QualiteFix
 import io.github.pobsteta.surculus.gpkg.Teinte
+import io.github.pobsteta.surculus.ui.theme.LocalSombre
+
+/**
+ * Contraste WCAG entre deux couleurs opaques, de 1 à 21 (mission 051) : (L claire + 0,05) / (L sombre + 0,05).
+ * Seuil de lisibilité du texte : [CONTRASTE_MINIMAL].
+ */
+fun contraste(a: Color, b: Color): Float {
+    val haut = maxOf(a.luminance(), b.luminance())
+    val bas = minOf(a.luminance(), b.luminance())
+    return (haut + 0.05f) / (bas + 0.05f)
+}
+
+const val CONTRASTE_MINIMAL = 4.5f
+
+/**
+ * Mission 051 : en thème sombre, les teintes d'état (vert, orange, rouge, noir de [Palette]) tombent sous 4,5:1 sur le
+ * fond (voir `ContrasteTest`). On ne change pas ces couleurs : le texte d'état se pose sur une plaque blanche, comme le
+ * badge du fix pose du blanc sur sa teinte. En thème clair, rien ne change.
+ */
+@Composable
+fun Modifier.plaqueEtat(): Modifier =
+    if (LocalSombre.current) clip(RoundedCornerShape(6.dp)).background(Palette.Blanc).padding(horizontal = 8.dp, vertical = 2.dp) else this
 
 /** Quatre couleurs au plus (règle du 1664), contrastées pour le plein soleil : noir sur blanc et trois teintes d'état. */
 object Palette {
