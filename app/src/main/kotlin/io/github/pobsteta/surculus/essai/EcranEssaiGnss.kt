@@ -11,12 +11,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.carte.rememberFix
 import io.github.pobsteta.surculus.core.essai.AffichageEssai
 import io.github.pobsteta.surculus.core.essai.Drapeau
@@ -64,7 +74,7 @@ private fun Ton.couleur() = when (this) {
  * Source unique du fix : [SourcePosition.fix] ; état du service : [ServiceGnssRtk.etat].
  */
 @Composable
-fun EcranEssaiGnss() {
+fun EcranEssaiGnss(onRetour: () -> Unit) {
     val ctx = LocalContext.current
     val (fix, localisationRefusee) = rememberFix()
     val etat by ServiceGnssRtk.etat.collectAsStateWithLifecycle()
@@ -75,29 +85,40 @@ fun EcranEssaiGnss() {
     val affichage = EssaiGnss.afficher(fix, etat.fixRefuse, maintenant)
     val recepteurActif = remember { ConfigRtk.lire(ctx).actif }
 
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .background(Blanc)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        BlocMesure(affichage)
-
-        Text(
-            stringResource(
-                R.string.essai_source,
-                if (etat.enMarche) stringResource(if (etat.connecte) R.string.essai_lien_ok else R.string.essai_lien_attente)
-                else stringResource(R.string.essai_lien_arrete),
-            ),
-            style = MaterialTheme.typography.bodyMedium, color = Noir,
+    Column {
+        BandeauCompact(
+            titre = stringResource(R.string.essai_ouvrir),
+            navigationIcon = {
+                IconButton(onClick = onRetour) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.param_retour))
+                }
+            },
         )
-        if (!recepteurActif) Text(stringResource(R.string.essai_recepteur_inactif), style = MaterialTheme.typography.bodyMedium, color = Noir)
-        if (localisationRefusee) Text(stringResource(R.string.carte_permission), fontWeight = FontWeight.Bold, color = Rouge)
-        etat.erreur?.let { Text(it, color = Rouge) }
-        etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = Rouge) }
-        Spacer(Modifier.height(24.dp))
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                .background(Blanc)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            BlocMesure(affichage)
+
+            Text(
+                stringResource(
+                    R.string.essai_source,
+                    if (etat.enMarche) stringResource(if (etat.connecte) R.string.essai_lien_ok else R.string.essai_lien_attente)
+                    else stringResource(R.string.essai_lien_arrete),
+                ),
+                style = MaterialTheme.typography.bodyMedium, color = Noir,
+            )
+            if (!recepteurActif) Text(stringResource(R.string.essai_recepteur_inactif), style = MaterialTheme.typography.bodyMedium, color = Noir)
+            if (localisationRefusee) Text(stringResource(R.string.carte_permission), fontWeight = FontWeight.Bold, color = Rouge)
+            etat.erreur?.let { Text(it, color = Rouge) }
+            etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = Rouge) }
+            Spacer(Modifier.height(24.dp))
+        }
     }
 }
 

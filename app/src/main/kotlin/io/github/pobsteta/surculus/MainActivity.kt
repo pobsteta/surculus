@@ -68,8 +68,9 @@ class MainActivity : ComponentActivity() {
                     }
                     // À la racine, le retour Android n'est pas intercepté : il quitte l'application.
                     BackHandler(enabled = !nav.estRacine) { nav = nav.retour() ?: nav }
-                    // La liste des tournées gère elle-même ses marges (sa barre colorée passe sous la barre d'état).
-                    val marges = if (nav.estRacine) Modifier else Modifier.safeDrawingPadding()
+                    // Les écrans à bandeau (liste, Paramètres, Restauration, Essai GNSS ; mission 053) gèrent eux-mêmes leurs
+                    // marges : le bandeau coloré passe sous la barre d'état. Seules la carte et le guidage reçoivent les marges ici.
+                    val marges = if (nav.tourneeId == null) Modifier else Modifier.safeDrawingPadding()
                     Column(Modifier.fillMaxSize().then(marges)) {
                         val tourneeId = nav.tourneeId
                         val placetteId = nav.placetteId
@@ -78,8 +79,8 @@ class MainActivity : ComponentActivity() {
                         } else if (tourneeId != null) {
                             EcranCarte(tourneeId, onRetour = { nav = nav.retour() ?: nav }, onGuider = { nav = nav.guider(it) })
                         } else when (nav.destination) {
-                            Destination.ESSAI -> EcranEssaiGnss()
-                            Destination.RESTAURATION -> EcranRestauration()
+                            Destination.ESSAI -> EcranEssaiGnss(onRetour = { nav = nav.retour() ?: nav })
+                            Destination.RESTAURATION -> EcranRestauration(onRetour = { nav = nav.retour() ?: nav })
                             Destination.PARAMETRES -> EcranParametres(
                                 pleinEcran = pleinEcran,
                                 onPleinEcran = {
