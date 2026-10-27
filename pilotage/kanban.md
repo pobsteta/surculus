@@ -75,10 +75,17 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **043** vue Kanban des tournées, colonnes de Marculus (`dev`, appuyer) : PR #84 en
-  relecture depuis le 2026-10-27, relue deux fois, prête ; essai par Pascal après fusion, sur
-  la release. Fiche :
-  `pilotage/missions/043-kanban-tournees.md`.
+- **Pascal, essai de la release v0.7.45** (2026-10-27, après fusion) : « À propos » affiche
+  0.7.45 ; plein écran ; vue Kanban (icônes, glissé avec des gants, carte restée après
+  réouverture) ; recherche ; import de `Download/couchey-demo-sommier.zip`.
+- **sommieR, démo de Marsannay-la-Côte** : brief envoyé (pobsteta/sommieR#65), attend la
+  livraison pour la seconde tournée d'essai.
+
+- **042** styles et tailles de texte de Marculus (`dev`, appuyer), en cours depuis le
+  2026-10-27 : code direct, trois exceptions (72 sp et 44 sp). Fiche :
+  `pilotage/missions/042-typographie.md`.
+- **045** bouton « Toutes les licences » dans « À propos » (`dev`, appuyer) : PR #88 en
+  relecture. Fiche : `pilotage/missions/045-lien-licences.md`.
 
 ## Planifié
 
@@ -86,10 +93,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 **Attendent le plafond :**
 
-- **042** styles et tailles de texte de Marculus (décision du 2026-10-24, seconde) (`dev`, appuyer : tableau
-  des styles validé par Pascal avant le code). Après la 040 et la 041. Fiche :
-  `pilotage/missions/042-typographie.md`.
-
+- **046** écran Paramètres comme Marculus : Plein écran, Vue Kanban, Essai GNSS, Restaurer ; le menu « ⋮ » ne garde que Paramètres et À propos (`dev`, appuyer). Après la 042. Fiche : `pilotage/missions/046-parametres.md`.
+- **047** récepteur GNSS dans Paramètres, comme Groma (`dev`, appuyer). Après la 046. Fiche : `pilotage/missions/047-recepteur-dans-parametres.md`.
+- **048** voix Vosk depuis Paramètres : téléchargement et fichier (`dev`, appuyer). Après la 046. Fiche : `pilotage/missions/048-voix-vosk.md`.
 - **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK de la 011 sur Couchey
   (import, ortho, mode avion, guidage, test des dix secondes) ; restauration de
   `exemple-v1.sursync` ; comptes de Couchey contre QGIS (029) ; **essai au soleil** de la
@@ -105,7 +111,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 - Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus v0.65.0, clair forcé (PR #81) ;
   **040** accueil sur la liste des tournées, menu « ⋮ » (PR #82) ; **041** recherche et puce
-  « Rendues » (PR #83) — fusionnées par Pascal.
+  « Rendues » (PR #83) ; **043** vue Kanban des tournées, colonnes et icônes de Marculus
+  (PR #84) ; **044** « À propos » et « Plein écran » (PR #86) ; brief vers sommieR, démo de
+  Marsannay (PR #85) — fusionnées par Pascal ; release v0.7.45.
 
 - Cycle 9, 2026-10-23 et 24 : **037** DI-303 suit la décision 13 (PR #73) ; **013** dictée
   Vosk à grammaire fermée, `terrain-voix` épinglé (PR #75) ; **039** cas de « hauteur »
