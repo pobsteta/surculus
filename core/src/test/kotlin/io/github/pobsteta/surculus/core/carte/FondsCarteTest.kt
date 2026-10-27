@@ -32,9 +32,16 @@ class FondsCarteTest {
     }
 
     @Test
-    fun `le fond par defaut est le Plan IGN, comme Marculus`() {
+    fun `le fond par defaut est le Plan IGN sans fichier d'ortho`() {
         assertEquals(Fond.PLAN_IGN, FondsCarte.PAR_DEFAUT)
-        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu(null, orthoChantier = true))
+        assertEquals(Fond.PLAN_IGN, FondsCarte.parDefaut(orthoChantier = false))
+        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu(null, orthoChantier = false))
+    }
+
+    @Test
+    fun `mission 057 - avec un fichier d'ortho, la carte s'ouvre sur l'Ortho chantier (ecart avec Marculus)`() {
+        assertEquals(Fond.ORTHO, FondsCarte.parDefaut(orthoChantier = true))
+        assertEquals(Fond.ORTHO, FondsCarte.retenu(null, orthoChantier = true))
     }
 
     @Test
@@ -43,8 +50,21 @@ class FondsCarteTest {
         assertEquals(Fond.IGN, FondsCarte.retenu("IGN", orthoChantier = true))
         assertTrue(FondsCarte.memorisable(Fond.OSM))
         assertFalse(FondsCarte.memorisable(Fond.ORTHO))
-        // Même avec le fichier présent, « ORTHO » lu dans les préférences est ignoré : retour au défaut.
-        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu("ORTHO", orthoChantier = true))
+        // « ORTHO » lu dans les préférences est ignoré : retour au défaut (l'ortho chantier si le fichier est là).
+        assertEquals(Fond.ORTHO, FondsCarte.retenu("ORTHO", orthoChantier = true))
+        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu("ORTHO", orthoChantier = false))
+    }
+
+    @Test
+    fun `mission 057 - les quatre cas d'ouverture, le choix a la main l'emporte`() {
+        // 1. choix mémorisé : il l'emporte, même si la tournée a une ortho.
+        assertEquals(Fond.OSM, FondsCarte.retenu("OSM", orthoChantier = true))
+        // 2. rien de mémorisé, ortho présente : Ortho chantier.
+        assertEquals(Fond.ORTHO, FondsCarte.retenu(null, orthoChantier = true))
+        // 3. rien de mémorisé, pas d'ortho : Plan IGN.
+        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu(null, orthoChantier = false))
+        // 4. Ortho chantier mémorisée, tournée sans ortho : Plan IGN.
+        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu("ORTHO", orthoChantier = false))
     }
 
     @Test

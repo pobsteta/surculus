@@ -70,8 +70,14 @@ object Geoplateforme {
 
 /** Choix du fond : ce que le menu propose, et le fond retrouvé à l'ouverture de la carte. */
 object FondsCarte {
-    /** Fond à la première ouverture, comme Marculus (`CarteScreen.kt` l. 237). */
+    /** Fond à la première ouverture quand la tournée n'a pas d'ortho : le Plan IGN, comme Marculus (`CarteScreen.kt` l. 237). */
     val PAR_DEFAUT = Fond.PLAN_IGN
+
+    /**
+     * Fond sans choix mémorisé : l'Ortho chantier quand le fichier de la tournée existe (lisible sans réseau, mission 057,
+     * écart voulu avec Marculus), sinon le Plan IGN.
+     */
+    fun parDefaut(orthoChantier: Boolean): Fond = if (orthoChantier) Fond.ORTHO else PAR_DEFAUT
 
     /** L'ortho du chantier n'est pas mémorisée : à la réouverture, la tournée peut ne plus en avoir (Marculus, l. 235 et 406). */
     fun memorisable(fond: Fond) = fond != Fond.ORTHO
@@ -91,9 +97,9 @@ object FondsCarte {
         return listOfNotNull(fond.attribution, if (mentionCadastre) Attributions.CADASTRE else null)
     }
 
-    /** Fond à l'ouverture : le choix mémorisé s'il est connu et mémorisable, sinon [PAR_DEFAUT]. */
+    /** Fond à l'ouverture : le choix mémorisé s'il est connu et mémorisable, sinon [parDefaut]. */
     fun retenu(nomMemorise: String?, orthoChantier: Boolean): Fond =
-        Fond.entries.firstOrNull { it.name == nomMemorise && memorisable(it) && it in proposes(orthoChantier) } ?: PAR_DEFAUT
+        Fond.entries.firstOrNull { it.name == nomMemorise && memorisable(it) && it in proposes(orthoChantier) } ?: parDefaut(orthoChantier)
 }
 
 /** La carte ne se cadre que sur une emprise en France métropolitaine (ADR 0009, garde-fou conservé ; `CLAUDE.md`). */
@@ -136,6 +142,12 @@ object Recentrage {
         emprise != null && EmpriseCarte.controler(emprise) == EmpriseCarte.Resultat.EnFrance -> Cible.Emprise
         else -> Cible.Rien
     }
+}
+
+/** Le marqueur de position n'est dessiné que pour un fix en France : un fix hors de France (Somalie, axes inversés) est masqué. */
+object MarqueurPosition {
+    /** Le fix à dessiner, ou `null` (pas de fix, ou fix hors de France : [Guidage.versLambert93] est alors `null`). */
+    fun aDessiner(fix: Position?): Position? = fix?.takeIf { Guidage.versLambert93(it) != null }
 }
 
 /** Une tuile Web Mercator (schéma XYZ, comme osmdroid et la grille `PM_0_19` de l'IGN), pour lire le fichier d'ortho. */

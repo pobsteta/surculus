@@ -9,7 +9,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Sur la carte, ne plus dessiner le marqueur de position quand le fix tombe hors de France, retirer le bouton « Ma position » qui double le bouton recentrer, et ouvrir la carte sur l'Ortho chantier quand la tournée en a une (sinon le Plan IGN), pour que le forestier voie une carte juste et utilisable même sans réseau.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Sur la carte, ne plus dessiner le marqueur de position quand le fix tombe hors de France, retirer le bouton « Ma position » (doublon du recentrage) et ouvrir sur l'Ortho chantier quand la tournée en a une (le fond choisi à la main l'emporte), sinon sur le Plan IGN.
 
 ## Vérifié à la source
 

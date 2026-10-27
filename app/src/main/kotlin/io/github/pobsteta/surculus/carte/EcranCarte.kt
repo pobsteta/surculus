@@ -74,6 +74,7 @@ import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.core.carte.EmpriseCarte
 import io.github.pobsteta.surculus.core.carte.Fond
 import io.github.pobsteta.surculus.core.carte.FondsCarte
+import io.github.pobsteta.surculus.core.carte.MarqueurPosition
 import io.github.pobsteta.surculus.core.carte.Recentrage
 import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
 import io.github.pobsteta.surculus.core.geo.Projections
@@ -279,18 +280,18 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
     var voirPlacettes by remember { mutableStateOf(true) }
     var choisie by remember { mutableStateOf<PlacetteTournee?>(null) }
     var liste by remember { mutableStateOf(false) }
-    var centrerSurMoi by remember { mutableStateOf(0) }
 
-    // Fond de carte : le choix mémorisé (jamais l'ortho chantier), sinon le Plan IGN, comme Marculus.
+    // Fond de carte : le choix mémorisé (jamais l'ortho chantier), sinon l'Ortho chantier si la tournée en a une, sinon le Plan IGN.
     val prefsCarte = remember { ctx.getSharedPreferences(PREFS_CARTE, Context.MODE_PRIVATE) }
-    var fond by remember { mutableStateOf(FondsCarte.retenu(prefsCarte.getString(CLE_FOND, null), orthoChantier = false)) }
+    // `fond` reste nul tant que le forestier n'a rien choisi à la main ni retrouvé de choix mémorisé.
+    var fond by remember { mutableStateOf(Fond.entries.firstOrNull { it.name == prefsCarte.getString(CLE_FOND, null) && FondsCarte.memorisable(it) }) }
     var menuFonds by remember { mutableStateOf(false) }
     var voirCadastre by remember { mutableStateOf(prefsCarte.getBoolean(CLE_CADASTRE, FondsCarte.CADASTRE_PAR_DEFAUT)) }
     // L'ortho chantier n'est proposée que si le dossier de la tournée porte un fichier tuilé exploitable.
     val orthoChantier by produceState(false, ouverte) {
         value = withContext(Dispatchers.IO) { FichierOrtho.nomPresent(ouverte.dossier) != null }
     }
-    val fondAffiche = if (fond == Fond.ORTHO && !orthoChantier) FondsCarte.PAR_DEFAUT else fond
+    val fondAffiche = fond?.takeIf { it in FondsCarte.proposes(orthoChantier) } ?: FondsCarte.parDefaut(orthoChantier)
     // Garde-fou : on ne cadre la carte que sur une emprise en France (sinon : la Somalie, sans alerte).
     val emprise: EmpriseLambert93? = carto.empriseUg ?: ouverte.tournee.empriseForet
     val empriseHorsFrance = remember(emprise) { emprise != null && EmpriseCarte.controler(emprise) is EmpriseCarte.Resultat.HorsFrance }
@@ -407,15 +408,10 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                         l.ug.forEach { it.isEnabled = voirUg }
                         l.parcelles.forEach { it.isEnabled = voirParcelles }
                         l.placettes.forEach { it.isEnabled = voirPlacettes }
-                        l.position.isEnabled = fix != null
-                        fix?.let { l.position.position = GeoPoint(it.position.latitude, it.position.longitude) }
-                        if (centrerSurMoi > 0) {
-                            // Jamais sur un fix hors de France (axes inversés : la Somalie) : `Recentrage` décide.
-                            (Recentrage.cible(fix?.position, null) as? Recentrage.Cible.Fix)?.let { c ->
-                                carte.controller.animateTo(GeoPoint(c.position.latitude, c.position.longitude))
-                            }
-                            centrerSurMoi = 0
-                        }
+                        // Pas de marqueur pour un fix hors de France (la Somalie) ; le message rouge reste affiché.
+                        val aDessiner = MarqueurPosition.aDessiner(fix?.position)
+                        l.position.isEnabled = aDessiner != null
+                        aDessiner?.let { l.position.position = GeoPoint(it.latitude, it.longitude) }
                         carte.invalidate()
                     },
                     // Le fournisseur de tuiles du cadastre se libère aussi quand la couche est décochée (elle n'est alors
@@ -473,7 +469,6 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
         // L'action : guider vers la placette touchée, sinon ouvrir la liste.
         val p = choisie
         Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { centrerSurMoi++ }, enabled = fix != null, modifier = Modifier.height(64.dp)) { Text(stringResource(R.string.carte_ma_position)) }
             if (p != null) {
                 val d = distances[p.uuid]
                 Button(
