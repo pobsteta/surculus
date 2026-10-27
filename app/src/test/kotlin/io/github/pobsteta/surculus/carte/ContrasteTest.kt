@@ -42,4 +42,10 @@ class ContrasteTest {
             assertTrue(mesure in 1f..21f, "$nom sur fond sombre : $mesure")
         }
     }
+
+    /** Mission 062 : les textes neutres prennent onSurface du thème, posés sur le fond réel (Surface de MainActivity = surface). */
+    @Test fun `le texte neutre (onSurface) se lit sur le fond, en clair comme en sombre`() {
+        assertTrue(contraste(SchemaClair.onSurface, SchemaClair.surface) >= CONTRASTE_MINIMAL, "clair : ${contraste(SchemaClair.onSurface, SchemaClair.surface)}")
+        assertTrue(contraste(SchemaSombre.onSurface, SchemaSombre.surface) >= CONTRASTE_MINIMAL, "sombre : ${contraste(SchemaSombre.onSurface, SchemaSombre.surface)}")
+    }
 }
