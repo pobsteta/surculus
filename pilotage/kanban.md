@@ -75,16 +75,18 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **041** recherche et puce « Rendues (n) » (`dev`, appuyer), sur la branche de la 040.
-  PR #83 rebasée sur `main` par fusion le 2026-10-27, CI relancée, en relecture ; essai
+- **041** recherche et puce « Rendues (n) » (`dev`, appuyer).
+  PR #83 rebasée sur `main` par fusion le 2026-10-27, CI verte, relue, prête pour Pascal ; essai
   sur le téléphone de Pascal avant fusion. Fiche : `pilotage/missions/041-recherche-tournees.md`.
 
 ## Planifié
 
-_En attente sous le plafond humain (3 PR en revue ; 1 en revue le 2026-10-27, la #83)._
+_En attente sous le plafond humain (3 PR en revue)._
 
 **Attendent le plafond :**
 
+- **043** vue Kanban des tournées, colonnes de Marculus (`dev`, appuyer). Après la #83 et
+  les trois questions ouvertes de la fiche (Pascal). Fiche : `pilotage/missions/043-kanban-tournees.md`.
 - **042** styles de texte de Marculus et Groma aux tailles de Surculus (`dev`, appuyer : tableau
   des styles validé par Pascal avant le code). Après la 040 et la 041. Fiche :
   `pilotage/missions/042-typographie.md`.
