@@ -17,8 +17,18 @@ class IconesBarreEtatTest {
         assertTrue(iconesBarreEtatClaires(ecranAvecBandeau = true, sombre = true))
     }
 
-    @Test fun `carte et guidage, icones selon le theme`() {
+    @Test fun `un ecran sans bandeau suivrait le theme`() {
         assertFalse(iconesBarreEtatClaires(ecranAvecBandeau = false, sombre = false))
         assertTrue(iconesBarreEtatClaires(ecranAvecBandeau = false, sombre = true))
+    }
+
+    /** Mission 055 : la carte et le guidage ont un bandeau compact, donc tous les écrans : MainActivity ne distingue plus. */
+    @Test fun `MainActivity compte la carte et le guidage parmi les ecrans a bandeau`() {
+        val racine = java.io.File("src/main/kotlin/io/github/pobsteta/surculus").takeIf { it.isDirectory }
+            ?: java.io.File("app/src/main/kotlin/io/github/pobsteta/surculus")
+        val source = java.io.File(racine, "MainActivity.kt").readText()
+        assertFalse("ecranAvecBandeau = nav.tourneeId == null" in source)
+        assertTrue("ecranAvecBandeau = true" in source)
+        assertTrue("isAppearanceLightNavigationBars = !sombre" in source)
     }
 }

@@ -14,7 +14,6 @@
 # - vosk-android 0.3.75 : ADR 0004 ; JNA 5.18.1 : POM de vosk-android 0.3.75 (Maven Central).
 # - terrain-voix d840329 (tag v0.6.0 de pobsteta/terrain, construit par JitPack) : https://github.com/pobsteta/terrain/blob/d840329/README.md (l. 27-46), sources dans terrain-voix/ ; décision de Pascal du 2026-10-24 (mission 013).
 # - Gson 2.14.0 : Maven Central (com.google.code.gson:gson, release du maven-metadata.xml), lecteur JSON des tests de fixtures (mission 002).
-# - WorkManager 2.12.0 : groma/android/app/build.gradle.kts l. 58 (préchargement de l'ortho, mission 011, ADR 0009).
 # - Robolectric 4.17, androidx.test:core 1.7.0, room-testing : marculus/gradle/libs.versions.toml (mission 008, tests du journal Room) ; JUnit 4.13.2 : requis par Robolectric.
 
 [versions]
@@ -41,7 +40,6 @@ gson = "2.14.0"
 robolectric = "4.17"
 androidxTestCore = "1.7.0"
 junit4 = "4.13.2"
-workManager = "2.12.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -83,4 +81,3 @@ room-testing = { group = "androidx.room", name = "room-testing", version.ref = "
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
-androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }

@@ -12,15 +12,22 @@ import android.media.ToneGenerator
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +40,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -42,7 +48,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.core.geo.PointLambert93
+import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.core.guidage.DetecteurArrivee
 import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.core.guidage.Libelles
@@ -65,18 +73,33 @@ import kotlin.math.roundToInt
  */
 @Composable
 fun EcranGuidage(id: String, placetteUuid: String, onRetour: () -> Unit) {
-    when (val c = chargerTournee(id)) {
-        Chargement.EnCours -> Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
-        is Chargement.Refus -> Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge, modifier = Modifier.plaqueEtat())
-            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour)) }
-        }
-        is Chargement.Pret -> {
-            val cible = c.tournee.tournee.placettes.firstOrNull { it.uuid == placetteUuid && it.position != null }
-            if (cible == null) {
-                Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = Palette.Rouge, modifier = Modifier.plaqueEtat()) }
-            } else {
-                GuidagePret(cible, c.tournee.tournee.placettes, onRetour)
+    val chargement = chargerTournee(id)
+    val cible = (chargement as? Chargement.Pret)?.tournee?.tournee?.placettes?.firstOrNull { it.uuid == placetteUuid && it.position != null }
+    val (fix, _) = rememberFix()
+    // Bandeau compact (mission 053, étendu au guidage par la 055) : la flèche remplace le bouton « Retour », y compris
+    // dans les états d'erreur. Pas de menu « Couches » ni de zoom : le guidage n'a pas de carte.
+    Column(Modifier.fillMaxSize()) {
+        BandeauCompact(
+            titre = if (cible != null) stringResource(R.string.guidage_vers, cible.code.orEmpty()) else stringResource(R.string.guidage_titre),
+            navigationIcon = {
+                IconButton(onClick = onRetour) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.carte_retour))
+                }
+            },
+            actions = { if (cible != null) BadgeFix(fix) },
+        )
+        Column(Modifier.weight(1f).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
+            when (chargement) {
+                Chargement.EnCours -> Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
+                is Chargement.Refus -> Column(Modifier.padding(24.dp)) {
+                    Text(stringResource(R.string.carte_refus, chargement.message), color = Palette.Rouge, modifier = Modifier.plaqueEtat())
+                }
+                is Chargement.Pret ->
+                    if (cible == null) {
+                        Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = Palette.Rouge, modifier = Modifier.plaqueEtat()) }
+                    } else {
+                        GuidagePret(cible, chargement.tournee.tournee.placettes, fix)
+                    }
             }
         }
     }
@@ -90,8 +113,7 @@ private sealed interface Confirmation {
 }
 
 @Composable
-private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, onRetour: () -> Unit) {
-    val (fix, _) = rememberFix()
+private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, fix: FixGnss?) {
     val cap = fix?.let { Guidage.cap(it.position, cible.position!!) }
     val position = fix?.let { Guidage.versLambert93(it.position) }
     var son by remember { mutableStateOf(true) }
@@ -140,12 +162,7 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, o
     }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour)) }
-            BadgeFix(fix)
-        }
-        // 1. La seule chose à montrer, en grand : la distance.
-        Text(stringResource(R.string.guidage_vers, cible.code.orEmpty()), style = MaterialTheme.typography.titleMedium)
+        // 1. La seule chose à montrer, en grand : la distance (le titre « Vers <code> » est dans le bandeau).
         if (cap == null && fix != null) {
             // Un fix existe mais tombe hors de France : axes inversés, pas une absence de signal.
             Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())

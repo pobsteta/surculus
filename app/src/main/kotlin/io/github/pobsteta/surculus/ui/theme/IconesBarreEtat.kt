@@ -9,8 +9,9 @@ package io.github.pobsteta.surculus.ui.theme
 
 /**
  * Icônes de la barre d'état claires (blanches) ? (mission 051)
- * - Écran à bandeau (liste, Paramètres, Essai GNSS, Restauration ; mission 053) : le bandeau `primary` (vert) passe
- *   sous la barre d'état dans les deux thèmes, donc icônes claires toujours (5,17:1, comme Marculus).
- * - Carte et guidage (sans bandeau) : le fond du thème passe sous la barre, donc icônes claires en sombre seulement.
+ * - Écran à bandeau : le bandeau `primary` (vert) passe sous la barre d'état dans les deux thèmes, donc icônes claires
+ *   toujours (5,17:1, comme Marculus). Depuis la mission 055, **tous** les écrans en ont un : liste, Paramètres, Essai GNSS,
+ *   Restauration (mission 053), carte et guidage (mission 055). `MainActivity` passe donc `true`.
+ * - Écran sans bandeau (aucun aujourd'hui) : le fond du thème passerait sous la barre, donc icônes claires en sombre seulement.
  */
 fun iconesBarreEtatClaires(ecranAvecBandeau: Boolean, sombre: Boolean): Boolean = ecranAvecBandeau || sombre

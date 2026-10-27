@@ -7,6 +7,7 @@
  */
 package io.github.pobsteta.surculus.carte
 
+import android.content.Context
 import android.graphics.Color as CouleurAndroid
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -20,6 +21,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,7 +37,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
@@ -50,13 +71,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.pobsteta.surculus.R
-import io.github.pobsteta.surculus.core.carte.EtatOrtho
+import io.github.pobsteta.surculus.core.carte.EmpriseCarte
+import io.github.pobsteta.surculus.core.carte.Fond
+import io.github.pobsteta.surculus.core.carte.FondsCarte
+import io.github.pobsteta.surculus.core.carte.Recentrage
 import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
 import io.github.pobsteta.surculus.core.geo.Projections
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.core.guidage.Libelles
 import io.github.pobsteta.surculus.gpkg.EtatSuivi
+import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.gpkg.FormePastille
 import io.github.pobsteta.surculus.gpkg.Geometrie
 import io.github.pobsteta.surculus.gpkg.ObjetSurfacique
@@ -70,9 +95,10 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Overlay
 import org.osmdroid.views.overlay.Polygon
+import org.osmdroid.views.overlay.TilesOverlay
 
 /**
- * Carte de la tournée (spec § 4.2) : forêt, UG, parcelles, placettes, ortho hors ligne, position et badge du fix.
+ * Carte de la tournée (spec § 4.2) : forêt, UG, parcelles, placettes, fonds de carte (menu « Fond de carte », comme Marculus), position et badge du fix.
  * Une question : où suis-je par rapport aux placettes ? Un appui sur une placette (ou sur la liste) ouvre le guidage.
  * Les placettes sont colorées selon `etat_suivi` (rouge `jamais`, orange `a_programmer` (« travaux à prévoir », pilotage/journal.md, 2026-10-22, décision de Pascal, mission 033, libellé), anneau vert `a_jour`, noir « ? »
  * sinon) : pilotage/journal.md, 2026-10-22, décisions de Pascal (mission 033). La couleur vient de sommieR, lue à
@@ -81,10 +107,13 @@ import org.osmdroid.views.overlay.Polygon
 @Composable
 fun EcranCarte(id: String, onRetour: () -> Unit, onGuider: (String) -> Unit) {
     when (val c = chargerTournee(id)) {
-        Chargement.EnCours -> Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
-        is Chargement.Refus -> Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge)
-            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour)) }
+        Chargement.EnCours -> Column {
+            BandeauCarte(stringResource(R.string.carte_titre), onRetour)
+            Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
+        }
+        is Chargement.Refus -> Column {
+            BandeauCarte(stringResource(R.string.carte_titre), onRetour)
+            Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge) }
         }
         is Chargement.Pret -> CartePrete(c.tournee, onRetour, onGuider)
     }
@@ -161,7 +190,81 @@ private fun polygones(carte: MapView, objets: List<ObjetSurfacique>, contour: In
         }
     }
 
-private class Couches(val foret: List<Overlay>, val ug: List<Overlay>, val parcelles: List<Overlay>, val placettes: List<Marker>, val position: Marker)
+private class Couches(
+    val foret: List<Overlay>,
+    val ug: List<Overlay>,
+    val parcelles: List<Overlay>,
+    val placettes: List<Marker>,
+    val position: Marker,
+    val cadastre: TilesOverlay,
+) {
+    var carte: MapView? = null
+
+    /** Fond dont le fournisseur de tuiles est posé sur la carte : on n'en change que lorsque le choix change. */
+    var fondApplique: Fond? = null
+}
+
+/** Préférences de la carte : le fond retrouvé d'une ouverture à l'autre (mêmes nom et clé que Marculus). */
+private const val PREFS_CARTE = "carte"
+private const val CLE_FOND = "fond"
+private const val CLE_CADASTRE = "cadastre"
+
+/** Zoom d'un recentrage sur un point (Marculus : `recadrerSur`, `setZoom(17.0)`). */
+private const val ZOOM_RECENTRER = 17.0
+
+/**
+ * Bandeau compact de la carte (mission 053) avec la flèche de retour (même action que le retour système), comme Marculus
+ * (`CarteScreen.kt` l. 634-640). [actions] : le badge du fix et l'icône « Couches ».
+ */
+@Composable
+private fun BandeauCarte(titre: String, onRetour: () -> Unit, actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {}) {
+    BandeauCompact(
+        titre = titre,
+        navigationIcon = {
+            IconButton(onClick = onRetour) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.carte_retour))
+            }
+        },
+        actions = actions,
+    )
+}
+
+/** Titre d'une section du menu de la carte (« Fond de carte », « Couches affichées »), comme Marculus (l. 141-143). */
+@Composable
+private fun TitreSection(texte: String) {
+    Text(texte, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+}
+
+/** Une couche dans le menu : sa case, son libellé ; grisée quand elle est vide (Marculus, l. 160-172). */
+@Composable
+private fun LigneCouche(libelle: String, coche: Boolean, disponible: Boolean, onChange: (Boolean) -> Unit) {
+    DropdownMenuItem(
+        enabled = disponible,
+        text = { Text(libelle) },
+        leadingIcon = { Checkbox(checked = coche && disponible, enabled = disponible, onCheckedChange = null) },
+        onClick = { if (disponible) onChange(!coche) },
+    )
+}
+
+/**
+ * Recadre la carte sur l'emprise de la tournée. Équivalent du `recadrerSur` de Marculus (`CarteScreen.kt` l. 870-878) :
+ * plusieurs points, `zoomToBoundingBox` ; un seul, zoom 17 puis `animateTo`.
+ */
+private fun cadrerSur(carte: MapView, emprise: EmpriseLambert93, marge: Int, animer: Boolean) {
+    val nordEst = GeoPoint(io.github.pobsteta.surculus.core.geo.PointLambert93(emprise.xMaxMetres, emprise.yMaxMetres))
+    val sudOuest = GeoPoint(io.github.pobsteta.surculus.core.geo.PointLambert93(emprise.xMinMetres, emprise.yMinMetres))
+    carte.zoomToBoundingBox(BoundingBox(nordEst.latitude, nordEst.longitude, sudOuest.latitude, sudOuest.longitude), animer, marge)
+}
+
+/** Un fond dans le menu : bouton radio, ligne d'au moins 48 dp (gants). */
+@Composable
+private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
+    DropdownMenuItem(
+        text = { Text(libelle) },
+        leadingIcon = { RadioButton(selected = choisi, onClick = null) },
+        onClick = onChoisir,
+    )
+}
 
 @Composable
 private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: (String) -> Unit) {
@@ -178,19 +281,63 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
     var liste by remember { mutableStateOf(false) }
     var centrerSurMoi by remember { mutableStateOf(0) }
 
-    val ortho by produceState<OrthoTournee?>(null, ouverte) {
-        value = withContext(Dispatchers.IO) { OrthoDeTournee.etat(ouverte.dossier, ouverte.tournee.empriseForet) }
+    // Fond de carte : le choix mémorisé (jamais l'ortho chantier), sinon le Plan IGN, comme Marculus.
+    val prefsCarte = remember { ctx.getSharedPreferences(PREFS_CARTE, Context.MODE_PRIVATE) }
+    var fond by remember { mutableStateOf(FondsCarte.retenu(prefsCarte.getString(CLE_FOND, null), orthoChantier = false)) }
+    var menuFonds by remember { mutableStateOf(false) }
+    var voirCadastre by remember { mutableStateOf(prefsCarte.getBoolean(CLE_CADASTRE, FondsCarte.CADASTRE_PAR_DEFAUT)) }
+    // L'ortho chantier n'est proposée que si le dossier de la tournée porte un fichier tuilé exploitable.
+    val orthoChantier by produceState(false, ouverte) {
+        value = withContext(Dispatchers.IO) { FichierOrtho.nomPresent(ouverte.dossier) != null }
     }
+    val fondAffiche = if (fond == Fond.ORTHO && !orthoChantier) FondsCarte.PAR_DEFAUT else fond
+    // Garde-fou : on ne cadre la carte que sur une emprise en France (sinon : la Somalie, sans alerte).
+    val emprise: EmpriseLambert93? = carto.empriseUg ?: ouverte.tournee.empriseForet
+    val empriseHorsFrance = remember(emprise) { emprise != null && EmpriseCarte.controler(emprise) is EmpriseCarte.Resultat.HorsFrance }
     val distances: Map<String, Double> = remember(fix, placettes) {
         val pos = fix?.position?.let { Guidage.versLambert93(it) }
         if (pos == null) emptyMap() else placettes.associate { p -> p.uuid to kotlin.math.hypot(p.position!!.xMetres - pos.xMetres, p.position!!.yMetres - pos.yMetres) }
     }
 
     Column(Modifier.fillMaxSize()) {
-        // Une ligne : retour à gauche, badge du fix à droite.
-        Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour)) }
-            BadgeFix(fix)
+        // Bandeau compact : flèche de retour à gauche ; à droite le badge du fix et l'icône « Couches » (comme Marculus).
+        BandeauCarte(
+            titre = ouverte.tournee.projet?.foret ?: ouverte.tournee.projet?.nom ?: stringResource(R.string.carte_titre),
+            onRetour = onRetour,
+            actions = {
+                BadgeFix(fix)
+                Spacer(Modifier.width(4.dp))
+                Box {
+                    IconButton(onClick = { menuFonds = true }) {
+                        Icon(Icons.Filled.Layers, contentDescription = stringResource(R.string.carte_couches))
+                    }
+                    // Un seul menu : le fond (un choix) puis les couches (des cases). Il reste ouvert après un choix :
+                    // on règle fond et couches d'un même geste (Marculus, l. 642-645).
+                    DropdownMenu(expanded = menuFonds, onDismissRequest = { menuFonds = false }) {
+                        TitreSection(stringResource(R.string.carte_fond_de_carte))
+                        FondsCarte.proposes(orthoChantier).forEach { f ->
+                            LigneFond(libelle = f.libelle, choisi = fondAffiche == f) {
+                                fond = f
+                                if (FondsCarte.memorisable(f)) prefsCarte.edit().putString(CLE_FOND, f.name).apply()
+                            }
+                        }
+                        HorizontalDivider()
+                        TitreSection(stringResource(R.string.carte_couches))
+                        LigneCouche(stringResource(R.string.carte_couche_cadastre), voirCadastre, disponible = true) {
+                            voirCadastre = it
+                            prefsCarte.edit().putBoolean(CLE_CADASTRE, it).apply()
+                        }
+                        LigneCouche(stringResource(R.string.carte_couche_foret, carto.foret.size), voirForet, carto.foret.isNotEmpty()) { voirForet = it }
+                        LigneCouche(stringResource(R.string.carte_couche_ug, carto.ug.size), voirUg, carto.ug.isNotEmpty()) { voirUg = it }
+                        LigneCouche(stringResource(R.string.carte_couche_parcelles, carto.parcelles.size), voirParcelles, carto.parcelles.isNotEmpty()) { voirParcelles = it }
+                        LigneCouche(stringResource(R.string.carte_couche_placettes, placettes.size), voirPlacettes, placettes.isNotEmpty()) { voirPlacettes = it }
+                    }
+                }
+            },
+        )
+        Column(Modifier.weight(1f).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
+        if (empriseHorsFrance) {
+            Text(stringResource(R.string.carte_emprise_hors_france), color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
         }
         if (fix != null && Guidage.versLambert93(fix.position) == null) {
             Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
@@ -206,11 +353,10 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                     modifier = Modifier.fillMaxSize(),
                     factory = { contexte ->
                         configurerOsmdroid(contexte)
-                        val fichier = FichierOrtho.ouvrir(ouverte.dossier)
-                        val carte = MapView(contexte, FournisseurTuiles(contexte, OrthoIgn, ouverte.dossier, fichier))
+                        // Fond posé par `update` ; le réseau est utilisé par les fonds en ligne (cache d'osmdroid gardé).
+                        val carte = MapView(contexte, fournisseurDeFond(contexte, fondAffiche, null))
                         carte.setMultiTouchControls(true)
-                        carte.setUseDataConnection(false)
-                        carte.maxZoomLevel = ZOOM_MAX
+                        carte.maxZoomLevel = zoomMaxDeFond(fondAffiche)
                         carte.isTilesScaledToDpi = true
                         val densite = contexte.resources.displayMetrics.density
                         val l = Couches(
@@ -233,46 +379,83 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                                 setInfoWindow(null)
                                 isEnabled = false
                             },
+                            cadastre = coucheCadastre(contexte),
                         )
+                        l.carte = carte
                         (l.foret + l.ug + l.parcelles + l.placettes + l.position).forEach { carte.overlays.add(it) }
                         l.placettes.forEach { m -> m.setOnMarkerClickListener { marqueur, _ -> choisie = marqueur.relatedObject as? PlacetteTournee; true } }
+                        l.fondApplique = fondAffiche
                         couchesRef[0] = l
-                        val emprise: EmpriseLambert93? = carto.empriseUg ?: ouverte.tournee.empriseForet
-                        if (emprise != null) {
-                            val nordEst = GeoPoint(io.github.pobsteta.surculus.core.geo.PointLambert93(emprise.xMaxMetres, emprise.yMaxMetres))
-                            val sudOuest = GeoPoint(io.github.pobsteta.surculus.core.geo.PointLambert93(emprise.xMinMetres, emprise.yMinMetres))
-                            carte.post { carte.zoomToBoundingBox(BoundingBox(nordEst.latitude, nordEst.longitude, sudOuest.latitude, sudOuest.longitude), false, (48 * densite).toInt()) }
-                        }
+                        if (emprise != null && !empriseHorsFrance) carte.post { cadrerSur(carte, emprise, (48 * densite).toInt(), animer = false) }
                         carte
                     },
                     update = { carte ->
                         val l = couchesRef[0] ?: return@AndroidView
+                        if (l.fondApplique != fondAffiche) {
+                            // Un fournisseur NEUF à chaque changement : osmdroid détache l'ancien (comme Marculus).
+                            carte.tileProvider = fournisseurDeFond(carte.context, fondAffiche, if (fondAffiche == Fond.ORTHO) FichierOrtho.ouvrir(ouverte.dossier) else null)
+                            carte.maxZoomLevel = zoomMaxDeFond(fondAffiche)
+                            // Retour vers un fond moins profond (ortho IGN vers OSM) : on redescend, sinon fond blanc.
+                            if (carte.zoomLevelDouble > carte.maxZoomLevel) carte.controller.setZoom(carte.maxZoomLevel)
+                            l.fondApplique = fondAffiche
+                        }
+                        // Cadastre IGN tout en dessous : forêt, UG et placettes restent lisibles (Marculus, l. 441-442).
+                        val cadastrePose = l.cadastre in carte.overlays
+                        if (voirCadastre && !cadastrePose) carte.overlays.add(0, l.cadastre)
+                        if (!voirCadastre && cadastrePose) carte.overlays.remove(l.cadastre)
                         l.foret.forEach { it.isEnabled = voirForet }
                         l.ug.forEach { it.isEnabled = voirUg }
                         l.parcelles.forEach { it.isEnabled = voirParcelles }
                         l.placettes.forEach { it.isEnabled = voirPlacettes }
                         l.position.isEnabled = fix != null
                         fix?.let { l.position.position = GeoPoint(it.position.latitude, it.position.longitude) }
-                        if (centrerSurMoi > 0 && fix != null) {
-                            carte.controller.animateTo(GeoPoint(fix.position.latitude, fix.position.longitude))
+                        if (centrerSurMoi > 0) {
+                            // Jamais sur un fix hors de France (axes inversés : la Somalie) : `Recentrage` décide.
+                            (Recentrage.cible(fix?.position, null) as? Recentrage.Cible.Fix)?.let { c ->
+                                carte.controller.animateTo(GeoPoint(c.position.latitude, c.position.longitude))
+                            }
                             centrerSurMoi = 0
                         }
                         carte.invalidate()
                     },
-                    onRelease = { it.onDetach() },
+                    // Le fournisseur de tuiles du cadastre se libère aussi quand la couche est décochée (elle n'est alors
+                    // plus dans les surcouches de la carte, donc `onDetach` de la carte ne l'atteint pas).
+                    onRelease = { carte ->
+                        couchesRef[0]?.cadastre?.onDetach(carte)
+                        carte.onDetach()
+                    },
                 )
+                // Les trois boutons de Marculus (`CarteScreen.kt` l. 611-618), au moins 48 dp : zoom avant, zoom arrière,
+                // recentrer. Chez Marculus, `recadrer()` cadre les tiges (sinon les parcelles) ; ici : la position GNSS
+                // si elle existe (zoom 17 au moins, comme `recadrerSur` pour un point), sinon l'emprise de la tournée.
+                Column(Modifier.align(Alignment.BottomEnd).padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SmallFloatingActionButton(onClick = { couchesRef[0]?.carte?.controller?.zoomIn() }, modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) {
+                        Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.carte_zoom_avant))
+                    }
+                    SmallFloatingActionButton(onClick = { couchesRef[0]?.carte?.controller?.zoomOut() }, modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) {
+                        Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.carte_zoom_arriere))
+                    }
+                    SmallFloatingActionButton(
+                        onClick = {
+                            val carte = couchesRef[0]?.carte ?: return@SmallFloatingActionButton
+                            when (val c = Recentrage.cible(fix?.position, emprise)) {
+                                is Recentrage.Cible.Fix -> {
+                                    if (carte.zoomLevelDouble < ZOOM_RECENTRER) carte.controller.setZoom(ZOOM_RECENTRER)
+                                    carte.controller.animateTo(GeoPoint(c.position.latitude, c.position.longitude))
+                                }
+                                Recentrage.Cible.Emprise ->
+                                    cadrerSur(carte, emprise!!, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
+                                Recentrage.Cible.Rien -> {}
+                            }
+                        },
+                        modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                    ) {
+                        Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.carte_recentrer))
+                    }
+                }
             }
         }
 
-        // Couches à cocher, avec leur nombre d'objets.
-        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            CaseCouche(stringResource(R.string.carte_couche_foret, carto.foret.size), voirForet) { voirForet = it }
-            CaseCouche(stringResource(R.string.carte_couche_ug, carto.ug.size), voirUg) { voirUg = it }
-        }
-        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            CaseCouche(stringResource(R.string.carte_couche_parcelles, carto.parcelles.size), voirParcelles) { voirParcelles = it }
-            CaseCouche(stringResource(R.string.carte_couche_placettes, placettes.size), voirPlacettes) { voirPlacettes = it }
-        }
         // Légende : un décompte par état, dans la couleur du disque ; « sans état » seulement s'il y en a.
         val nombres = remember(placettes) { decomptes(placettes) }
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp).plaqueEtat(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -307,24 +490,10 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
             }
         }
 
-        // Source et date, en petit (ADR 0009 : attribution datée).
-        Text(ortho?.let { attribution(it) } ?: "", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
-    }
-}
-
-@Composable
-private fun attribution(o: OrthoTournee): String = when {
-    o.fichierLocal != null -> stringResource(R.string.ortho_attribution_fichier, OrthoIgn.ATTRIBUTION)
-    o.etat is EtatOrtho.Partielle -> stringResource(R.string.ortho_attribution_partielle, OrthoIgn.ATTRIBUTION)
-    o.telechargeeLe != null -> stringResource(R.string.ortho_attribution_datee, OrthoIgn.ATTRIBUTION, o.telechargeeLe)
-    else -> stringResource(R.string.ortho_attribution_sans_date, OrthoIgn.ATTRIBUTION)
-}
-
-@Composable
-private fun CaseCouche(libelle: String, coche: Boolean, onChange: (Boolean) -> Unit) {
-    Row(Modifier.clickable { onChange(!coche) }.height(48.dp), verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(checked = coche, onCheckedChange = onChange)
-        Text(libelle)
+        // Attributions du fond (IGN ou OSM) et du cadastre, en petit ; l'ortho chantier n'en porte pas (comme Marculus).
+        FondsCarte.mentions(fondAffiche, voirCadastre).joinToString(" · ").takeIf { it.isNotEmpty() }
+            ?.let { Text(it, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)) }
+        }
     }
 }
 

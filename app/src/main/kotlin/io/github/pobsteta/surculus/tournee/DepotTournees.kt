@@ -10,10 +10,6 @@ package io.github.pobsteta.surculus.tournee
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
-import io.github.pobsteta.surculus.carte.OrthoDeTournee
-import io.github.pobsteta.surculus.carte.OrthoTournee
-import io.github.pobsteta.surculus.carte.TelechargementTuiles
-import io.github.pobsteta.surculus.core.carte.EtatOrtho
 import io.github.pobsteta.surculus.gpkg.Cartographie
 import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import io.github.pobsteta.surculus.gpkg.ImportTournee
@@ -29,7 +25,6 @@ data class LigneTournee(
     /** `null` si le `travaux.gpkg` est refusé : [refus] dit pourquoi. */
     val tournee: Tournee?,
     val refus: String?,
-    val ortho: OrthoTournee,
 ) {
     val id: String get() = dossier.name
     val foret: String? get() = tournee?.projet?.foret ?: tournee?.projet?.nom
@@ -98,11 +93,11 @@ object DepotTournees {
         val gpkg = File(dossier, ImportTournee.NOM_GPKG)
         return try {
             val t = LecteurTournee.lire(gpkg.toPath())
-            LigneTournee(dossier, t, null, OrthoDeTournee.etat(dossier, t.empriseForet))
+            LigneTournee(dossier, t, null)
         } catch (e: GpkgRefuse) {
-            LigneTournee(dossier, null, e.refus.message, OrthoTournee(EtatOrtho.Absente, null, null))
+            LigneTournee(dossier, null, e.refus.message)
         } catch (e: Exception) {
-            LigneTournee(dossier, null, e.message ?: e.javaClass.simpleName, OrthoTournee(EtatOrtho.Absente, null, null))
+            LigneTournee(dossier, null, e.message ?: e.javaClass.simpleName)
         }
     }
 
@@ -144,18 +139,8 @@ object DepotTournees {
     }
 
     private fun terminer(ctx: Context, tmp: File): File {
-        val rangee = ImportTournee.finaliser(tmp.toPath(), racine(ctx).toPath(), Instant.now()).toFile()
-        // L'ortho est préchargée à l'ouverture de la tournée (ADR 0009) ; l'emprise hors de France ou trop grande reste « absente ».
-        planifierOrtho(ctx, rangee, remplacer = false)
-        return rangee
+        return ImportTournee.finaliser(tmp.toPath(), racine(ctx).toPath(), Instant.now()).toFile()
     }
-
-    /** Planifie le préchargement ; renvoie la raison d'un refus d'emprise, `null` sinon. */
-    fun planifierOrtho(ctx: Context, dossier: File, remplacer: Boolean) =
-        runCatching {
-            val t = LecteurTournee.lire(File(dossier, ImportTournee.NOM_GPKG).toPath())
-            TelechargementTuiles.planifier(ctx, dossier, t.empriseForet, remplacer)
-        }.getOrNull()
 
     private fun copierArbre(ctx: Context, arbre: Uri, idDoc: String, cible: File) {
         val enfants = DocumentsContract.buildChildDocumentsUriUsingTree(arbre, idDoc)
