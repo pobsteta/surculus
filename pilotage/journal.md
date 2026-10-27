@@ -467,3 +467,5 @@
 2026-10-27 · relecteur · PR #96 (c9c988d) · Prête pour Pascal : conforme, ligne Ortho intacte, CI verte, pas de conflit avec la #95. Mineurs : KDoc d'`EcranTournees` détachée et périmée (l. 83-88). Question : les ouvertures sont désormais disponibles aussi en vue colonnes.
 2026-10-27 · Pascal · PR #96 · Fusionnée (7f00740), relecture prête, CI verte, selon « j'autorise tout » ; la question de la vue colonnes est posée à Pascal après la fusion (sans effet sur les données, réversible).
 2026-10-27 · Claude (orchestrateur) · PR #95 · `main` (avec la #96) fusionnée dans la branche, sans conflit ; troisième relecture confiée au `relecteur`. Mission 055 lancée depuis `main` (7f00740).
+2026-10-27 · Claude (orchestrateur) · téléphone · v0.7.55 (thème, #95) installée sur le téléphone de Pascal.
+2026-10-27 · Pascal · mission 056 · Après l'essai de la v0.7.55 : « le thème doit être dans une liste déroulante comme marculus pas par check » : mission 056 écrite (recopie de `ChoixThemeReglage` de Marculus) et lancée depuis `main` (90ee48b).
