@@ -1,0 +1,350 @@
+/*
+ * Surculus — suivi des travaux de plantation en forêt.
+ * Copyright (C) 2026 Pascal Obstétar
+ *
+ * Ce fichier est un logiciel libre : vous pouvez le redistribuer et/ou le modifier selon
+ * les termes de la licence publique générale GNU (GPL), version 3 ou ultérieure (voir LICENSE).
+ */
+package io.github.pobsteta.surculus.controle
+
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.carte.BadgeFix
+import io.github.pobsteta.surculus.carte.Chargement
+import io.github.pobsteta.surculus.carte.PastilleDisque
+import io.github.pobsteta.surculus.carte.Palette
+import io.github.pobsteta.surculus.carte.chargerTournee
+import io.github.pobsteta.surculus.carte.couleurErreur
+import io.github.pobsteta.surculus.carte.couleurNeutre
+import io.github.pobsteta.surculus.carte.rememberFix
+import io.github.pobsteta.surculus.core.gnss.Position
+import io.github.pobsteta.surculus.core.placette.EtatDsf
+import io.github.pobsteta.surculus.core.placette.Essences
+import io.github.pobsteta.surculus.core.placette.GroupeCause
+import io.github.pobsteta.surculus.gpkg.ContexteDeTournee
+import io.github.pobsteta.surculus.sauvegarde.SauvegardeApp
+import io.github.pobsteta.surculus.tournee.LigneTournee
+import io.github.pobsteta.surculus.ui.BandeauCompact
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/**
+ * Contrôleurs ouverts, par tournée et placette : survivent à la rotation (la session garde en mémoire le plant courant),
+ * se libèrent quand on quitte vraiment l'écran. Le journal reste la source : un contrôleur perdu se refait (l'arrivée).
+ */
+object ControleursOuverts {
+    private val ouverts = HashMap<String, ControleurPlacette>()
+
+    fun cle(tournee: String, placette: String) = "$tournee/$placette"
+
+    @Synchronized fun get(cle: String): ControleurPlacette? = ouverts[cle]
+
+    @Synchronized fun poser(cle: String, c: ControleurPlacette) { ouverts[cle] = c }
+
+    @Synchronized fun liberer(cle: String) { ouverts.remove(cle) }
+}
+
+/**
+ * Écran du contrôle d'une placette (mission 012-B1, spec § 4.3). Une question : « sur quel plant suis-je, dans quel état,
+ * combien en reste-t-il ? » En grand : « Plant n° 7 » et son état. Une comparaison : « 7 sur 12 », l'état d'avant en petit.
+ * Source et jour dans le bandeau. Tout ce que l'agent dit est écrit au journal de la tournée tout de suite : sortir sans
+ * « Terminer » ne perd rien, la placette reste « à faire ».
+ */
+@Composable
+fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit) {
+    val ctx = LocalContext.current
+    val chargement = chargerTournee(id)
+    val (fix, _) = rememberFix()
+    val ouverte = (chargement as? Chargement.Pret)?.tournee
+    val placette = ouverte?.tournee?.placettes?.firstOrNull { it.uuid == placetteUuid }
+    val cle = ControleursOuverts.cle(id, placetteUuid)
+
+    // Permission de stockage, Android 8 et 9 seulement : demandée une fois à l'ouverture ; refusée, elle est expliquée, et rien n'est bloqué.
+    var stockageRefuse by remember { mutableStateOf(false) }
+    val demanderStockage = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> stockageRefuse = !ok }
+    LaunchedEffect(Unit) {
+        val accordee = ContextCompat.checkSelfPermission(ctx, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        if (PermissionStockage.aDemanderSurCetAppareil(accordee)) demanderStockage.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    }
+    // On libère le contrôleur en quittant vraiment l'écran, pas à la rotation.
+    val activite = ctx as? android.app.Activity
+    DisposableEffect(cle) { onDispose { if (activite?.isChangingConfigurations != true) ControleursOuverts.liberer(cle) } }
+
+    var arrivee by remember(cle) { mutableStateOf<EtatArrivee>(ControleursOuverts.get(cle)?.let { EtatArrivee.Ouverte(it) } ?: EtatArrivee.Moyenne(0)) }
+    var essai by rememberSaveable(cle) { mutableIntStateOf(0) }
+    var code by rememberSaveable(cle) { mutableStateOf("") }
+    val fixActuel = rememberUpdatedState(fix)
+
+    // L'arrivée (décisions de Pascal du 2026-10-27) : la moyenne de 5 s part toute seule, avec son décompte, puis la règle des 15 m.
+    LaunchedEffect(cle, essai, ouverte) {
+        if (ouverte == null || ControleursOuverts.get(cle) != null) return@LaunchedEffect
+        val positions = ArrayList<Position>()
+        repeat(SECONDES_DE_MOYENNE_ARRIVEE) { n ->
+            arrivee = EtatArrivee.Moyenne(n)
+            delay(1000)
+            fixActuel.value?.position?.let(positions::add)
+        }
+        val resultat = withContext(Dispatchers.IO) {
+            runCatching {
+                ArriveeControle.ouvrir(
+                    contexte = ContexteDeTournee.de(ouverte.tournee),
+                    journal = SauvegardeApp.journal(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
+                    horloge = SauvegardeApp.horloge(ctx) { null },
+                    essences = Essences(emptySet()),
+                    positions = positions,
+                    codeLu = code,
+                    sauvegarde = SauvegardeApp.ecoute(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
+                )
+            }
+        }
+        val v = resultat.getOrNull()
+        if (v is EtatArrivee.Ouverte) ControleursOuverts.poser(cle, v.controleur)
+        arrivee = v ?: EtatArrivee.SansPosition
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        BandeauCompact(
+            titre = placette?.code?.let { stringResource(R.string.controle_titre, it) } ?: stringResource(R.string.controle_titre_sans_code),
+            navigationIcon = {
+                IconButton(onClick = onRetour, modifier = Modifier.sizeIn(minWidth = DimensionsControle.CIBLE_MIN, minHeight = DimensionsControle.CIBLE_MIN)) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.carte_retour))
+                }
+            },
+            actions = { BadgeFix(fix) },
+        )
+        Column(Modifier.weight(1f).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
+            when {
+                chargement == Chargement.EnCours -> Texte(stringResource(R.string.carte_ouverture))
+                chargement is Chargement.Refus -> Texte(stringResource(R.string.carte_refus, chargement.message), erreur = true)
+                placette == null -> Texte(stringResource(R.string.carte_refus, "placette $placetteUuid"), erreur = true)
+                else -> when (val a = arrivee) {
+                    is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)
+                    is EtatArrivee.Refus -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
+                    EtatArrivee.SansPosition -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
+                    is EtatArrivee.Ouverte -> VueSession(a.controleur, stockageRefuse, onRetour)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Texte(texte: String, erreur: Boolean = false) {
+    Text(texte, color = if (erreur) couleurErreur() else couleurNeutre(), modifier = Modifier.padding(24.dp))
+}
+
+/** Arrivée : le décompte de la moyenne, ou le refus avec son code et le champ « code du piquet ». */
+@Composable
+private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit, onRecommencer: (() -> Unit)?) {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        when (etat) {
+            is EtatArrivee.Moyenne -> {
+                Text(stringResource(R.string.controle_moyenne, etat.n, etat.total), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
+                Text(stringResource(R.string.controle_moyenne_aide), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
+            }
+            is EtatArrivee.Refus -> Text(TextesControle.message(etat.refus)!!.texte, style = MaterialTheme.typography.titleMedium, color = couleurErreur())
+            EtatArrivee.SansPosition -> Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurErreur())
+            is EtatArrivee.Ouverte -> {}
+        }
+        OutlinedTextField(
+            value = code,
+            onValueChange = onCode,
+            label = { Text(stringResource(R.string.guidage_code)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        onRecommencer?.let {
+            Button(onClick = it, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) { Text(stringResource(R.string.controle_recommencer)) }
+        }
+    }
+}
+
+/** La session ouverte : la vue Plant, la confirmation de fin, ou « Contrôlée ». */
+@Composable
+private fun VueSession(controleur: ControleurPlacette, stockageRefuse: Boolean, onRetour: () -> Unit) {
+    var ecran by remember(controleur) { mutableStateOf<EcranControle?>(null) }
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(controleur) { ecran = withContext(Dispatchers.IO) { controleur.instantane() } }
+    fun agir(commande: ControleurPlacette.() -> EcranControle) {
+        scope.launch { ecran = withContext(Dispatchers.IO) { controleur.commande() } }
+    }
+    val e = ecran ?: return
+    BackHandler(enabled = e.vue == VueControle.TERMINER) { agir { reprendre() } }
+
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (e.plant.alerteTerminee) {
+            Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
+        }
+        when (e.vue) {
+            VueControle.PLANT -> VuePlantEcran(e, ::agir)
+            VueControle.TERMINER -> VueTerminer(e, ::agir)
+            VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
+        }
+        e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
+        if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit) {
+    val p = e.plant
+    // 1. La seule chose en grand : le numéro du plant ; 2. son état ; 3. l'état d'avant, en petit.
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        IconButton(onClick = { agir { plantPrecedent() } }, enabled = p.aPrecedent, modifier = Modifier.size(DimensionsControle.FLECHE)) {
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.controle_plant_precedent))
+        }
+        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(p.titre, style = MaterialTheme.typography.displaySmall, color = couleurNeutre())
+            Text(p.compteur, style = MaterialTheme.typography.titleLarge, color = couleurNeutre())
+        }
+        IconButton(onClick = { agir { plantSuivant() } }, enabled = p.aSuivant, modifier = Modifier.size(DimensionsControle.FLECHE)) {
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.controle_plant_suivant))
+        }
+    }
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        p.etatDuJour?.let { PastilleForme(it, 32.dp); Spacer(Modifier.width(8.dp)) }
+        Text(p.libelleEtat, style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
+    }
+    p.precedent?.let {
+        Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth())
+    }
+    if (p.aucunPlant) {
+        Text(stringResource(R.string.controle_aucun_plant), style = MaterialTheme.typography.bodyLarge, color = couleurNeutre())
+    }
+    // 4. Les quatre états, gros boutons : forme et mot.
+    val actif = p.numero != null
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        BoutonEtat(EtatDsf.SAIN, actif, Modifier.weight(1f)) { agir { dire(EtatDsf.SAIN) } }
+        BoutonEtat(EtatDsf.ATTEINT, actif, Modifier.weight(1f)) { agir { dire(EtatDsf.ATTEINT) } }
+    }
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        BoutonEtat(EtatDsf.MORT, actif, Modifier.weight(1f)) { agir { dire(EtatDsf.MORT) } }
+        BoutonEtat(EtatDsf.ABSENT, actif, Modifier.weight(1f)) { agir { dire(EtatDsf.ABSENT) } }
+    }
+    // Cause : seulement sur un plant atteint ou mort.
+    if (p.causesVisibles) {
+        Text(stringResource(R.string.controle_cause), style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
+        GroupeCause.entries.chunked(2).forEach { ligne ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ligne.forEach { g ->
+                    val choisi = p.groupeCause == g
+                    val m = Modifier.weight(1f).height(DimensionsControle.BOUTON_CAUSE)
+                    if (choisi) {
+                        FilledTonalButton(onClick = { agir { cause(g) } }, modifier = m) { Text(TextesControle.libelle(g), color = couleurNeutre()) }
+                    } else {
+                        OutlinedButton(onClick = { agir { cause(g) } }, modifier = m) { Text(TextesControle.libelle(g), color = couleurNeutre()) }
+                    }
+                }
+            }
+        }
+        OutlinedButton(onClick = { agir { sansCause() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_CAUSE)) {
+            Text(stringResource(R.string.controle_sans_cause), color = couleurNeutre())
+        }
+    }
+    // 6. Deux actions.
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(onClick = { agir { annuler() } }, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION)) {
+            Text(stringResource(R.string.controle_annuler), color = couleurNeutre())
+        }
+        Button(onClick = { agir { demanderTerminer() } }, enabled = true, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION)) {
+            Text(stringResource(R.string.controle_terminer))
+        }
+    }
+}
+
+@Composable
+private fun BoutonEtat(etat: EtatDsf, actif: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    OutlinedButton(onClick = onClick, enabled = actif, modifier = modifier.height(DimensionsControle.BOUTON_ETAT)) {
+        PastilleForme(etat)
+        Spacer(Modifier.width(8.dp))
+        Text(TextesControle.libelle(etat), style = MaterialTheme.typography.titleLarge, color = couleurNeutre())
+    }
+}
+
+@Composable
+private fun VueTerminer(e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit) {
+    Text(stringResource(R.string.controle_terminer_titre, e.codePlacette), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
+    Totaux(e)
+    Button(onClick = { agir { terminer() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT)) {
+        Text(stringResource(R.string.controle_terminer), style = MaterialTheme.typography.titleLarge)
+    }
+    OutlinedButton(onClick = { agir { reprendre() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+        Text(stringResource(R.string.controle_reprendre), color = couleurNeutre())
+    }
+}
+
+@Composable
+private fun VueTerminee(e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit, onRetour: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        PastilleDisque(Palette.Vert, 28.dp)
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(R.string.controle_controlee, e.codePlacette), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
+    }
+    Totaux(e)
+    Button(onClick = onRetour, modifier = Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT)) {
+        Text(stringResource(R.string.controle_fermer), style = MaterialTheme.typography.titleLarge)
+    }
+    OutlinedButton(onClick = { agir { reprendre() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+        Text(stringResource(R.string.controle_reprendre), color = couleurNeutre())
+    }
+}
+
+@Composable
+private fun Totaux(e: EcranControle) {
+    val t = e.totaux
+    if (t.refus != null) Text(t.refus, color = couleurErreur()) else Text(t.texte, style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
+}
