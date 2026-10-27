@@ -40,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,6 +55,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.core.essai.EssaiGnss
 import io.github.pobsteta.surculus.core.gnss.PointMontage
@@ -78,14 +80,19 @@ fun SectionRecepteur() {
     var points by remember { mutableStateOf<List<PointMontage>>(emptyList()) }
     var menuPoints by remember { mutableStateOf(false) }
     var chargement by remember { mutableStateOf(false) }
-    var btRefuse by remember { mutableStateOf(false) }
+    // Les autorisations se relisent à chaque affichage et au retour des réglages du système : jamais d'état périmé.
+    var relecture by remember { mutableIntStateOf(0) }
+    LifecycleResumeEffect(Unit) {
+        relecture++
+        onPauseOrDispose {}
+    }
 
     // Android 13+ : sans la notification, « Libérer le récepteur » reste caché ; Android 12+ : Bluetooth demande une autorisation.
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        btRefuse = !autorisationBluetooth(ctx)
+        relecture++
     }
     val permissionBt = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
-        btRefuse = !ok
+        relecture++
         if (ok) choixAppareil = true
     }
 
@@ -96,7 +103,17 @@ fun SectionRecepteur() {
         if (actif) permissions.launch(permissionsAUtiliser().toTypedArray())
     }
     if (!rtk.actif) return
-    if (btRefuse) Text(stringResource(R.string.recepteur_bt_refuse), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+    // `relecture` est lu ici pour recalculer après chaque réponse du système.
+    val avertissements = if (relecture < 0) emptyList() else avertissementsRecepteur(
+        rtk.actif, rtk.transport, autorisationBluetooth(ctx), autorisationNotifications(ctx),
+    )
+    avertissements.forEach {
+        val texte = when (it) {
+            AvertissementRecepteur.BLUETOOTH_REFUSE -> R.string.recepteur_bt_refuse
+            AvertissementRecepteur.NOTIFICATIONS_REFUSEES -> R.string.recepteur_notif_refusee
+        }
+        Text(stringResource(texte), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+    }
 
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Choix(stringResource(R.string.recepteur_bluetooth), rtk.transport == TransportRtk.BLUETOOTH) { maj(rtk.copy(transport = TransportRtk.BLUETOOTH)) }
@@ -227,6 +244,10 @@ private fun Interrupteur(titre: String, description: String, valeur: Boolean, on
 private fun autorisationBluetooth(ctx: Context): Boolean =
     Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
         ContextCompat.checkSelfPermission(ctx, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+
+private fun autorisationNotifications(ctx: Context): Boolean =
+    Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+        ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
 private fun permissionsAUtiliser(): List<String> = buildList {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) add(Manifest.permission.BLUETOOTH_CONNECT)
