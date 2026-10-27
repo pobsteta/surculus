@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import io.github.pobsteta.surculus.carte.EcranCarte
 import io.github.pobsteta.surculus.carte.EcranGuidage
 import io.github.pobsteta.surculus.essai.EcranEssaiGnss
+import io.github.pobsteta.surculus.gnss.ConfigRtk
+import io.github.pobsteta.surculus.gnss.PilotageRecepteur
+import io.github.pobsteta.surculus.gnss.RecepteurService
 import io.github.pobsteta.surculus.parametres.EcranParametres
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.EcranTournees
@@ -55,6 +59,13 @@ class MainActivity : ComponentActivity() {
                     var nav by rememberSaveable(
                         stateSaver = listSaver(save = { it.enListe() }, restore = { EtatNavigation.depuisListe(it) }),
                     ) { mutableStateOf(EtatNavigation()) }
+                    // Récepteur GNSS externe (mission 047, comme Groma) : démarré à l'ouverture de la carte (ou de l'essai)
+                    // si le réglage des Paramètres est actif, arrêté à la sortie ; une rotation ne le coupe pas.
+                    val pilote = remember { PilotageRecepteur(RecepteurService(applicationContext)) { ConfigRtk.lire(applicationContext).actif } }
+                    DisposableEffect(nav.recepteurDemande) {
+                        if (nav.recepteurDemande) pilote.entrer()
+                        onDispose { if (!isChangingConfigurations) pilote.sortir() }
+                    }
                     // À la racine, le retour Android n'est pas intercepté : il quitte l'application.
                     BackHandler(enabled = !nav.estRacine) { nav = nav.retour() ?: nav }
                     // La liste des tournées gère elle-même ses marges (sa barre colorée passe sous la barre d'état).

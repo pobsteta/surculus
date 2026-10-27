@@ -10,7 +10,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Mettre dans l'écran Paramètres une section « Récepteur GNSS » reprise de Groma (« Utiliser un récepteur RTK », appareil Bluetooth ou TCP, corrections NTRIP), qui démarre le récepteur à l'ouverture de la carte d'une tournée et l'arrête à la sortie, et laisser à l'écran d'essai la seule mesure, pour que le forestier règle son récepteur une fois et l'ait sur la carte sans passer par l'essai.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** une section « Récepteur GNSS » dans Paramètres (appareil Bluetooth ou TCP, corrections NTRIP), le récepteur démarrant à l'ouverture de la carte et s'arrêtant à la sortie de la tournée, l'essai ne gardant que la mesure, pour régler le récepteur une fois et l'avoir sur la carte sans passer par l'essai.
 
 ## Vérifié à la source
 
