@@ -15,7 +15,7 @@ codes de la spec § 6) sur le journal de la tournée ouverte, et brancher
 la 012-B, C et D n'aient plus qu'à appeler une logique déjà testée et que la liste des placettes
 sache ce qui est fait.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Écrire, en Kotlin pur et sans écran, la logique qui mène un contrôle de placette de bout en bout sur le journal de la tournée (pointer, dire l'état et la cause, corriger, annuler, regarnir, terminer, totaux, refus nommés avec leur code de la spec § 6), pour que la liste des placettes sache lesquelles sont terminées (« Contrôlées ») et que les écrans 012-B, C et D n'aient qu'à appeler une logique déjà testée.
 
 ## Les trois questions (règle de staffing)
 

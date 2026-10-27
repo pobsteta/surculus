@@ -16,6 +16,7 @@ import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import io.github.pobsteta.surculus.gpkg.ImportTournee
 import io.github.pobsteta.surculus.gpkg.LecteurTournee
 import io.github.pobsteta.surculus.gpkg.Tournee
+import io.github.pobsteta.surculus.data.session.JournalDeTournee
 import io.github.pobsteta.surculus.gpkg.titreForet
 import io.github.pobsteta.surculus.sauvegarde.JournalApp
 import java.io.File
@@ -74,12 +75,14 @@ object DepotTournees {
     }
 
     /**
-     * `uuid` des placettes de la tournée [id] dont un contrôle est déjà saisi : ce qui les sort de « à faire » (mission 061).
-     * VIDE aujourd'hui, faute de source : le journal n'écrit pas encore de contrôle (mission 012) et le format de sa `valeur`
-     * (placette, jour, opérateur : spec § 5) n'est pas encore figé en code. À brancher avec la 012 ; ne rien inventer ici.
+     * `uuid` des placettes « Contrôlées » de la tournée [id] : celles dont un contrôle est **terminé** et non annulé
+     * (mission 012-A, décisions de Pascal du 2026-10-27). Une placette terminée le reste pour toute la tournée ; une
+     * placette commencée mais non terminée reste « à faire ». Lu dans le journal avec le code de la tournée ouverte
+     * (HYPOTHÈSE de la 061 : `code_tournee` = nom du dossier, [LigneTournee.id]).
+     * À appeler hors du fil principal. Journal illisible : vide (la liste ne sert que d'aide, elle ne bloque rien).
      */
-    @Suppress("UNUSED_PARAMETER")
-    fun placettesControlees(ctx: Context, id: String): Set<String> = emptySet()
+    fun placettesControlees(ctx: Context, id: String): Set<String> =
+        runCatching { JournalDeTournee(JournalApp.depot(ctx), id).placettesControlees() }.getOrDefault(emptySet())
 
     /**
      * Mission 058 : efface une fois les anciennes tuiles d'ortho (`tuiles/`, plus lues depuis la 055) de chaque

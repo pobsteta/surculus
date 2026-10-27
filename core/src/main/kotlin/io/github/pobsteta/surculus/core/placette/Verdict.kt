@@ -191,3 +191,34 @@ sealed interface RefusPlacette {
         override val message = "Code de piquet « $code » inconnu de la tournée."
     }
 }
+
+/**
+ * Code de refus de la spec § 6 pour chaque [RefusPlacette] (mission 012-A) : celui que la saisie porte jusqu'à
+ * l'écran et que l'export reconnaît. Un refus du domaine garde son [RefusPlacette.motif], sauf deux familles que
+ * l'export nomme autrement : un état, un groupe de cause ou une essence hors des référentiels (`hors_referentiel`),
+ * et un UUID de plant redonné ou dans deux contrôles (`uuid_en_double`). `hors_france` vient de la chaîne des
+ * repères ([RefusRepere.PiquetHorsFrance]) ou du contrôle d'emprise, il n'est pas un [RefusPlacette].
+ *
+ * Le `when` est **exhaustif sans `else`** : ajouter un cas à [RefusPlacette] sans dire son code ne compile plus.
+ */
+object CodesRefus {
+    const val HORS_REFERENTIEL = "hors_referentiel"
+    const val UUID_EN_DOUBLE = "uuid_en_double"
+    const val HORS_FRANCE = "hors_france"
+    const val POINT_HORS_FORET = "point_hors_foret"
+
+    fun code(refus: RefusPlacette): String = when (refus) {
+        is RefusPlacette.EtatInconnu, is RefusPlacette.GroupeCauseInconnu, is RefusPlacette.EssenceInconnue -> HORS_REFERENTIEL
+        is RefusPlacette.PlantEnDoubleDansControle, is RefusPlacette.PlacetteChangee, is RefusPlacette.UuidEnDouble -> UUID_EN_DOUBLE
+        is RefusPlacette.CauseSurEtat, is RefusPlacette.DetailSurEtat, is RefusPlacette.HauteurSurAbsent,
+        is RefusPlacette.HauteurInvalide, RefusPlacette.MesureSurNonObserve, is RefusPlacette.PlantDansDeuxPlacettes,
+        is RefusPlacette.NumeroEnDouble, is RefusPlacette.NumeroChange, RefusPlacette.NumerosDejaFiges,
+        RefusPlacette.RemplaceObligatoire, is RefusPlacette.PlantRemplaceInconnu, is RefusPlacette.PlantRemplaceAutrePlacette,
+        is RefusPlacette.PlantRemplaceNiMortNiAbsent, is RefusPlacette.PlantDejaRemplace, RefusPlacette.AucunePlacette,
+        is RefusPlacette.HorsQuinzeMetres, is RefusPlacette.CodeInconnu -> refus.motif
+    }
+
+    /** Code d'un refus de la chaîne des repères : `hors_france` pour un piquet hors de France, le motif sinon. */
+    fun code(refus: io.github.pobsteta.surculus.core.reperes.RefusRepere): String =
+        if (refus is io.github.pobsteta.surculus.core.reperes.RefusRepere.PiquetHorsFrance) HORS_FRANCE else refus.motif
+}

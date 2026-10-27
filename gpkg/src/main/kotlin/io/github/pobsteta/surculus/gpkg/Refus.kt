@@ -7,6 +7,7 @@
  */
 package io.github.pobsteta.surculus.gpkg
 
+import io.github.pobsteta.surculus.core.placette.CodesRefus
 import io.github.pobsteta.surculus.core.placette.RefusPlacette
 import io.github.pobsteta.surculus.core.reperes.RefusRepere
 import java.time.LocalDate
@@ -89,8 +90,8 @@ sealed interface RefusGpkg {
 
     /** Un refus des règles d'identité des plants (UUID, numéro, placette). */
     data class Identite(val refus: RefusPlacette) : RefusGpkg {
-        // Même UUID de plant redonné dans une autre placette : un UUID en double pour l'export.
-        override val motif = if (refus is RefusPlacette.PlacetteChangee) "uuid_en_double" else refus.motif
+        // Même UUID de plant redonné dans une autre placette : un UUID en double pour l'export (table unique : CodesRefus).
+        override val motif = CodesRefus.code(refus)
         override val message = refus.message
     }
 
