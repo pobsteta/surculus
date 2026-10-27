@@ -15,8 +15,6 @@
     <string name="param_theme_systeme">Système</string>
     <string name="param_theme_clair">Clair</string>
     <string name="param_theme_sombre">Sombre</string>
-    <string name="param_kanban_titre">Vue Kanban</string>
-    <string name="param_kanban_desc">Ajoute un mode Kanban (Proposée / Validée / Planifiée / Réalisée / Abandonnée) dans la liste des tournées.</string>
     <string name="param_essai_desc">Mesure la position du récepteur GNSS (réglé plus bas).</string>
     <string name="param_restaurer_desc">Remet en place une tournée sauvegardée.</string>
     <string name="apropos_titre">À propos de Surculus</string>

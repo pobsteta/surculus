@@ -34,30 +34,23 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
-import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.ui.theme.ChoixTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
- * Paramètres (mission 046), comme Marculus : « Plein écran » (mission 044), « Vue Kanban » (mission 043), puis l'accès
- * à l'Essai GNSS et à la Restauration. Aucun réglage ne change de défaut ni de stockage : le plein écran est tenu par
- * l'activité ([pleinEcran], [onPleinEcran]), la vue Kanban reste dans les SharedPreferences « kanban ».
+ * Paramètres (mission 046), comme Marculus : « Plein écran » (mission 044), puis l'accès à l'Essai GNSS et à la
+ * Restauration. Le plein écran est tenu par l'activité ([pleinEcran], [onPleinEcran]). Plus de case pour les colonnes
+ * de la liste des tournées : leur bouton est toujours dans la barre (mission 050).
  */
 @Composable
 fun EcranParametres(
@@ -69,12 +62,6 @@ fun EcranParametres(
     onRestauration: () -> Unit,
     onRetour: () -> Unit,
 ) {
-    val ctx = LocalContext.current
-    val portee = rememberCoroutineScope()
-    val reglagesKanban = remember { DepotTournees.reglagesKanban(ctx) }
-    var kanbanActif by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { kanbanActif = withContext(Dispatchers.IO) { reglagesKanban.vueActive } }
-
     Column(Modifier.fillMaxSize()) {
         BandeauCompact(
             titre = stringResource(R.string.param_titre),
@@ -92,10 +79,6 @@ fun EcranParametres(
         ) {
             LigneReglage(stringResource(R.string.param_plein_titre), stringResource(R.string.param_plein_desc), pleinEcran, onPleinEcran)
             LigneTheme(choixTheme, onChoixTheme)
-            LigneReglage(stringResource(R.string.param_kanban_titre), stringResource(R.string.param_kanban_desc), kanbanActif) {
-                kanbanActif = it
-                portee.launch(Dispatchers.IO) { reglagesKanban.vueActive = it }
-            }
             LigneAcces(stringResource(R.string.essai_ouvrir), stringResource(R.string.param_essai_desc), onEssai)
             LigneAcces(stringResource(R.string.restauration_ouvrir), stringResource(R.string.param_restaurer_desc), onRestauration)
             SectionRecepteur()
