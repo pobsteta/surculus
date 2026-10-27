@@ -73,14 +73,18 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-_Aucune mission en cours à la clôture du cycle 10 (2026-10-27, soir)._
+- **062** en thème sombre, pas de plaque blanche sous les textes neutres (« Placette … · … km »
+  au bas de la carte, « n placettes · k à faire ») (`dev`, lâcher), en cours depuis le
+  2026-10-27 au soir, lancée après la clôture des autres missions du cycle. Fiche :
+  `pilotage/missions/062-texte-neutre-sans-plaque.md`.
 
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
   `couchey-demo-avec-ortho.zip`, bandeau, cinq boutons, Paramètres (thème en liste,
   récepteur, voix), en mode avion ; et les essais de la v0.7.45 jamais rapportés au journal :
   vue Kanban glissée avec des gants et carte restée après réouverture, recherche, import de
-  `Download/Surculus/couchey-demo-sommier.zip` par le menu « ⋮ ». Vérifié par capture de
+  `Download/Surculus/couchey-demo-sommier.zip` par le menu « ⋮ » (fichier déplacé de
+  `Download/` dans `Download/Surculus/` le 2026-10-27, journal). Vérifié par capture de
   l'orchestrateur le 2026-10-27 : accueil, liste et carte conformes ; texte gris sur la
   plaque blanche en sombre illisible (mission 062 lancée).
 - **sommieR** : démo de Marsannay-la-Côte (pobsteta/sommieR#65) et ortho tuilée EPSG:3857
@@ -92,13 +96,11 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 **Prochaine mission proposée (clôture du cycle 10) :**
 
-- **Plaque blanche en sombre**, suite (051, « on verra plus tard ») ; la mission 062 traite
-  les deux textes neutres demandés par Pascal. Reste : palette d'état et « légende en noir »
-  (anciennes sorties de la 038 du 2026-10-24), texte gris sur la
-  plaque blanche illisible (« 3 placettes · 1 à faire », « Placette P35-01 · 10,0 km »,
-  captures du 2026-10-27), pastilles vert foncé sur fond noir, six textes sans plaque, aplat
-  de 260 dp sous le radar du guidage ; « légende en noir » et « essai au soleil » de la spec
-  à revoir avec.
+- **Plaque blanche en sombre**, suite (051, « on verra plus tard ») ; la 062 traite les deux
+  textes neutres demandés par Pascal. Reste : pastilles vert foncé sur fond noir, six textes
+  sans plaque (relecture de la PR #95), aplat de 260 dp sous le radar du guidage, palette
+  d'état et « légende en noir » (anciennes sorties de la 038 du 2026-10-24), et « essai au
+  soleil » de la spec à revoir avec.
 
 **Ensuite, au signal de Pascal :**
 
@@ -126,20 +128,20 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 ## Terminé
 
-- Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus (PR #81) ; **040** accueil sur la
-  liste des tournées (PR #82) ; **041** recherche et « Rendues » (PR #83) ; **043** vue Kanban
-  (PR #84) ; **044** « À propos » et « Plein écran » (PR #86) ; **045** toutes les licences
-  (PR #88) ; **042** styles et tailles de Marculus (PR #89) ; **046** écran Paramètres
-  (PR #90) ; **047** récepteur GNSS dans Paramètres (PR #91) ; **048** voix Vosk, téléchargement
-  et fichier (PR #92) ; **053** bandeau de Marculus (PR #93) ; **050** sans case « Vue Kanban »
-  (PR #94) ; **051** choix du thème (PR #95) ; **054** ouvertures dans le menu « ⋮ » (PR #96) ;
-  **055** fonds de carte de Marculus en ligne (PR #97) ; **056** thème en liste (PR #98) ;
-  **057** suites de la carte (PR #101) ; **058** anciennes tuiles effacées (PR #100) ; **060**
-  bandeau de la carte visible (PR #102) ; **061** forêt, placettes à faire, puis carte, comme
-  Groma (PR #103) ; spec et ADR 0009 amendées (PR #99) ; ADR 0008 amendée (PR #81, #95) ; fiche 038 réécrite
-  (PR #80) ; briefs vers sommieR (#85, #99)
-  et Groma (pobsteta/groma#67, tailles de texte) ; pilotage (#87) — fusionnées sur l'ordre ou l'autorisation de Pascal ; release
-  v0.7.62.
+- Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus (PR #81) ; **040** accueil sur
+  la liste des tournées (PR #82) ; **041** recherche et « Rendues » (PR #83) ; **043** vue
+  Kanban (PR #84) ; **044** « À propos » et « Plein écran » (PR #86) ; **045** toutes les
+  licences (PR #88) ; **042** styles et tailles de Marculus (PR #89) ; **046** écran
+  Paramètres (PR #90) ; **047** récepteur GNSS dans Paramètres (PR #91) ; **048** voix Vosk,
+  téléchargement et fichier (PR #92) ; **053** bandeau de Marculus (PR #93) ; **050** sans
+  case « Vue Kanban » (PR #94) ; **051** choix du thème (PR #95) ; **054** ouvertures dans le
+  menu « ⋮ » (PR #96) ; **055** fonds de carte de Marculus en ligne (PR #97) ; **056** thème
+  en liste (PR #98) ; **057** suites de la carte (PR #101) ; **058** anciennes tuiles effacées
+  (PR #100) ; **060** bandeau de la carte visible (PR #102) ; **061** forêt, placettes à
+  faire, puis carte, comme Groma (PR #103) ; spec et ADR 0009 amendées (PR #99) ; ADR 0008
+  amendée (PR #81, #95) ; fiche 038 réécrite (PR #80) ; briefs vers sommieR (#85, #99) et
+  Groma (pobsteta/groma#67, tailles de texte) ; pilotage (#87) — fusionnées sur l'ordre ou
+  l'autorisation de Pascal ; release v0.7.62.
 
 - Cycle 9, 2026-10-23 et 24 : **037** DI-303 suit la décision 13 (PR #73) ; **013** dictée
   Vosk à grammaire fermée, `terrain-voix` épinglé (PR #75) ; **039** cas de « hauteur »
