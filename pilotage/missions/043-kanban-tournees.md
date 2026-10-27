@@ -4,8 +4,8 @@
 > `fiche-mission.md` du skill `imperatrice:mission`. Demandée par Pascal le 2026-10-27,
 > après le constat que Marculus a une vue Kanban et Groma non : « idem de marculus pour les
 > colonnes kanban ».
-> **Lancement :** après la fusion de la #83 (041, mêmes fichiers) et la réponse de Pascal
-> aux questions ouvertes ci-dessous. Sous le plafond humain (3 PR en revue).
+> **Lancement :** le 2026-10-27, sur la branche de la 041 (`mission/041-recherche-tournees`,
+> mêmes fichiers), PR #83 non encore fusionnée : la PR de la 043 se fusionne après la #83.
 
 ## Mission
 
@@ -33,11 +33,11 @@ Règles, avec leur auteur :
 - **L'écran sert le forestier en forêt** : cibles d'au moins 48 dp, texte lisible au soleil, une main, des gants (`CLAUDE.md`).
 - **Garde-fou = test vu rouge** et **bilan des écarts avant rendu** : Pascal, bilan du 2026-10-21.
 
-## Questions ouvertes (à Pascal, avant le lancement)
+## Réponses de Pascal (2026-10-27)
 
-1. **Où vit le statut choisi à la main ?** (a) sur le téléphone seulement, comme Marculus (perdu à la restauration d'un `.sursync` sur un autre téléphone) ; (b) dans le journal, par un type de ligne nouveau (voyage avec la sauvegarde, mais change le format du journal : spec et ADR 0005).
-2. **Minimum imposé par l'avancement** : transposer Marculus en « au moins une saisie → Planifiée ; rendue → Réalisée » ?
-3. **Activation** : Surculus n'a pas d'écran Paramètres. Bouton de bascule dans la barre, toujours visible, ou entrée « Vue Kanban » dans le menu « ⋮ » ?
+1. **Le statut choisi à la main vit sur le téléphone seulement**, comme Marculus (réponse « a ») : stockage local de l'application, hors du journal, hors de `travaux.gpkg` et du `.sursync`. Il est perdu à la restauration sur un autre téléphone ; c'est accepté.
+2. **Minimum imposé par l'avancement** (« oui ») : au moins une saisie → au moins Planifiée ; rendue → au moins Réalisée (d'ici l'export, `rendue` est toujours faux : ce minimum existe dans le code et dans les tests, sans effet à l'écran).
+3. **Activation comme Marculus** (« menu ⋮ et bouton comme marculus ») : une entrée « Vue Kanban » dans le menu « ⋮ » active ou désactive le mode (désactivé par défaut, gardé sur le téléphone) ; quand il est actif, un bouton de la barre bascule entre liste et colonnes.
 
 ## Les trois questions (règle de staffing)
 
@@ -64,12 +64,12 @@ _Rempli par Pascal seul, avant de lire le travail de l'agent. L'orchestrateur ne
 ## Harnais
 
 - **Peut :** modifier `tournee/EcranTournees.kt` et `tournee/DepotTournees.kt` ; ajouter les chaînes à `strings_tournees.xml` ; écrire la logique des colonnes (statut, minimum, colonne affichée) en Kotlin pur, testable sans Android.
-- **Ne doit pas :** toucher à `main` ; modifier `fixtures/` ; ajouter une dépendance ; changer le format du journal sans la réponse (b) de Pascal à la question 1.
-- **Sources autorisées :** cette fiche ; `docs/spec.md` § 4.1 ; `marculus` (`~/dev/`, en lecture).
+- **Ne doit pas :** toucher à `main` ; modifier `fixtures/` ; ajouter une dépendance ; changer le format du journal, de `travaux.gpkg` ou du `.sursync` (réponse 1 de Pascal).
+- **Sources autorisées :** cette fiche ; `docs/spec.md` § 4.1 ; le code de la 040 et de la 041 ; `marculus` (`~/dev/`, en lecture).
 
 ## Tests
 
-- Tests JVM : colonne affichée = max(statut stocké, minimum) ; une carte déposée dans une colonne inférieure au minimum reste au minimum ; libellés des cinq colonnes ; recherche vide = toutes les tournées réparties. **Vu rouge** une fois.
+- Tests JVM : colonne affichée = max(statut stocké, minimum) ; une carte déposée dans une colonne inférieure au minimum reste au minimum ; libellés des cinq colonnes ; recherche vide = toutes les tournées réparties ; au moins une saisie → Planifiée ; rendue → Réalisée ; mode désactivé par défaut. **Vu rouge** une fois.
 - Commande du projet : `.claude/test-command`, au code 0.
 - **Bilan des écarts** : ce qui change à l'écran, et tout écart avec Marculus.
 
