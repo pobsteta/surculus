@@ -11,6 +11,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.carte.rememberFix
 import io.github.pobsteta.surculus.core.essai.AffichageEssai
 import io.github.pobsteta.surculus.core.essai.Drapeau
@@ -75,9 +81,12 @@ fun EcranEssaiGnss() {
     val affichage = EssaiGnss.afficher(fix, etat.fixRefuse, maintenant)
     val recepteurActif = remember { ConfigRtk.lire(ctx).actif }
 
+    Column {
+    BandeauCompact(titre = stringResource(R.string.essai_ouvrir))
     Column(
         Modifier
             .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .background(Blanc)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
@@ -98,6 +107,7 @@ fun EcranEssaiGnss() {
         etat.erreur?.let { Text(it, color = Rouge) }
         etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = Rouge) }
         Spacer(Modifier.height(24.dp))
+    }
     }
 }
 

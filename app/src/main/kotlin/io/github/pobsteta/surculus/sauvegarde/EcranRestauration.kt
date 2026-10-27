@@ -12,6 +12,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -35,6 +40,7 @@ import io.github.pobsteta.surculus.data.sauvegarde.CompteRendu
 import io.github.pobsteta.surculus.data.sauvegarde.MotifRefus
 import io.github.pobsteta.surculus.data.sauvegarde.Restauration
 import io.github.pobsteta.surculus.data.sauvegarde.Signalement
+import io.github.pobsteta.surculus.ui.BandeauCompact
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -61,15 +67,18 @@ fun EcranRestauration() {
         }
     }
 
-    Column(
-        Modifier.padding(24.dp).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-    ) {
-        Text(stringResource(R.string.restauration_titre), style = MaterialTheme.typography.titleLarge)
-        Button(onClick = { choisir.launch(arrayOf("*/*")) }, modifier = Modifier.fillMaxWidth().height(72.dp)) {
-            Text(stringResource(R.string.restauration_choisir))
+    Column {
+        BandeauCompact(titre = stringResource(R.string.restauration_titre))
+        Column(
+            Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                .padding(24.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+        ) {
+            Button(onClick = { choisir.launch(arrayOf("*/*")) }, modifier = Modifier.fillMaxWidth().height(72.dp)) {
+                Text(stringResource(R.string.restauration_choisir))
+            }
+            resultat?.let { Text(texte(it.compte), style = MaterialTheme.typography.bodyMedium) }
         }
-        resultat?.let { Text(texte(it.compte), style = MaterialTheme.typography.bodyMedium) }
     }
 }
 
