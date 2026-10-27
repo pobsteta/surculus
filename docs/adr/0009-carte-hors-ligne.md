@@ -183,5 +183,9 @@ journal du 2026-10-21 (`pilotage/journal.md`, entrée « mission 011 · (a) … 
   aucune ortho ne s'affiche en forêt sans réseau.
 - **Tranché par Pascal** (2026-10-27, « 2 oui ») : un fond choisi à la main l'emporte à
   l'ouverture suivante ; l'Ortho chantier est le défaut tant que rien n'a été choisi.
+  Puis (2026-10-27, « 1 oui ») : le fond est mémorisé **tournée par tournée**, sans quoi un
+  fond choisi une fois dans une tournée aurait empêché toutes les autres de s'ouvrir sur leur
+  Ortho chantier. Et (« 2 oui ») : la source et la date de l'Ortho chantier s'affichent
+  (Licence Ouverte, mission 059).
 - **Brief vers sommieR** (décision de Pascal, « 4 oui ») : livrer l'ortho en fichier tuilé
   EPSG:3857 (cible (f)), seule ortho lisible sans réseau.

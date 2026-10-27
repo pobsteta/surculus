@@ -119,8 +119,10 @@ point à Brest et à Strasbourg.
   hors ligne » et « couches à cocher avec leur nombre d'objets ») : bandeau avec flèche de
   retour et menu « Couches » ; « Fond de carte » : Plan IGN, Ortho IGN, OpenStreetMap (en
   ligne), Ortho chantier (hors ligne, proposée quand le fichier existe, ouverte par défaut
-  dans ce cas, sauf si l'utilisateur a choisi un autre fond, qui l'emporte : décisions de
-  Pascal du 2026-10-27) ; « Couches affichées » : Cadastre IGN (en
+  dans ce cas, sauf si l'utilisateur a choisi un autre fond **dans cette tournée**, qui
+  l'emporte : le fond est mémorisé tournée par tournée ; décisions de Pascal du 2026-10-27).
+  La source et la date de l'Ortho chantier s'affichent sous la carte (Licence Ouverte,
+  mission 059) ; « Couches affichées » : Cadastre IGN (en
   ligne) et couches de la tournée, à cocher ; boutons zoom avant, zoom arrière, recentrer
   (jamais sur un fix hors de France).
 * Placettes colorées selon `etat_suivi` ; travaux tracés selon leur code ; vides relevés.
