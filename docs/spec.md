@@ -45,19 +45,21 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
   pointage à nommer par Pascal** (boussole de visée, télémètre, ruban).
 * **Affichage** (amendement du brief, 2026-10-22) : style commun avec Marculus et Groma,
   tiré de la bibliothèque `terrain` ([ADR 0008](adr/0008-bibliotheques-communes.md),
-  acceptée le 2026-10-23) ; **choix du thème Système / Clair / Sombre** dans Paramètres, « Système » par défaut,
-  comme Marculus (amendé le 2026-10-27, mission 051, ADR 0008 amendée ; remplace « thème clair
-  forcé »), contraste du texte selon WCAG 2.2, 1.4.6 (7:1, 4,5:1 pour
+  acceptée le 2026-10-23) ; **choix du thème Système / Clair / Sombre** dans
+  Paramètres, en liste déroulante, « Système » par défaut, comme Marculus (amendé le
+  2026-10-27, missions 051 et 056, ADR 0008 amendée ; *remplace* « thème clair forcé »), contraste du texte selon WCAG 2.2, 1.4.6 (7:1, 4,5:1 pour
   le grand texte jugé à la police à 100 %) vérifié par un
   test, couleurs des pastilles des placettes (mission 033, PR #65) inchangées, légende en
   noir à côté de sa pastille, essai au soleil par Pascal avant
   la fusion.
-* **Hors ligne de bout en bout** : dictée, contrôles, alertes, et l'**Ortho chantier** (le
-  fichier tuilé de la tournée). **Amendé le 2026-10-27** (décision de Pascal, « (b) exactement
-  comme marculus », ADR 0009 amendée) : les fonds Plan IGN, Ortho IGN et OpenStreetMap se
-  chargent **en ligne**, au fur et à mesure, comme dans Marculus ; sans réseau, seules les
-  zones déjà vues restent. La carte s'ouvre sur l'Ortho chantier quand la tournée en a une
-  (décision du 2026-10-27, mission 057).
+* **Hors ligne de bout en bout** : carte (couches de la tournée, position, badge du fix),
+  guidage, dictée, contrôles, alertes, et l'**Ortho chantier** quand la tournée porte un
+  fichier tuilé (`ortho.mbtiles` ou `ortho.gpkg` en EPSG:3857, ADR 0009). **Amendé le
+  2026-10-27** (décision de Pascal, « (b) exactement comme marculus », ADR 0009 amendée) : les
+  fonds Plan IGN, Ortho IGN, OpenStreetMap et le Cadastre IGN se chargent **en ligne**, au fur
+  et à mesure, comme dans Marculus ; sans réseau, seules les zones déjà vues restent.
+  *Remplace* « carte, ortho […] hors ligne » par préchargement de l'ortho IGN (option (d) de
+  l'ADR 0009, décision du 2026-10-21).
 * **Périmètre géographique : France métropolitaine et Corse** (décision de Pascal du
   2026-10-21, ADR 0009). sommieR code EPSG:2154 en dur ; les DOM ne passent pas.
 
@@ -105,11 +107,13 @@ point à Brest et à Strasbourg.
 ### 4.2 Se repérer
 
 * Carte : `foret`, `ug`, `parcelles`, position et badge du fix (RTK fixe, flottant,
-  autonome). Comme Marculus (amendé le 2026-10-27, missions 055 et 057) : bandeau avec flèche
-  de retour et menu « Couches » ; « Fond de carte » : Plan IGN, Ortho IGN, OpenStreetMap
-  (en ligne), Ortho chantier (hors ligne, par défaut quand elle existe) ; « Couches
-  affichées » : Cadastre IGN et couches de la tournée, à cocher ; boutons zoom avant,
-  zoom arrière, recentrer (jamais sur un fix hors de France).
+  autonome). Comme Marculus (amendé le 2026-10-27, missions 055 et 057 ; *remplace* « ortho
+  hors ligne » et « couches à cocher avec leur nombre d'objets ») : bandeau avec flèche de
+  retour et menu « Couches » ; « Fond de carte » : Plan IGN, Ortho IGN, OpenStreetMap (en
+  ligne), Ortho chantier (hors ligne, proposée quand le fichier existe, ouverte par défaut
+  dans ce cas : décision de Pascal du 2026-10-27) ; « Couches affichées » : Cadastre IGN (en
+  ligne) et couches de la tournée, à cocher ; boutons zoom avant, zoom arrière, recentrer
+  (jamais sur un fix hors de France).
 * Placettes colorées selon `etat_suivi` ; travaux tracés selon leur code ; vides relevés.
 * **Guidage** : distance et azimut jusqu'à une placette, signal sonore qui s'accélère à
   l'approche, puis le cercle de la placette à moins de 30 m. Dans la placette, guidage
