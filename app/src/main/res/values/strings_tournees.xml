@@ -31,7 +31,6 @@
     <string name="tournees_retour">‹ Retour</string>
     <string name="tournees_importer_dossier">Ouvrir un dossier</string>
     <string name="tournees_importer_zip">Ouvrir un .zip</string>
-    <string name="tournees_wifi">Ortho : Wi-Fi seulement</string>
     <string name="tournees_vide">Aucune tournée. Ouvrez le dossier ou le .zip de sommieR depuis le menu ⋮.</string>
     <string name="tournees_recherche">Rechercher (forêt, opérateur, date)</string>
     <string name="tournees_rendues">Rendues (%1$d)</string>
@@ -53,20 +52,19 @@
     <string name="tournees_prepare">Préparée le %1$s · %2$s</string>
     <string name="tournees_inconnu">non renseigné</string>
     <string name="tournees_saisies">%1$d contrôles prévus · ouverte</string>
-    <string name="ortho_complete">Ortho complète</string>
-    <string name="ortho_complete_fichier">Ortho complète (%1$s)</string>
-    <string name="ortho_partielle">Ortho partielle %1$d / %2$d</string>
-    <string name="ortho_absente">Ortho absente</string>
-    <string name="ortho_relancer">Précharger l\'ortho</string>
-    <string name="ortho_refus_hors_france">Ortho non préchargée : l\'emprise est hors de France métropolitaine.</string>
-    <string name="ortho_refus_trop_grande">Ortho non préchargée : zone trop grande (%1$d tuiles).</string>
-    <string name="ortho_planifiee">Préchargement lancé : il reprend tout seul quand le réseau revient.</string>
-    <string name="ortho_attribution_datee">%1$s · ortho téléchargée le %2$s</string>
-    <string name="ortho_attribution_fichier">%1$s · ortho : fichier de la tournée</string>
-    <string name="ortho_attribution_partielle">%1$s · ortho en cours de téléchargement</string>
-    <string name="ortho_attribution_sans_date">%1$s · ortho non téléchargée</string>
 
     <!-- Écran Carte (spec § 4.2) -->
+    <string name="carte_fond_de_carte">Fond de carte</string>
+    <string name="carte_emprise_hors_france">Emprise de la tournée hors de France métropolitaine : la carte n\'est pas cadrée dessus. Vérifier l\'ordre des axes (x = Est, y = Nord).</string>
+    <!-- Libellés de la carte de Marculus (`strings.xml` l. 189-198) -->
+    <string name="carte_zoom_avant">Zoom avant</string>
+    <string name="carte_zoom_arriere">Zoom arrière</string>
+    <string name="carte_recentrer">Recentrer</string>
+    <string name="carte_retour">Retour</string>
+    <string name="carte_couche_cadastre">Cadastre IGN</string>
+    <string name="carte_couches">Couches affichées</string>
+    <string name="carte_titre">Carte</string>
+    <string name="guidage_titre">Guidage</string>
     <string name="carte_ouverture">Ouverture de la tournée…</string>
     <string name="carte_refus">Carte impossible : %1$s</string>
     <string name="carte_couche_foret">Forêt (%1$d)</string>

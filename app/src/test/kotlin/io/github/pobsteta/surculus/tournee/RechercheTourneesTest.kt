@@ -7,8 +7,6 @@
  */
 package io.github.pobsteta.surculus.tournee
 
-import io.github.pobsteta.surculus.carte.OrthoTournee
-import io.github.pobsteta.surculus.core.carte.EtatOrtho
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -71,7 +69,7 @@ class RechercheTourneesTest {
             projet = io.github.pobsteta.surculus.gpkg.ProjetLu("Nom", "Foret X", "Operateur Y", "2026-10-12", null, null),
             plants = emptyList(), etats = emptyList(),
         )
-        val l = LigneTournee(File("dossier-z"), t, null, OrthoTournee(EtatOrtho.Absente, null, null))
+        val l = LigneTournee(File("dossier-z"), t, null)
         assertEquals(ChampsTournee("Foret X", "Operateur Y", "2026-10-12", "dossier-z", "Nom"), l.champs)
     }
 
@@ -94,7 +92,7 @@ class RechercheTourneesTest {
     }
 
     @Test fun `aucune tournee n'est rendue tant que l'export n'existe pas`() {
-        val l = LigneTournee(File("x"), null, "refus", OrthoTournee(EtatOrtho.Absente, null, null))
+        val l = LigneTournee(File("x"), null, "refus")
         assertFalse(l.rendue)
         assertEquals("x", l.champs.dossier)
     }

@@ -6,7 +6,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -68,10 +67,10 @@ class MainActivity : ComponentActivity() {
                     }
                     // À la racine, le retour Android n'est pas intercepté : il quitte l'application.
                     BackHandler(enabled = !nav.estRacine) { nav = nav.retour() ?: nav }
-                    // Les écrans à bandeau (liste, Paramètres, Restauration, Essai GNSS ; mission 053) gèrent eux-mêmes leurs
-                    // marges : le bandeau coloré passe sous la barre d'état. Seules la carte et le guidage reçoivent les marges ici.
-                    val marges = if (nav.tourneeId == null) Modifier else Modifier.safeDrawingPadding()
-                    Column(Modifier.fillMaxSize().then(marges)) {
+                    // Tous les écrans ont un bandeau compact (liste, Paramètres, Restauration, Essai GNSS : mission 053 ;
+                    // carte et guidage : mission 055) et gèrent eux-mêmes leurs marges : le bandeau coloré passe sous la
+                    // barre d'état, le corps garde les marges latérales et basse.
+                    Column(Modifier.fillMaxSize()) {
                         val tourneeId = nav.tourneeId
                         val placetteId = nav.placetteId
                         if (tourneeId != null && placetteId != null) {

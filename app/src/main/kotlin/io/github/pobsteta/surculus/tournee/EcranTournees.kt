@@ -46,7 +46,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -71,21 +70,11 @@ import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.carte.Palette
-import io.github.pobsteta.surculus.carte.ReglagesOrtho
-import io.github.pobsteta.surculus.core.carte.EtatOrtho
-import io.github.pobsteta.surculus.core.carte.ZoneTuiles
 import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * Liste des tournées (spec § 4.1) : pour chacune, la forêt en grand, puis qui l'a préparée et quand, le nombre de
- * contrôles, et l'état de l'ortho (ADR 0009). Un appui ouvre la carte. Source : le `travaux.gpkg` de chaque tournée.
- *
- * Accueil de l'application (mission 040) : barre « Surculus » et menu à trois points (Paramètres, À propos).
- */
 /** Où les sélecteurs s'ouvrent d'abord : `Download/Surculus` (mission 054, comme Groma pour `Download/groma`). */
 private val DOSSIER_PAR_DEFAUT: Uri =
     DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Download/Surculus")
@@ -101,6 +90,13 @@ private class OuvrirDocumentDans(private val debut: Uri) : ActivityResultContrac
 /** Message de l'écran ; [refus] (et non un mot du texte) décide de la couleur. */
 private data class MessageTournees(val texte: String, val refus: Boolean)
 
+/**
+ * Liste des tournées (spec § 4.1) : pour chacune, la forêt en grand, puis qui l'a préparée et quand, et le nombre de
+ * contrôles. Un appui ouvre la carte. Source : le `travaux.gpkg` de chaque tournée.
+ *
+ * Accueil de l'application (missions 040 et 054) : barre « Surculus » et menu à trois points (Ouvrir un dossier,
+ * Ouvrir un .zip, Paramètres, À propos), disponible aussi en vue colonnes.
+ */
 @Composable
 fun EcranTournees(
     onOuvrir: (String) -> Unit,
@@ -117,23 +113,18 @@ fun EcranTournees(
     var saisies by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var statuts by remember { mutableStateOf<Map<String, EtatKanban>>(emptyMap()) }
     var occupe by remember { mutableStateOf(false) }
-    var wifi by remember { mutableStateOf(ReglagesOrtho.wifiSeulement(ctx)) }
     val ressources = LocalResources.current
     val reglagesKanban = remember { DepotTournees.reglagesKanban(ctx) }
     var aPropos by rememberSaveable { mutableStateOf(false) }
     if (aPropos) BoiteAPropos(onFermer = { aPropos = false })
     val colonnesAffichees = modeColonnes
 
-    // Recharge la liste ; tant qu'une ortho n'est pas complète, on recompte toutes les 5 s (le préchargement avance).
+    // Recharge la liste.
     LaunchedEffect(version) {
         val l = withContext(Dispatchers.IO) { DepotTournees.lister(ctx) }
         statuts = withContext(Dispatchers.IO) { l.associate { it.id to reglagesKanban.statut(it.id) } }
         saisies = withContext(Dispatchers.IO) { DepotTournees.saisies(ctx, l) }
         lignes = l
-        if (l.any { it.tournee != null && it.ortho.etat != EtatOrtho.Complete }) {
-            delay(5000)
-            version++
-        }
     }
 
     fun importer(travail: suspend () -> java.io.File) {
@@ -173,10 +164,6 @@ fun EcranTournees(
         Column(Modifier
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (!colonnesAffichees) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.tournees_wifi))
-                Switch(checked = wifi, onCheckedChange = { wifi = it; ReglagesOrtho.definirWifiSeulement(ctx, it) })
-            }
             message?.let { Text(it.texte, color = if (it.refus) Palette.Rouge else Palette.Noir) }
 
             val toutes = lignes.orEmpty()
@@ -243,18 +230,7 @@ fun EcranTournees(
                 }
             } else LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 items(affichees, key = { it.id }) { ligne ->
-                    LigneDeTournee(ligne, onOuvrir = { onOuvrir(ligne.id) }, onOrtho = {
-                        // La lecture du gpkg (emprise) se fait hors du fil principal.
-                        portee.launch {
-                            val refus = withContext(Dispatchers.IO) { DepotTournees.planifierOrtho(ctx, ligne.dossier, remplacer = true) }
-                            message = when (refus) {
-                                is ZoneTuiles.Resultat.HorsFrance -> MessageTournees(ressources.getString(R.string.ortho_refus_hors_france), refus = true)
-                                is ZoneTuiles.Resultat.TropGrande -> MessageTournees(ressources.getString(R.string.ortho_refus_trop_grande, refus.nombre.toInt()), refus = true)
-                                else -> MessageTournees(ressources.getString(R.string.ortho_planifiee), refus = false)
-                            }
-                            version++
-                        }
-                    })
+                    LigneDeTournee(ligne, onOuvrir = { onOuvrir(ligne.id) })
                     HorizontalDivider()
                 }
             }
@@ -360,7 +336,7 @@ private fun BandeauAccueil(
 }
 
 @Composable
-private fun LigneDeTournee(ligne: LigneTournee, onOuvrir: () -> Unit, onOrtho: () -> Unit) {
+private fun LigneDeTournee(ligne: LigneTournee, onOuvrir: () -> Unit) {
     val t = ligne.tournee
     Column(
         Modifier.fillMaxWidth().clickable(enabled = t != null, onClick = onOuvrir).padding(vertical = 10.dp),
@@ -377,19 +353,5 @@ private fun LigneDeTournee(ligne: LigneTournee, onOuvrir: () -> Unit, onOrtho: (
         Text(stringResource(R.string.tournees_prepare, t.projet?.prepareLe ?: inconnu, t.projet?.operateur ?: inconnu), style = MaterialTheme.typography.bodyMedium)
         // 3. Contrôles et état (la tournée est « ouverte » : l'état « rendue » vient avec l'export, mission 006).
         Text(stringResource(R.string.tournees_saisies, t.controles.size), style = MaterialTheme.typography.bodyMedium)
-        // 4. L'ortho, en couleur.
-        val o = ligne.ortho
-        val (texte, couleur) = when (val e = o.etat) {
-            EtatOrtho.Complete ->
-                (if (o.fichierLocal != null) stringResource(R.string.ortho_complete_fichier, o.fichierLocal) else stringResource(R.string.ortho_complete)) to Palette.Vert
-            is EtatOrtho.Partielle -> stringResource(R.string.ortho_partielle, e.presentes.toInt(), e.attendues.toInt()) to Palette.Orange
-            EtatOrtho.Absente -> stringResource(R.string.ortho_absente) to Palette.Rouge
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(texte, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = couleur)
-            if (o.etat != EtatOrtho.Complete) {
-                OutlinedButton(onClick = onOrtho, modifier = Modifier.height(48.dp)) { Text(stringResource(R.string.ortho_relancer)) }
-            }
-        }
     }
 }
