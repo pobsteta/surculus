@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.data.sauvegarde.CompteRendu
 import io.github.pobsteta.surculus.data.sauvegarde.MotifRefus
@@ -65,11 +65,11 @@ fun EcranRestauration() {
         Modifier.padding(24.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        Text(stringResource(R.string.restauration_titre), fontSize = 28.sp)
+        Text(stringResource(R.string.restauration_titre), style = MaterialTheme.typography.titleLarge)
         Button(onClick = { choisir.launch(arrayOf("*/*")) }, modifier = Modifier.fillMaxWidth().height(72.dp)) {
-            Text(stringResource(R.string.restauration_choisir), fontSize = 20.sp)
+            Text(stringResource(R.string.restauration_choisir))
         }
-        resultat?.let { Text(texte(it.compte), fontSize = 20.sp) }
+        resultat?.let { Text(texte(it.compte), style = MaterialTheme.typography.bodyMedium) }
     }
 }
 

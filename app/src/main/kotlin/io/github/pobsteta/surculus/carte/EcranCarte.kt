@@ -31,6 +31,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,7 +48,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.core.carte.EtatOrtho
@@ -81,10 +81,10 @@ import org.osmdroid.views.overlay.Polygon
 @Composable
 fun EcranCarte(id: String, onRetour: () -> Unit, onGuider: (String) -> Unit) {
     when (val c = chargerTournee(id)) {
-        Chargement.EnCours -> Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture), fontSize = 20.sp) }
+        Chargement.EnCours -> Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
         is Chargement.Refus -> Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(stringResource(R.string.carte_refus, c.message), fontSize = 18.sp, color = Palette.Rouge)
-            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour), fontSize = 18.sp) }
+            Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge)
+            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour)) }
         }
         is Chargement.Pret -> CartePrete(c.tournee, onRetour, onGuider)
     }
@@ -189,13 +189,13 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
     Column(Modifier.fillMaxSize()) {
         // Une ligne : retour à gauche, badge du fix à droite.
         Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour), fontSize = 18.sp) }
+            OutlinedButton(onClick = onRetour, modifier = Modifier.height(56.dp)) { Text(stringResource(R.string.tournees_retour)) }
             BadgeFix(fix)
         }
         if (fix != null && Guidage.versLambert93(fix.position) == null) {
-            Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
+            Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
         }
-        if (refusee) Text(stringResource(R.string.carte_permission), color = Palette.Rouge, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 8.dp))
+        if (refusee) Text(stringResource(R.string.carte_permission), color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
 
         Box(Modifier.weight(1f).fillMaxWidth()) {
             if (liste) {
@@ -276,21 +276,21 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
         // Légende : un décompte par état, dans la couleur du disque ; « sans état » seulement s'il y en a.
         val nombres = remember(placettes) { decomptes(placettes) }
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(stringResource(R.string.carte_legende_jamais, nombres.getValue(EtatSuivi.JAMAIS)), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Palette.Rouge)
-            Text(stringResource(R.string.carte_legende_a_programmer, nombres.getValue(EtatSuivi.A_PROGRAMMER)), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Palette.Orange)
-            Text(stringResource(R.string.carte_legende_a_jour, nombres.getValue(EtatSuivi.A_JOUR)), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Palette.Vert)
+            Text(stringResource(R.string.carte_legende_jamais, nombres.getValue(EtatSuivi.JAMAIS)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Rouge)
+            Text(stringResource(R.string.carte_legende_a_programmer, nombres.getValue(EtatSuivi.A_PROGRAMMER)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Orange)
+            Text(stringResource(R.string.carte_legende_a_jour, nombres.getValue(EtatSuivi.A_JOUR)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Vert)
             if (nombres.getValue(EtatSuivi.INCONNU) > 0) {
-                Text(stringResource(R.string.carte_legende_inconnu, nombres.getValue(EtatSuivi.INCONNU)), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Palette.Noir)
+                Text(stringResource(R.string.carte_legende_inconnu, nombres.getValue(EtatSuivi.INCONNU)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Noir)
             }
         }
         if (carto.anomalies.isNotEmpty()) {
-            Text(stringResource(R.string.carte_anomalies, carto.anomalies.size), fontSize = 14.sp, color = Palette.Orange, modifier = Modifier.padding(horizontal = 8.dp))
+            Text(stringResource(R.string.carte_anomalies, carto.anomalies.size), style = MaterialTheme.typography.bodyMedium, color = Palette.Orange, modifier = Modifier.padding(horizontal = 8.dp))
         }
 
         // L'action : guider vers la placette touchée, sinon ouvrir la liste.
         val p = choisie
         Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { centrerSurMoi++ }, enabled = fix != null, modifier = Modifier.height(64.dp)) { Text(stringResource(R.string.carte_ma_position), fontSize = 16.sp) }
+            OutlinedButton(onClick = { centrerSurMoi++ }, enabled = fix != null, modifier = Modifier.height(64.dp)) { Text(stringResource(R.string.carte_ma_position)) }
             if (p != null) {
                 val d = distances[p.uuid]
                 Button(
@@ -300,16 +300,15 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                 ) {
                     Text(
                         if (d != null) stringResource(R.string.carte_guider_distance, p.code.orEmpty(), Libelles.distance(d)) else stringResource(R.string.carte_guider, p.code.orEmpty()),
-                        fontSize = 18.sp,
                     )
                 }
             } else {
-                Button(onClick = { liste = true }, modifier = Modifier.weight(1f).height(64.dp)) { Text(stringResource(R.string.carte_placettes_liste), fontSize = 18.sp) }
+                Button(onClick = { liste = true }, modifier = Modifier.weight(1f).height(64.dp)) { Text(stringResource(R.string.carte_placettes_liste)) }
             }
         }
 
         // Source et date, en petit (ADR 0009 : attribution datée).
-        Text(ortho?.let { attribution(it) } ?: "", fontSize = 11.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+        Text(ortho?.let { attribution(it) } ?: "", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
     }
 }
 
@@ -325,7 +324,7 @@ private fun attribution(o: OrthoTournee): String = when {
 private fun CaseCouche(libelle: String, coche: Boolean, onChange: (Boolean) -> Unit) {
     Row(Modifier.clickable { onChange(!coche) }.height(48.dp), verticalAlignment = Alignment.CenterVertically) {
         Checkbox(checked = coche, onCheckedChange = onChange)
-        Text(libelle, fontSize = 16.sp)
+        Text(libelle)
     }
 }
 
@@ -333,7 +332,7 @@ private fun CaseCouche(libelle: String, coche: Boolean, onChange: (Boolean) -> U
 private fun ListePlacettes(placettes: List<PlacetteTournee>, distances: Map<String, Double>, onChoisir: (PlacetteTournee) -> Unit, onFermer: () -> Unit) {
     val triees = remember(placettes, distances) { placettes.sortedWith(compareBy({ distances[it.uuid] ?: Double.MAX_VALUE }, { it.code })) }
     Column(Modifier.fillMaxSize()) {
-        OutlinedButton(onClick = onFermer, modifier = Modifier.fillMaxWidth().padding(8.dp).height(56.dp)) { Text(stringResource(R.string.carte_fermer_liste), fontSize = 18.sp) }
+        OutlinedButton(onClick = onFermer, modifier = Modifier.fillMaxWidth().padding(8.dp).height(56.dp)) { Text(stringResource(R.string.carte_fermer_liste)) }
         LazyColumn {
             items(triees, key = { it.uuid }) { p ->
                 Row(
@@ -341,8 +340,8 @@ private fun ListePlacettes(placettes: List<PlacetteTournee>, distances: Map<Stri
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(p.code.orEmpty(), fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    Text(distances[p.uuid]?.let { Libelles.distance(it) } ?: "—", fontSize = 22.sp)
+                    Text(p.code.orEmpty(), style = MaterialTheme.typography.titleLarge)
+                    Text(distances[p.uuid]?.let { Libelles.distance(it) } ?: "—", style = MaterialTheme.typography.titleLarge)
                 }
                 HorizontalDivider()
             }

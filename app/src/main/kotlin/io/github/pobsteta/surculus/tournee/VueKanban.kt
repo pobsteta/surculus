@@ -46,7 +46,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.carte.Palette
 import kotlin.math.roundToInt
@@ -87,7 +86,7 @@ fun VueKanban(
                 ) {
                     Text(
                         "${etat.libelle} (${cartesDeLaColonne.size})",
-                        fontSize = 18.sp,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(8.dp),
                     )
@@ -120,7 +119,7 @@ fun VueKanban(
                 Text(
                     c.ligne.foret ?: c.ligne.id,
                     modifier = Modifier.padding(10.dp),
-                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -158,15 +157,15 @@ private fun CarteDeKanban(
             .clickable(enabled = t != null, onClick = onOuvrir),
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(carte.ligne.foret ?: carte.ligne.id, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(carte.ligne.foret ?: carte.ligne.id, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
             if (t == null) {
-                Text(stringResource(R.string.tournees_illisible, carte.ligne.refus.orEmpty()), fontSize = 14.sp, color = Palette.Rouge)
+                Text(stringResource(R.string.tournees_illisible, carte.ligne.refus.orEmpty()), style = MaterialTheme.typography.bodyMedium, color = Palette.Rouge)
             } else {
-                t.projet?.prepareLe?.let { Text(dateFrancaise(it), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                t.projet?.prepareLe?.let { Text(dateFrancaise(it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 Text(
                     stringResource(R.string.kanban_controles, t.controles.size) + " · " +
                         pluralStringResource(R.plurals.kanban_saisies, carte.saisies, carte.saisies),
-                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
