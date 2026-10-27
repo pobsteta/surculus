@@ -16,6 +16,8 @@ package io.github.pobsteta.surculus.core.carte
 
 import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
 import io.github.pobsteta.surculus.core.geo.PointLambert93
+import io.github.pobsteta.surculus.core.gnss.Position
+import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.core.placette.EmpriseEtFrance
 
 /** Mentions exigées par les licences des fonds, à afficher sur la carte (celles de Marculus). */
@@ -113,6 +115,26 @@ object EmpriseCarte {
             if (!ctl.enFrance) return Resultat.HorsFrance(c, ctl.inversionDetectee)
         }
         return Resultat.EnFrance
+    }
+}
+
+/**
+ * Où va le bouton « recentrer » : sur le fix GNSS s'il tombe en France, sinon sur l'emprise de la tournée si elle y tombe,
+ * sinon nulle part (règle géographique de `CLAUDE.md` : un fix aux axes inversés tomberait en Somalie).
+ */
+object Recentrage {
+    sealed interface Cible {
+        data class Fix(val position: Position) : Cible
+
+        data object Emprise : Cible
+
+        data object Rien : Cible
+    }
+
+    fun cible(fix: Position?, emprise: EmpriseLambert93?): Cible = when {
+        fix != null && Guidage.versLambert93(fix) != null -> Cible.Fix(fix)
+        emprise != null && EmpriseCarte.controler(emprise) == EmpriseCarte.Resultat.EnFrance -> Cible.Emprise
+        else -> Cible.Rien
     }
 }
 

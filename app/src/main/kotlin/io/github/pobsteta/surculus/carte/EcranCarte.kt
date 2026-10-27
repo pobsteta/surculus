@@ -74,6 +74,7 @@ import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.core.carte.EmpriseCarte
 import io.github.pobsteta.surculus.core.carte.Fond
 import io.github.pobsteta.surculus.core.carte.FondsCarte
+import io.github.pobsteta.surculus.core.carte.Recentrage
 import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
 import io.github.pobsteta.surculus.core.geo.Projections
 import io.github.pobsteta.surculus.core.gnss.FixGnss
@@ -108,11 +109,11 @@ fun EcranCarte(id: String, onRetour: () -> Unit, onGuider: (String) -> Unit) {
     when (val c = chargerTournee(id)) {
         Chargement.EnCours -> Column {
             BandeauCarte(stringResource(R.string.carte_titre), onRetour)
-            Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
+            Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
         }
         is Chargement.Refus -> Column {
             BandeauCarte(stringResource(R.string.carte_titre), onRetour)
-            Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge) }
+            Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge) }
         }
         is Chargement.Pret -> CartePrete(c.tournee, onRetour, onGuider)
     }
@@ -408,13 +409,21 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                         l.placettes.forEach { it.isEnabled = voirPlacettes }
                         l.position.isEnabled = fix != null
                         fix?.let { l.position.position = GeoPoint(it.position.latitude, it.position.longitude) }
-                        if (centrerSurMoi > 0 && fix != null) {
-                            carte.controller.animateTo(GeoPoint(fix.position.latitude, fix.position.longitude))
+                        if (centrerSurMoi > 0) {
+                            // Jamais sur un fix hors de France (axes inversés : la Somalie) : `Recentrage` décide.
+                            (Recentrage.cible(fix?.position, null) as? Recentrage.Cible.Fix)?.let { c ->
+                                carte.controller.animateTo(GeoPoint(c.position.latitude, c.position.longitude))
+                            }
                             centrerSurMoi = 0
                         }
                         carte.invalidate()
                     },
-                    onRelease = { it.onDetach() },
+                    // Le fournisseur de tuiles du cadastre se libère aussi quand la couche est décochée (elle n'est alors
+                    // plus dans les surcouches de la carte, donc `onDetach` de la carte ne l'atteint pas).
+                    onRelease = { carte ->
+                        couchesRef[0]?.cadastre?.onDetach(carte)
+                        carte.onDetach()
+                    },
                 )
                 // Les trois boutons de Marculus (`CarteScreen.kt` l. 611-618), au moins 48 dp : zoom avant, zoom arrière,
                 // recentrer. Chez Marculus, `recadrer()` cadre les tiges (sinon les parcelles) ; ici : la position GNSS
@@ -429,12 +438,14 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                     SmallFloatingActionButton(
                         onClick = {
                             val carte = couchesRef[0]?.carte ?: return@SmallFloatingActionButton
-                            val f = fix
-                            if (f != null) {
-                                if (carte.zoomLevelDouble < ZOOM_RECENTRER) carte.controller.setZoom(ZOOM_RECENTRER)
-                                carte.controller.animateTo(GeoPoint(f.position.latitude, f.position.longitude))
-                            } else if (emprise != null && !empriseHorsFrance) {
-                                cadrerSur(carte, emprise, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
+                            when (val c = Recentrage.cible(fix?.position, emprise)) {
+                                is Recentrage.Cible.Fix -> {
+                                    if (carte.zoomLevelDouble < ZOOM_RECENTRER) carte.controller.setZoom(ZOOM_RECENTRER)
+                                    carte.controller.animateTo(GeoPoint(c.position.latitude, c.position.longitude))
+                                }
+                                Recentrage.Cible.Emprise ->
+                                    cadrerSur(carte, emprise!!, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
+                                Recentrage.Cible.Rien -> {}
                             }
                         },
                         modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),

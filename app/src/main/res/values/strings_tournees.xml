@@ -33,7 +33,6 @@
     </plurals>
 
     <!-- Écran Tournées (mission 011, spec § 4.1) -->
-    <string name="tournees_retour">‹ Retour</string>
     <string name="tournees_importer_dossier">Ouvrir un dossier</string>
     <string name="tournees_importer_zip">Ouvrir un .zip</string>
     <string name="tournees_vide">Aucune tournée. Ouvrez le dossier ou le .zip de sommieR depuis le menu ⋮.</string>

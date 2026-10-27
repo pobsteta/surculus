@@ -43,6 +43,32 @@ class BandeauCarteGuidageTest {
     }
 
     @Test
+    fun `le recentrage passe par la decision testee, jamais par le fix brut`() {
+        assertEquals(2, Regex("Recentrage\\.cible\\(").findAll(carte).count(), "bouton recentrer et « Ma position »")
+        assertFalse("animateTo(GeoPoint(f.position" in carte)
+        assertFalse("animateTo(GeoPoint(fix.position" in carte)
+    }
+
+    @Test
+    fun `les etats ouverture et refus gardent les marges du corps`() {
+        val debut = carte.indexOf("fun EcranCarte(")
+        val fin = carte.indexOf("is Chargement.Pret", debut)
+        val etats = carte.substring(debut, fin)
+        assertEquals(2, Regex("windowInsetsPadding\\(WindowInsets\\.safeDrawing\\.only\\(WindowInsetsSides\\.Horizontal \\+ WindowInsetsSides\\.Bottom\\)\\)").findAll(etats).count())
+    }
+
+    @Test
+    fun `le fournisseur du cadastre est libere a la sortie, couche cochee ou non`() {
+        assertTrue("cadastre?.onDetach(" in carte)
+    }
+
+    @Test
+    fun `la chaine tournees_retour n'existe plus`() {
+        val chaines = File(racine.parentFile.parentFile.parentFile.parentFile.parentFile, "res/values/strings_tournees.xml").readText()
+        assertFalse("tournees_retour" in chaines)
+    }
+
+    @Test
     fun `les cases de couches du bas de l'ecran sont retirees`() {
         assertFalse("CaseCouche" in carte)
     }
