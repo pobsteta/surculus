@@ -5,7 +5,7 @@
     <string name="rtk_notif_titre">Surculus — GNSS RTK</string>
     <string name="rtk_liberer">Libérer le récepteur</string>
     <string name="rtk_connexion">Connexion au récepteur…</string>
-    <string name="rtk_config_incomplete">Récepteur RTK non choisi.</string>
+    <string name="rtk_config_incomplete">Récepteur RTK non choisi : Paramètres → Récepteur GNSS.</string>
 
     <!-- Écran d'essai GNSS (mission 018) -->
     <string name="essai_ouvrir">Essai GNSS</string>
@@ -14,19 +14,7 @@
     <string name="essai_lien_attente">en attente</string>
     <string name="essai_lien_arrete">arrêté</string>
     <string name="essai_ntrip_erreur">Caster : %1$s</string>
-    <string name="essai_demarrer">Démarrer</string>
-    <string name="essai_arreter">Arrêter</string>
-    <string name="essai_permissions_manquantes">Permissions refusées, démarrage annulé : %1$s</string>
-    <string name="essai_enregistre">Réglages enregistrés au démarrage.</string>
-    <string name="essai_reglages">Réglages</string>
-    <string name="essai_choisir_recepteur">Choisir le récepteur apparié</string>
-    <string name="essai_aucun_appareil">Aucun appareil apparié</string>
-    <string name="essai_point_montage">Point de montage</string>
-    <string name="essai_charger_points">Charger les points de %1$s</string>
-    <string name="essai_aucun_point">Aucun point reçu</string>
-    <string name="essai_utilisateur">Compte NTRIP</string>
-    <string name="essai_mot_de_passe">Mot de passe NTRIP</string>
-    <string name="essai_compte_aide">Compte public de Centipède : voir docs.centipede.fr. Rien n\'est enregistré avant « Démarrer ».</string>
+    <string name="essai_recepteur_inactif">Récepteur externe non activé : Paramètres → Récepteur GNSS. La position est celle du téléphone.</string>
     <string name="essai_hors_france">Hors de France : vérifier l\'ordre latitude / longitude</string>
 
     <!-- Restauration d'une tournée (mission 009) -->

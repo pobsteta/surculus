@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paramètres → Récepteur GNSS (mission 047), repris de Groma (SectionRtk) -->
+    <string name="recepteur_section">Récepteur GNSS</string>
+    <string name="recepteur_section_desc">Position centimétrique sur la carte. Une liaison Bluetooth ne sert qu\'une application à la fois : pendant que Surculus tient le récepteur, QField n\'y a pas accès. « Libérer le récepteur » (dans la notification) le rend.</string>
+    <string name="recepteur_actif">Utiliser un récepteur GNSS externe</string>
+    <string name="recepteur_actif_desc">Démarré à l\'ouverture de la carte, arrêté à la sortie de la tournée.</string>
+    <string name="recepteur_bluetooth">Bluetooth</string>
+    <string name="recepteur_tcp">TCP / Wi-Fi</string>
+    <string name="recepteur_aucun_appareil">Aucun récepteur choisi</string>
+    <string name="recepteur_choisir">Choisir…</string>
+    <string name="recepteur_appareils">Appareils appairés</string>
+    <string name="recepteur_aucun_appaire">Aucun appareil appairé : appairer le récepteur dans les réglages Bluetooth du téléphone.</string>
+    <string name="recepteur_annuler">Annuler</string>
+    <string name="recepteur_bt_refuse">Autorisation Bluetooth refusée : le récepteur ne pourra pas se connecter.</string>
+    <string name="recepteur_hote">Adresse</string>
+    <string name="recepteur_port">Port</string>
+    <string name="recepteur_ntrip">Corrections NTRIP par Surculus</string>
+    <string name="recepteur_ntrip_desc">Surculus reçoit le flux RTCM du caster (Centipède) par Internet et le transmet au récepteur. Désactiver si le récepteur reçoit ses corrections lui-même.</string>
+    <string name="recepteur_caster">Caster</string>
+    <string name="recepteur_point_montage">Point de montage</string>
+    <string name="recepteur_charger">Charger</string>
+    <string name="recepteur_aucun_point">Aucun point de montage (caster injoignable ?)</string>
+    <string name="recepteur_utilisateur">Identifiant</string>
+    <string name="recepteur_mot_de_passe">Mot de passe</string>
+    <string name="recepteur_compte_aide">Compte public de Centipède : voir docs.centipede.fr. Les réglages sont enregistrés à la saisie.</string>
+</resources>
