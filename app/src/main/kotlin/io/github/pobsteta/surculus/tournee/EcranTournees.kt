@@ -12,48 +12,53 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.LaunchedEffect
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.carte.Palette
 import io.github.pobsteta.surculus.carte.ReglagesOrtho
@@ -81,6 +86,8 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauratio
     var lignes by remember { mutableStateOf<List<LigneTournee>?>(null) }
     var version by remember { mutableIntStateOf(0) }
     var message by remember { mutableStateOf<MessageTournees?>(null) }
+    var recherche by rememberSaveable { mutableStateOf("") }
+    var voirRendues by rememberSaveable { mutableStateOf(false) }
     var occupe by remember { mutableStateOf(false) }
     var wifi by remember { mutableStateOf(ReglagesOrtho.wifiSeulement(ctx)) }
     val ressources = LocalResources.current
@@ -138,10 +145,56 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauratio
             }
             message?.let { Text(it.texte, fontSize = 16.sp, color = if (it.refus) Palette.Rouge else Palette.Noir) }
 
-            val toutes = lignes
-            if (toutes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
+            val toutes = lignes.orEmpty()
+            val trouvees = if (recherche.isBlank()) toutes else toutes.filter { correspond(it.champs, recherche) }
+            val (rendues, ouvertes) = partager(trouvees) { it.rendue }
+            val affichees = if (voirRendues) rendues else ouvertes
+            val autres = if (voirRendues) ouvertes else rendues
+            if (lignes != null && toutes.isEmpty()) Text(stringResource(R.string.tournees_vide), fontSize = 18.sp)
+            if (toutes.isNotEmpty()) {
+                // Zone de recherche et puce « Rendues (n) » sur une même ligne, comme Groma et Marculus (mission 041).
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = recherche,
+                        onValueChange = { recherche = it },
+                        label = { Text(stringResource(R.string.tournees_recherche)) },
+                        singleLine = true,
+                        textStyle = TextStyle(fontSize = 18.sp),
+                        modifier = Modifier.weight(1f),
+                    )
+                    FilterChip(
+                        selected = voirRendues,
+                        onClick = { voirRendues = !voirRendues },
+                        label = { Text(stringResource(R.string.tournees_rendues, toutes.count { it.rendue }), fontSize = 16.sp) },
+                        leadingIcon = if (voirRendues) ({ Text("✓", fontSize = 16.sp, fontWeight = FontWeight.Bold) }) else null,
+                    )
+                }
+                if (recherche.isNotBlank() && autres.isNotEmpty()) {
+                    Text(
+                        pluralStringResource(
+                            if (voirRendues) R.plurals.tournees_autres_ouvertes else R.plurals.tournees_autres_rendues,
+                            autres.size,
+                            autres.size,
+                        ),
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (affichees.isEmpty()) {
+                    Text(
+                        stringResource(
+                            when (messageVide(recherche, voirRendues)) {
+                                MessageVide.AUCUNE_TROUVEE -> R.string.tournees_aucune_trouvee
+                                MessageVide.AUCUNE_RENDUE -> R.string.tournees_aucune_rendue
+                                MessageVide.AUCUNE_OUVERTE -> R.string.tournees_aucune_ouverte
+                            },
+                        ),
+                        fontSize = 18.sp,
+                    )
+                }
+            }
             LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                items(toutes.orEmpty(), key = { it.id }) { ligne ->
+                items(affichees, key = { it.id }) { ligne ->
                     LigneDeTournee(ligne, onOuvrir = { onOuvrir(ligne.id) }, onOrtho = {
                         // La lecture du gpkg (emprise) se fait hors du fil principal.
                         portee.launch {

@@ -32,6 +32,15 @@ data class LigneTournee(
 ) {
     val id: String get() = dossier.name
     val foret: String? get() = tournee?.projet?.foret ?: tournee?.projet?.nom
+
+    /**
+     * Tournée rendue ? Point unique de l'état (mission 041). Toutes sont « ouvertes » tant que l'export n'écrit pas la
+     * marque « rendue » (spec § 4.1) : on ne l'invente pas.
+     */
+    val rendue: Boolean get() = false
+
+    val champs: ChampsTournee
+        get() = ChampsTournee(foret, tournee?.projet?.operateur, tournee?.projet?.prepareLe, dossier.name, tournee?.projet?.nom)
 }
 
 /** La tournée ouverte sur la carte : le fichier, ses placettes et ses surfaces. */
