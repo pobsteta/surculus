@@ -40,8 +40,29 @@ class NavigationTest {
         assertTrue(!EtatNavigation().ouvrirParametres().estRacine)
     }
 
-    @Test fun `le menu a trois points ne garde que parametres et a propos`() {
-        assertEquals(listOf(EntreeMenu.PARAMETRES, EntreeMenu.A_PROPOS), ENTREES_MENU)
+    @Test fun `le menu a trois points range ouvrir un dossier, ouvrir un zip, parametres, a propos`() {
+        assertEquals(
+            listOf(EntreeMenu.OUVRIR_DOSSIER, EntreeMenu.OUVRIR_ZIP, EntreeMenu.PARAMETRES, EntreeMenu.A_PROPOS),
+            ENTREES_MENU,
+        )
+    }
+
+    private fun source(chemin: String) = java.io.File("src/main/kotlin/io/github/pobsteta/surculus/$chemin").readText()
+
+    @Test fun `l'accueil n'a plus de bouton d'ouverture, les deux ouvertures sont dans le menu`() {
+        val ecran = source("tournee/EcranTournees.kt")
+        assertTrue(!Regex("""\bButton\(""").containsMatchIn(ecran), "plus aucun Button plein sur l'accueil")
+        assertTrue(!ecran.contains("Modifier.weight(1f).height(64.dp)"))
+        assertTrue(ecran.contains("EntreeMenu.OUVRIR_DOSSIER") && ecran.contains("EntreeMenu.OUVRIR_ZIP"))
+    }
+
+    @Test fun `le message de liste vide renvoie au menu`() {
+        val chaines = java.io.File("src/main/res/values/strings_tournees.xml").readText()
+        assertTrue(chaines.contains("Ouvrez le dossier ou le .zip de sommieR depuis le menu ⋮."))
+    }
+
+    @Test fun `les selecteurs s'ouvrent d'abord dans Download Surculus`() {
+        assertTrue(source("tournee/EcranTournees.kt").contains("primary:Download/Surculus"))
     }
 
     @Test fun `la rotation restitue parametres et les ecrans qui en dependent`() {

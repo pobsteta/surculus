@@ -32,7 +32,7 @@
     <string name="tournees_importer_dossier">Ouvrir un dossier</string>
     <string name="tournees_importer_zip">Ouvrir un .zip</string>
     <string name="tournees_wifi">Ortho : Wi-Fi seulement</string>
-    <string name="tournees_vide">Aucune tournée. Ouvrez le dossier ou le .zip de sommieR.</string>
+    <string name="tournees_vide">Aucune tournée. Ouvrez le dossier ou le .zip de sommieR depuis le menu ⋮.</string>
     <string name="tournees_recherche">Rechercher (forêt, opérateur, date)</string>
     <string name="tournees_rendues">Rendues (%1$d)</string>
     <plurals name="tournees_autres_ouvertes">
