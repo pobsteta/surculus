@@ -95,3 +95,22 @@ le plan ci-dessous ; Pascal tranche les couleurs et les amendements ; puis le co
 
 En sombre, plus aucun îlot blanc ; Pascal lit sur la carte « 1 travaux à prévoir » et distingue
 les trois pastilles d'un coup d'œil.
+
+## Décisions de Pascal sur le plan (2026-10-27, questions posées une par une)
+
+1. **Option (b)** : en sombre, aucun texte en couleur d'état ; texte en `onSurface`, l'état porté par
+   la pastille cernée d'un filet blanc ; radar en `onSurface` et pastilles cernées.
+2. **Les 7 textes rouges sans plaque** (`EcranCarte.kt:124,369,372,374`, `EcranPlacettes.kt:80`,
+   `VueKanban.kt:162`, `EcranTournees.kt:352`) entrent dans la 063.
+3. **Messages d'erreur et de refus** en sombre : `colorScheme.error` (couleur du thème, comme Marculus).
+4. **Légende** : `onSurface` en sombre seulement ; en clair, elle reste en noir.
+5. **Filet blanc des pastilles de la liste Placettes** : en sombre seulement (disque noir « inconnu » compris).
+6. **L'écran d'essai GNSS** entre dans la 063 : il perd sa copie de la palette.
+7. **Essai au soleil** : par Pascal sur la release après la fusion, noté au journal ; un échec rouvre la mission.
+8. **Amendement validé** (spec § 3 et ADR 0008, daté du 2026-10-27) : thème clair inchangé ; en
+   sombre, texte d'état en `onSurface`, pastilles cernées de blanc (carte, liste, radar, essai GNSS),
+   erreurs en `colorScheme.error`, plus de plaque blanche ; test de contraste en clair et en sombre
+   (texte ≥ 4,5:1, pastille ≥ 3:1, WCAG 1.4.11) ; aucune couleur d'état nouvelle, l'option E ne
+   s'applique pas à la palette d'état.
+
+Une seule PR. Fusion : autorisation à demander à Pascal.
