@@ -81,6 +81,7 @@ fun EcranParametres(
             }
             LigneAcces(stringResource(R.string.essai_ouvrir), stringResource(R.string.param_essai_desc), onEssai)
             LigneAcces(stringResource(R.string.restauration_ouvrir), stringResource(R.string.param_restaurer_desc), onRestauration)
+            SectionDicteeVocale()
         }
     }
 }

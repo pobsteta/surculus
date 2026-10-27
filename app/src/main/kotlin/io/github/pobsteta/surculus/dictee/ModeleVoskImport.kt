@@ -11,42 +11,43 @@ package io.github.pobsteta.surculus.dictee
 
 import android.content.Context
 import android.net.Uri
-import fr.nemeton.terrain.voix.InstallationModele
+import io.github.pobsteta.surculus.core.dictee.FluxArchive
+import io.github.pobsteta.surculus.core.dictee.InstallateurModele
+import io.github.pobsteta.surculus.core.dictee.SourceArchive
 import io.github.pobsteta.surculus.core.dictee.VerificationModele
 import java.io.File
+import java.io.IOException
 
 /**
- * Import par fichier du modèle `vosk-model-small-fr-0.22` (ADR 0004), sans réseau. L'archive est copiée dans le
- * cache, son empreinte SHA-256 est contrôlée (non vide, casse ignorée) contre
- * [VerificationModele.SHA256_ARCHIVE], puis `terrain-voix` la décompresse dans le stockage interne.
- * Bloquant : à appeler hors du fil principal. Un modèle refusé n'est jamais installé.
+ * Cycle de vie du modèle `vosk-model-small-fr-0.22` (ADR 0004) : import par fichier, sans réseau (mission 013), et
+ * installation depuis une source quelconque, dont le téléchargement ([ModeleVoskTelechargement], mission 048).
+ * L'archive est copiée dans le cache, son empreinte SHA-256 est contrôlée contre [VerificationModele.SHA256_ARCHIVE],
+ * puis décompressée à côté et seulement alors substituée au modèle installé : **un échec ne l'efface jamais**
+ * (voir [InstallateurModele]). Bloquant : à appeler hors du fil principal.
  */
 object ModeleVoskImport {
     private const val DOSSIER = "vosk-model-fr"
 
     fun dossier(context: Context): File = File(context.filesDir, DOSSIER)
 
-    // `sha256` jamais nul : terrain-voix ne contrôle rien sinon. L'URL n'est pas utilisée (pas de téléchargement).
-    private fun installation(context: Context) =
-        InstallationModele(dossier(context), context.cacheDir, "", VerificationModele.SHA256_ARCHIVE)
+    private fun installateur(context: Context) = InstallateurModele(dossier(context), context.cacheDir)
 
-    fun estInstalle(context: Context): Boolean = installation(context).estInstalle
+    fun estInstalle(context: Context): Boolean = installateur(context).estInstalle
 
-    fun supprimer(context: Context) = installation(context).supprimer()
+    fun supprimer(context: Context) = installateur(context).supprimer()
 
     /** Installe le modèle depuis le fichier choisi par l'agent ; l'erreur est rendue telle quelle, en français. */
-    fun importer(context: Context, source: Uri): Result<Unit> = runCatching {
-        val archive = File(context.cacheDir, "modele-vosk-importe.zip")
-        try {
-            val flux = context.contentResolver.openInputStream(source) ?: error("Fichier du modèle illisible")
-            flux.use { entree -> archive.outputStream().use { entree.copyTo(it) } }
-            val accepte = archive.inputStream().use {
-                VerificationModele.verifier(VerificationModele.NOM_MODELE, it, VerificationModele.SHA256_ARCHIVE)
-            }
-            check(accepte) { "Ce fichier n'est pas ${VerificationModele.NOM_MODELE} (empreinte SHA-256 différente ou fichier vide)" }
-            installation(context).installer(archive, source.toString()).getOrThrow()
-        } finally {
-            archive.delete()
+    fun importer(context: Context, source: Uri): Result<Unit> =
+        installer(context, source.toString(), {}, { true }) {
+            FluxArchive(context.contentResolver.openInputStream(source) ?: throw IOException("Fichier du modèle illisible"))
         }
-    }
+
+    /** Installe depuis [source] ; [progression] 0..1 (-1 : inconnue), [continuer] faux interrompt. */
+    fun installer(
+        context: Context,
+        origine: String,
+        progression: (Float) -> Unit,
+        continuer: () -> Boolean,
+        source: SourceArchive,
+    ): Result<Unit> = installateur(context).installer(source, origine, progression, continuer)
 }
