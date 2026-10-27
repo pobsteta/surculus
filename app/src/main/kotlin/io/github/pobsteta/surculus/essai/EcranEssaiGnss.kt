@@ -7,68 +7,53 @@
  */
 package io.github.pobsteta.surculus.essai
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.bluetooth.BluetoothManager
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.ui.BandeauCompact
+import io.github.pobsteta.surculus.carte.rememberFix
 import io.github.pobsteta.surculus.core.essai.AffichageEssai
 import io.github.pobsteta.surculus.core.essai.Drapeau
 import io.github.pobsteta.surculus.core.essai.EssaiGnss
 import io.github.pobsteta.surculus.core.essai.Ton
-import io.github.pobsteta.surculus.core.gnss.PointMontage
 import io.github.pobsteta.surculus.core.gnss.QualiteFix
-import io.github.pobsteta.surculus.gnss.ClientNtrip
 import io.github.pobsteta.surculus.gnss.ConfigRtk
 import io.github.pobsteta.surculus.gnss.ServiceGnssRtk
 import io.github.pobsteta.surculus.gnss.SourcePosition
-import io.github.pobsteta.surculus.gnss.TransportRtk
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 // Quatre couleurs, contrastées pour le plein soleil : noir sur blanc, et trois teintes d'état.
 private val Vert = Color(0xFF0B6B2E)
@@ -84,177 +69,56 @@ private fun Ton.couleur() = when (this) {
 }
 
 /**
- * Écran d'essai GNSS (mission 018) : le fix en grand en haut, les réglages du récepteur dessous.
+ * Écran d'essai GNSS (mission 018) : la mesure seule, le fix en grand (mission 047 : les réglages du récepteur sont dans
+ * Paramètres → Récepteur GNSS ; le récepteur démarre à l'ouverture de cet écran et s'arrête à la sortie, comme sur la carte).
  * Source unique du fix : [SourcePosition.fix] ; état du service : [ServiceGnssRtk.etat].
  */
 @Composable
-fun EcranEssaiGnss() {
+fun EcranEssaiGnss(onRetour: () -> Unit) {
     val ctx = LocalContext.current
-    val fix by SourcePosition.fix.collectAsStateWithLifecycle()
+    val (fix, localisationRefusee) = rememberFix()
     val etat by ServiceGnssRtk.etat.collectAsStateWithLifecycle()
     // L'horloge tourne chaque seconde : l'âge du fix doit avancer même quand rien ne change.
     val maintenant by produceState(System.currentTimeMillis()) {
         while (true) { value = System.currentTimeMillis(); delay(1000L) }
     }
     val affichage = EssaiGnss.afficher(fix, etat.fixRefuse, maintenant)
+    val recepteurActif = remember { ConfigRtk.lire(ctx).actif }
 
-    var config by remember { mutableStateOf(ConfigRtk.lire(ctx)) }
-    var points by remember { mutableStateOf<List<PointMontage>>(emptyList()) }
-    var menuAppareil by remember { mutableStateOf(false) }
-    var menuPoints by remember { mutableStateOf(false) }
-    var enregistre by remember { mutableStateOf(false) }
-    var manquantes by remember { mutableStateOf<List<String>>(emptyList()) }
-    var localisationOk by remember { mutableStateOf(SourcePosition.localisationAutorisee(ctx)) }
-    val scope = rememberCoroutineScope()
-
-    // Le GNSS du téléphone sert de repli (et de banc d'essai de la position simulée) seulement tant que
-    // l'écran est visible ; l'effet ne dépend que de la permission, pas de l'horloge.
-    LifecycleStartEffect(localisationOk) {
-        val ecoute = SourcePosition.ecouterTelephone(ctx)
-        onStopOrDispose { ecoute.close() }
-    }
-
-    fun lancer() {
-        // Enregistré seulement ici, sur l'action de Pascal, permissions accordées.
-        val c = config.copy(actif = true, transport = TransportRtk.BLUETOOTH, ntrip = true)
-        ConfigRtk.memoriser(ctx, c)
-        config = c
-        enregistre = true
-        ServiceGnssRtk.demarrer(ctx)
-    }
-
-    val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { accordees ->
-        localisationOk = SourcePosition.localisationAutorisee(ctx)
-        manquantes = accordees.filterValues { !it }.keys.toList()
-        if (manquantes.isEmpty()) lancer()
-    }
-
-    fun demarrer() {
-        val aDemander = permissionsAUtiliser().filter {
-            ContextCompat.checkSelfPermission(ctx, it) != PackageManager.PERMISSION_GRANTED
-        }
-        if (aDemander.isEmpty()) {
-            manquantes = emptyList()
-            lancer()
-        } else {
-            // Le service ne démarre que dans le rappel, et seulement si tout est accordé.
-            permissions.launch(aDemander.toTypedArray())
-        }
-    }
-
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .background(Blanc)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        BlocMesure(affichage)
-
-        Text(
-            stringResource(
-                R.string.essai_source,
-                if (etat.enMarche) stringResource(if (etat.connecte) R.string.essai_lien_ok else R.string.essai_lien_attente)
-                else stringResource(R.string.essai_lien_arrete),
-            ),
-            style = MaterialTheme.typography.bodyMedium, color = Noir,
+    Column {
+        BandeauCompact(
+            titre = stringResource(R.string.essai_ouvrir),
+            navigationIcon = {
+                IconButton(onClick = onRetour) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.param_retour))
+                }
+            },
         )
-        etat.erreur?.let { Text(it, color = Rouge) }
-        etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = Rouge) }
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                .background(Blanc)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            BlocMesure(affichage)
 
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(
-                onClick = { demarrer() },
-                enabled = config.appareilBt != null && config.pointMontage.isNotBlank(),
-                modifier = Modifier.weight(1f).height(64.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Vert, contentColor = Blanc),
-            ) { Text(stringResource(R.string.essai_demarrer)) }
-            OutlinedButton(
-                onClick = { ServiceGnssRtk.arreter(ctx) },
-                modifier = Modifier.weight(1f).height(64.dp),
-            ) { Text(stringResource(R.string.essai_arreter), color = Noir) }
-        }
-        if (manquantes.isNotEmpty()) {
             Text(
-                stringResource(R.string.essai_permissions_manquantes, manquantes.joinToString(", ") { it.substringAfterLast('.') }),
-                fontWeight = FontWeight.Bold, color = Rouge,
+                stringResource(
+                    R.string.essai_source,
+                    if (etat.enMarche) stringResource(if (etat.connecte) R.string.essai_lien_ok else R.string.essai_lien_attente)
+                    else stringResource(R.string.essai_lien_arrete),
+                ),
+                style = MaterialTheme.typography.bodyMedium, color = Noir,
             )
+            if (!recepteurActif) Text(stringResource(R.string.essai_recepteur_inactif), style = MaterialTheme.typography.bodyMedium, color = Noir)
+            if (localisationRefusee) Text(stringResource(R.string.carte_permission), fontWeight = FontWeight.Bold, color = Rouge)
+            etat.erreur?.let { Text(it, color = Rouge) }
+            etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = Rouge) }
+            Spacer(Modifier.height(24.dp))
         }
-        if (enregistre) Text(stringResource(R.string.essai_enregistre), style = MaterialTheme.typography.bodyMedium, color = Noir)
-
-        Text(stringResource(R.string.essai_reglages), style = MaterialTheme.typography.titleMedium, color = Noir)
-
-        // Récepteur Bluetooth apparié.
-        Box {
-            OutlinedButton(
-                onClick = {
-                    if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED ||
-                        Build.VERSION.SDK_INT < Build.VERSION_CODES.S
-                    ) menuAppareil = true else permissions.launch(permissionsAUtiliser().toTypedArray())
-                },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-            ) {
-                Text(config.appareilBtNom ?: stringResource(R.string.essai_choisir_recepteur), color = Noir)
-            }
-            DropdownMenu(expanded = menuAppareil, onDismissRequest = { menuAppareil = false }) {
-                val appareils = appareilsAppairesRecepteur(ctx)
-                if (appareils.isEmpty()) DropdownMenuItem(text = { Text(stringResource(R.string.essai_aucun_appareil)) }, onClick = { menuAppareil = false })
-                appareils.forEach { (nom, adresse) ->
-                    DropdownMenuItem(
-                        text = { Text(nom) },
-                        onClick = { config = config.copy(appareilBt = adresse, appareilBtNom = nom); menuAppareil = false },
-                    )
-                }
-            }
-        }
-
-        // Point de montage : saisi, ou choisi dans la table des sources du caster.
-        OutlinedTextField(
-            value = config.pointMontage,
-            onValueChange = { config = config.copy(pointMontage = it.trim()) },
-            label = { Text(stringResource(R.string.essai_point_montage)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Box {
-            OutlinedButton(
-                onClick = {
-                    scope.launch {
-                        val recus = ClientNtrip.pointsMontage(config.casterHote, config.casterPort)
-                        points = EssaiGnss.trierPoints(recus, SourcePosition.positionApprochee(ctx))
-                        menuPoints = true
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-            ) { Text(stringResource(R.string.essai_charger_points, config.casterHote), color = Noir) }
-            DropdownMenu(expanded = menuPoints, onDismissRequest = { menuPoints = false }) {
-                if (points.isEmpty()) DropdownMenuItem(text = { Text(stringResource(R.string.essai_aucun_point)) }, onClick = { menuPoints = false })
-                points.take(50).forEach { p ->
-                    DropdownMenuItem(
-                        text = { Text(p.nom) },
-                        onClick = { config = config.copy(pointMontage = p.nom); menuPoints = false },
-                    )
-                }
-            }
-        }
-        OutlinedTextField(
-            value = config.utilisateur,
-            onValueChange = { config = config.copy(utilisateur = it.trim()) },
-            label = { Text(stringResource(R.string.essai_utilisateur)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OutlinedTextField(
-            value = config.motDePasse,
-            onValueChange = { config = config.copy(motDePasse = it) },
-            label = { Text(stringResource(R.string.essai_mot_de_passe)) },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Text(stringResource(R.string.essai_compte_aide), style = MaterialTheme.typography.bodySmall, color = Noir)
-        Spacer(Modifier.height(24.dp))
     }
 }
 
@@ -281,19 +145,6 @@ fun BlocMesure(a: AffichageEssai) {
         }
     }
 }
-
-private fun permissionsAUtiliser(): List<String> = buildList {
-    add(Manifest.permission.ACCESS_FINE_LOCATION)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) add(Manifest.permission.BLUETOOTH_CONNECT)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
-}
-
-@SuppressLint("MissingPermission")
-private fun appareilsAppairesRecepteur(ctx: Context): List<Pair<String, String>> = runCatching {
-    ctx.getSystemService(BluetoothManager::class.java)?.adapter?.bondedDevices.orEmpty()
-        .map { (it.name ?: it.address) to it.address }
-        .sortedBy { it.first }
-}.getOrDefault(emptyList())
 
 @Preview(widthDp = 411, heightDp = 500, showBackground = true)
 @Composable

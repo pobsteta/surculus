@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import io.github.pobsteta.surculus.carte.EcranCarte
 import io.github.pobsteta.surculus.carte.EcranGuidage
 import io.github.pobsteta.surculus.essai.EcranEssaiGnss
+import io.github.pobsteta.surculus.gnss.ConfigRtk
+import io.github.pobsteta.surculus.gnss.PilotageRecepteur
+import io.github.pobsteta.surculus.gnss.RecepteurService
 import io.github.pobsteta.surculus.parametres.EcranParametres
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.EcranTournees
@@ -55,10 +59,18 @@ class MainActivity : ComponentActivity() {
                     var nav by rememberSaveable(
                         stateSaver = listSaver(save = { it.enListe() }, restore = { EtatNavigation.depuisListe(it) }),
                     ) { mutableStateOf(EtatNavigation()) }
+                    // Récepteur GNSS externe (mission 047, comme Groma) : démarré à l'ouverture de la carte (ou de l'essai)
+                    // si le réglage des Paramètres est actif, arrêté à la sortie ; une rotation ne le coupe pas.
+                    val pilote = remember { PilotageRecepteur(RecepteurService(applicationContext)) { ConfigRtk.lire(applicationContext).actif } }
+                    DisposableEffect(nav.recepteurDemande) {
+                        if (nav.recepteurDemande) pilote.entrer()
+                        onDispose { if (!isChangingConfigurations) pilote.sortir() }
+                    }
                     // À la racine, le retour Android n'est pas intercepté : il quitte l'application.
                     BackHandler(enabled = !nav.estRacine) { nav = nav.retour() ?: nav }
-                    // La liste des tournées gère elle-même ses marges (sa barre colorée passe sous la barre d'état).
-                    val marges = if (nav.estRacine) Modifier else Modifier.safeDrawingPadding()
+                    // Les écrans à bandeau (liste, Paramètres, Restauration, Essai GNSS ; mission 053) gèrent eux-mêmes leurs
+                    // marges : le bandeau coloré passe sous la barre d'état. Seules la carte et le guidage reçoivent les marges ici.
+                    val marges = if (nav.tourneeId == null) Modifier else Modifier.safeDrawingPadding()
                     Column(Modifier.fillMaxSize().then(marges)) {
                         val tourneeId = nav.tourneeId
                         val placetteId = nav.placetteId
@@ -67,8 +79,8 @@ class MainActivity : ComponentActivity() {
                         } else if (tourneeId != null) {
                             EcranCarte(tourneeId, onRetour = { nav = nav.retour() ?: nav }, onGuider = { nav = nav.guider(it) })
                         } else when (nav.destination) {
-                            Destination.ESSAI -> EcranEssaiGnss()
-                            Destination.RESTAURATION -> EcranRestauration()
+                            Destination.ESSAI -> EcranEssaiGnss(onRetour = { nav = nav.retour() ?: nav })
+                            Destination.RESTAURATION -> EcranRestauration(onRetour = { nav = nav.retour() ?: nav })
                             Destination.PARAMETRES -> EcranParametres(
                                 pleinEcran = pleinEcran,
                                 onPleinEcran = {

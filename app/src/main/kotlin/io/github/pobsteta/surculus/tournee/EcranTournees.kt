@@ -45,7 +45,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -69,6 +68,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.carte.Palette
 import io.github.pobsteta.surculus.carte.ReglagesOrtho
 import io.github.pobsteta.surculus.core.carte.EtatOrtho
@@ -297,7 +297,7 @@ private fun BoiteAPropos(onFermer: () -> Unit) {
     )
 }
 
-/** Barre de l'accueil : titre « Surculus » et menu à trois points (cible de 48 dp, comme le IconButton de Material 3). */
+/** Barre de l'accueil : le bandeau commun (mission 053), titre « Surculus », bascule liste/colonnes et menu à trois points (cibles de 48 dp). */
 @Composable
 private fun BandeauAccueil(
     onParametres: () -> Unit,
@@ -308,50 +308,36 @@ private fun BandeauAccueil(
 ) {
     var menu by remember { mutableStateOf(false) }
     val menuDesc = stringResource(R.string.tournees_menu)
-    Surface(color = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
-        Row(
-            Modifier.fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
-                .height(56.dp).padding(start = 16.dp, end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                stringResource(R.string.app_name),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                modifier = Modifier.weight(1f),
-            )
-            if (kanbanActif) {
-                // Mêmes icônes que Marculus (décision de Pascal, 2026-10-27) : l'icône montre la vue où l'on va passer.
-                IconButton(onClick = onBasculerVue) {
-                    Icon(
-                        if (modeColonnes) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewColumn,
-                        contentDescription = stringResource(if (modeColonnes) R.string.tournees_vue_liste else R.string.tournees_vue_colonnes),
+    BandeauCompact(titre = stringResource(R.string.app_name), actions = {
+        if (kanbanActif) {
+            // Mêmes icônes que Marculus (décision de Pascal, 2026-10-27) : l'icône montre la vue où l'on va passer.
+            IconButton(onClick = onBasculerVue) {
+                Icon(
+                    if (modeColonnes) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewColumn,
+                    contentDescription = stringResource(if (modeColonnes) R.string.tournees_vue_liste else R.string.tournees_vue_colonnes),
+                )
+            }
+        }
+        Box {
+            IconButton(onClick = { menu = true }) {
+                // « ⋮ » en texte depuis la mission 040 ; material-icons-core est là depuis la 043 (icônes de la bascule), le menu n'a pas été changé.
+                Text("⋮", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { contentDescription = menuDesc })
+            }
+            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                for (entree in ENTREES_MENU) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(stringResource(if (entree == EntreeMenu.PARAMETRES) R.string.tournees_menu_parametres else R.string.tournees_menu_apropos))
+                        },
+                        onClick = {
+                            menu = false
+                            if (entree == EntreeMenu.PARAMETRES) onParametres() else onAPropos()
+                        },
                     )
                 }
             }
-            Box {
-                IconButton(onClick = { menu = true }) {
-                    // « ⋮ » en texte depuis la mission 040 ; material-icons-core est là depuis la 043 (icônes de la bascule), le menu n'a pas été changé.
-                    Text("⋮", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { contentDescription = menuDesc })
-                }
-                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    for (entree in ENTREES_MENU) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(stringResource(if (entree == EntreeMenu.PARAMETRES) R.string.tournees_menu_parametres else R.string.tournees_menu_apropos))
-                            },
-                            onClick = {
-                                menu = false
-                                if (entree == EntreeMenu.PARAMETRES) onParametres() else onAPropos()
-                            },
-                        )
-                    }
-                }
-            }
         }
-    }
+    })
 }
 
 @Composable
