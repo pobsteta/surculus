@@ -290,7 +290,7 @@ private fun BandeauAccueil(
             }
             Box {
                 IconButton(onClick = { menu = true }) {
-                    // « ⋮ » plutôt que material-icons-core : pas de dépendance de plus (mission 040).
+                    // « ⋮ » en texte depuis la mission 040 ; material-icons-core est là depuis la 043 (icônes de la bascule), le menu n'a pas été changé.
                     Text("⋮", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { contentDescription = menuDesc })
                 }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
