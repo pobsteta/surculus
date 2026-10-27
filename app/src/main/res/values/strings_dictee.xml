@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paramètres : Dictée vocale (mission 048) -->
+    <string name="dictee_section">Dictée vocale</string>
+    <string name="dictee_desc">Le modèle de reconnaissance (français, hors ligne) se charge une fois, au bureau avec du réseau, ou sans réseau depuis un fichier.</string>
+    <string name="dictee_etat_non">Modèle non installé</string>
+    <string name="dictee_etat_oui">Modèle installé (%1$d Mo)</string>
+    <string name="dictee_telecharger">Télécharger (%1$d Mo)</string>
+    <string name="dictee_retelecharger">Retélécharger (%1$d Mo)</string>
+    <string name="dictee_fichier">Choisir un fichier</string>
+    <string name="dictee_supprimer">Supprimer le modèle</string>
+    <string name="dictee_annuler">Annuler</string>
+    <string name="dictee_progression">Téléchargement : %1$d %%</string>
+    <string name="dictee_attente">Téléchargement : connexion…</string>
+    <string name="dictee_import_attente">Lecture du fichier…</string>
+    <string name="dictee_installation">Vérification et installation du modèle…</string>
+    <string name="dictee_ok">Modèle installé.</string>
+    <string name="dictee_echec_conserve">Échec : %1$s. Le modèle précédent est conservé.</string>
+    <string name="dictee_echec">Échec : %1$s.</string>
+    <string name="dictee_annule_conserve">Annulé. Le modèle précédent est conservé.</string>
+    <string name="dictee_annule">Annulé.</string>
+    <string name="dictee_refus_reseau">l\'archive téléchargée n\'est pas vosk-model-small-fr-0.22 (réseau coupé, ou portail Wi-Fi à valider)</string>
+    <string name="dictee_supprime">Modèle supprimé.</string>
+    <string name="dictee_supprimer_refuse">Installation en cours : suppression impossible.</string>
+    <string name="dictee_supprimer_titre">Supprimer le modèle ?</string>
+    <string name="dictee_supprimer_texte">La dictée ne marchera plus tant qu\'un modèle n\'est pas rechargé.</string>
+    <string name="dictee_confirmer">Supprimer</string>
+</resources>
