@@ -10,7 +10,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Remplacer les trois lignes à bouton radio du thème dans Paramètres par la ligne à liste déroulante de Marculus (titre, description, valeur actuelle et flèche ▾, menu Système / Clair / Sombre avec une coche sur le choix actuel), pour que Paramètres ressemble à celui de Marculus.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** remplacer, dans Paramètres, les trois lignes radio du thème par la liste déroulante de Marculus (titre, description, valeur ▾, menu Système / Clair / Sombre avec coche), pour que Paramètres ressemble à celui de Marculus.
 
 ## Vérifié à la source
 
