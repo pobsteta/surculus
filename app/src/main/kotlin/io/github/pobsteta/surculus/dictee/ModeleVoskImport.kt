@@ -34,7 +34,8 @@ object ModeleVoskImport {
 
     fun estInstalle(context: Context): Boolean = installateur(context).estInstalle
 
-    fun supprimer(context: Context) = installateur(context).supprimer()
+    /** Faux (rien n'est fait) si une installation tourne. */
+    fun supprimer(context: Context): Boolean = installateur(context).supprimer()
 
     /** Installe le modèle depuis le fichier choisi par l'agent ; l'erreur est rendue telle quelle, en français. */
     fun importer(

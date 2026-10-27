@@ -13,6 +13,7 @@ import fr.nemeton.terrain.voix.InstallationModele
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.util.concurrent.Semaphore
 
 /** Ce que renvoie l'ouverture d'une source : le flux de l'archive et sa taille annoncée (≤ 0 : inconnue). */
 class FluxArchive(val flux: InputStream, val taille: Long = -1)
@@ -32,6 +33,10 @@ fun interface SourceArchive {
  * contrôlée contre [sha256] ; (3) `terrain-voix` la décompresse dans un dossier voisin « .nouveau » ; (4) seulement
  * alors le dossier installé est remplacé par le nouveau (renommage). Tout échec avant (4) supprime les
  * fichiers temporaires et laisse l'ancien modèle intact. Bloquant : à appeler hors du fil principal.
+ *
+ * **Un seul verrou pour tout le processus** (objet partagé, [VERROU]) autour de [installer], [reparer] et
+ * [supprimer] : une seconde installation est refusée tant qu'une autre tourne, [reparer] ne fait rien pendant une
+ * installation (il effacerait « .nouveau » en pleine décompression), [supprimer] est refusée.
  */
 class InstallateurModele(
     val dossier: File,
@@ -43,10 +48,11 @@ class InstallateurModele(
     private val partiel = File(cache, "modele-vosk-recu.part")
 
     // `terrain-voix` détient le nom du témoin : on lui demande si le dossier est complet.
+    // Ne lève jamais d'exception ; ne répare rien pendant une installation (voir [reparer]).
     val estInstalle: Boolean
         get() {
-            reparer()
-            return complet(dossier)
+            runCatching { reparer() }
+            return runCatching { complet(dossier) }.getOrDefault(false)
         }
 
     private fun complet(d: File) = InstallationModele(d, cache, "", sha256).estInstalle
@@ -54,9 +60,20 @@ class InstallateurModele(
     /**
      * Répare l'état laissé par un arrêt brutal entre les deux renommages de [remplacer] : si le dossier installé
      * manque (ou est incomplet) et que « .ancien » (à défaut « .nouveau ») est complet, il est remis en place ;
-     * puis les « .nouveau » et « .ancien » orphelins sont effacés. À ne pas appeler pendant une installation.
+     * puis les « .nouveau » et « .ancien » orphelins sont effacés. Ne fait rien (rend faux) si une installation, une
+     * suppression ou une autre réparation tient le verrou ; rend vrai si la réparation a eu lieu.
      */
-    fun reparer() {
+    fun reparer(): Boolean {
+        if (!VERROU.tryAcquire()) return false
+        try {
+            reparerSousVerrou()
+        } finally {
+            VERROU.release()
+        }
+        return true
+    }
+
+    private fun reparerSousVerrou() {
         if (!complet(dossier)) {
             val reste = listOf(ancien, nouveau).firstOrNull { it.exists() && complet(it) }
             if (reste != null) {
@@ -68,10 +85,17 @@ class InstallateurModele(
         nouveau.deleteRecursively()
     }
 
-    fun supprimer() {
-        dossier.deleteRecursively()
-        nouveau.deleteRecursively()
-        ancien.deleteRecursively()
+    /** Supprime le modèle ; faux (rien n'est fait) si une installation tourne. */
+    fun supprimer(): Boolean {
+        if (!VERROU.tryAcquire()) return false
+        try {
+            dossier.deleteRecursively()
+            nouveau.deleteRecursively()
+            ancien.deleteRecursively()
+        } finally {
+            VERROU.release()
+        }
+        return true
     }
 
     /**
@@ -87,8 +111,24 @@ class InstallateurModele(
         messageRefus: String = "Ce fichier n'est pas ${VerificationModele.NOM_MODELE} (empreinte SHA-256 différente ou fichier vide)",
         apresVerification: () -> Unit = {},
     ): Result<Unit> {
+        if (!VERROU.tryAcquire()) return Result.failure(IllegalStateException("Une installation est déjà en cours"))
+        try {
+            return installerSousVerrou(source, origine, progression, continuer, messageRefus, apresVerification)
+        } finally {
+            VERROU.release()
+        }
+    }
+
+    private fun installerSousVerrou(
+        source: SourceArchive,
+        origine: String,
+        progression: (Float) -> Unit,
+        continuer: () -> Boolean,
+        messageRefus: String,
+        apresVerification: () -> Unit,
+    ): Result<Unit> {
         val resultat = runCatching {
-            reparer()
+            reparerSousVerrou()
             cache.mkdirs()
             partiel.delete()
             nouveau.deleteRecursively()
@@ -141,5 +181,10 @@ class InstallateurModele(
             )
         }
         ancien.deleteRecursively()
+    }
+
+    companion object {
+        /** Verrou unique du processus : installation, réparation et suppression ne se chevauchent jamais. */
+        private val VERROU = Semaphore(1)
     }
 }

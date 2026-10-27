@@ -7,6 +7,9 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Files
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.test.AfterTest
@@ -247,6 +250,90 @@ class InstallateurModeleTest {
         val v1 = zip("v1")
         val r = installateur(v1).installer(source(zip("autre")), "b", messageRefus = "portail Wi-Fi")
         assertEquals("portail Wi-Fi", r.exceptionOrNull()!!.message)
+    }
+
+    /** Lance une installation qui s'arrête au point de non-retour (« .nouveau » déjà présent) jusqu'à [liberer]. */
+    private class Bloc {
+        val atteint = CountDownLatch(1)
+        val liberer = CountDownLatch(1)
+        @Volatile var resultat: Result<Unit>? = null
+    }
+
+    private fun lancerBloquee(i: InstallateurModele, a: ByteArray, bloc: Bloc): Thread = thread {
+        bloc.resultat = i.installer(
+            source(a), "bloquee",
+            apresVerification = {
+                File(racine, "vosk-model-fr.nouveau/marque").apply { parentFile.mkdirs() }.writeText("en cours")
+                bloc.atteint.countDown()
+                bloc.liberer.await(20, TimeUnit.SECONDS)
+            },
+        )
+    }
+
+    @Test
+    fun `estInstalle pendant une installation ne repare rien et laisse le nouveau en cours`() {
+        val v1 = zip("v1")
+        val v2 = zip("v2")
+        installateur(v1).installer(source(v1), "a").getOrThrow()
+        val bloc = Bloc()
+        val t = lancerBloquee(installateur(v2), v2, bloc)
+        assertTrue(bloc.atteint.await(20, TimeUnit.SECONDS))
+        val marque = File(racine, "vosk-model-fr.nouveau/marque")
+        assertTrue(installateur(v1).estInstalle, "le modèle installé reste valide")
+        assertFalse(installateur(v1).reparer(), "la réparation n'a pas eu lieu")
+        assertTrue(marque.exists(), ".nouveau n'est pas effacé en pleine installation")
+        assertEquals("v1", marque())
+        bloc.liberer.countDown()
+        t.join(20_000)
+        assertTrue(bloc.resultat!!.isSuccess)
+        assertEquals("v2", marque())
+    }
+
+    @Test
+    fun `deux installations simultanees une seule passe l'autre est refusee`() {
+        val v1 = zip("v1")
+        val v2 = zip("v2")
+        installateur(v1).installer(source(v1), "a").getOrThrow()
+        val bloc = Bloc()
+        val t = lancerBloquee(installateur(v2), v2, bloc)
+        assertTrue(bloc.atteint.await(20, TimeUnit.SECONDS))
+        val seconde = installateur(v2).installer(source(v2), "seconde")
+        assertTrue(seconde.isFailure)
+        assertTrue(seconde.exceptionOrNull()!!.message!!.contains("déjà en cours"))
+        assertTrue(File(racine, "vosk-model-fr.nouveau/marque").exists(), "la seconde n'a pas touché à .nouveau")
+        bloc.liberer.countDown()
+        t.join(20_000)
+        assertTrue(bloc.resultat!!.isSuccess)
+        assertEquals("v2", marque())
+    }
+
+    @Test
+    fun `la suppression est refusee pendant une installation`() {
+        val v1 = zip("v1")
+        val v2 = zip("v2")
+        installateur(v1).installer(source(v1), "a").getOrThrow()
+        val bloc = Bloc()
+        val t = lancerBloquee(installateur(v2), v2, bloc)
+        assertTrue(bloc.atteint.await(20, TimeUnit.SECONDS))
+        assertFalse(installateur(v1).supprimer())
+        assertEquals("v1", marque())
+        bloc.liberer.countDown()
+        t.join(20_000)
+        assertTrue(installateur(v2).supprimer())
+    }
+
+    @Test
+    fun `estInstalle ne leve jamais d'exception meme si la reparation est impossible`() {
+        val v1 = zip("v1")
+        installateur(v1).installer(source(v1), "a").getOrThrow()
+        // Arrêt simulé, puis dossier parent non modifiable : la remise en place échoue.
+        assertTrue(dossier.renameTo(File(racine, "vosk-model-fr.ancien")))
+        racine.setWritable(false)
+        try {
+            installateur(v1).estInstalle // ne doit pas lever
+        } finally {
+            racine.setWritable(true)
+        }
     }
 
     @Test

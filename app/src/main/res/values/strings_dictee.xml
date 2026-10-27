@@ -21,6 +21,7 @@
     <string name="dictee_annule">Annulé.</string>
     <string name="dictee_refus_reseau">l\'archive téléchargée n\'est pas vosk-model-small-fr-0.22 (réseau coupé, ou portail Wi-Fi à valider)</string>
     <string name="dictee_supprime">Modèle supprimé.</string>
+    <string name="dictee_supprimer_refuse">Installation en cours : suppression impossible.</string>
     <string name="dictee_supprimer_titre">Supprimer le modèle ?</string>
     <string name="dictee_supprimer_texte">La dictée ne marchera plus tant qu\'un modèle n\'est pas rechargé.</string>
     <string name="dictee_confirmer">Supprimer</string>
