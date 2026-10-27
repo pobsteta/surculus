@@ -116,7 +116,23 @@ fun EcranCarte(id: String, onRetour: () -> Unit, onGuider: (String) -> Unit) {
             BandeauCarte(stringResource(R.string.carte_titre), onRetour)
             Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge) }
         }
-        is Chargement.Pret -> CartePrete(c.tournee, onRetour, onGuider)
+        is Chargement.Pret -> {
+            // L'ortho chantier n'est proposée que si le dossier de la tournée porte un fichier tuilé exploitable. On attend
+            // cette vérification avant de créer la carte : elle s'ouvre directement sur le bon fond, sans tuile en ligne
+            // demandée pour rien.
+            val orthoChantier by produceState<Boolean?>(null, c.tournee) {
+                value = withContext(Dispatchers.IO) { FichierOrtho.nomPresent(c.tournee.dossier) != null }
+            }
+            val ortho = orthoChantier
+            if (ortho == null) {
+                Column {
+                    BandeauCarte(stringResource(R.string.carte_titre), onRetour)
+                    Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
+                }
+            } else {
+                CartePrete(c.tournee, ortho, onRetour, onGuider)
+            }
+        }
     }
 }
 
@@ -207,7 +223,6 @@ private class Couches(
 
 /** Préférences de la carte : le fond retrouvé d'une ouverture à l'autre (mêmes nom et clé que Marculus). */
 private const val PREFS_CARTE = "carte"
-private const val CLE_FOND = "fond"
 private const val CLE_CADASTRE = "cadastre"
 
 /** Zoom d'un recentrage sur un point (Marculus : `recadrerSur`, `setZoom(17.0)`). */
@@ -268,7 +283,7 @@ private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
 }
 
 @Composable
-private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: (String) -> Unit) {
+private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour: () -> Unit, onGuider: (String) -> Unit) {
     val ctx = LocalContext.current
     val (fix, refusee) = rememberFix()
     val carto = ouverte.cartographie
@@ -281,17 +296,14 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
     var choisie by remember { mutableStateOf<PlacetteTournee?>(null) }
     var liste by remember { mutableStateOf(false) }
 
-    // Fond de carte : le choix mémorisé (jamais l'ortho chantier), sinon l'Ortho chantier si la tournée en a une, sinon le Plan IGN.
+    // Fond de carte : le choix mémorisé pour cette tournée, sinon l'Ortho chantier si la tournée en a une, sinon le Plan IGN.
     val prefsCarte = remember { ctx.getSharedPreferences(PREFS_CARTE, Context.MODE_PRIVATE) }
-    // `fond` reste nul tant que le forestier n'a rien choisi à la main ni retrouvé de choix mémorisé.
-    var fond by remember { mutableStateOf(Fond.entries.firstOrNull { it.name == prefsCarte.getString(CLE_FOND, null) && FondsCarte.memorisable(it) }) }
+    // `fond` : le choix fait dans cette tournée (ortho chantier comprise), nul tant qu'il n'y en a pas.
+    val cleFond = FondsCarte.cle(ouverte.dossier.name)
+    var fond by remember(cleFond) { mutableStateOf(FondsCarte.depuisNom(prefsCarte.getString(cleFond, null))) }
     var menuFonds by remember { mutableStateOf(false) }
     var voirCadastre by remember { mutableStateOf(prefsCarte.getBoolean(CLE_CADASTRE, FondsCarte.CADASTRE_PAR_DEFAUT)) }
-    // L'ortho chantier n'est proposée que si le dossier de la tournée porte un fichier tuilé exploitable.
-    val orthoChantier by produceState(false, ouverte) {
-        value = withContext(Dispatchers.IO) { FichierOrtho.nomPresent(ouverte.dossier) != null }
-    }
-    val fondAffiche = fond?.takeIf { it in FondsCarte.proposes(orthoChantier) } ?: FondsCarte.parDefaut(orthoChantier)
+    val fondAffiche = FondsCarte.affiche(fond, orthoChantier)
     // Garde-fou : on ne cadre la carte que sur une emprise en France (sinon : la Somalie, sans alerte).
     val emprise: EmpriseLambert93? = carto.empriseUg ?: ouverte.tournee.empriseForet
     val empriseHorsFrance = remember(emprise) { emprise != null && EmpriseCarte.controler(emprise) is EmpriseCarte.Resultat.HorsFrance }
@@ -319,7 +331,7 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                         FondsCarte.proposes(orthoChantier).forEach { f ->
                             LigneFond(libelle = f.libelle, choisi = fondAffiche == f) {
                                 fond = f
-                                if (FondsCarte.memorisable(f)) prefsCarte.edit().putString(CLE_FOND, f.name).apply()
+                                prefsCarte.edit().putString(cleFond, f.name).apply()
                             }
                         }
                         HorizontalDivider()
@@ -355,7 +367,7 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                     factory = { contexte ->
                         configurerOsmdroid(contexte)
                         // Fond posé par `update` ; le réseau est utilisé par les fonds en ligne (cache d'osmdroid gardé).
-                        val carte = MapView(contexte, fournisseurDeFond(contexte, fondAffiche, null))
+                        val carte = MapView(contexte, fournisseurDeFond(contexte, fondAffiche, if (fondAffiche == Fond.ORTHO) FichierOrtho.ouvrir(ouverte.dossier) else null))
                         carte.setMultiTouchControls(true)
                         carte.maxZoomLevel = zoomMaxDeFond(fondAffiche)
                         carte.isTilesScaledToDpi = true

@@ -2,6 +2,7 @@ package io.github.pobsteta.surculus.core.carte
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -35,41 +36,66 @@ class FondsCarteTest {
     fun `le fond par defaut est le Plan IGN sans fichier d'ortho`() {
         assertEquals(Fond.PLAN_IGN, FondsCarte.PAR_DEFAUT)
         assertEquals(Fond.PLAN_IGN, FondsCarte.parDefaut(orthoChantier = false))
-        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu(null, orthoChantier = false))
+        assertEquals(Fond.PLAN_IGN, FondsCarte.affiche(null, orthoChantier = false))
     }
 
     @Test
     fun `mission 057 - avec un fichier d'ortho, la carte s'ouvre sur l'Ortho chantier (ecart avec Marculus)`() {
         assertEquals(Fond.ORTHO, FondsCarte.parDefaut(orthoChantier = true))
-        assertEquals(Fond.ORTHO, FondsCarte.retenu(null, orthoChantier = true))
+        assertEquals(Fond.ORTHO, FondsCarte.affiche(null, orthoChantier = true))
     }
 
     @Test
-    fun `le choix memorise est retrouve, sauf l'ortho chantier qui n'est jamais memorisee`() {
-        assertEquals(Fond.OSM, FondsCarte.retenu("OSM", orthoChantier = false))
-        assertEquals(Fond.IGN, FondsCarte.retenu("IGN", orthoChantier = true))
-        assertTrue(FondsCarte.memorisable(Fond.OSM))
-        assertFalse(FondsCarte.memorisable(Fond.ORTHO))
-        // « ORTHO » lu dans les préférences est ignoré : retour au défaut (l'ortho chantier si le fichier est là).
-        assertEquals(Fond.ORTHO, FondsCarte.retenu("ORTHO", orthoChantier = true))
-        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu("ORTHO", orthoChantier = false))
+    fun `le choix memorise est retrouve, l'ortho chantier comprise (memorisee par tournee)`() {
+        assertEquals(Fond.OSM, FondsCarte.affiche(FondsCarte.depuisNom("OSM"), orthoChantier = false))
+        assertEquals(Fond.IGN, FondsCarte.affiche(FondsCarte.depuisNom("IGN"), orthoChantier = true))
+        assertEquals(Fond.PLAN_IGN, FondsCarte.affiche(FondsCarte.depuisNom("PLAN_IGN"), orthoChantier = true))
+        assertEquals(Fond.ORTHO, FondsCarte.affiche(FondsCarte.depuisNom("ORTHO"), orthoChantier = true))
+    }
+
+    @Test
+    fun `mission 057 - le fond est memorise tournee par tournee`() {
+        val prefs = mutableMapOf<String, String>()
+        fun ouvrir(tournee: String, ortho: Boolean) = FondsCarte.affiche(FondsCarte.depuisNom(prefs[FondsCarte.cle(tournee)]), ortho)
+        fun choisir(tournee: String, f: Fond) { prefs[FondsCarte.cle(tournee)] = f.name }
+
+        assertNotEquals(FondsCarte.cle("A"), FondsCarte.cle("B"))
+        // Un fond en ligne choisi dans A reste sans effet sur B.
+        choisir("A", Fond.OSM)
+        assertEquals(Fond.OSM, ouvrir("A", ortho = false))
+        // B a une ortho et aucun choix : Ortho chantier.
+        assertEquals(Fond.ORTHO, ouvrir("B", ortho = true))
+        // Un choix fait dans B est gardé pour B, sans toucher A.
+        choisir("B", Fond.IGN)
+        assertEquals(Fond.IGN, ouvrir("B", ortho = true))
+        assertEquals(Fond.OSM, ouvrir("A", ortho = false))
+        // L'ancienne clé globale n'est plus lue.
+        assertNotEquals("fond", FondsCarte.cle("A"))
     }
 
     @Test
     fun `mission 057 - les quatre cas d'ouverture, le choix a la main l'emporte`() {
         // 1. choix mémorisé : il l'emporte, même si la tournée a une ortho.
-        assertEquals(Fond.OSM, FondsCarte.retenu("OSM", orthoChantier = true))
+        assertEquals(Fond.OSM, FondsCarte.affiche(FondsCarte.depuisNom("OSM"), orthoChantier = true))
         // 2. rien de mémorisé, ortho présente : Ortho chantier.
-        assertEquals(Fond.ORTHO, FondsCarte.retenu(null, orthoChantier = true))
+        assertEquals(Fond.ORTHO, FondsCarte.affiche(null, orthoChantier = true))
         // 3. rien de mémorisé, pas d'ortho : Plan IGN.
-        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu(null, orthoChantier = false))
+        assertEquals(Fond.PLAN_IGN, FondsCarte.affiche(null, orthoChantier = false))
         // 4. Ortho chantier mémorisée, tournée sans ortho : Plan IGN.
-        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu("ORTHO", orthoChantier = false))
+        assertEquals(Fond.PLAN_IGN, FondsCarte.affiche(FondsCarte.depuisNom("ORTHO"), orthoChantier = false))
+    }
+
+    @Test
+    fun `mission 057 - choisir l'ortho chantier a la main est memorise pour la tournee`() {
+        val prefs = mutableMapOf<String, String>()
+        prefs[FondsCarte.cle("A")] = Fond.OSM.name
+        prefs[FondsCarte.cle("A")] = Fond.ORTHO.name // le dernier choix remplace l'ancien
+        assertEquals(Fond.ORTHO, FondsCarte.affiche(FondsCarte.depuisNom(prefs[FondsCarte.cle("A")]), orthoChantier = true))
     }
 
     @Test
     fun `un nom memorise inconnu donne le fond par defaut`() {
-        assertEquals(Fond.PLAN_IGN, FondsCarte.retenu("n'importe quoi", orthoChantier = false))
+        assertEquals(Fond.PLAN_IGN, FondsCarte.affiche(FondsCarte.depuisNom("n'importe quoi"), orthoChantier = false))
     }
 
     @Test

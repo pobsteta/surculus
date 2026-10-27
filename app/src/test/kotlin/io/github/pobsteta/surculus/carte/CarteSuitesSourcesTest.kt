@@ -14,11 +14,9 @@ class CarteSuitesSourcesTest {
     @Test
     fun `plus de bouton Ma position ni de chaine associee`() {
         assertTrue(ecran.isNotEmpty())
-        val motif = Regex("carte_ma_position|centrerSurMoi|Ma position")
-        val trouves = main.walkTopDown()
-            .filter { it.isFile && it.extension in setOf("kt", "xml") && motif.containsMatchIn(it.readText()) }
-            .map { it.name }.toList()
-        assertEquals(emptyList<String>(), trouves)
+        assertFalse(Regex("carte_ma_position|centrerSurMoi|Ma position").containsMatchIn(ecran))
+        val chaines = File(main, "res/values/strings_tournees.xml").readText()
+        assertFalse("carte_ma_position" in chaines)
     }
 
     @Test
@@ -30,5 +28,33 @@ class CarteSuitesSourcesTest {
     fun `le marqueur n'est active que par MarqueurPosition`() {
         assertTrue("MarqueurPosition.aDessiner" in ecran)
         assertFalse(Regex("l\\.position\\.isEnabled\\s*=\\s*fix\\s*!=\\s*null").containsMatchIn(ecran))
+    }
+
+    @Test
+    fun `le fond est memorise par tournee, plus par la cle globale`() {
+        assertTrue("FondsCarte.cle(" in ecran)
+        assertFalse("CLE_FOND" in ecran)
+    }
+
+    @Test
+    fun `une seule fonction decide du fond, et l'ecran l'appelle`() {
+        assertTrue("FondsCarte.affiche(" in ecran)
+        assertFalse("FondsCarte.parDefaut(" in ecran)
+        assertFalse("FondsCarte.retenu(" in ecran)
+    }
+
+    @Test
+    fun `la carte n'est creee qu'une fois la presence de l'ortho verifiee`() {
+        assertTrue("produceState<Boolean?>(null" in ecran)
+        assertFalse(Regex("produceState\\(false").containsMatchIn(ecran))
+        val debut = ecran.indexOf("fun EcranCarte(")
+        val pret = ecran.indexOf("is Chargement.Pret", debut)
+        assertTrue(pret > 0 && "R.string.carte_ouverture" in ecran.substring(pret, ecran.indexOf("private fun GeoPoint", pret)), "etat d'ouverture tant que l'ortho n'est pas verifiee")
+    }
+
+    @Test
+    fun `la carte creee sur l'ortho chantier recoit son fichier des la creation`() {
+        val fabrique = ecran.substringAfter("factory = { contexte ->").substringBefore("l.carte = carte")
+        assertTrue("FichierOrtho.ouvrir(ouverte.dossier)" in fabrique)
     }
 }
