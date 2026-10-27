@@ -61,13 +61,14 @@ object DepotTournees {
             .map { ligne(it) }
 
     /**
-     * Nombre de saisies de chaque tournée listée, lu dans le journal (`code_tournee` = nom du dossier de la tournée, spec § 5).
+     * Nombre de saisies encore valables de chaque tournée listée, lu dans la projection du journal.
+     * HYPOTHÈSE (Q2 de la relecture, à trancher avec la mission 012) : `code_tournee` = nom du dossier de la tournée.
      * À appeler hors du fil principal. Journal illisible : 0 (la vue Kanban ne sert que d'aide, elle ne bloque rien).
      */
     fun saisies(ctx: Context, lignes: List<LigneTournee>): Map<String, Int> {
         val depot = runCatching { JournalApp.depot(ctx) }.getOrNull() ?: return emptyMap()
         return lignes.associate { l ->
-            l.id to (runCatching { compterSaisies(depot.lignes(l.id).map { it.type }) }.getOrDefault(0))
+            l.id to (runCatching { compterSaisies(depot.projection(l.id)) }.getOrDefault(0))
         }
     }
 

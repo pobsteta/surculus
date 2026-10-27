@@ -8,6 +8,7 @@ Licence du dépôt : **GPL-3.0-or-later**, comme Groma et nemeton.
 |---|---|---|---|
 | Kotlin, kotlinx-coroutines, kotlinx-serialization | partout | Apache-2.0 | |
 | AndroidX, Jetpack Compose, Material 3, Room, DataStore | `:app`, `:data` | Apache-2.0 | |
+| material-icons-core et material-icons-extended (version de la BOM Compose) | `:app` | Apache-2.0 | icônes `ViewColumn` et `ViewList` de la bascule liste/colonnes, comme Marculus ; décision de Pascal, 2026-10-27 (mission 043), qui lève pour ce seul point l'interdiction d'ajouter une dépendance ; R8 retire les icônes non utilisées de l'APK |
 | osmdroid 6.1.20 | carte | Apache-2.0 | dépôt **archivé depuis le 2024-11-20** (ADR 0009) ; réexamen de l'ADR 0004 au bac à sable |
 | sqlite-jdbc 3.53.4.0 (jar et classifieur `natives-android`) | `:gpkg` (JVM) et `:app` (natifs Android) | Apache-2.0 | lecture et écriture du `travaux.gpkg`, sur la JVM et sur l'appareil (ADR 0011) ; écrivain GeoPackage maison, sans geopackage-java ni proj4j |
 | desugar_jdk_libs 2.1.5 | `:app` | GPL-2.0 avec exception Classpath (OpenJDK) | désucrage des API Java récentes, exigé par sqlite-jdbc sur Android (USAGE.md du projet) ; taille mesurée dans le rendu de la mission 006 |

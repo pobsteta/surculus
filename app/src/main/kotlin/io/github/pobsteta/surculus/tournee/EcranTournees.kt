@@ -26,12 +26,15 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ViewList
+import androidx.compose.material.icons.filled.ViewColumn
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -39,7 +42,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -278,13 +280,12 @@ private fun BandeauAccueil(
                 modifier = Modifier.weight(1f),
             )
             if (kanbanActif) {
-                // Texte plutôt qu'une icône (ViewColumn / ViewList demanderaient material-icons-extended) : lisible, et 48 dp de haut.
-                TextButton(
-                    onClick = onBasculerVue,
-                    modifier = Modifier.height(48.dp),
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimary),
-                ) {
-                    Text(stringResource(if (modeColonnes) R.string.tournees_vue_liste else R.string.tournees_vue_colonnes), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                // Mêmes icônes que Marculus (décision de Pascal, 2026-10-27) : l'icône montre la vue où l'on va passer.
+                IconButton(onClick = onBasculerVue) {
+                    Icon(
+                        if (modeColonnes) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewColumn,
+                        contentDescription = stringResource(if (modeColonnes) R.string.tournees_vue_liste else R.string.tournees_vue_colonnes),
+                    )
                 }
             }
             Box {
