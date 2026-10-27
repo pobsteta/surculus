@@ -15,7 +15,7 @@ la `SessionControle` de la 012-A et ouvert par « Contrôler » sur la carte et 
 guidage, pour que Pascal contrôle une placette de bout en bout sur le téléphone et la voie passer
 « Contrôlée » dans l'écran « Placettes ».
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Réaliser l'écran où le forestier pointe les plants (azimut lu par la boussole du téléphone, distance tapée), dit états et causes, pose les regarnis, voit « 7 sur 12 » et les refus avec leur code, puis termine la placette, ouvert par « Contrôler » sur la carte ou à l'arrivée du guidage et branché sur la `SessionControle` de la 012-A, pour que Pascal contrôle une placette de bout en bout sur son téléphone et la voie passer « Contrôlée » dans « Placettes » (plan d'abord, sans code : `pilotage/missions/012b-plan.md`).
 
 ## Décisions de Pascal à respecter (2026-10-27)
 
