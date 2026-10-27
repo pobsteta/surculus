@@ -43,7 +43,30 @@ class InstallateurModele(
     private val partiel = File(cache, "modele-vosk-recu.part")
 
     // `terrain-voix` détient le nom du témoin : on lui demande si le dossier est complet.
-    val estInstalle: Boolean get() = InstallationModele(dossier, cache, "", sha256).estInstalle
+    val estInstalle: Boolean
+        get() {
+            reparer()
+            return complet(dossier)
+        }
+
+    private fun complet(d: File) = InstallationModele(d, cache, "", sha256).estInstalle
+
+    /**
+     * Répare l'état laissé par un arrêt brutal entre les deux renommages de [remplacer] : si le dossier installé
+     * manque (ou est incomplet) et que « .ancien » (à défaut « .nouveau ») est complet, il est remis en place ;
+     * puis les « .nouveau » et « .ancien » orphelins sont effacés. À ne pas appeler pendant une installation.
+     */
+    fun reparer() {
+        if (!complet(dossier)) {
+            val reste = listOf(ancien, nouveau).firstOrNull { it.exists() && complet(it) }
+            if (reste != null) {
+                dossier.deleteRecursively()
+                check(reste.renameTo(dossier)) { "Réparation impossible : ${reste.name} non déplaçable" }
+            }
+        }
+        ancien.deleteRecursively()
+        nouveau.deleteRecursively()
+    }
 
     fun supprimer() {
         dossier.deleteRecursively()
@@ -53,24 +76,27 @@ class InstallateurModele(
 
     /**
      * Installe l'archive de [source]. [progression] reçoit 0..1 (-1 tant que la taille est inconnue) ; [continuer]
-     * faux interrompt. L'échec porte un message en français ; le modèle précédent reste en place.
+     * faux interrompt la réception (jusqu'à la vérification de l'empreinte, [apresVerification] marque ensuite le
+     * point de non-retour). [messageRefus] : message si l'empreinte est mauvaise. L'échec porte un message en français ; le modèle précédent reste en place.
      */
     fun installer(
         source: SourceArchive,
         origine: String,
         progression: (Float) -> Unit = {},
         continuer: () -> Boolean = { true },
+        messageRefus: String = "Ce fichier n'est pas ${VerificationModele.NOM_MODELE} (empreinte SHA-256 différente ou fichier vide)",
+        apresVerification: () -> Unit = {},
     ): Result<Unit> {
         val resultat = runCatching {
+            reparer()
             cache.mkdirs()
             partiel.delete()
             nouveau.deleteRecursively()
             copier(source, progression, continuer)
             val accepte = partiel.inputStream().use { VerificationModele.verifier(VerificationModele.NOM_MODELE, it, sha256) }
-            check(accepte) {
-                "Ce fichier n'est pas ${VerificationModele.NOM_MODELE} (empreinte SHA-256 différente ou fichier vide)"
-            }
-            check(continuer()) { "Installation interrompue" }
+            check(accepte) { messageRefus }
+            // Point de non-retour : archive complète et bonne, [continuer] n'est plus consulté ; l'appelant retire « Annuler ».
+            apresVerification()
             InstallationModele(nouveau, cache, "", sha256).installer(partiel, origine).getOrThrow()
             remplacer()
             progression(1f)
@@ -108,8 +134,11 @@ class InstallateurModele(
         val avaitUnAncien = dossier.exists()
         if (avaitUnAncien) check(dossier.renameTo(ancien)) { "Remplacement impossible (ancien modèle non déplaçable)" }
         if (!nouveau.renameTo(dossier)) {
-            if (avaitUnAncien) ancien.renameTo(dossier)
-            error("Remplacement impossible (nouveau modèle non déplaçable)")
+            val remis = !avaitUnAncien || ancien.renameTo(dossier)
+            error(
+                if (remis) "Remplacement impossible (nouveau modèle non déplaçable)"
+                else "Remplacement impossible, l'ancien modèle sera remis en place au prochain démarrage",
+            )
         }
         ancien.deleteRecursively()
     }

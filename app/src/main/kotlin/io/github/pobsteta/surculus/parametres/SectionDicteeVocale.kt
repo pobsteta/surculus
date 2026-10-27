@@ -13,11 +13,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,11 +36,9 @@ import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.dictee.ModeleVoskImport
 import io.github.pobsteta.surculus.dictee.ModeleVoskTelechargement
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** Taille du modèle installé en Mo (arrondie au supérieur, 0 si absent). */
 private fun tailleInstalleeMo(ctx: android.content.Context): Int {
@@ -45,10 +46,14 @@ private fun tailleInstalleeMo(ctx: android.content.Context): Int {
     return ((octets + 1_048_575) / 1_048_576).toInt()
 }
 
+/** Ce que l'écran montre pendant une installation. */
+private enum class Phase { RIEN, RESEAU, FICHIER, INSTALLATION }
+
 /**
  * Section « Dictée vocale » de Paramètres (mission 048) : état du modèle Vosk, téléchargement (comme Marculus),
- * import par fichier, suppression. Un échec ne retire jamais le modèle déjà installé ([ModeleVoskImport]).
- * Boutons d'au moins 48 dp ; styles de texte du thème (aucune taille propre).
+ * import par fichier, suppression (avec confirmation). Un échec ou une annulation ne retire jamais le modèle déjà
+ * installé ([ModeleVoskImport]). « Annuler » n'est proposé que jusqu'à la vérification de l'empreinte : ensuite
+ * l'installation va au bout et l'écran le dit. Boutons d'au moins 48 dp ; styles de texte du thème (aucune taille propre).
  */
 @Composable
 fun SectionDicteeVocale() {
@@ -56,9 +61,10 @@ fun SectionDicteeVocale() {
     val portee = rememberCoroutineScope()
     var installeMo by remember { mutableStateOf<Int?>(null) }
     var progression by remember { mutableStateOf<Float?>(null) }
-    var enCours by remember { mutableStateOf(false) }
-    var travail by remember { mutableStateOf<Job?>(null) }
+    var phase by remember { mutableStateOf(Phase.RIEN) }
+    val annulation = remember { AtomicBoolean(false) }
     var message by remember { mutableStateOf<String?>(null) }
+    var confirmerSuppression by remember { mutableStateOf(false) }
 
     suspend fun actualiser() {
         installeMo = withContext(Dispatchers.IO) { if (ModeleVoskImport.estInstalle(ctx)) tailleInstalleeMo(ctx) else null }
@@ -69,32 +75,40 @@ fun SectionDicteeVocale() {
     val msgSupprime = stringResource(R.string.dictee_supprime)
     val msgEchecConserve = stringResource(R.string.dictee_echec_conserve)
     val msgEchec = stringResource(R.string.dictee_echec)
+    val msgAnnuleConserve = stringResource(R.string.dictee_annule_conserve)
     val msgAnnule = stringResource(R.string.dictee_annule)
+    val msgRefusReseau = stringResource(R.string.dictee_refus_reseau)
 
-    fun lancer(installation: suspend () -> Result<Unit>) {
-        if (enCours) return
-        enCours = true
+    /** [installation] reçoit « annulé ? » et « point de non-retour atteint » ; elle tourne hors du fil principal. */
+    fun lancer(debut: Phase, installation: (continuer: () -> Boolean, nonRetour: () -> Unit) -> Result<Unit>) {
+        if (phase != Phase.RIEN) return
+        phase = debut
         message = null
         progression = null
-        travail = portee.launch {
+        annulation.set(false)
+        portee.launch {
             val avait = installeMo != null
-            // Annulation : l'installateur s'arrête sans toucher au modèle installé ; l'état est remis à plat.
-            val resultat = try {
-                installation()
-            } catch (e: CancellationException) {
-                Result.failure(IllegalStateException(msgAnnule))
+            val resultat = withContext(Dispatchers.IO) {
+                installation({ !annulation.get() }, { phase = Phase.INSTALLATION })
+            }
+            val annule = resultat.isFailure && annulation.get()
+            message = when {
+                resultat.isSuccess -> msgOk
+                annule -> if (avait) msgAnnuleConserve else msgAnnule
+                else -> {
+                    val cause = resultat.exceptionOrNull()?.message ?: "erreur inconnue"
+                    (if (avait) msgEchecConserve else msgEchec).format(cause)
+                }
             }
             progression = null
-            enCours = false
-            val cause = resultat.exceptionOrNull()?.message ?: "erreur inconnue"
-            message = if (resultat.isSuccess) msgOk else (if (avait) msgEchecConserve else msgEchec).format(cause)
+            phase = Phase.RIEN
             actualiser()
         }
     }
 
     val selecteur = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
-            lancer { withContext(Dispatchers.IO) { ModeleVoskImport.importer(ctx, uri) } }
+            lancer(Phase.FICHIER) { continuer, nonRetour -> ModeleVoskImport.importer(ctx, uri, continuer, nonRetour) }
         }
     }
 
@@ -105,31 +119,42 @@ fun SectionDicteeVocale() {
             installeMo?.let { stringResource(R.string.dictee_etat_oui, it) } ?: stringResource(R.string.dictee_etat_non),
             style = MaterialTheme.typography.bodyMedium,
         )
-        if (enCours) {
+        if (phase != Phase.RIEN) {
             val p = progression
-            if (p != null && p >= 0f) {
+            if (phase == Phase.RESEAU && p != null && p >= 0f) {
                 LinearProgressIndicator(progress = { p }, modifier = Modifier.fillMaxWidth())
                 Text(stringResource(R.string.dictee_progression, (p * 100).toInt()), style = MaterialTheme.typography.bodySmall)
             } else {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                Text(stringResource(R.string.dictee_attente), style = MaterialTheme.typography.bodySmall)
+                Text(
+                    stringResource(
+                        when (phase) {
+                            Phase.RESEAU -> R.string.dictee_attente
+                            Phase.FICHIER -> R.string.dictee_import_attente
+                            else -> R.string.dictee_installation
+                        },
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
-            OutlinedButton(
-                onClick = { travail?.cancel() },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            ) { Text(stringResource(R.string.dictee_annuler)) }
+            if (phase != Phase.INSTALLATION) {
+                OutlinedButton(
+                    onClick = { annulation.set(true) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text(stringResource(R.string.dictee_annuler)) }
+            }
         } else {
             Button(
                 onClick = {
-                    lancer {
-                        withContext(Dispatchers.IO) {
-                            ModeleVoskImport.installer(
-                                ctx, ModeleVoskTelechargement.URL_MODELE,
-                                progression = { progression = it },
-                                continuer = { isActive },
-                                source = ModeleVoskTelechargement.source,
-                            )
-                        }
+                    lancer(Phase.RESEAU) { continuer, nonRetour ->
+                        ModeleVoskImport.installer(
+                            ctx, ModeleVoskTelechargement.URL_MODELE,
+                            progression = { progression = it },
+                            continuer = continuer,
+                            messageRefus = msgRefusReseau,
+                            apresVerification = nonRetour,
+                            source = ModeleVoskTelechargement.source,
+                        )
                     }
                 },
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
@@ -147,17 +172,38 @@ fun SectionDicteeVocale() {
             ) { Text(stringResource(R.string.dictee_fichier)) }
             if (installeMo != null) {
                 OutlinedButton(
+                    onClick = { confirmerSuppression = true },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text(stringResource(R.string.dictee_supprimer)) }
+            }
+        }
+        message?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+    }
+
+    if (confirmerSuppression) {
+        AlertDialog(
+            onDismissRequest = { confirmerSuppression = false },
+            title = { Text(stringResource(R.string.dictee_supprimer_titre)) },
+            text = { Text(stringResource(R.string.dictee_supprimer_texte)) },
+            confirmButton = {
+                TextButton(
                     onClick = {
+                        confirmerSuppression = false
                         portee.launch {
                             withContext(Dispatchers.IO) { ModeleVoskImport.supprimer(ctx) }
                             message = msgSupprime
                             actualiser()
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                ) { Text(stringResource(R.string.dictee_supprimer)) }
-            }
-        }
-        message?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                    modifier = Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp),
+                ) { Text(stringResource(R.string.dictee_confirmer)) }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { confirmerSuppression = false },
+                    modifier = Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp),
+                ) { Text(stringResource(R.string.dictee_annuler)) }
+            },
+        )
     }
 }

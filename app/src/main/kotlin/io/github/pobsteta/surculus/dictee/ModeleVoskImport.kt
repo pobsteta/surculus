@@ -37,17 +37,34 @@ object ModeleVoskImport {
     fun supprimer(context: Context) = installateur(context).supprimer()
 
     /** Installe le modèle depuis le fichier choisi par l'agent ; l'erreur est rendue telle quelle, en français. */
-    fun importer(context: Context, source: Uri): Result<Unit> =
-        installer(context, source.toString(), {}, { true }) {
+    fun importer(
+        context: Context,
+        source: Uri,
+        continuer: () -> Boolean = { true },
+        apresVerification: () -> Unit = {},
+    ): Result<Unit> =
+        installer(context, source.toString(), {}, continuer, null, apresVerification) {
             FluxArchive(context.contentResolver.openInputStream(source) ?: throw IOException("Fichier du modèle illisible"))
         }
 
-    /** Installe depuis [source] ; [progression] 0..1 (-1 : inconnue), [continuer] faux interrompt. */
+    /**
+     * Installe depuis [source] ; [progression] 0..1 (-1 : inconnue), [continuer] faux interrompt la réception ;
+     * [apresVerification] : l'archive est bonne, plus d'annulation possible. [messageRefus] : sinon celui de l'import.
+     */
     fun installer(
         context: Context,
         origine: String,
         progression: (Float) -> Unit,
         continuer: () -> Boolean,
+        messageRefus: String?,
+        apresVerification: () -> Unit,
         source: SourceArchive,
-    ): Result<Unit> = installateur(context).installer(source, origine, progression, continuer)
+    ): Result<Unit> {
+        val i = installateur(context)
+        return if (messageRefus == null) {
+            i.installer(source, origine, progression, continuer, apresVerification = apresVerification)
+        } else {
+            i.installer(source, origine, progression, continuer, messageRefus, apresVerification)
+        }
+    }
 }
