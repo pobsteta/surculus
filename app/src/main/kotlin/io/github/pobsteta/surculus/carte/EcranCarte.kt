@@ -74,6 +74,7 @@ import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.core.carte.EmpriseCarte
 import io.github.pobsteta.surculus.core.carte.Fond
 import io.github.pobsteta.surculus.core.carte.FondsCarte
+import io.github.pobsteta.surculus.core.carte.MarqueurPosition
 import io.github.pobsteta.surculus.core.carte.Recentrage
 import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
 import io.github.pobsteta.surculus.core.geo.Projections
@@ -115,7 +116,23 @@ fun EcranCarte(id: String, onRetour: () -> Unit, onGuider: (String) -> Unit) {
             BandeauCarte(stringResource(R.string.carte_titre), onRetour)
             Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge) }
         }
-        is Chargement.Pret -> CartePrete(c.tournee, onRetour, onGuider)
+        is Chargement.Pret -> {
+            // L'ortho chantier n'est proposée que si le dossier de la tournée porte un fichier tuilé exploitable. On attend
+            // cette vérification avant de créer la carte : elle s'ouvre directement sur le bon fond, sans tuile en ligne
+            // demandée pour rien.
+            val orthoChantier by produceState<Boolean?>(null, c.tournee) {
+                value = withContext(Dispatchers.IO) { FichierOrtho.nomPresent(c.tournee.dossier) != null }
+            }
+            val ortho = orthoChantier
+            if (ortho == null) {
+                Column {
+                    BandeauCarte(stringResource(R.string.carte_titre), onRetour)
+                    Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
+                }
+            } else {
+                CartePrete(c.tournee, ortho, onRetour, onGuider)
+            }
+        }
     }
 }
 
@@ -206,7 +223,6 @@ private class Couches(
 
 /** Préférences de la carte : le fond retrouvé d'une ouverture à l'autre (mêmes nom et clé que Marculus). */
 private const val PREFS_CARTE = "carte"
-private const val CLE_FOND = "fond"
 private const val CLE_CADASTRE = "cadastre"
 
 /** Zoom d'un recentrage sur un point (Marculus : `recadrerSur`, `setZoom(17.0)`). */
@@ -267,7 +283,7 @@ private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
 }
 
 @Composable
-private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: (String) -> Unit) {
+private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour: () -> Unit, onGuider: (String) -> Unit) {
     val ctx = LocalContext.current
     val (fix, refusee) = rememberFix()
     val carto = ouverte.cartographie
@@ -279,18 +295,15 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
     var voirPlacettes by remember { mutableStateOf(true) }
     var choisie by remember { mutableStateOf<PlacetteTournee?>(null) }
     var liste by remember { mutableStateOf(false) }
-    var centrerSurMoi by remember { mutableStateOf(0) }
 
-    // Fond de carte : le choix mémorisé (jamais l'ortho chantier), sinon le Plan IGN, comme Marculus.
+    // Fond de carte : le choix mémorisé pour cette tournée, sinon l'Ortho chantier si la tournée en a une, sinon le Plan IGN.
     val prefsCarte = remember { ctx.getSharedPreferences(PREFS_CARTE, Context.MODE_PRIVATE) }
-    var fond by remember { mutableStateOf(FondsCarte.retenu(prefsCarte.getString(CLE_FOND, null), orthoChantier = false)) }
+    // `fond` : le choix fait dans cette tournée (ortho chantier comprise), nul tant qu'il n'y en a pas.
+    val cleFond = FondsCarte.cle(ouverte.dossier.name)
+    var fond by remember(cleFond) { mutableStateOf(FondsCarte.depuisNom(prefsCarte.getString(cleFond, null))) }
     var menuFonds by remember { mutableStateOf(false) }
     var voirCadastre by remember { mutableStateOf(prefsCarte.getBoolean(CLE_CADASTRE, FondsCarte.CADASTRE_PAR_DEFAUT)) }
-    // L'ortho chantier n'est proposée que si le dossier de la tournée porte un fichier tuilé exploitable.
-    val orthoChantier by produceState(false, ouverte) {
-        value = withContext(Dispatchers.IO) { FichierOrtho.nomPresent(ouverte.dossier) != null }
-    }
-    val fondAffiche = if (fond == Fond.ORTHO && !orthoChantier) FondsCarte.PAR_DEFAUT else fond
+    val fondAffiche = FondsCarte.affiche(fond, orthoChantier)
     // Garde-fou : on ne cadre la carte que sur une emprise en France (sinon : la Somalie, sans alerte).
     val emprise: EmpriseLambert93? = carto.empriseUg ?: ouverte.tournee.empriseForet
     val empriseHorsFrance = remember(emprise) { emprise != null && EmpriseCarte.controler(emprise) is EmpriseCarte.Resultat.HorsFrance }
@@ -318,7 +331,7 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                         FondsCarte.proposes(orthoChantier).forEach { f ->
                             LigneFond(libelle = f.libelle, choisi = fondAffiche == f) {
                                 fond = f
-                                if (FondsCarte.memorisable(f)) prefsCarte.edit().putString(CLE_FOND, f.name).apply()
+                                prefsCarte.edit().putString(cleFond, f.name).apply()
                             }
                         }
                         HorizontalDivider()
@@ -354,7 +367,7 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                     factory = { contexte ->
                         configurerOsmdroid(contexte)
                         // Fond posé par `update` ; le réseau est utilisé par les fonds en ligne (cache d'osmdroid gardé).
-                        val carte = MapView(contexte, fournisseurDeFond(contexte, fondAffiche, null))
+                        val carte = MapView(contexte, fournisseurDeFond(contexte, fondAffiche, if (fondAffiche == Fond.ORTHO) FichierOrtho.ouvrir(ouverte.dossier) else null))
                         carte.setMultiTouchControls(true)
                         carte.maxZoomLevel = zoomMaxDeFond(fondAffiche)
                         carte.isTilesScaledToDpi = true
@@ -407,15 +420,10 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
                         l.ug.forEach { it.isEnabled = voirUg }
                         l.parcelles.forEach { it.isEnabled = voirParcelles }
                         l.placettes.forEach { it.isEnabled = voirPlacettes }
-                        l.position.isEnabled = fix != null
-                        fix?.let { l.position.position = GeoPoint(it.position.latitude, it.position.longitude) }
-                        if (centrerSurMoi > 0) {
-                            // Jamais sur un fix hors de France (axes inversés : la Somalie) : `Recentrage` décide.
-                            (Recentrage.cible(fix?.position, null) as? Recentrage.Cible.Fix)?.let { c ->
-                                carte.controller.animateTo(GeoPoint(c.position.latitude, c.position.longitude))
-                            }
-                            centrerSurMoi = 0
-                        }
+                        // Pas de marqueur pour un fix hors de France (la Somalie) ; le message rouge reste affiché.
+                        val aDessiner = MarqueurPosition.aDessiner(fix?.position)
+                        l.position.isEnabled = aDessiner != null
+                        aDessiner?.let { l.position.position = GeoPoint(it.latitude, it.longitude) }
                         carte.invalidate()
                     },
                     // Le fournisseur de tuiles du cadastre se libère aussi quand la couche est décochée (elle n'est alors
@@ -473,7 +481,6 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
         // L'action : guider vers la placette touchée, sinon ouvrir la liste.
         val p = choisie
         Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { centrerSurMoi++ }, enabled = fix != null, modifier = Modifier.height(64.dp)) { Text(stringResource(R.string.carte_ma_position)) }
             if (p != null) {
                 val d = distances[p.uuid]
                 Button(

@@ -83,7 +83,6 @@
     <string name="carte_legende_inconnu">\? %1$d sans état</string>
     <string name="carte_anomalies">%1$d surface(s) sans géométrie lisible, non dessinée(s)</string>
     <string name="carte_placettes_liste">Placettes</string>
-    <string name="carte_ma_position">Ma position</string>
     <string name="carte_fermer_liste">Fermer la liste</string>
     <string name="carte_guider">Guider vers %1$s</string>
     <string name="carte_guider_distance">Guider vers %1$s · %2$s</string>
