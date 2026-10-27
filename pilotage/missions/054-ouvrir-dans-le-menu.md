@@ -12,7 +12,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Remplacer les deux boutons « Ouvrir un dossier » et « Ouvrir un .zip » de l'accueil par deux entrées en tête du menu « ⋮ », avant Paramètres et À propos, comme l'« Importer » de Marculus, pour que l'accueil ne montre que la recherche et la liste des tournées.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** je retire les deux boutons « Ouvrir un dossier » et « Ouvrir un .zip » de l'accueil et je les place en tête du menu « ⋮ », avant Paramètres et À propos, pour que l'accueil ne montre que la recherche et la liste des tournées.
 
 ## Vérifié à la source
 

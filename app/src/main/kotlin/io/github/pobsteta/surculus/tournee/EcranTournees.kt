@@ -9,6 +9,7 @@ package io.github.pobsteta.surculus.tournee
 
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -35,7 +37,6 @@ import io.github.pobsteta.surculus.EntreeMenu
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.ViewColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
@@ -85,6 +86,18 @@ import kotlinx.coroutines.withContext
  *
  * Accueil de l'application (mission 040) : barre « Surculus » et menu à trois points (Paramètres, À propos).
  */
+/** Où les sélecteurs s'ouvrent d'abord : `Download/Surculus` (mission 054, comme Groma pour `Download/groma`). */
+private val DOSSIER_PAR_DEFAUT: Uri =
+    DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Download/Surculus")
+
+private val TYPES_ZIP = arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")
+
+/** `OpenDocument` qui demande au sélecteur de s'ouvrir d'abord dans [debut] (indice : Android peut l'ignorer). */
+private class OuvrirDocumentDans(private val debut: Uri) : ActivityResultContracts.OpenDocument() {
+    override fun createIntent(context: android.content.Context, input: Array<String>): Intent =
+        super.createIntent(context, input).putExtra(DocumentsContract.EXTRA_INITIAL_URI, debut)
+}
+
 /** Message de l'écran ; [refus] (et non un mot du texte) décide de la couleur. */
 private data class MessageTournees(val texte: String, val refus: Boolean)
 
@@ -140,7 +153,7 @@ fun EcranTournees(
         }
     }
 
-    val choisirZip = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+    val choisirZip = rememberLauncherForActivityResult(OuvrirDocumentDans(DOSSIER_PAR_DEFAUT)) { uri: Uri? ->
         if (uri != null) importer { DepotTournees.importerZip(ctx, uri) }
     }
     val choisirDossier = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
@@ -149,6 +162,9 @@ fun EcranTournees(
 
     Column(Modifier.fillMaxSize()) {
         BandeauAccueil(
+            occupe = occupe,
+            onOuvrirDossier = { choisirDossier.launch(DOSSIER_PAR_DEFAUT) },
+            onOuvrirZip = { choisirZip.launch(TYPES_ZIP) },
             onParametres = onParametres,
             modeColonnes = modeColonnes,
             onAPropos = { aPropos = true },
@@ -157,14 +173,6 @@ fun EcranTournees(
         Column(Modifier
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (!colonnesAffichees) Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = { choisirDossier.launch(null) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
-                    Text(stringResource(R.string.tournees_importer_dossier))
-                }
-                Button(onClick = { choisirZip.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) }, enabled = !occupe, modifier = Modifier.weight(1f).height(64.dp)) {
-                    Text(stringResource(R.string.tournees_importer_zip))
-                }
-            }
             if (!colonnesAffichees) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.tournees_wifi))
                 Switch(checked = wifi, onCheckedChange = { wifi = it; ReglagesOrtho.definirWifiSeulement(ctx, it) })
@@ -296,6 +304,9 @@ private fun BoiteAPropos(onFermer: () -> Unit) {
 /** Barre de l'accueil : le bandeau commun (mission 053), titre « Surculus », bascule liste/colonnes et menu à trois points (cibles de 48 dp). */
 @Composable
 private fun BandeauAccueil(
+    occupe: Boolean,
+    onOuvrirDossier: () -> Unit,
+    onOuvrirZip: () -> Unit,
     onParametres: () -> Unit,
     modeColonnes: Boolean,
     onAPropos: () -> Unit,
@@ -319,13 +330,27 @@ private fun BandeauAccueil(
             }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                 for (entree in ENTREES_MENU) {
+                    val ouverture = entree == EntreeMenu.OUVRIR_DOSSIER || entree == EntreeMenu.OUVRIR_ZIP
                     DropdownMenuItem(
                         text = {
-                            Text(stringResource(if (entree == EntreeMenu.PARAMETRES) R.string.tournees_menu_parametres else R.string.tournees_menu_apropos))
+                            Text(stringResource(when (entree) {
+                                EntreeMenu.OUVRIR_DOSSIER -> R.string.tournees_importer_dossier
+                                EntreeMenu.OUVRIR_ZIP -> R.string.tournees_importer_zip
+                                EntreeMenu.PARAMETRES -> R.string.tournees_menu_parametres
+                                EntreeMenu.A_PROPOS -> R.string.tournees_menu_apropos
+                            }))
                         },
+                        // Pendant un import, les deux ouvertures sont grisées (comme les anciens boutons).
+                        enabled = !(ouverture && occupe),
+                        modifier = Modifier.heightIn(min = 48.dp),
                         onClick = {
                             menu = false
-                            if (entree == EntreeMenu.PARAMETRES) onParametres() else onAPropos()
+                            when (entree) {
+                                EntreeMenu.OUVRIR_DOSSIER -> onOuvrirDossier()
+                                EntreeMenu.OUVRIR_ZIP -> onOuvrirZip()
+                                EntreeMenu.PARAMETRES -> onParametres()
+                                EntreeMenu.A_PROPOS -> onAPropos()
+                            }
                         },
                     )
                 }
