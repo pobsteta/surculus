@@ -11,7 +11,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Ajouter dans Paramètres une section « Dictée vocale » qui installe le modèle Vosk de deux façons, par téléchargement comme Marculus ou par un fichier choisi sur le téléphone comme aujourd'hui, avec son état (installé ou non), sa taille et sa suppression, pour que le forestier prépare la dictée au bureau avec du réseau, ou sans réseau à partir d'un fichier.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Ajouter dans Paramètres une section « Dictée vocale » qui installe le modèle Vosk `vosk-model-small-fr-0.22` par téléchargement (URL de Marculus) ou par fichier, avec état, taille et suppression, sans qu'un échec n'efface jamais le modèle déjà installé, pour que le forestier prépare la dictée au bureau avec du réseau, ou sans réseau depuis un fichier.
 
 ## Vérifié à la source
 
