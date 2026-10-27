@@ -27,7 +27,7 @@ class EcranPlacettesSourcesTest {
     @Test
     fun `une ligne de placette fait au moins 64 dp, la pastille est celle de la carte`() {
         assertTrue("heightIn(min = 64.dp)" in placettes)
-        assertTrue("Pastille.de(" in placettes)
+        assertTrue("PastilleEtat(" in placettes, "la pastille est celle de la carte (Palette.kt, mission 063)")
     }
 
     @Test

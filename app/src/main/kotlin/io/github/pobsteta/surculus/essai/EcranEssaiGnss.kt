@@ -54,18 +54,17 @@ import io.github.pobsteta.surculus.gnss.ConfigRtk
 import io.github.pobsteta.surculus.gnss.ServiceGnssRtk
 import io.github.pobsteta.surculus.gnss.SourcePosition
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.border
+import io.github.pobsteta.surculus.carte.Palette
+import io.github.pobsteta.surculus.carte.couleurErreur
+import io.github.pobsteta.surculus.carte.couleurNeutre
+import io.github.pobsteta.surculus.ui.theme.LocalSombre
 
-// Quatre couleurs, contrastées pour le plein soleil : noir sur blanc, et trois teintes d'état.
-private val Vert = Color(0xFF0B6B2E)
-private val Orange = Color(0xFFB45300)
-private val Rouge = Color(0xFFB00020)
-private val Noir = Color(0xFF000000)
-private val Blanc = Color(0xFFFFFFFF)
-
+// Mission 063 : plus de copie de la palette ; les teintes viennent de [Palette], texte neutre et erreurs du thème.
 private fun Ton.couleur() = when (this) {
-    Ton.BON -> Vert
-    Ton.A_SURVEILLER -> Orange
-    Ton.MAUVAIS -> Rouge
+    Ton.BON -> Palette.Vert
+    Ton.A_SURVEILLER -> Palette.Orange
+    Ton.MAUVAIS -> Palette.Rouge
 }
 
 /**
@@ -98,7 +97,7 @@ fun EcranEssaiGnss(onRetour: () -> Unit) {
             Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-                .background(Blanc)
+                .then(if (LocalSombre.current) Modifier else Modifier.background(Palette.Blanc))
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -111,12 +110,12 @@ fun EcranEssaiGnss(onRetour: () -> Unit) {
                     if (etat.enMarche) stringResource(if (etat.connecte) R.string.essai_lien_ok else R.string.essai_lien_attente)
                     else stringResource(R.string.essai_lien_arrete),
                 ),
-                style = MaterialTheme.typography.bodyMedium, color = Noir,
+                style = MaterialTheme.typography.bodyMedium, color = couleurNeutre(),
             )
-            if (!recepteurActif) Text(stringResource(R.string.essai_recepteur_inactif), style = MaterialTheme.typography.bodyMedium, color = Noir)
-            if (localisationRefusee) Text(stringResource(R.string.carte_permission), fontWeight = FontWeight.Bold, color = Rouge)
-            etat.erreur?.let { Text(it, color = Rouge) }
-            etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = Rouge) }
+            if (!recepteurActif) Text(stringResource(R.string.essai_recepteur_inactif), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
+            if (localisationRefusee) Text(stringResource(R.string.carte_permission), fontWeight = FontWeight.Bold, color = couleurErreur())
+            etat.erreur?.let { Text(it, color = couleurErreur()) }
+            etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = couleurErreur()) }
             Spacer(Modifier.height(24.dp))
         }
     }
@@ -129,19 +128,20 @@ fun BlocMesure(a: AffichageEssai) {
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
+            .then(if (LocalSombre.current) Modifier.border(2.dp, Palette.Blanc, RoundedCornerShape(16.dp)) else Modifier)
             .background(a.ton.couleur())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(a.qualite, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Blanc)
-        Text(a.precision, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Blanc)
-        Text(a.ageFix, color = Blanc)
-        Text(a.ageCorrections, color = Blanc)
-        a.drapeaux.forEach { Text("▲ " + it.texte, fontWeight = FontWeight.Bold, color = Blanc) }
-        a.lambertX?.let { Text("Lambert-93 · $it", color = Blanc) }
-        a.lambertY?.let { Text("Lambert-93 · $it", color = Blanc) }
+        Text(a.qualite, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Palette.Blanc)
+        Text(a.precision, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Palette.Blanc)
+        Text(a.ageFix, color = Palette.Blanc)
+        Text(a.ageCorrections, color = Palette.Blanc)
+        a.drapeaux.forEach { Text("▲ " + it.texte, fontWeight = FontWeight.Bold, color = Palette.Blanc) }
+        a.lambertX?.let { Text("Lambert-93 · $it", color = Palette.Blanc) }
+        a.lambertY?.let { Text("Lambert-93 · $it", color = Palette.Blanc) }
         if (a.enFrance == false) {
-            Text(stringResource(R.string.essai_hors_france), fontWeight = FontWeight.Bold, color = Blanc)
+            Text(stringResource(R.string.essai_hors_france), fontWeight = FontWeight.Bold, color = Palette.Blanc)
         }
     }
 }

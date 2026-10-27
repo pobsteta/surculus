@@ -51,10 +51,17 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
   contraste du texte d'au moins **4,5:1** (WCAG 2.2, 1.4.3) vérifié par un test (amendé le
   2026-10-27, décision de Pascal « 1 oui » ; *remplace* « 7:1, 4,5:1 pour le grand texte »
   (1.4.6), règle commune abandonnée par l'ADR 0008 le 2026-10-24 au soir) ; couleurs des
-  pastilles des placettes (mission 033, PR #65) inchangées. **À revoir avec la lisibilité en
-  thème sombre** (décision de Pascal du 2026-10-27, « on verra plus tard », reportée avec la
-  plaque blanche de la mission 051) : « légende en noir à côté de sa pastille » (le noir est
-  illisible sur fond sombre, 1,1:1) et « essai au soleil par Pascal avant la fusion ».
+  pastilles des placettes (mission 033, PR #65) inchangées. **Thème sombre** (amendé le
+  2026-10-27, décision de Pascal sur le plan de la mission 063 ; *remplace* « à revoir avec la
+  lisibilité en thème sombre » et la plaque blanche de la mission 051) : thème clair inchangé ;
+  en sombre, **aucun texte en couleur d'état** : le texte d'état est en `onSurface`, les erreurs et
+  refus en `colorScheme.error`, et l'état est porté par une **pastille cernée d'un filet blanc**
+  (carte, liste Placettes, légende, radar, écran d'essai GNSS) ; plus de plaque blanche ; aucune
+  couleur d'état nouvelle (l'option E de l'ADR 0008 ne s'applique pas à la palette d'état) ;
+  contraste vérifié par un test, en clair et en sombre : texte >= 4,5:1, pastille >= 3:1 (WCAG 2.2,
+  1.4.11). La « légende en noir à côté de sa pastille » devient `onSurface` en sombre (noir en
+  clair). **Essai au soleil** : par Pascal sur la release installée après la fusion (plus de
+  variante fumée), noté au journal ; un échec rouvre la mission.
 * **Hors ligne de bout en bout** : carte (couches de la tournée, position, badge du fix),
   guidage, dictée, contrôles, alertes, et l'**Ortho chantier** quand la tournée porte un
   fichier tuilé (`ortho.mbtiles` ou `ortho.gpkg` en EPSG:3857, ADR 0009). **Amendé le
