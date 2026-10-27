@@ -1,6 +1,6 @@
 package io.github.pobsteta.surculus.data.journal
 
-import java.time.Instant
+import io.github.pobsteta.surculus.core.placette.JourCivil
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -21,10 +21,10 @@ object Horloge {
     const val SEUIL_SAUT_MS = 60_000L
 
     /** Un fix GNSS sert au jour civil s'il a au plus 5 s (borne incluse) et un âge non négatif. */
-    const val AGE_FIX_MAX_MS = 5_000L
+    const val AGE_FIX_MAX_MS = JourCivil.AGE_FIX_MAX_MS
 
     /** Le jour civil d'un contrôle est celui d'Europe/Paris (règle « un contrôle par placette et par jour »). */
-    val PARIS: ZoneId = ZoneId.of("Europe/Paris")
+    val PARIS: ZoneId = JourCivil.FUSEAU
 
     /**
      * Écart signé entre l'heure brute et l'horloge monotone de deux lignes, ou `null` si elles ne sont pas
@@ -59,9 +59,6 @@ object Horloge {
      * compris entre 0 et 5000 ms inclus, sinon sur l'heure du téléphone. Un âge négatif (fix postérieur à la
      * saisie), trop grand ou inconnu écarte le fix.
      */
-    fun jourCivil(saisiLeUtcMs: Long, heureGnssMs: Long?, ageFixMs: Long?): LocalDate {
-        val gnssUtilisable = heureGnssMs != null && ageFixMs != null && ageFixMs in 0..AGE_FIX_MAX_MS
-        val instant = if (gnssUtilisable) heureGnssMs!! else saisiLeUtcMs
-        return Instant.ofEpochMilli(instant).atZone(PARIS).toLocalDate()
-    }
+    fun jourCivil(saisiLeUtcMs: Long, heureGnssMs: Long?, ageFixMs: Long?): LocalDate =
+        JourCivil.deSaisie(saisiLeUtcMs, heureGnssMs, ageFixMs)
 }
