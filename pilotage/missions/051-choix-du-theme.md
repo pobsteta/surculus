@@ -11,7 +11,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Ajouter dans Paramètres le choix du thème, Système, Clair ou Sombre, comme Marculus et Groma, gardé sur le téléphone, pour que Surculus suive le mode du téléphone comme les deux autres applications, ou que le forestier force le clair au soleil.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** ajouter dans Paramètres le choix du thème (Système par défaut, Clair, Sombre), gardé sur le téléphone, pour que Surculus suive le mode du téléphone comme Marculus ou que le forestier force le clair au soleil, sans changer aucune couleur.
 
 ## Vérifié à la source
 

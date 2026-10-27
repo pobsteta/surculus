@@ -92,11 +92,11 @@ fun EcranGuidage(id: String, placetteUuid: String, onRetour: () -> Unit) {
             when (chargement) {
                 Chargement.EnCours -> Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
                 is Chargement.Refus -> Column(Modifier.padding(24.dp)) {
-                    Text(stringResource(R.string.carte_refus, chargement.message), color = Palette.Rouge)
+                    Text(stringResource(R.string.carte_refus, chargement.message), color = Palette.Rouge, modifier = Modifier.plaqueEtat())
                 }
                 is Chargement.Pret ->
                     if (cible == null) {
-                        Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = Palette.Rouge) }
+                        Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = Palette.Rouge, modifier = Modifier.plaqueEtat()) }
                     } else {
                         GuidagePret(cible, chargement.tournee.tournee.placettes, fix)
                     }
@@ -165,25 +165,26 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, f
         // 1. La seule chose à montrer, en grand : la distance (le titre « Vers <code> » est dans le bandeau).
         if (cap == null && fix != null) {
             // Un fix existe mais tombe hors de France : axes inversés, pas une absence de signal.
-            Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
         } else if (cap == null) {
-            Text(stringResource(R.string.guidage_sans_position), color = Palette.Rouge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.guidage_sans_position), color = Palette.Rouge, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
         } else {
             Text(
                 Libelles.distance(cap.distanceM),
                 fontSize = 72.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (cap.arrive) Palette.Vert else Palette.Noir,
+                modifier = Modifier.plaqueEtat(),
             )
             // 2. Le cap, ou l'arrivée.
             if (cap.arrive) {
-                Text(stringResource(R.string.guidage_arrive), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Palette.Vert)
+                Text(stringResource(R.string.guidage_arrive), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Palette.Vert, modifier = Modifier.plaqueEtat())
             } else {
                 Text(stringResource(R.string.guidage_cap, Libelles.cap(cap.azimutDeg)), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             }
         }
         // 3. La comparaison : où je suis par rapport à la placette et au cercle de 30 m.
-        Radar(position, cible.position!!, Modifier.fillMaxWidth().height(260.dp))
+        Radar(position, cible.position!!, Modifier.fillMaxWidth().height(260.dp).plaqueEtat())
         Text(stringResource(R.string.guidage_nord), style = MaterialTheme.typography.bodySmall)
 
         if (cap?.arrive == true) {
@@ -219,9 +220,9 @@ private fun Resultat(v: Verdict<Rattache>) {
         is Verdict.Accepte -> {
             val r = v.valeur
             if (r.parIdentite) {
-                Text(stringResource(R.string.guidage_rattache_identite, r.piquet.code, r.distanceM.roundToInt()), color = Palette.Orange, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.guidage_rattache_identite, r.piquet.code, r.distanceM.roundToInt()), color = Palette.Orange, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
             } else {
-                Text(stringResource(R.string.guidage_rattache, r.piquet.code, r.distanceM.roundToInt()), color = Palette.Vert, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.guidage_rattache, r.piquet.code, r.distanceM.roundToInt()), color = Palette.Vert, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
             }
         }
         is Verdict.Refuse -> {
@@ -231,9 +232,9 @@ private fun Resultat(v: Verdict<Rattache>) {
                 is RefusPlacette.CodeInconnu -> stringResource(R.string.guidage_refus_code, refus.code)
                 else -> refus.message
             }
-            Text(texte, color = Palette.Rouge, fontWeight = FontWeight.Bold)
+            Text(texte, color = Palette.Rouge, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
         }
-        is Verdict.AConfirmer -> Text(v.alerte.message, color = Palette.Orange)
+        is Verdict.AConfirmer -> Text(v.alerte.message, color = Palette.Orange, modifier = Modifier.plaqueEtat())
     }
 }
 

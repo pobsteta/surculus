@@ -10,6 +10,11 @@
     <string name="param_retour">Retour</string>
     <string name="param_plein_titre">Plein écran</string>
     <string name="param_plein_desc">Masque les barres de statut et de navigation.</string>
+    <string name="param_theme_titre">Thème</string>
+    <string name="param_theme_desc">Suivre le téléphone, ou forcer le thème clair ou sombre.</string>
+    <string name="param_theme_systeme">Système</string>
+    <string name="param_theme_clair">Clair</string>
+    <string name="param_theme_sombre">Sombre</string>
     <string name="param_essai_desc">Mesure la position du récepteur GNSS (réglé plus bas).</string>
     <string name="param_restaurer_desc">Remet en place une tournée sauvegardée.</string>
     <string name="apropos_titre">À propos de Surculus</string>

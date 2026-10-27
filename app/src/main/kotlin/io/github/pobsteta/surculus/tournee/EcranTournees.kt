@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.carte.Palette
+import io.github.pobsteta.surculus.carte.plaqueEtat
 import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -164,7 +165,7 @@ fun EcranTournees(
         Column(Modifier
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            message?.let { Text(it.texte, color = if (it.refus) Palette.Rouge else Palette.Noir) }
+            message?.let { Text(it.texte, color = if (it.refus) Palette.Rouge else Palette.Noir, modifier = Modifier.plaqueEtat()) }
 
             val toutes = lignes.orEmpty()
             val trouvees = if (recherche.isBlank()) toutes else toutes.filter { correspond(it.champs, recherche) }

@@ -447,7 +447,7 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
 
         // Légende : un décompte par état, dans la couleur du disque ; « sans état » seulement s'il y en a.
         val nombres = remember(placettes) { decomptes(placettes) }
-        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp).plaqueEtat(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(R.string.carte_legende_jamais, nombres.getValue(EtatSuivi.JAMAIS)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Rouge)
             Text(stringResource(R.string.carte_legende_a_programmer, nombres.getValue(EtatSuivi.A_PROGRAMMER)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Orange)
             Text(stringResource(R.string.carte_legende_a_jour, nombres.getValue(EtatSuivi.A_JOUR)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Vert)
@@ -456,7 +456,7 @@ private fun CartePrete(ouverte: TourneeOuverte, onRetour: () -> Unit, onGuider: 
             }
         }
         if (carto.anomalies.isNotEmpty()) {
-            Text(stringResource(R.string.carte_anomalies, carto.anomalies.size), style = MaterialTheme.typography.bodyMedium, color = Palette.Orange, modifier = Modifier.padding(horizontal = 8.dp))
+            Text(stringResource(R.string.carte_anomalies, carto.anomalies.size), style = MaterialTheme.typography.bodyMedium, color = Palette.Orange, modifier = Modifier.padding(horizontal = 8.dp).plaqueEtat())
         }
 
         // L'action : guider vers la placette touchée, sinon ouvrir la liste.

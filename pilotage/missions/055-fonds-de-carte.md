@@ -7,12 +7,16 @@
 > « (b) exactement comme marculus ».
 > **Lancement :** après la fusion de la 054 (même écran d'accueil) ; fusion autorisée par Pascal
 > (« j'autorise tout ») si relecture prête et CI verte.
+> **Élargie le 2026-10-27 par Pascal** : « Peux-tu comme dans marculus et la vue carte ajouter les couches dans un
+> menu dans un bandeau supérieur avec aussi la flèche retour. Mettre les mêmes boutons que dans la vue carte de
+> marculus (+, -, cible...) », puis « oui, aussi sur le guidage comme dans marculus ». La 055 devient « la carte de
+> Marculus ».
 
 ## Mission
 
 **En une phrase (quoi, et pourquoi) :** Faire comme Marculus : un menu « Fond de carte » sur la carte avec Plan IGN, Ortho IGN, OpenStreetMap et l'Ortho chantier (fichier de la tournée), les trois premiers chargés en ligne au fur et à mesure, et retirer le téléchargement à l'avance de l'ortho IGN, son état par tournée et la case « Ortho : Wi-Fi seulement », pour que Surculus montre et choisisse ses fonds comme Marculus.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Je remplace le préchargement de l'ortho IGN par un menu « Fond de carte » comme celui de Marculus (Plan IGN, Ortho IGN, OpenStreetMap en ligne, Ortho chantier si le fichier de la tournée existe), je retire l'état de l'ortho par tournée et la case « Wi-Fi seulement », puis (élargissement) je donne à la carte le bandeau avec flèche de retour, le menu « Couches » et les boutons zoom / recentrer de Marculus, et au guidage le bandeau avec flèche : pour que Pascal change de fond et de couches d'un appui, sans rien préparer avant.
 
 ## Vérifié à la source
 
@@ -36,6 +40,9 @@ Règles, avec leur auteur :
 - **Aucune dépendance nouvelle sans le dire** : `terrain-carte` (utilisé par Marculus) n'est pas dans Surculus ; l'agent reprend les URL de la Géoplateforme avec le code existant (`OrthoIgn`) sauf s'il montre qu'il faut la dépendance.
 - **Styles de Marculus** (042), cibles d'au moins 48 dp, bandeau (053).
 - **Garde-fou = test vu rouge** et **bilan des écarts avant rendu** : Pascal, bilan du 2026-10-21.
+- **Carte de Marculus (élargissement, Pascal, 2026-10-27)** : `BandeauCompact` en haut de la carte avec la flèche de retour (même action que le retour système) et, à droite, l'icône `Layers` ; le menu a deux sections (`TitreSection`) : « Fond de carte » (choix unique) puis « Couches affichées » (cases : Cadastre IGN, puis les couches déjà dessinées : forêt, UG, parcelles, placettes) ; la légende des placettes reste ; trois `SmallFloatingActionButton` (zoom avant, zoom arrière, recentrer : position GNSS si disponible, sinon emprise de la tournée), d'au moins 48 dp, aux libellés de Marculus ; le bouton « Retour » de la carte disparaît ; « Guider » et le reste restent. Marges de la carte posées par l'écran, comme les autres écrans à bandeau (053). Source : `marculus` `CarteScreen.kt` l. 141-143, 611-618, 634-670, 870-878 ; `strings.xml` l. 189-198.
+- **Guidage (Pascal, 2026-10-27 : « oui, aussi sur le guidage comme dans marculus »)** : `BandeauCompact` avec la flèche de retour (même action que le retour système, qui ramène à la carte) ; titre = le texte actuel `guidage_vers`, qui quitte le corps ; plus de bouton « Retour » (états d'erreur compris : la flèche du bandeau) ; **pas** de menu « Couches » ni de zoom / recentrer (le guidage n'a pas de carte) ; distance (72 sp), cap, radar, messages et bip inchangés.
+- **Barre d'état** : la carte et le guidage ayant un bandeau, tous les écrans en ont un ; les icônes de la barre d'état sont claires partout (`iconesBarreEtatClaires`, appel de `MainActivity` mis à jour, test et KDoc avec).
 
 ## Les trois questions (règle de staffing)
 

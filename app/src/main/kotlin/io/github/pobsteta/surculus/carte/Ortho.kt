@@ -8,8 +8,7 @@
  * Origine : dépôt Groma (https://github.com/pobsteta/groma), carte/Fonds.kt (lu le 2026-10-21) pour la configuration
  *           d'osmdroid ; dépôt Marculus, `ui/carte/CarteScreen.kt` (`SourceGeoplateforme`, l. 195-200) et
  *           `GpkgTileModule.kt` (lus le 2026-10-27) pour les fonds en ligne et l'ortho du chantier.
- * Modifications : mission 055 : plus de préchargement des tuiles IGN (ni WorkManager, ni « Wi-Fi seulement », ni état de
- *           l'ortho par tournée) ; les fonds IGN et OSM se chargent en ligne, au fur et à mesure (cache d'osmdroid) ;
+ * Modifications : mission 055 : tuiles IGN plus téléchargées à l'avance, ni état de l'ortho par tournée ; les fonds IGN et OSM se chargent en ligne, au fur et à mesure (cache d'osmdroid) ;
  *           l'ortho du chantier est le fichier `ortho.mbtiles` ou `ortho.gpkg` en EPSG:3857 du dossier de la tournée,
  *           lu hors ligne (ADR 0009, lecture prioritaire de l'option (g)).
  */

@@ -78,12 +78,14 @@ object DepotTournees {
         })
     }
 
-    /** Réglages d'affichage (plein écran), dans les préférences privées de l'application (mission 044). */
+    /** Réglages d'affichage (plein écran, thème), dans les préférences privées de l'application (mission 044). */
     fun reglagesAffichage(ctx: Context): ReglagesAffichage {
         val prefs = ctx.applicationContext.getSharedPreferences("affichage", Context.MODE_PRIVATE)
         return ReglagesAffichage(object : MagasinAffichage {
             override fun lireBooleen(cle: String, parDefaut: Boolean) = prefs.getBoolean(cle, parDefaut)
             override fun ecrireBooleen(cle: String, valeur: Boolean) { prefs.edit().putBoolean(cle, valeur).apply() }
+            override fun lireTexte(cle: String) = prefs.getString(cle, null)
+            override fun ecrireTexte(cle: String, valeur: String) { prefs.edit().putString(cle, valeur).apply() }
         })
     }
 
