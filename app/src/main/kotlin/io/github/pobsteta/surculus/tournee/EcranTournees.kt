@@ -7,6 +7,7 @@
  */
 package io.github.pobsteta.surculus.tournee
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,8 +25,11 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.ViewColumn
@@ -42,6 +46,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -84,7 +89,13 @@ import kotlinx.coroutines.withContext
 private data class MessageTournees(val texte: String, val refus: Boolean)
 
 @Composable
-fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauration: () -> Unit) {
+fun EcranTournees(
+    onOuvrir: (String) -> Unit,
+    onEssai: () -> Unit,
+    onRestauration: () -> Unit,
+    pleinEcran: Boolean = false,
+    onPleinEcran: () -> Unit = {},
+) {
     val ctx = LocalContext.current
     val portee = rememberCoroutineScope()
     var lignes by remember { mutableStateOf<List<LigneTournee>?>(null) }
@@ -102,6 +113,8 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauratio
     val reglagesKanban = remember { DepotTournees.reglagesKanban(ctx) }
     // Vue Kanban : désactivée par défaut, gardée sur le téléphone (mission 043).
     LaunchedEffect(Unit) { kanbanActif = withContext(Dispatchers.IO) { reglagesKanban.vueActive } }
+    var aPropos by rememberSaveable { mutableStateOf(false) }
+    if (aPropos) BoiteAPropos(onFermer = { aPropos = false })
     val colonnesAffichees = kanbanActif && modeColonnes
 
     // Recharge la liste ; tant qu'une ortho n'est pas complète, on recompte toutes les 5 s (le préchargement avance).
@@ -146,6 +159,9 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauratio
             onRestauration = onRestauration,
             kanbanActif = kanbanActif,
             modeColonnes = modeColonnes,
+            pleinEcran = pleinEcran,
+            onPleinEcran = onPleinEcran,
+            onAPropos = { aPropos = true },
             onActiverKanban = {
                 kanbanActif = !kanbanActif
                 portee.launch(Dispatchers.IO) { reglagesKanban.vueActive = kanbanActif }
@@ -253,6 +269,40 @@ fun EcranTournees(onOuvrir: (String) -> Unit, onEssai: () -> Unit, onRestauratio
     }
 }
 
+/** « À propos » (mission 044) : version installée lue sur le paquet, licences de `LICENSE` et `docs/dependances.md`. */
+@Composable
+private fun BoiteAPropos(onFermer: () -> Unit) {
+    val ctx = LocalContext.current
+    val versionNom = remember {
+        runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull()
+    }
+    AlertDialog(
+        onDismissRequest = onFermer,
+        title = { Text(stringResource(R.string.apropos_titre)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                Text(texteVersion(versionNom), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.apropos_desc), fontSize = 16.sp)
+                Text(stringResource(R.string.apropos_licences), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(URL_GITHUB))) }
+                    onFermer()
+                },
+                modifier = Modifier.height(48.dp),
+            ) { Text(stringResource(R.string.apropos_github), fontSize = 18.sp) }
+        },
+        dismissButton = {
+            TextButton(onClick = onFermer, modifier = Modifier.height(48.dp)) { Text(stringResource(R.string.apropos_fermer), fontSize = 18.sp) }
+        },
+    )
+}
+
+private const val URL_GITHUB = "https://github.com/pobsteta/surculus"
+
 /** Barre de l'accueil : titre « Surculus » et menu à trois points (cible de 48 dp, comme le IconButton de Material 3). */
 @Composable
 private fun BandeauAccueil(
@@ -260,6 +310,9 @@ private fun BandeauAccueil(
     onRestauration: () -> Unit,
     kanbanActif: Boolean,
     modeColonnes: Boolean,
+    pleinEcran: Boolean,
+    onPleinEcran: () -> Unit,
+    onAPropos: () -> Unit,
     onActiverKanban: () -> Unit,
     onBasculerVue: () -> Unit,
 ) {
@@ -300,12 +353,21 @@ private fun BandeauAccueil(
                         onClick = { menu = false; onActiverKanban() },
                     )
                     DropdownMenuItem(
+                        text = { Text(stringResource(R.string.tournees_menu_plein_ecran), fontSize = 18.sp) },
+                        trailingIcon = if (pleinEcran) ({ Text("✓", fontSize = 18.sp, fontWeight = FontWeight.Bold) }) else null,
+                        onClick = { menu = false; onPleinEcran() },
+                    )
+                    DropdownMenuItem(
                         text = { Text(stringResource(R.string.essai_ouvrir), fontSize = 18.sp) },
                         onClick = { menu = false; onEssai() },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.restauration_ouvrir), fontSize = 18.sp) },
                         onClick = { menu = false; onRestauration() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.tournees_menu_apropos), fontSize = 18.sp) },
+                        onClick = { menu = false; onAPropos() },
                     )
                 }
             }
