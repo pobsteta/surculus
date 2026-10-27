@@ -22,7 +22,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +51,7 @@ import kotlinx.coroutines.withContext
 
 /** Restauration d'une tournée depuis un `.sursync` choisi dans le sélecteur de fichier (`ACTION_OPEN_DOCUMENT`). */
 @Composable
-fun EcranRestauration() {
+fun EcranRestauration(onRetour: () -> Unit) {
     val contexte = LocalContext.current
     val portee = rememberCoroutineScope()
     var resultat by remember { mutableStateOf<Resultat?>(null) }
@@ -68,7 +72,14 @@ fun EcranRestauration() {
     }
 
     Column {
-        BandeauCompact(titre = stringResource(R.string.restauration_titre))
+        BandeauCompact(
+            titre = stringResource(R.string.restauration_titre),
+            navigationIcon = {
+                IconButton(onClick = onRetour) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.param_retour))
+                }
+            },
+        )
         Column(
             Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
                 .padding(24.dp).verticalScroll(rememberScrollState()),

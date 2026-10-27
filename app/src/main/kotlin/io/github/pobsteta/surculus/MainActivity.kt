@@ -79,8 +79,8 @@ class MainActivity : ComponentActivity() {
                         } else if (tourneeId != null) {
                             EcranCarte(tourneeId, onRetour = { nav = nav.retour() ?: nav }, onGuider = { nav = nav.guider(it) })
                         } else when (nav.destination) {
-                            Destination.ESSAI -> EcranEssaiGnss()
-                            Destination.RESTAURATION -> EcranRestauration()
+                            Destination.ESSAI -> EcranEssaiGnss(onRetour = { nav = nav.retour() ?: nav })
+                            Destination.RESTAURATION -> EcranRestauration(onRetour = { nav = nav.retour() ?: nav })
                             Destination.PARAMETRES -> EcranParametres(
                                 pleinEcran = pleinEcran,
                                 onPleinEcran = {

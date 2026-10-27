@@ -22,6 +22,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -70,7 +74,7 @@ private fun Ton.couleur() = when (this) {
  * Source unique du fix : [SourcePosition.fix] ; état du service : [ServiceGnssRtk.etat].
  */
 @Composable
-fun EcranEssaiGnss() {
+fun EcranEssaiGnss(onRetour: () -> Unit) {
     val ctx = LocalContext.current
     val (fix, localisationRefusee) = rememberFix()
     val etat by ServiceGnssRtk.etat.collectAsStateWithLifecycle()
@@ -82,32 +86,39 @@ fun EcranEssaiGnss() {
     val recepteurActif = remember { ConfigRtk.lire(ctx).actif }
 
     Column {
-    BandeauCompact(titre = stringResource(R.string.essai_ouvrir))
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-            .background(Blanc)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        BlocMesure(affichage)
-
-        Text(
-            stringResource(
-                R.string.essai_source,
-                if (etat.enMarche) stringResource(if (etat.connecte) R.string.essai_lien_ok else R.string.essai_lien_attente)
-                else stringResource(R.string.essai_lien_arrete),
-            ),
-            style = MaterialTheme.typography.bodyMedium, color = Noir,
+        BandeauCompact(
+            titre = stringResource(R.string.essai_ouvrir),
+            navigationIcon = {
+                IconButton(onClick = onRetour) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.param_retour))
+                }
+            },
         )
-        if (!recepteurActif) Text(stringResource(R.string.essai_recepteur_inactif), style = MaterialTheme.typography.bodyMedium, color = Noir)
-        if (localisationRefusee) Text(stringResource(R.string.carte_permission), fontWeight = FontWeight.Bold, color = Rouge)
-        etat.erreur?.let { Text(it, color = Rouge) }
-        etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = Rouge) }
-        Spacer(Modifier.height(24.dp))
-    }
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                .background(Blanc)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            BlocMesure(affichage)
+
+            Text(
+                stringResource(
+                    R.string.essai_source,
+                    if (etat.enMarche) stringResource(if (etat.connecte) R.string.essai_lien_ok else R.string.essai_lien_attente)
+                    else stringResource(R.string.essai_lien_arrete),
+                ),
+                style = MaterialTheme.typography.bodyMedium, color = Noir,
+            )
+            if (!recepteurActif) Text(stringResource(R.string.essai_recepteur_inactif), style = MaterialTheme.typography.bodyMedium, color = Noir)
+            if (localisationRefusee) Text(stringResource(R.string.carte_permission), fontWeight = FontWeight.Bold, color = Rouge)
+            etat.erreur?.let { Text(it, color = Rouge) }
+            etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = Rouge) }
+            Spacer(Modifier.height(24.dp))
+        }
     }
 }
 

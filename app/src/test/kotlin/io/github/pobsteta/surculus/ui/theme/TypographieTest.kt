@@ -103,4 +103,16 @@ class TypographieTest {
         assertEquals(1, lignes.size, "titleLarge dans EcranTournees : $lignes")
         assertTrue("ligne.foret" in lignes.single())
     }
+
+    @Test
+    fun flecheDeRetourDansLeBandeauDesTroisEcransACacheRetour() {
+        for (nom in listOf("EcranParametres.kt", "EcranRestauration.kt", "EcranEssaiGnss.kt")) {
+            val src = source(nom)
+            assertTrue("Icons.AutoMirrored.Filled.ArrowBack" in src, "$nom : flèche de retour")
+            assertTrue("navigationIcon" in src && "IconButton(onClick = onRetour)" in src, "$nom : flèche dans le bandeau, action onRetour")
+        }
+        val main = source("MainActivity.kt")
+        assertTrue(Regex("""EcranEssaiGnss\(onRetour = \{ nav = nav\.retour\(\) \?: nav \}\)""").containsMatchIn(main), "essai : retour système")
+        assertTrue(Regex("""EcranRestauration\(onRetour = \{ nav = nav\.retour\(\) \?: nav \}\)""").containsMatchIn(main), "restauration : retour système")
+    }
 }
