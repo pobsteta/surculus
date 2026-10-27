@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -55,6 +56,14 @@ class MainActivity : ComponentActivity() {
             }
             // Thème (mission 051) : Système par défaut, gardé sur le téléphone ; le changement s'applique tout de suite.
             var choixTheme by remember { mutableStateOf(reglagesAffichage.choixTheme) }
+            // Icônes des barres système : sombres sur thème clair, claires sur thème sombre, selon le thème appliqué
+            // (le choix, pas seulement le mode du téléphone).
+            val sombre = choixTheme.estSombre(isSystemInDarkTheme())
+            LaunchedEffect(sombre) {
+                val controleur = WindowCompat.getInsetsController(window, window.decorView)
+                controleur.isAppearanceLightStatusBars = !sombre
+                controleur.isAppearanceLightNavigationBars = !sombre
+            }
             SurculusTheme(choixTheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     // Survit à une rotation : écran, tournée ouverte (nom de son dossier), placette guidée (uuid).

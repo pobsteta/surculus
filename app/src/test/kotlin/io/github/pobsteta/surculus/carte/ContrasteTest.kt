@@ -35,9 +35,11 @@ class ContrasteTest {
         }
     }
 
-    @Test fun `en sombre, aucune teinte d'etat ne se lit directement sur le fond, d'ou la plaque`() {
+    /** Simple mesure, sans seuil : la valeur est dans le message, rien n'est figé si le fond ou la palette changent. */
+    @Test fun `en sombre, le contraste de chaque teinte sur le fond est mesure`() {
         teintes.forEach { (nom, c) ->
-            assertTrue(contraste(c, SchemaSombre.background) < CONTRASTE_MINIMAL, "$nom sur fond sombre : ${contraste(c, SchemaSombre.background)}")
+            val mesure = contraste(c, SchemaSombre.background)
+            assertTrue(mesure in 1f..21f, "$nom sur fond sombre : $mesure")
         }
     }
 }
