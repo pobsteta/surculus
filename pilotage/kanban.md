@@ -81,16 +81,21 @@ _Idées, à trier au prochain `/mission`._
 - **sommieR, démo de Marsannay-la-Côte** : brief envoyé (pobsteta/sommieR#65), attend la
   livraison pour la seconde tournée d'essai.
 
+- **042** styles et tailles de texte de Marculus (`dev`, appuyer), en cours depuis le
+  2026-10-27 : code direct, trois exceptions (72 sp et 44 sp). Fiche :
+  `pilotage/missions/042-typographie.md`.
+- **045** bouton « Toutes les licences » dans « À propos » (`dev`, appuyer) : PR #88 en
+  relecture. Fiche : `pilotage/missions/045-lien-licences.md`.
+
 ## Planifié
 
 _En attente sous le plafond humain (3 PR en revue)._
 
 **Attendent le plafond :**
 
-- **042** styles de texte de Marculus et Groma aux tailles de Surculus (`dev`, appuyer : tableau
-  des styles validé par Pascal avant le code). Après la 040 et la 041. Fiche :
-  `pilotage/missions/042-typographie.md`.
-
+- **046** écran Paramètres comme Marculus : Plein écran, Vue Kanban, Essai GNSS, Restaurer ; le menu « ⋮ » ne garde que Paramètres et À propos (`dev`, appuyer). Après la 042. Fiche : `pilotage/missions/046-parametres.md`.
+- **047** récepteur GNSS dans Paramètres, comme Groma (`dev`, appuyer). Après la 046. Fiche : `pilotage/missions/047-recepteur-dans-parametres.md`.
+- **048** voix Vosk depuis Paramètres : téléchargement et fichier (`dev`, appuyer). Après la 046. Fiche : `pilotage/missions/048-voix-vosk.md`.
 - **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK de la 011 sur Couchey
   (import, ortho, mode avion, guidage, test des dix secondes) ; restauration de
   `exemple-v1.sursync` ; comptes de Couchey contre QGIS (029) ; **essai au soleil** de la
