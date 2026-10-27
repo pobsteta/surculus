@@ -2,9 +2,18 @@
 <resources>
     <!-- Accueil -->
     <string name="tournees_menu">Menu</string>
-    <!-- Menu : « À propos » et « Plein écran » (mission 044) -->
+    <!-- Menu « ⋮ » (missions 044, 046) : Paramètres et À propos seulement -->
     <string name="tournees_menu_apropos">À propos</string>
-    <string name="tournees_menu_plein_ecran">Plein écran</string>
+    <string name="tournees_menu_parametres">Paramètres</string>
+    <!-- Écran Paramètres (mission 046) : libellés de Marculus -->
+    <string name="param_titre">Paramètres</string>
+    <string name="param_retour">Retour</string>
+    <string name="param_plein_titre">Plein écran</string>
+    <string name="param_plein_desc">Masque les barres de statut et de navigation.</string>
+    <string name="param_kanban_titre">Vue Kanban</string>
+    <string name="param_kanban_desc">Ajoute un mode Kanban (Proposée / Validée / Planifiée / Réalisée / Abandonnée) dans la liste des tournées.</string>
+    <string name="param_essai_desc">Vérifie la position du récepteur GNSS.</string>
+    <string name="param_restaurer_desc">Remet en place une tournée sauvegardée.</string>
     <string name="apropos_titre">À propos de Surculus</string>
     <string name="apropos_desc">Suivi des travaux de plantation en forêt : contrôle des plants, guidage vers les placettes, saisie hors réseau.</string>
     <string name="apropos_licences">Surculus est un logiciel libre distribué sous licence GNU GPL v3 ou ultérieure, sans aucune garantie. Reconnaissance vocale : Vosk (Alpha Cephei) et le modèle vosk-model-small-fr-0.22, sous licence Apache 2.0. Carte : osmdroid (Apache 2.0). Fonds de carte : IGN Géoplateforme (Etalab 2.0) et OpenStreetMap (ODbL).</string>
@@ -12,7 +21,6 @@
     <string name="apropos_github">Ouvrir sur GitHub</string>
     <string name="apropos_fermer">Fermer</string>
     <!-- Vue Kanban (mission 043) : les libellés des cinq colonnes sont dans EtatKanban.kt -->
-    <string name="tournees_menu_kanban">Vue Kanban</string>
     <string name="tournees_vue_colonnes">Vue Kanban</string>
     <string name="tournees_vue_liste">Vue liste</string>
     <string name="kanban_controles">%1$d contrôles prévus</string>

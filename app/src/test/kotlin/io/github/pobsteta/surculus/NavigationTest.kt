@@ -16,16 +16,38 @@ class NavigationTest {
         assertNull(EtatNavigation().retour())
     }
 
-    @Test fun `essai GNSS depuis le menu, retour vers les tournees`() {
-        val e = EtatNavigation().ouvrirEssai()
-        assertEquals(Destination.ESSAI, e.destination)
+    @Test fun `parametres depuis les tournees, retour vers les tournees`() {
+        val e = EtatNavigation().ouvrirParametres()
+        assertEquals(Destination.PARAMETRES, e.destination)
         assertEquals(EtatNavigation(), e.retour())
     }
 
-    @Test fun `restauration depuis le menu, retour vers les tournees`() {
-        val e = EtatNavigation().ouvrirRestauration()
+    @Test fun `essai GNSS depuis parametres, retour vers parametres puis tournees`() {
+        val e = EtatNavigation().ouvrirParametres().ouvrirEssai()
+        assertEquals(Destination.ESSAI, e.destination)
+        assertEquals(EtatNavigation().ouvrirParametres(), e.retour())
+        assertEquals(EtatNavigation(), e.retour()!!.retour())
+    }
+
+    @Test fun `restauration depuis parametres, retour vers parametres puis tournees`() {
+        val e = EtatNavigation().ouvrirParametres().ouvrirRestauration()
         assertEquals(Destination.RESTAURATION, e.destination)
-        assertEquals(EtatNavigation(), e.retour())
+        assertEquals(EtatNavigation().ouvrirParametres(), e.retour())
+        assertEquals(EtatNavigation(), e.retour()!!.retour())
+    }
+
+    @Test fun `parametres n'est pas la racine`() {
+        assertTrue(!EtatNavigation().ouvrirParametres().estRacine)
+    }
+
+    @Test fun `le menu a trois points ne garde que parametres et a propos`() {
+        assertEquals(listOf(EntreeMenu.PARAMETRES, EntreeMenu.A_PROPOS), ENTREES_MENU)
+    }
+
+    @Test fun `la rotation restitue parametres et les ecrans qui en dependent`() {
+        for (e in listOf(EtatNavigation().ouvrirParametres(), EtatNavigation().ouvrirEssai(), EtatNavigation().ouvrirRestauration())) {
+            assertEquals(e, EtatNavigation.depuisListe(e.enListe()))
+        }
     }
 
     @Test fun `guidage vers carte puis tournees puis quitter`() {

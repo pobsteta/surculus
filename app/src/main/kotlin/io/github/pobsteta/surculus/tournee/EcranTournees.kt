@@ -30,6 +30,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import io.github.pobsteta.surculus.ENTREES_MENU
+import io.github.pobsteta.surculus.EntreeMenu
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.ViewColumn
@@ -81,7 +83,7 @@ import kotlinx.coroutines.withContext
  * Liste des tournées (spec § 4.1) : pour chacune, la forêt en grand, puis qui l'a préparée et quand, le nombre de
  * contrôles, et l'état de l'ortho (ADR 0009). Un appui ouvre la carte. Source : le `travaux.gpkg` de chaque tournée.
  *
- * Accueil de l'application (mission 040) : barre « Surculus » et menu à trois points (Essai GNSS, Restaurer une tournée).
+ * Accueil de l'application (mission 040) : barre « Surculus » et menu à trois points (Paramètres, À propos).
  */
 /** Message de l'écran ; [refus] (et non un mot du texte) décide de la couleur. */
 private data class MessageTournees(val texte: String, val refus: Boolean)
@@ -89,10 +91,7 @@ private data class MessageTournees(val texte: String, val refus: Boolean)
 @Composable
 fun EcranTournees(
     onOuvrir: (String) -> Unit,
-    onEssai: () -> Unit,
-    onRestauration: () -> Unit,
-    pleinEcran: Boolean = false,
-    onPleinEcran: () -> Unit = {},
+    onParametres: () -> Unit,
 ) {
     val ctx = LocalContext.current
     val portee = rememberCoroutineScope()
@@ -153,17 +152,10 @@ fun EcranTournees(
 
     Column(Modifier.fillMaxSize()) {
         BandeauAccueil(
-            onEssai = onEssai,
-            onRestauration = onRestauration,
+            onParametres = onParametres,
             kanbanActif = kanbanActif,
             modeColonnes = modeColonnes,
-            pleinEcran = pleinEcran,
-            onPleinEcran = onPleinEcran,
             onAPropos = { aPropos = true },
-            onActiverKanban = {
-                kanbanActif = !kanbanActif
-                portee.launch(Dispatchers.IO) { reglagesKanban.vueActive = kanbanActif }
-            },
             onBasculerVue = { modeColonnes = !modeColonnes },
         )
         Column(Modifier
@@ -308,14 +300,10 @@ private fun BoiteAPropos(onFermer: () -> Unit) {
 /** Barre de l'accueil : titre « Surculus » et menu à trois points (cible de 48 dp, comme le IconButton de Material 3). */
 @Composable
 private fun BandeauAccueil(
-    onEssai: () -> Unit,
-    onRestauration: () -> Unit,
+    onParametres: () -> Unit,
     kanbanActif: Boolean,
     modeColonnes: Boolean,
-    pleinEcran: Boolean,
-    onPleinEcran: () -> Unit,
     onAPropos: () -> Unit,
-    onActiverKanban: () -> Unit,
     onBasculerVue: () -> Unit,
 ) {
     var menu by remember { mutableStateOf(false) }
@@ -349,28 +337,17 @@ private fun BandeauAccueil(
                     Text("⋮", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { contentDescription = menuDesc })
                 }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.tournees_menu_kanban)) },
-                        trailingIcon = if (kanbanActif) ({ Text("✓", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold) }) else null,
-                        onClick = { menu = false; onActiverKanban() },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.tournees_menu_plein_ecran)) },
-                        trailingIcon = if (pleinEcran) ({ Text("✓", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold) }) else null,
-                        onClick = { menu = false; onPleinEcran() },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.essai_ouvrir)) },
-                        onClick = { menu = false; onEssai() },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.restauration_ouvrir)) },
-                        onClick = { menu = false; onRestauration() },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.tournees_menu_apropos)) },
-                        onClick = { menu = false; onAPropos() },
-                    )
+                    for (entree in ENTREES_MENU) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(stringResource(if (entree == EntreeMenu.PARAMETRES) R.string.tournees_menu_parametres else R.string.tournees_menu_apropos))
+                            },
+                            onClick = {
+                                menu = false
+                                if (entree == EntreeMenu.PARAMETRES) onParametres() else onAPropos()
+                            },
+                        )
+                    }
                 }
             }
         }
