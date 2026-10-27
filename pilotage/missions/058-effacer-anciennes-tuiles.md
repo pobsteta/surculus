@@ -9,7 +9,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Effacer, dans le dossier de chaque tournée, les tuiles d'ortho IGN préchargées avant la mission 055 (`tuiles/` et `ortho-terminee.txt`), qui ne sont plus lues, pour qu'elles n'occupent plus le téléphone et ne partent pas vers sommieR avec l'export de la tournée.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Supprimer une seule fois, en tâche de fond, `tuiles/` et `ortho-terminee.txt` du dossier de chaque tournée (plus lus depuis la 055), et les exclure de l'export zip, pour libérer le téléphone et ne rien envoyer de superflu à sommieR.
 
 ## Vérifié à la source
 

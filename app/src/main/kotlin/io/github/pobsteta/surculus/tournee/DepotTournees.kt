@@ -69,7 +69,7 @@ object DepotTournees {
     }
 
     /**
-     * Mission 058 : efface une fois les tuiles d'ortho préchargées avant la 055 (`tuiles/`, `ortho-terminee.txt`) de chaque
+     * Mission 058 : efface une fois les anciennes tuiles d'ortho (`tuiles/`, `ortho-terminee.txt`, plus lues depuis la 055) de chaque
      * tournée. À appeler hors du fil principal. La marque « fait » n'est posée qu'après un passage sans exception ; sinon
      * le prochain démarrage recommence (idempotent). Aucune autre donnée de la tournée n'est touchée.
      */
