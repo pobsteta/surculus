@@ -145,3 +145,25 @@ La mention de la section « Valeurs sacrifiées » (« option "Wi-Fi seulement" 
 **« Wi-Fi seulement » est activé par défaut**. Les décisions (a) à (d) de la mission 011 sont au
 journal du 2026-10-21 (`pilotage/journal.md`, entrée « mission 011 · (a) … ») et dans
 `pilotage/missions/011-ecrans-tournees-carte-guidage.md`. Elles ne sont pas recopiées ici.
+
+## Amendement du 2026-10-27 : les fonds de carte de Marculus, chargés en ligne (ajout, rien n'est effacé plus haut)
+
+- **Décision de Pascal** (2026-10-27) : « supprime aussi la phrase au dessus de la zone de
+  recherche, comme dans marculus » (la case « Ortho : Wi-Fi seulement »), puis « Comment sont
+  gérées les orthos dans marculus ? Fais la même chose dans surculus », et « (b) exactement comme
+  marculus », entre deux options présentées par l'orchestrateur : (a) le menu de Marculus en
+  gardant le préchargement, (b) exactement comme Marculus, sans préchargement.
+- **Ce qui est remplacé** : l'option (d) de 2026-10-21 (ortho IGN préchargée dans le dossier de
+  la tournée à son ouverture, état de l'ortho visible par tournée, « Wi-Fi seulement »).
+- **Ce qui la remplace** (mission 055) : sur la carte, un menu « Couches » dans le bandeau, comme
+  Marculus : « Fond de carte » (Plan IGN par défaut, Ortho IGN, OpenStreetMap, chargés en ligne au
+  fur et à mesure avec le cache d'osmdroid ; Ortho chantier, lue dans le fichier tuilé de la
+  tournée quand il existe) et « Couches affichées » (Cadastre IGN, couches de la tournée).
+- **Ce qui est gardé** : la lecture prioritaire d'un `ortho.mbtiles` ou `ortho.gpkg` du dossier
+  de la tournée (devenue l'« Ortho chantier ») ; le contrôle de l'emprise en France ; les
+  attributions IGN et OSM ; la cible (f), un seul fichier tuilé en EPSG:3857 fourni par sommieR.
+- **Ce qui est payé, dit à Pascal avant sa décision** : en forêt sans réseau, seules l'Ortho
+  chantier et les zones déjà regardées avec du réseau s'affichent. La règle de `CLAUDE.md`
+  (« pas de réseau ») n'est plus tenue pour les fonds IGN et OSM ; elle reste tenue par l'Ortho
+  chantier. Les tuiles déjà préchargées sur les téléphones restent sur le disque, plus lues
+  (choix du `dev`, PR #97).
