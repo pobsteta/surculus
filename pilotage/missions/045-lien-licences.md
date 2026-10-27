@@ -9,7 +9,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Ajouter à la boîte « À propos » un bouton qui ouvre la liste complète des dépendances et de leurs licences (`docs/dependances.md` sur GitHub), en gardant le texte actuel des licences principales, pour que toutes les licences soient accessibles sans allonger la boîte.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Ajouter à la boîte « À propos » un bouton qui ouvre `docs/dependances.md` sur GitHub (branche main), en gardant le texte des licences principales, pour que toutes les licences soient accessibles sans allonger la boîte. _(Recopiée par l'orchestrateur depuis le compte rendu du `dev`.)_
 
 ## Vérifié à la source
 
