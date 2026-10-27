@@ -82,19 +82,12 @@ class EtatKanbanTest {
         assertEquals(emptyList(), r.getValue(EtatKanban.VALIDEE))
     }
 
-    @Test fun `la vue Kanban est desactivee par defaut`() {
-        assertFalse(VUE_KANBAN_ACTIVE_PAR_DEFAUT)
-        assertFalse(ReglagesKanban(Memoire()).vueActive)
-    }
-
     @Test fun `les reglages se gardent et se relisent, par tournee`() {
         val magasin = Memoire()
         ReglagesKanban(magasin).apply {
-            vueActive = true
             definirStatut("t1", EtatKanban.VALIDEE)
         }
         val relu = ReglagesKanban(magasin) // autre instance : relecture depuis le stockage
-        assertEquals(true, relu.vueActive)
         assertEquals(EtatKanban.VALIDEE, relu.statut("t1"))
         assertEquals(EtatKanban.PROPOSEE, relu.statut("t2"))
     }
