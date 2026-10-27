@@ -19,6 +19,14 @@ class ReglagesAffichageTest {
         override fun ecrireBooleen(cle: String, valeur: Boolean) { booleens[cle] = valeur }
     }
 
+    @Test fun `le lien des licences pointe sur docs-dependances sur la branche main`() {
+        assertEquals("https://github.com/pobsteta/surculus/blob/main/docs/dependances.md", URL_LICENCES)
+    }
+
+    @Test fun `le lien GitHub pointe sur le depot`() {
+        assertEquals("https://github.com/pobsteta/surculus", URL_GITHUB)
+    }
+
     @Test fun `plein ecran est faux par defaut`() {
         assertFalse(ReglagesAffichage(Memoire()).pleinEcran)
     }

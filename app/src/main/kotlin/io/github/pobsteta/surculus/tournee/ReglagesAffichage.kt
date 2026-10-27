@@ -7,6 +7,10 @@
  */
 package io.github.pobsteta.surculus.tournee
 
+/** Dépôt du projet et liste complète des dépendances et licences (mission 045), sur la branche `main`. */
+const val URL_GITHUB = "https://github.com/pobsteta/surculus"
+const val URL_LICENCES = "https://github.com/pobsteta/surculus/blob/main/docs/dependances.md"
+
 /** Plein écran : faux par défaut, comme Marculus (mission 044). */
 const val PLEIN_ECRAN_PAR_DEFAUT = false
 

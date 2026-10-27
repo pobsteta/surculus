@@ -284,6 +284,13 @@ private fun BoiteAPropos(onFermer: () -> Unit) {
                 Text(texteVersion(versionNom), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Text(stringResource(R.string.apropos_desc), fontSize = 16.sp)
                 Text(stringResource(R.string.apropos_licences), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
+                TextButton(
+                    onClick = {
+                        runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(URL_LICENCES))) }
+                        onFermer()
+                    },
+                    modifier = Modifier.height(48.dp),
+                ) { Text(stringResource(R.string.apropos_toutes_licences), fontSize = 18.sp) }
             }
         },
         confirmButton = {
@@ -300,8 +307,6 @@ private fun BoiteAPropos(onFermer: () -> Unit) {
         },
     )
 }
-
-private const val URL_GITHUB = "https://github.com/pobsteta/surculus"
 
 /** Barre de l'accueil : titre « Surculus » et menu à trois points (cible de 48 dp, comme le IconButton de Material 3). */
 @Composable
