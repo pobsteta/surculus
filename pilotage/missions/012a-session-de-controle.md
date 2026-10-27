@@ -45,9 +45,11 @@ sens remonte à l'orchestrateur avant d'être codée).
 2. **Une placette terminée reste « Contrôlée » pour toute la tournée** (Q11 a), même les jours
    suivants ; un second contrôle un autre jour reste permis (un contrôle par jour, spec § 4.3),
    il n'est pas réclamé.
-3. **Pointage au clavier** (Q3) : la session reçoit distance horizontale et azimut magnétique
-   saisis (unités déclarées à l'ouverture de la tournée, ADR 0003) ; aucune boussole du
-   téléphone.
+3. **Azimut lu par la boussole du téléphone** (Q3, réponse revue par Pascal le 2026-10-27,
+   « Boussole du téléphone ») ; la distance horizontale reste tapée. La lecture du capteur est
+   la 012-B ; la session reçoit un azimut magnétique et sa source, et ne dépend pas du capteur
+   (unités : degrés pour la boussole du téléphone ; degrés ou grades déclarés pour une saisie,
+   ADR 0003).
 4. **Cause d'un plant atteint** (Q5) : la session accepte la cause en même temps que l'état ou
    juste après (pour l'écran tant que la dictée n'est pas livrée).
 5. **« vide » et « fin du vide »** (Q6) : rien n'est tracé en tranche 1 ; la session répond un
