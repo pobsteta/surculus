@@ -69,8 +69,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.ui.BandeauCompact
-import io.github.pobsteta.surculus.carte.Palette
-import io.github.pobsteta.surculus.carte.plaqueEtat
+import io.github.pobsteta.surculus.carte.couleurErreur
+import io.github.pobsteta.surculus.carte.couleurNeutre
 import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -168,7 +168,7 @@ fun EcranTournees(
         Column(Modifier
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            message?.let { Text(it.texte, color = if (it.refus) Palette.Rouge else Palette.Noir, modifier = Modifier.plaqueEtat()) }
+            message?.let { Text(it.texte, color = if (it.refus) couleurErreur() else couleurNeutre()) }
 
             val toutes = lignes.orEmpty()
             val trouvees = if (recherche.isBlank()) toutes else toutes.filter { correspond(it.champs, recherche) }
@@ -349,7 +349,7 @@ private fun LigneDeTournee(ligne: LigneTournee, onOuvrir: () -> Unit) {
         // 1. La forêt, en grand.
         Text(ligne.foret ?: ligne.id, style = MaterialTheme.typography.titleLarge)
         if (t == null) {
-            Text(stringResource(R.string.tournees_illisible, ligne.refus.orEmpty()), style = MaterialTheme.typography.bodyMedium, color = Palette.Rouge)
+            Text(stringResource(R.string.tournees_illisible, ligne.refus.orEmpty()), style = MaterialTheme.typography.bodyMedium, color = couleurErreur())
             return@Column
         }
         val inconnu = stringResource(R.string.tournees_inconnu)

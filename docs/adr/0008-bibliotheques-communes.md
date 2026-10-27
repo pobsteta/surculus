@@ -268,6 +268,21 @@ Pascal a validé les propositions de l'orchestrateur sur les six questions (« J
   applications (mesuré sur les captures du 2026-10-27) ; Marculus et Groma suivaient le mode
   sombre du téléphone, Surculus non.
 
+### Amendement du 2026-10-27 (soir) : la palette d'état en thème sombre (mission 063)
+
+- **Décision de Pascal** (2026-10-27, sur le plan de la mission 063, option (b)) : **en thème sombre, aucun
+  texte n'est écrit en couleur d'état** ; la plaque blanche de la mission 051 est supprimée. Le texte d'état est en
+  `onSurface` (14,35:1 sur `surface`), les messages d'erreur et de refus en `colorScheme.error` du thème (comme
+  Marculus, `DicteeVocale.kt` l. 349), et l'état est porté par une **pastille cernée d'un filet blanc** : carte,
+  liste Placettes, légende, radar du guidage et bloc de l'écran d'essai GNSS.
+- **Aucune couleur d'état nouvelle** : l'option E (Material Color Utilities) **ne s'applique pas à la palette
+  d'état**, elle reste celle des rôles du thème. *Précise* le paragraphe « La palette d'état … reste propre à
+  Surculus » ; l'orange ne porte plus de texte en sombre. Décision 6 (« légende en noir à côté de sa pastille ») : en
+  sombre, la légende est en `onSurface` ; **en clair, rien ne change** (noir, teintes inchangées).
+- **Test** : texte >= 4,5:1, pastille >= 3:1 (WCAG 2.2, 1.4.11), en clair et en sombre, sur le fond réel
+  (`ContrasteTest`) ; un test de sources vérifie qu'aucune plaque ni teinte d'état nue ne reste (`SansPlaqueSourcesTest`).
+- **Reste ouvert** : l'essai au soleil par Pascal, sur la release installée après la fusion ; un échec rouvre la mission.
+
 ## Sources
 
 - `terrain/README.md` l. 12-22 et 84 ; `terrain/jitpack.yml` (tag v0.5.0, `ee98731`).

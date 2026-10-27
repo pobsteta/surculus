@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.ui.BandeauCompact
+import io.github.pobsteta.surculus.ui.theme.LocalSombre
 import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.core.guidage.DetecteurArrivee
@@ -92,11 +93,11 @@ fun EcranGuidage(id: String, placetteUuid: String, onRetour: () -> Unit) {
             when (chargement) {
                 Chargement.EnCours -> Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
                 is Chargement.Refus -> Column(Modifier.padding(24.dp)) {
-                    Text(stringResource(R.string.carte_refus, chargement.message), color = Palette.Rouge, modifier = Modifier.plaqueEtat())
+                    Text(stringResource(R.string.carte_refus, chargement.message), color = couleurErreur())
                 }
                 is Chargement.Pret ->
                     if (cible == null) {
-                        Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = Palette.Rouge, modifier = Modifier.plaqueEtat()) }
+                        Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = couleurErreur()) }
                     } else {
                         GuidagePret(cible, chargement.tournee.tournee.placettes, fix)
                     }
@@ -165,26 +166,25 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, f
         // 1. La seule chose à montrer, en grand : la distance (le titre « Vers <code> » est dans le bandeau).
         if (cap == null && fix != null) {
             // Un fix existe mais tombe hors de France : axes inversés, pas une absence de signal.
-            Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
+            Text(stringResource(R.string.carte_hors_france), color = couleurErreur(), fontWeight = FontWeight.Bold)
         } else if (cap == null) {
-            Text(stringResource(R.string.guidage_sans_position), color = Palette.Rouge, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
+            Text(stringResource(R.string.guidage_sans_position), color = couleurErreur(), fontWeight = FontWeight.Bold)
         } else {
             Text(
                 Libelles.distance(cap.distanceM),
                 fontSize = 72.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (cap.arrive) Palette.Vert else Palette.Noir,
-                modifier = Modifier.plaqueEtat(),
+                color = couleurTexteEtat(if (cap.arrive) Palette.Vert else Palette.Noir),
             )
             // 2. Le cap, ou l'arrivée.
             if (cap.arrive) {
-                Text(stringResource(R.string.guidage_arrive), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Palette.Vert, modifier = Modifier.plaqueEtat())
+                TexteEtat(stringResource(R.string.guidage_arrive), Palette.Vert, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             } else {
                 Text(stringResource(R.string.guidage_cap, Libelles.cap(cap.azimutDeg)), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             }
         }
         // 3. La comparaison : où je suis par rapport à la placette et au cercle de 30 m.
-        Radar(position, cible.position!!, Modifier.fillMaxWidth().height(260.dp).plaqueEtat())
+        Radar(position, cible.position!!, Modifier.fillMaxWidth().height(260.dp))
         Text(stringResource(R.string.guidage_nord), style = MaterialTheme.typography.bodySmall)
 
         if (cap?.arrive == true) {
@@ -220,9 +220,9 @@ private fun Resultat(v: Verdict<Rattache>) {
         is Verdict.Accepte -> {
             val r = v.valeur
             if (r.parIdentite) {
-                Text(stringResource(R.string.guidage_rattache_identite, r.piquet.code, r.distanceM.roundToInt()), color = Palette.Orange, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
+                TexteEtat(stringResource(R.string.guidage_rattache_identite, r.piquet.code, r.distanceM.roundToInt()), Palette.Orange, fontWeight = FontWeight.Bold)
             } else {
-                Text(stringResource(R.string.guidage_rattache, r.piquet.code, r.distanceM.roundToInt()), color = Palette.Vert, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
+                TexteEtat(stringResource(R.string.guidage_rattache, r.piquet.code, r.distanceM.roundToInt()), Palette.Vert, fontWeight = FontWeight.Bold)
             }
         }
         is Verdict.Refuse -> {
@@ -232,15 +232,19 @@ private fun Resultat(v: Verdict<Rattache>) {
                 is RefusPlacette.CodeInconnu -> stringResource(R.string.guidage_refus_code, refus.code)
                 else -> refus.message
             }
-            Text(texte, color = Palette.Rouge, fontWeight = FontWeight.Bold, modifier = Modifier.plaqueEtat())
+            Text(texte, color = couleurErreur(), fontWeight = FontWeight.Bold)
         }
-        is Verdict.AConfirmer -> Text(v.alerte.message, color = Palette.Orange, modifier = Modifier.plaqueEtat())
+        is Verdict.AConfirmer -> TexteEtat(v.alerte.message, Palette.Orange)
     }
 }
 
 /** Radar nord en haut : la placette au centre, le cercle de 30 m, et l'agent là où il est. L'échelle suit la distance. */
 @Composable
 private fun Radar(agent: PointLambert93?, placette: PointLambert93, modifier: Modifier) {
+    // Mission 063 : en sombre, cercle et ligne en onSurface, centre et point d'arrivée cernés d'un filet blanc (pas de plaque).
+    val sombre = LocalSombre.current
+    val neutre = couleurNeutre()
+    val filet = CouleursEtat.filet
     Canvas(modifier) {
         val centre = Offset(size.width / 2, size.height / 2)
         val rayonMax = minOf(size.width, size.height) / 2 - 8.dp.toPx()
@@ -251,13 +255,15 @@ private fun Radar(agent: PointLambert93?, placette: PointLambert93, modifier: Mo
         val etendue = maxOf(d * 1.15, Guidage.SEUIL_ARRIVEE_M * 1.5)
         val pxParMetre = (rayonMax / etendue).toFloat()
         val arrive = agent != null && Guidage.estArrive(d)
-        val couleur = if (arrive) Palette.Vert else Palette.Noir
+        val couleur = if (sombre) neutre else if (arrive) Palette.Vert else Palette.Noir
         drawCircle(couleur, radius = (Guidage.SEUIL_ARRIVEE_M * pxParMetre).toFloat(), center = centre, style = Stroke(width = 4.dp.toPx()))
+        if (sombre) drawCircle(filet, radius = 8.dp.toPx() + 2.dp.toPx(), center = centre)
         drawCircle(Palette.Rouge, radius = 8.dp.toPx(), center = centre)
         if (agent != null) {
             val p = Offset(centre.x + (dx * pxParMetre).toFloat(), centre.y - (dy * pxParMetre).toFloat())
             drawLine(couleur, p, centre, strokeWidth = 3.dp.toPx())
-            drawCircle(couleur, radius = 10.dp.toPx(), center = p)
+            if (sombre) drawCircle(filet, radius = 10.dp.toPx() + 2.dp.toPx(), center = p)
+            drawCircle(if (sombre && arrive) Palette.Vert else couleur, radius = 10.dp.toPx(), center = p)
         }
     }
 }

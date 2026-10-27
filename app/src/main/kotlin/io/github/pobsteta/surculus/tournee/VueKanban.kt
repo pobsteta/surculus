@@ -47,7 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
-import io.github.pobsteta.surculus.carte.Palette
+import io.github.pobsteta.surculus.carte.couleurErreur
 import kotlin.math.roundToInt
 
 /** Une carte du Kanban : la tournée, la colonne où elle s'affiche et ce que l'avancement impose au moins. */
@@ -159,7 +159,7 @@ private fun CarteDeKanban(
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(carte.ligne.foret ?: carte.ligne.id, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
             if (t == null) {
-                Text(stringResource(R.string.tournees_illisible, carte.ligne.refus.orEmpty()), style = MaterialTheme.typography.bodyMedium, color = Palette.Rouge)
+                Text(stringResource(R.string.tournees_illisible, carte.ligne.refus.orEmpty()), style = MaterialTheme.typography.bodyMedium, color = couleurErreur())
             } else {
                 t.projet?.prepareLe?.let { Text(dateFrancaise(it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 Text(
