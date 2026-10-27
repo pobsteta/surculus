@@ -158,6 +158,7 @@ object LecteurTournee {
                 ug = l.texte("ug"),
                 position = geom("placettes")?.let { g -> l.blob(g)?.let(GeometrieGpkg::point) },
                 etatSuivi = EtatSuivi.depuis(l.texte("etat_suivi")),
+                dernierControle = l.texte("dernier_controle")?.takeIf { it.isNotBlank() },
             )
         }
         val controles = cnx.lignes("SELECT * FROM \"controles\" ORDER BY fid").map {

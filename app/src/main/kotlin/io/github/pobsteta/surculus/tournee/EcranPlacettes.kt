@@ -56,6 +56,8 @@ import io.github.pobsteta.surculus.gpkg.EtatSuivi
 import io.github.pobsteta.surculus.gpkg.FormePastille
 import io.github.pobsteta.surculus.gpkg.Pastille
 import io.github.pobsteta.surculus.gpkg.PlacetteTournee
+import io.github.pobsteta.surculus.gpkg.StatutLigne
+import io.github.pobsteta.surculus.gpkg.statutLigne
 import io.github.pobsteta.surculus.gpkg.ordonnerPlacettes
 import io.github.pobsteta.surculus.gpkg.titreForet
 import io.github.pobsteta.surculus.ui.BandeauCompact
@@ -98,8 +100,8 @@ fun EcranPlacettes(id: String, onRetour: () -> Unit, onCarte: () -> Unit, onPlac
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items(ordre.aFaire, key = { it.uuid }) { p -> LignePlacette(p, aFaire = true) { onPlacette(p.uuid) } }
-                        items(ordre.autres, key = { it.uuid }) { p -> LignePlacette(p, aFaire = false) { onPlacette(p.uuid) } }
+                        items(ordre.aFaire, key = { it.uuid }) { p -> LignePlacette(p, statutLigne(p, controlees)) { onPlacette(p.uuid) } }
+                        items(ordre.autres, key = { it.uuid }) { p -> LignePlacette(p, statutLigne(p, controlees)) { onPlacette(p.uuid) } }
                     }
                 }
             }
@@ -132,7 +134,8 @@ private fun BandeauPlacettes(titre: String, onRetour: () -> Unit, onCarte: (() -
 
 /** Une placette : pastille d'état comme sur la carte (mission 033), code, état dit en toutes lettres ; grisée si elle n'est plus à faire. */
 @Composable
-private fun LignePlacette(p: PlacetteTournee, aFaire: Boolean, onClick: () -> Unit) {
+private fun LignePlacette(p: PlacetteTournee, statut: StatutLigne, onClick: () -> Unit) {
+    val aFaire = statut == StatutLigne.A_FAIRE
     val couleurTexte = if (aFaire) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
     ElevatedCard(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Row(
@@ -144,7 +147,11 @@ private fun LignePlacette(p: PlacetteTournee, aFaire: Boolean, onClick: () -> Un
             Column(Modifier.weight(1f)) {
                 Text(p.code ?: stringResource(R.string.placettes_sans_code), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = couleurTexte)
                 Text(
-                    stringResource(if (aFaire) R.string.placettes_a_faire else R.string.placettes_controlee) + " · " + stringResource(libelleEtat(p.etatSuivi)),
+                    when (statut) {
+                        StatutLigne.A_FAIRE -> stringResource(R.string.placettes_a_faire) + " · " + stringResource(libelleEtat(p.etatSuivi))
+                        StatutLigne.CONTROLEE -> stringResource(R.string.placettes_controlee) + " · " + stringResource(libelleEtat(p.etatSuivi))
+                        StatutLigne.ETAT_SEUL -> stringResource(libelleEtat(p.etatSuivi)).replaceFirstChar { it.uppercase() }
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = couleurTexte,
                 )

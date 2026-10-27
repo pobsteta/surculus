@@ -67,6 +67,12 @@ class EcranPlacettesSourcesTest {
     }
 
     @Test
+    fun `la ligne dit Controlee par statutLigne, jamais pour toute ligne non a faire`() {
+        assertTrue("statutLigne(" in placettes)
+        assertFalse("if (aFaire) R.string.placettes_a_faire else R.string.placettes_controlee" in placettes)
+    }
+
+    @Test
     fun `les boutons de zoom integres d'osmdroid sont masques, le pincement reste (demande de Pascal)`() {
         assertTrue("zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)" in carte)
         assertTrue("carte.setMultiTouchControls(true)" in carte)

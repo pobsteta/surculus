@@ -36,6 +36,8 @@ data class PlacetteTournee(
     val position: PointLambert93?,
     /** Calculé par sommieR, lu tel quel ; [EtatSuivi.INCONNU] si nul, absent (ancienne tournée) ou valeur inconnue. */
     val etatSuivi: EtatSuivi = EtatSuivi.INCONNU,
+    /** `dernier_controle` de la couche `placettes` (spec § 5), texte tel que le fichier le porte ; `null` si la colonne est absente ou vide. Lu, jamais utilisé pour le tri (règle 1a). */
+    val dernierControle: String? = null,
 )
 
 /** Un contrôle déjà inscrit dans le fichier (`controles`). */

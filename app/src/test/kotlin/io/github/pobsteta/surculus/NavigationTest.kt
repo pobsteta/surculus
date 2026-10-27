@@ -87,7 +87,8 @@ class NavigationTest {
         assertEquals("p1", guidage.placetteId)
         // Guidage -> Carte (toujours centrée) -> Placettes -> Tournees -> quitter.
         assertEquals(carte, guidage.retour())
-        assertEquals(placettes, guidage.retour()!!.retour())
+        // Le récepteur, lancé à la première carte, reste lancé en revenant aux placettes (comme Groma).
+        assertEquals(placettes.copy(recepteurOuvert = true), guidage.retour()!!.retour())
         assertEquals(EtatNavigation(), guidage.retour()!!.retour()!!.retour())
         assertTrue(guidage.retour()!!.retour()!!.retour()!!.estRacine)
         assertNull(guidage.retour()!!.retour()!!.retour()!!.retour())
@@ -97,7 +98,7 @@ class NavigationTest {
         val carte = EtatNavigation().ouvrirTournee("t1").ouvrirCarte()
         assertTrue(carte.carte)
         assertNull(carte.centreId)
-        assertEquals(EtatNavigation().ouvrirTournee("t1"), carte.retour())
+        assertEquals(EtatNavigation().ouvrirTournee("t1").copy(recepteurOuvert = true), carte.retour())
     }
 
     @Test fun `naviguer vers depuis la carte sans placette choisie donne le guidage de la prochaine`() {

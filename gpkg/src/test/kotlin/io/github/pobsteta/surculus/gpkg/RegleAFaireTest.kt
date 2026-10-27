@@ -37,7 +37,9 @@ class RegleAFaireTest {
     }
 
     @Test
-    fun `deux tournees des memes placettes - une saisie dans l'une ne rend pas la placette faite dans l'autre`() {
+    fun `les saisies sont un ensemble propre a chaque appel - la separation par tournee viendra avec le journal`() {
+        // Ne teste que deux ensembles de saisies donnés à la fonction. La séparation réelle par tournée (clé `code_tournee` de
+        // la projection du journal) sera testée avec le journal des contrôles (mission 012).
         val memes = listOf(placette("P1", EtatSuivi.JAMAIS, "uuid-commun"), placette("P2", EtatSuivi.JAMAIS, "uuid-p2"))
         val saisiesTourneeA = setOf("uuid-commun")
         val saisiesTourneeB = emptySet<String>()
@@ -46,17 +48,49 @@ class RegleAFaireTest {
     }
 
     @Test
-    fun `placette a_jour ancienne - reste a jour, donc en bas, quelle que soit l'anciennete de son dernier controle`() {
-        // `dernier_controle` lointain : l'état vient de sommieR, Surculus ne le recalcule pas (règle 1a).
-        val ancienne = placette("P1", EtatSuivi.A_JOUR)
+    fun `la regle 1a ignore les dates - une a_jour dont le dernier_controle est ancien reste a jour, en bas`() {
+        // L'état vient de sommieR, Surculus ne le recalcule pas (règle 1a) : seule la valeur de `etat_suivi` compte.
+        val ancienne = placette("P1", EtatSuivi.A_JOUR).copy(dernierControle = "2019-05-01 08:00:00")
         assertTrue(!estAFaire(ancienne, emptySet()))
         assertEquals(listOf("P1"), ordonnerPlacettes(listOf(ancienne), emptySet()).autres.map { it.code })
     }
 
     @Test
-    fun `plantation plus agee que l'itineraire - le tri ne plante pas et chaque placette reste listee`() {
-        // Date incohérente : le tri ne lit aucune date (seuls l'état de suivi et les saisies comptent) ; une tournée de
-        // Couchey passée en `a_jour` pour toutes ses placettes se lit et se trie sans exception, aucune ne disparaît.
+    fun `dernier_controle ancien lu dans le fichier - la placette a_jour reste listee et en bas`() {
+        val f = TourneeDeTest.couchey(dossier)
+        Sqlite.ouvrir(f).use { cnx ->
+            cnx.createStatement().use { st ->
+                st.executeUpdate("UPDATE placettes SET etat_suivi = 'a_jour', dernier_controle = '2019-05-01 08:00:00' WHERE code_placette = 'P35-02'")
+                st.executeUpdate("UPDATE placettes SET etat_suivi = 'jamais' WHERE code_placette <> 'P35-02'")
+            }
+        }
+        val t = LecteurTournee.lire(f)
+        assertEquals("2019-05-01 08:00:00", t.placettes.single { it.code == "P35-02" }.dernierControle)
+        assertNull(t.placettes.first { it.code == "P35-01" }.dernierControle)
+        val o = ordonnerPlacettes(t.placettes, emptySet())
+        assertEquals(listOf("P35-02"), o.autres.map { it.code })
+        assertEquals(2, o.aFaire.size)
+    }
+
+    @Test
+    fun `un dernier_controle vide dans le fichier se lit comme une date absente`() {
+        assertNull(LecteurTournee.lire(TourneeDeTest.couchey(dossier)).placettes.first().dernierControle)
+    }
+
+    @Test
+    fun `statut de ligne - Controlee seulement si saisie dans cette tournee, sinon l'etat seul pour une a_jour`() {
+        val aJour = placette("P1", EtatSuivi.A_JOUR)
+        val faire = placette("P2", EtatSuivi.JAMAIS)
+        assertEquals(StatutLigne.ETAT_SEUL, statutLigne(aJour, emptySet()))
+        assertEquals(StatutLigne.CONTROLEE, statutLigne(aJour, setOf(aJour.uuid)))
+        assertEquals(StatutLigne.CONTROLEE, statutLigne(faire, setOf(faire.uuid)))
+        assertEquals(StatutLigne.A_FAIRE, statutLigne(faire, emptySet()))
+    }
+
+    @Test
+    fun `plantation plus agee que l'itineraire - une date incoherente ne change rien, le tri ne plante pas et chaque placette reste listee`() {
+        // Cas de date incohérente de CLAUDE.md : le tri ne lit aucune date ; une tournée entière en `a_jour` se lit et se
+        // trie sans exception, aucune placette ne disparaît.
         val f = TourneeDeTest.couchey(dossier)
         Sqlite.ouvrir(f).use { cnx -> cnx.createStatement().use { it.executeUpdate("UPDATE placettes SET etat_suivi = 'a_jour'") } }
         val o = ordonnerPlacettes(LecteurTournee.lire(f).placettes, emptySet())

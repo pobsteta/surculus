@@ -30,6 +30,19 @@ fun titreForet(projetForet: String?, nomCoucheForet: String?, dossier: String): 
 fun estAFaire(placette: PlacetteTournee, controlees: Set<String>): Boolean =
     placette.etatSuivi != EtatSuivi.A_JOUR && placette.uuid !in controlees
 
+/** Ce que dit la ligne d'une placette sur l'écran « Placettes ». */
+enum class StatutLigne { A_FAIRE, CONTROLEE, ETAT_SEUL }
+
+/**
+ * « À faire » ; « Contrôlée » **seulement** si un contrôle est saisi dans cette tournée (son `uuid` est dans [controlees]) ;
+ * sinon (une `a_jour` jamais saisie ici) on ne dit que son état.
+ */
+fun statutLigne(placette: PlacetteTournee, controlees: Set<String>): StatutLigne = when {
+    estAFaire(placette, controlees) -> StatutLigne.A_FAIRE
+    placette.uuid in controlees -> StatutLigne.CONTROLEE
+    else -> StatutLigne.ETAT_SEUL
+}
+
 /** Les placettes de la liste : « à faire » d'abord, puis les autres ; dans chaque groupe, ordre du code puis de l'`uuid`. */
 data class PlacettesOrdonnees(val aFaire: List<PlacetteTournee>, val autres: List<PlacetteTournee>) {
     val toutes: List<PlacetteTournee> get() = aFaire + autres
