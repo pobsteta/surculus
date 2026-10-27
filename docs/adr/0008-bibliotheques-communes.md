@@ -250,6 +250,24 @@ Pascal a validé les propositions de l'orchestrateur sur les six questions (« J
   la 038 et attendent l'essai de Couchey ; le thème reste clair forcé dans Surculus (le
   choix Système / Clair / Sombre de Marculus est au bac à sable).
 
+### Amendement du 2026-10-27 : le choix du thème remplace « thème clair forcé »
+
+- **Décision de Pascal** (2026-10-27) : « Ajoute dans paramètres le choix du thème comme dans
+  groma et Marculus », puis « Oui je confirme ». Surculus propose, comme Marculus et Groma,
+  **Système / Clair / Sombre** dans Paramètres (mission 051). Cette décision **remplace** celle
+  du 2026-10-22, « thème clair forcé » (plus haut : Contexte, Valeurs sacrifiées, Suite,
+  amendement du 2026-10-24 au soir), qui reste écrite ici comme trace.
+- **Défaut « Système »**, comme Marculus : lecture par l'orchestrateur du « Oui je confirme » de
+  Pascal à cette proposition, non corrigée par lui avant le lancement (journal du 2026-10-27).
+- **Couleurs inchangées** : les jetons clair et sombre restent ceux de Marculus v0.65.0.
+- **Ce qui est payé** : la raison du 2026-10-22 (lisibilité au soleil) n'est plus tenue par défaut
+  sur un téléphone en mode sombre ; elle l'est par un appui (Paramètres → Thème → Clair). Le
+  contraste de la palette d'état sur le fond sombre est sous 4,5:1 (vert 2,8, orange 3,7, rouge
+  2,5, noir 1,1 : mesures de la mission 051) ; la PR #95 propose une parade, à trancher par Pascal.
+- **Source de l'écart vu par Pascal** : le vert du bandeau est #3E7A40 dans les trois
+  applications (mesuré sur les captures du 2026-10-27) ; Marculus et Groma suivaient le mode
+  sombre du téléphone, Surculus non.
+
 ## Sources
 
 - `terrain/README.md` l. 12-22 et 84 ; `terrain/jitpack.yml` (tag v0.5.0, `ee98731`).

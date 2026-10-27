@@ -7,6 +7,7 @@
  */
 package io.github.pobsteta.surculus.tournee
 
+import io.github.pobsteta.surculus.ui.theme.ChoixTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -17,6 +18,9 @@ class ReglagesAffichageTest {
         val booleens = mutableMapOf<String, Boolean>()
         override fun lireBooleen(cle: String, parDefaut: Boolean) = booleens[cle] ?: parDefaut
         override fun ecrireBooleen(cle: String, valeur: Boolean) { booleens[cle] = valeur }
+        val textes = mutableMapOf<String, String>()
+        override fun lireTexte(cle: String) = textes[cle]
+        override fun ecrireTexte(cle: String, valeur: String) { textes[cle] = valeur }
     }
 
     @Test fun `le lien des licences pointe sur docs-dependances sur la branche main`() {
@@ -37,6 +41,23 @@ class ReglagesAffichageTest {
         assertTrue(ReglagesAffichage(magasin).pleinEcran)
         ReglagesAffichage(magasin).pleinEcran = false
         assertFalse(ReglagesAffichage(magasin).pleinEcran)
+    }
+
+    @Test fun `le theme est Systeme par defaut`() {
+        assertEquals(ChoixTheme.SYSTEME, ReglagesAffichage(Memoire()).choixTheme)
+    }
+
+    @Test fun `le theme est relu apres ecriture, par un autre lecteur du meme magasin`() {
+        val magasin = Memoire()
+        ChoixTheme.entries.forEach { choix ->
+            ReglagesAffichage(magasin).choixTheme = choix
+            assertEquals(choix, ReglagesAffichage(magasin).choixTheme)
+        }
+    }
+
+    @Test fun `un theme enregistre inconnu retombe sur Systeme`() {
+        val magasin = Memoire().apply { textes["theme"] = "violet" }
+        assertEquals(ChoixTheme.SYSTEME, ReglagesAffichage(magasin).choixTheme)
     }
 
     @Test fun `texte de version de la release`() {

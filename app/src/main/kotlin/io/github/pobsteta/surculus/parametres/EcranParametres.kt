@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.ui.BandeauCompact
+import io.github.pobsteta.surculus.ui.theme.ChoixTheme
 
 /**
  * Paramètres (mission 046), comme Marculus : « Plein écran » (mission 044), puis l'accès à l'Essai GNSS et à la
@@ -52,6 +56,8 @@ import io.github.pobsteta.surculus.ui.BandeauCompact
 fun EcranParametres(
     pleinEcran: Boolean,
     onPleinEcran: (Boolean) -> Unit,
+    choixTheme: ChoixTheme,
+    onChoixTheme: (ChoixTheme) -> Unit,
     onEssai: () -> Unit,
     onRestauration: () -> Unit,
     onRetour: () -> Unit,
@@ -72,6 +78,7 @@ fun EcranParametres(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             LigneReglage(stringResource(R.string.param_plein_titre), stringResource(R.string.param_plein_desc), pleinEcran, onPleinEcran)
+            LigneTheme(choixTheme, onChoixTheme)
             LigneAcces(stringResource(R.string.essai_ouvrir), stringResource(R.string.param_essai_desc), onEssai)
             LigneAcces(stringResource(R.string.restauration_ouvrir), stringResource(R.string.param_restaurer_desc), onRestauration)
             SectionRecepteur()
@@ -106,5 +113,34 @@ private fun LigneAcces(titre: String, description: String, onClick: () -> Unit) 
     ) {
         Text(titre, style = MaterialTheme.typography.titleMedium)
         Text(description, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+/** Thème (mission 051) : Système, Clair, Sombre ; chaque choix est une ligne entière d'au moins 48 dp. */
+@Composable
+private fun LigneTheme(choix: ChoixTheme, onChoix: (ChoixTheme) -> Unit) {
+    Column(Modifier.fillMaxWidth().selectableGroup()) {
+        Text(stringResource(R.string.param_theme_titre), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.param_theme_desc), style = MaterialTheme.typography.bodySmall)
+        ChoixTheme.entries.forEach { c ->
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                    .selectable(selected = c == choix, role = Role.RadioButton, onClick = { onChoix(c) }),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(selected = c == choix, onClick = null)
+                Text(
+                    stringResource(
+                        when (c) {
+                            ChoixTheme.SYSTEME -> R.string.param_theme_systeme
+                            ChoixTheme.CLAIR -> R.string.param_theme_clair
+                            ChoixTheme.SOMBRE -> R.string.param_theme_sombre
+                        },
+                    ),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 12.dp),
+                )
+            }
+        }
     }
 }

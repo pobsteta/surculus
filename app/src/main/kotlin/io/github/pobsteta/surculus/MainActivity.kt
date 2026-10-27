@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -30,6 +31,7 @@ import io.github.pobsteta.surculus.parametres.EcranParametres
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.EcranTournees
 import io.github.pobsteta.surculus.ui.theme.SurculusTheme
+import io.github.pobsteta.surculus.ui.theme.iconesBarreEtatClaires
 import io.github.pobsteta.surculus.sauvegarde.EcranRestauration
 
 /**
@@ -53,12 +55,24 @@ class MainActivity : ComponentActivity() {
                     controleur.show(WindowInsetsCompat.Type.systemBars())
                 }
             }
-            SurculusTheme {
+            // Thème (mission 051) : Système par défaut, gardé sur le téléphone ; le changement s'applique tout de suite.
+            var choixTheme by remember { mutableStateOf(reglagesAffichage.choixTheme) }
+            // Thème réellement appliqué (le choix, pas seulement le mode du téléphone), pour les icônes des barres système.
+            val sombre = choixTheme.estSombre(isSystemInDarkTheme())
+            SurculusTheme(choixTheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     // Survit à une rotation : écran, tournée ouverte (nom de son dossier), placette guidée (uuid).
                     var nav by rememberSaveable(
                         stateSaver = listSaver(save = { it.enListe() }, restore = { EtatNavigation.depuisListe(it) }),
                     ) { mutableStateOf(EtatNavigation()) }
+                    // Icônes des barres système : barre d'état claire sous un bandeau vert (tous les écrans à bandeau, dans les
+                    // deux thèmes, comme Marculus), selon le thème sur la carte et le guidage ; barre de navigation selon le thème.
+                    val ecranAvecBandeau = nav.tourneeId == null
+                    LaunchedEffect(sombre, ecranAvecBandeau) {
+                        val controleur = WindowCompat.getInsetsController(window, window.decorView)
+                        controleur.isAppearanceLightStatusBars = !iconesBarreEtatClaires(ecranAvecBandeau, sombre)
+                        controleur.isAppearanceLightNavigationBars = !sombre
+                    }
                     // Récepteur GNSS externe (mission 047, comme Groma) : démarré à l'ouverture de la carte (ou de l'essai)
                     // si le réglage des Paramètres est actif, arrêté à la sortie ; une rotation ne le coupe pas.
                     val pilote = remember { PilotageRecepteur(RecepteurService(applicationContext)) { ConfigRtk.lire(applicationContext).actif } }
@@ -86,6 +100,11 @@ class MainActivity : ComponentActivity() {
                                 onPleinEcran = {
                                     pleinEcran = it
                                     reglagesAffichage.pleinEcran = it
+                                },
+                                choixTheme = choixTheme,
+                                onChoixTheme = {
+                                    choixTheme = it
+                                    reglagesAffichage.choixTheme = it
                                 },
                                 onEssai = { nav = nav.ouvrirEssai() },
                                 onRestauration = { nav = nav.ouvrirRestauration() },
