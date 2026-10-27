@@ -158,6 +158,7 @@ object LecteurTournee {
                 ug = l.texte("ug"),
                 position = geom("placettes")?.let { g -> l.blob(g)?.let(GeometrieGpkg::point) },
                 etatSuivi = EtatSuivi.depuis(l.texte("etat_suivi")),
+                dernierControle = l.texte("dernier_controle")?.takeIf { it.isNotBlank() },
             )
         }
         val controles = cnx.lignes("SELECT * FROM \"controles\" ORDER BY fid").map {
@@ -216,6 +217,12 @@ object LecteurTournee {
         } else {
             emptySet()
         }
-        return Tournee(epsg, srsId, couches, placettes, controles, empriseForet, projet, plants, etats, codesTravaux)
+        // Nom de la forêt (mission 061) : `foret.nom`, que sommieR écrit (`R/travaux_qfield.R` l. 96-98). Sert de titre quand `projet.foret` est vide.
+        val nomForet = if (cnx.existeTable("foret")) {
+            runCatching { cnx.lignes("SELECT nom FROM \"foret\" ORDER BY fid").firstNotNullOfOrNull { it.texte("nom")?.takeIf { n -> n.isNotBlank() } } }.getOrNull()
+        } else {
+            null
+        }
+        return Tournee(epsg, srsId, couches, placettes, controles, empriseForet, projet, plants, etats, codesTravaux, nomForet)
     }
 }

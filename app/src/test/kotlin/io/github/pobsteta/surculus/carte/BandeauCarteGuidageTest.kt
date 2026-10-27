@@ -74,11 +74,11 @@ class BandeauCarteGuidageTest {
     }
 
     @Test
-    fun `trois boutons flottants comme Marculus, d'au moins 48 dp`() {
-        assertEquals(3, Regex("SmallFloatingActionButton\\(").findAll(carte).count())
-        for (icone in listOf("Icons.Filled.Add", "Icons.Filled.Remove", "Icons.Filled.MyLocation")) assertTrue(icone in carte, icone)
-        for (libelle in listOf("carte_zoom_avant", "carte_zoom_arriere", "carte_recentrer")) assertTrue("R.string.$libelle" in carte, libelle)
-        assertEquals(3, Regex("sizeIn\\(minWidth = 48.dp, minHeight = 48.dp\\)").findAll(carte).count())
+    fun `cinq boutons flottants comme Groma, d'au moins 48 dp (mission 061)`() {
+        assertEquals(5, Regex("SmallFloatingActionButton\\(").findAll(carte).count())
+        for (icone in listOf("Icons.Filled.Navigation", "Icons.Filled.Add", "Icons.Filled.Remove", "Icons.Filled.Home", "Icons.Filled.MyLocation")) assertTrue(icone in carte, icone)
+        for (libelle in listOf("carte_naviguer", "carte_zoom_avant", "carte_zoom_arriere", "carte_cadrer_tournee", "carte_recentrer")) assertTrue("R.string.$libelle" in carte, libelle)
+        assertEquals(5, Regex("sizeIn\\(minWidth = 48.dp, minHeight = 48.dp\\)").findAll(carte).count())
     }
 
     @Test

@@ -74,29 +74,40 @@ class PilotageRecepteurTest {
     @Test fun `la carte, le guidage et l'essai demandent le recepteur, pas les parametres ni la liste`() {
         assertFalse(EtatNavigation().recepteurDemande)
         assertFalse(EtatNavigation().ouvrirParametres().recepteurDemande)
-        assertTrue(EtatNavigation().ouvrirTournee("t1").recepteurDemande)
+        // Mission 061, décision de Pascal (2026-10-27) : comme Groma, pas de récepteur sur l'écran « Placettes ».
+        assertFalse(EtatNavigation().ouvrirTournee("t1").recepteurDemande)
+        assertTrue(EtatNavigation().ouvrirTournee("t1").ouvrirCarte().recepteurDemande)
+        assertTrue(EtatNavigation().ouvrirTournee("t1").ouvrirCarte("p1").recepteurDemande)
         assertTrue(EtatNavigation().ouvrirTournee("t1").guider("p1").recepteurDemande)
         assertTrue(EtatNavigation().ouvrirParametres().ouvrirEssai().recepteurDemande)
     }
 
-    @Test fun `ouvrir la carte, guider, revenir a la liste, demarre une fois, arrete une fois`() {
+    @Test fun `carte, placettes, carte - un seul demarrage, aucun arret, retour a l'accueil - un arret (comme Groma)`() {
         val r = Faux()
         val suivi = Suivi(PilotageRecepteur(r) { true })
-        val carte = EtatNavigation().ouvrirTournee("t1")
+        val placettes = EtatNavigation().ouvrirTournee("t1")
+        suivi.aller(placettes)
+        assertEquals(emptyList(), r.appels, "les placettes avant la première carte ne le démarrent pas")
+        val carte = placettes.ouvrirCarte()
         suivi.aller(carte)
         suivi.aller(carte.guider("p1"))
         suivi.aller(carte)
         assertEquals(listOf("demarrer"), r.appels)
-        val liste = carte.retour()!!
-        suivi.aller(liste)
+        val retourPlacettes = carte.retour()!!
+        suivi.aller(retourPlacettes)
+        assertEquals(listOf("demarrer"), r.appels, "revenir aux placettes ne l'arrête pas")
+        suivi.aller(retourPlacettes.ouvrirCarte("p2"))
+        assertEquals(listOf("demarrer"), r.appels, "rouvrir la carte ne le redémarre pas")
+        val accueil = retourPlacettes.retour()!!
+        suivi.aller(accueil)
         assertEquals(listOf("demarrer", "arreter"), r.appels)
-        assertEquals(Destination.TOURNEES, liste.destination)
+        assertEquals(Destination.TOURNEES, accueil.destination)
     }
 
     @Test fun `actif faux, toute la navigation ne demarre jamais le recepteur`() {
         val r = Faux()
         val suivi = Suivi(PilotageRecepteur(r) { false })
-        val carte = EtatNavigation().ouvrirTournee("t1")
+        val carte = EtatNavigation().ouvrirTournee("t1").ouvrirCarte()
         suivi.aller(carte)
         suivi.aller(carte.guider("p1"))
         suivi.aller(EtatNavigation().ouvrirParametres().ouvrirEssai())

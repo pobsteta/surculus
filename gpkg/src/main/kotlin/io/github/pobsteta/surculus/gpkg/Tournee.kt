@@ -36,6 +36,8 @@ data class PlacetteTournee(
     val position: PointLambert93?,
     /** Calculé par sommieR, lu tel quel ; [EtatSuivi.INCONNU] si nul, absent (ancienne tournée) ou valeur inconnue. */
     val etatSuivi: EtatSuivi = EtatSuivi.INCONNU,
+    /** `dernier_controle` de la couche `placettes` (spec § 5), texte tel que le fichier le porte ; `null` si la colonne est absente ou vide. Lu, jamais utilisé pour le tri (règle 1a). */
+    val dernierControle: String? = null,
 )
 
 /** Un contrôle déjà inscrit dans le fichier (`controles`). */
@@ -98,6 +100,8 @@ data class Tournee(
     val etats: List<EtatLu>,
     /** Codes de la couche `codes` (nomenclature de sommieR) ; vide si la couche l'est. */
     val codesTravaux: Set<String> = emptySet(),
+    /** Nom de la forêt lu dans la colonne `nom` de la couche `foret` (première ligne renseignée) ; `null` si la couche est vide ou sans nom. */
+    val nomForet: String? = null,
 ) {
     val nomsCouches: Set<String> get() = couches.map { it.nom }.toSet()
 
