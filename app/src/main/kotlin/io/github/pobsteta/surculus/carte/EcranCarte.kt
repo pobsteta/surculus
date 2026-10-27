@@ -64,6 +64,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -357,13 +358,14 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, onRetour
         }
         if (refusee) Text(stringResource(R.string.carte_permission), color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
 
-        Box(Modifier.weight(1f).fillMaxWidth()) {
+        // Rogne la carte à ses bords (mission 060) : osmdroid et Compose ne le font pas, la carte recouvrait le bandeau.
+        Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
             if (liste) {
                 ListePlacettes(placettes, distances, onChoisir = { onGuider(it.uuid) }, onFermer = { liste = false })
             } else {
                 val couchesRef = remember(ouverte) { arrayOfNulls<Couches>(1) }
                 AndroidView(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().clipToBounds(),
                     factory = { contexte ->
                         configurerOsmdroid(contexte)
                         // Fond posé par `update` ; le réseau est utilisé par les fonds en ligne (cache d'osmdroid gardé).

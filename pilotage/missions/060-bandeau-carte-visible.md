@@ -12,7 +12,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Faire que le bandeau de la carte (flèche de retour, titre, icône « Couches ») s'affiche réellement au-dessus de la carte, et prouver par un test qu'il ne peut plus être recouvert, pour que le forestier puisse revenir en arrière et changer de fond.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Afficher réellement le bandeau de la carte (et celui du guidage) au-dessus de la carte, en trouvant d'abord la vraie cause du recouvrement, puis poser un garde-fou qui l'aurait vu.
 
 ## Vérifié à la source
 
