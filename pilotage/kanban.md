@@ -75,20 +75,13 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **038** thème commun, le vert de Marculus (`dev`, appuyer), en cours depuis le
-  2026-10-24 : valeurs de Marculus v0.65.0 en littéral, clair et sombre, thème clair
-  forcé, test d'égalité rôle par rôle (ADR 0008, amendement du soir). Essai au soleil de
-  l'APK de la branche par Pascal avant fusion. Fiche :
-  `pilotage/missions/038-theme-commun.md`. PR #81 relue, prête ; attend l'essai avec la 040.
-- **040** accueil sur la liste des tournées, menu à trois points comme Marculus (`dev`,
-  appuyer), en cours depuis le 2026-10-24, sur la branche de la 038. Fiche :
-  `pilotage/missions/040-accueil-tournees.md`. PR #82, prête après reprise.
 - **041** recherche et puce « Rendues (n) » (`dev`, appuyer), sur la branche de la 040.
-  PR #83, en relecture. Fiche : `pilotage/missions/041-recherche-tournees.md`.
+  PR #83 rebasée sur `main` par fusion le 2026-10-27, CI relancée, en relecture ; essai
+  sur le téléphone de Pascal avant fusion. Fiche : `pilotage/missions/041-recherche-tournees.md`.
 
 ## Planifié
 
-_En attente sous le plafond humain (3 PR en revue)._
+_En attente sous le plafond humain (3 PR en revue ; 1 en revue le 2026-10-27, la #83)._
 
 **Attendent le plafond :**
 
@@ -108,6 +101,9 @@ _En attente sous le plafond humain (3 PR en revue)._
   au soleil de Couchey.
 
 ## Terminé
+
+- Cycle 10, 2026-10-24 : **038** thème vert de Marculus v0.65.0, clair forcé (PR #81) ;
+  **040** accueil sur la liste des tournées, menu « ⋮ » (PR #82) — fusionnées par Pascal.
 
 - Cycle 9, 2026-10-23 et 24 : **037** DI-303 suit la décision 13 (PR #73) ; **013** dictée
   Vosk à grammaire fermée, `terrain-voix` épinglé (PR #75) ; **039** cas de « hauteur »
