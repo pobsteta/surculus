@@ -2,6 +2,15 @@
 <resources>
     <!-- Accueil -->
     <string name="tournees_menu">Menu</string>
+    <!-- Vue Kanban (mission 043) : les libellés des cinq colonnes sont dans EtatKanban.kt -->
+    <string name="tournees_menu_kanban">Vue Kanban</string>
+    <string name="tournees_vue_colonnes">Vue Kanban</string>
+    <string name="tournees_vue_liste">Vue liste</string>
+    <string name="kanban_controles">%1$d contrôles prévus</string>
+    <plurals name="kanban_saisies">
+        <item quantity="one">%1$d saisie</item>
+        <item quantity="other">%1$d saisies</item>
+    </plurals>
 
     <!-- Écran Tournées (mission 011, spec § 4.1) -->
     <string name="tournees_retour">‹ Retour</string>
