@@ -45,7 +45,7 @@ Règles, avec leur auteur :
 |---|---|---|
 | Peut-il redire la mission en une phrase, avec son but ? | oui | |
 | Sait-il comment faire ? | oui : modèle à recopier dans Marculus | |
-| A-t-il les moyens ? | oui, une fois les trois questions tranchées ; les icônes de Marculus (`ViewColumn`, `ViewList`) demanderaient une dépendance d'icônes : il le dit sans l'ajouter | |
+| A-t-il les moyens ? | oui, une fois les trois questions tranchées ; les icônes de Marculus (`ViewColumn`, `ViewList`) demandent `material-icons-extended` : d'abord dite sans être ajoutée, puis autorisée par Pascal le 2026-10-27 (« utilise les mêmes icones que marculus ») | |
 
 **Temps de la main :** **appuyer**.
 
@@ -64,18 +64,18 @@ _Rempli par Pascal seul, avant de lire le travail de l'agent. L'orchestrateur ne
 ## Harnais
 
 - **Peut :** modifier `tournee/EcranTournees.kt` et `tournee/DepotTournees.kt` ; ajouter les chaînes à `strings_tournees.xml` ; écrire la logique des colonnes (statut, minimum, colonne affichée) en Kotlin pur, testable sans Android.
-- **Ne doit pas :** toucher à `main` ; modifier `fixtures/` ; ajouter une dépendance ; changer le format du journal, de `travaux.gpkg` ou du `.sursync` (réponse 1 de Pascal).
+- **Ne doit pas :** toucher à `main` ; modifier `fixtures/` ; ajouter une dépendance (sauf `material-icons-core` et `-extended`, décision de Pascal du 2026-10-27) ; changer le format du journal, de `travaux.gpkg` ou du `.sursync` (réponse 1 de Pascal).
 - **Sources autorisées :** cette fiche ; `docs/spec.md` § 4.1 ; le code de la 040 et de la 041 ; `marculus` (`~/dev/`, en lecture).
 
 ## Tests
 
-- Tests JVM : colonne affichée = max(statut stocké, minimum) ; une carte déposée dans une colonne inférieure au minimum reste au minimum ; libellés des cinq colonnes ; recherche vide = toutes les tournées réparties ; au moins une saisie → Planifiée ; rendue → Réalisée ; mode désactivé par défaut. **Vu rouge** une fois.
+- Tests JVM : colonne affichée = max(statut stocké, minimum) ; une carte déposée dans une colonne inférieure au minimum reste au minimum ; libellés des cinq colonnes ; recherche vide = toutes les tournées réparties ; au moins une saisie **encore valable** → Planifiée (une saisie annulée ne compte plus, une saisie corrigée compte une fois : décision de Pascal du 2026-10-27) ; rendue → Réalisée ; mode désactivé par défaut. **Vu rouge** une fois.
 - Commande du projet : `.claude/test-command`, au code 0.
 - **Bilan des écarts** : ce qui change à l'écran, et tout écart avec Marculus.
 
 ## Terrain
 
-- **Échantillon que Pascal vérifiera :** la variante fumée, avec deux tournées au moins : passer en vue Kanban, glisser une carte de Proposée à Validée avec des gants si possible, quitter et rouvrir l'application, la carte est restée.
+- **Échantillon que Pascal vérifiera :** la release qui suit la fusion (plus de variante fumée : décision de Pascal du 2026-10-27), avec deux tournées au moins : passer en vue Kanban, glisser une carte de Proposée à Validée avec des gants si possible, quitter et rouvrir l'application, la carte est restée.
 
 ## Qui veille, qui tranche
 

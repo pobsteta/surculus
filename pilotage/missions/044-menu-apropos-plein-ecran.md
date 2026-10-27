@@ -11,7 +11,7 @@
 
 **En une phrase (quoi, et pourquoi) :** Ajouter au menu « ⋮ » de la liste des tournées une entrée « À propos » qui affiche la version installée de Surculus, et une case « Plein écran » qui masque les barres système, comme Marculus, pour que Pascal sache quelle version il essaie et que le forestier gagne de la place à l'écran.
 
-**Redite par l'agent :** _à remplir par l'agent avant d'agir._
+**Redite par l'agent :** Ajouter au menu ⋮ des tournées « À propos » (version installée, licences du projet) et une case « Plein écran » (barres système masquées, réglage gardé), pour que Pascal sache quelle version il essaie et que le forestier gagne de la place à l'écran. _(Recopiée par l'orchestrateur depuis le compte rendu du `dev`.)_
 
 ## Vérifié à la source
 
@@ -69,7 +69,7 @@ _Rempli par Pascal seul, avant de lire le travail de l'agent. L'orchestrateur ne
 
 ## Terrain
 
-- **Échantillon que Pascal vérifiera :** sur son téléphone, menu « ⋮ » → « À propos » affiche la version qu'il a installée ; cocher « Plein écran » masque les barres, un glissement depuis le bord les fait réapparaître, la case reste cochée après avoir quitté et rouvert l'application.
+- **Échantillon que Pascal vérifiera :** sur la release qui suit la fusion (plus de variante fumée : décision de Pascal du 2026-10-27), menu « ⋮ » → « À propos » affiche la version qu'il a installée ; cocher « Plein écran » masque les barres, un glissement depuis le bord les fait réapparaître, la case reste cochée après avoir quitté et rouvert l'application.
 
 ## Qui veille, qui tranche
 

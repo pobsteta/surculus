@@ -76,7 +76,8 @@ _Idées, à trier au prochain `/mission`._
 ## Validé
 
 - **043** vue Kanban des tournées, colonnes de Marculus (`dev`, appuyer) : PR #84 en
-  relecture depuis le 2026-10-27, à essayer sur le téléphone de Pascal avant fusion. Fiche :
+  relecture depuis le 2026-10-27, relue deux fois, prête ; essai par Pascal après fusion, sur
+  la release. Fiche :
   `pilotage/missions/043-kanban-tournees.md`.
 
 ## Planifié
