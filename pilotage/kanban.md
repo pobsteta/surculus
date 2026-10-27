@@ -233,5 +233,4 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   faire, puis une carte avec les fonds de Marculus, l'Ortho chantier par défaut et les
   boutons de Groma ; Paramètres, thème et voix comme Marculus · pour le forestier en forêt ·
   avant, la carte s'ouvrait seule, sans choix de fond ni de placette ; il retrouve ses gestes
-  de Groma et de Marculus. *(Proposée par l'orchestrateur à la clôture du 2026-10-27, à
-  confirmer par Pascal.)*
+  de Groma et de Marculus. *(Retenue par Pascal le 2026-10-27 : « 1 oui ».)*
