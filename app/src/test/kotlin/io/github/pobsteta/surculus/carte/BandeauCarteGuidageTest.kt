@@ -44,7 +44,7 @@ class BandeauCarteGuidageTest {
 
     @Test
     fun `le recentrage passe par la decision testee, jamais par le fix brut`() {
-        assertEquals(2, Regex("Recentrage\\.cible\\(").findAll(carte).count(), "bouton recentrer et « Ma position »")
+        assertEquals(1, Regex("Recentrage\\.cible\\(").findAll(carte).count(), "le bouton recentrer seul (« Ma position » retiré, mission 057)")
         assertFalse("animateTo(GeoPoint(f.position" in carte)
         assertFalse("animateTo(GeoPoint(fix.position" in carte)
     }
