@@ -19,11 +19,10 @@ _Idées, à trier au prochain `/mission`._
   du 2026-10-17, `~/dev/briefs/traites/2026-10-23-traite-terrain-gnss-publie.md`) ;
   réexamen de l'ADR 0004 (osmdroid archivé depuis le 2024-11-20, ADR 0009) : la 034 n'y
   ajoute qu'un renvoi daté.
-- **Dettes de la 009** : demander `WRITE_EXTERNAL_STORAGE` à l'exécution (Android 8-9)
-  et brancher le déclenchement de la sauvegarde sur les saisies (011, 012) ; essai de
-  restauration sur deux téléphones après la 011 et la 012.
-- **Pascal (spec § 5)** : l'empreinte des photos au journal exige un type de ligne qui
-  n'existe pas ; à trancher avant la mission photo.
+- **Dettes de la 009** : essai de restauration sur deux téléphones après la 012 (la
+  permission `WRITE_EXTERNAL_STORAGE` est demandée par la 012-B1, la sauvegarde est
+  branchée sur les saisies par la 012-A).
+
 - **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées
   (export, 032) ; l'essai sur téléphone est sur la carte « terrain avant la 012 ».
 - **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
@@ -45,15 +44,10 @@ _Idées, à trier au prochain `/mission`._
   tient-elle ? Proposition de l'orchestrateur : trancher au retour de Couchey, avant la 038.
   Marculus a aussi envoyé un brief à `terrain` pour une palette qui reste verte, et ajouté
   un choix Système / Clair / Sombre (« utile peut-être pour Surculus »).
-- **Maintenance** : le commentaire du test « ECART terrain-voix »
-  (`core/src/test/.../dictee/InstallationModeleTest.kt` l. 86) dit « brief à venir » ; le
-  faire pointer vers pobsteta/terrain#23 à la prochaine mission de code (Pascal, 2026-10-24).
-- **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
-  de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
   désignés).
 - **Pascal** : écrire à Centipède (version de RGF93) ; informer les employeurs des
-  agents (finalité des horodatages et positions) ; matériel de pointage ; plantation
+  agents (finalité des horodatages et positions) ; plantation
   d'essai d'automne 2026 ; successeur ;
   coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
   fascicule 34 ; URL du guide des chênaies continentales.
@@ -73,11 +67,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **062** en thème sombre, pas de plaque blanche sous les textes neutres (« Placette … · … km »
-  au bas de la carte, « n placettes · k à faire ») (`dev`, lâcher), en cours depuis le
-  2026-10-27 au soir, lancée après la clôture des autres missions du cycle. Fiche :
-  `pilotage/missions/062-texte-neutre-sans-plaque.md`.
-
+- **067** bande du mode poche toujours visible, plan couché sous les boutons (`afficheur`,
+  appuyer), lancée au cycle 13 (2026-10-28) ; fiche `pilotage/missions/067-bande-poche-plan-couche.md`.
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
   `couchey-demo-avec-ortho.zip`, bandeau, cinq boutons, Paramètres (thème en liste,
@@ -87,6 +78,11 @@ _Idées, à trier au prochain `/mission`._
   `Download/` dans `Download/Surculus/` le 2026-10-27, journal). Vérifié par capture de
   l'orchestrateur le 2026-10-27 : accueil, liste et carte conformes ; texte gris sur la
   plaque blanche en sombre illisible (mission 062 lancée).
+- **Pascal, essai de la release v0.7.67** (2026-10-28) : 062 vérifiée par capture de
+  l'orchestrateur sur la v0.7.64, 063 sur la v0.7.67, en sombre et en clair ; essai au soleil de la 063 (pastilles pâlies de la
+  liste à 2,3-2,6:1 acceptées sous réserve de cet essai) ; contrôle 012-B1 de bout en bout
+  à Couchey, sur le terrain (pas de position simulée), avec la tournée d'essai
+  `Download/Surculus/couchey-essai-plants.zip` (non importée, données d'essai).
 - **sommieR** : démo de Marsannay-la-Côte (pobsteta/sommieR#65) et ortho tuilée EPSG:3857
   (pobsteta/sommieR#66), briefs envoyés, sans réponse ; session pilotée par Pascal.
 
@@ -94,13 +90,11 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Prochaine mission proposée (clôture du cycle 10) :**
+**Suite décidée de la 012 (2026-10-27) :** la 012-D2.
 
-- **Plaque blanche en sombre**, suite (051, « on verra plus tard ») ; la 062 traite les deux
-  textes neutres demandés par Pascal. Reste : pastilles vert foncé sur fond noir, six textes
-  sans plaque (relecture de la PR #95), aplat de 260 dp sous le radar du guidage, palette
-  d'état et « légende en noir » (anciennes sorties de la 038 du 2026-10-24), et « essai au
-  soleil » de la spec à revoir avec.
+- **012-D2** écoute branchée dans `:app` (micro, permission, anti-larsen) ; #114 et D1 fusionnées.
+  Décidé (Pascal, 2026-10-28) : en poche, « tenir pour parler » sur volume bas, sans bouton ; hors
+  poche, bouton micro comme Marculus. Questions du plan toutes tranchées le 2026-10-28 ; part après la fusion de la 067 (même écran).
 
 **Ensuite, au signal de Pascal :**
 
@@ -113,13 +107,20 @@ _En attente sous le plafond humain (3 PR en revue)._
   illisible » si le fichier ne s'ouvre pas.
 - **Test de rendu des écrans** (Robolectric ou émulateur en CI) : le bandeau caché de la 055
   a échappé aux tests qui lisent les sources.
-- **Mineurs** : KDoc périmés de `Navigation.kt` l. 36 et 61 ; test « plantation plus âgée
-  que l'itinéraire » sans date ; release v0.7.58 restée en brouillon après la #99.
-- **012** écran du contrôle de placette (`afficheur`, appuyer) : branche la dictée, l'import
-  du modèle et les saisies (`placettesControlees`).
-- **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK sur Couchey (import, ortho,
+- **Photos de placette et de plant** : spec et ADR 0007 amendées, validées par Pascal
+  (PR #115, porte n° 1, 2026-10-28) ; brief vers sommieR envoyé. Mission de code à découper,
+  précédée des mesures sur appareil de la spec § 10, point 10 (`.nomedia`, boussole tenue
+  verticale, masquage de la position, poids). Hors code, Pascal : ajouter les photos à
+  l'information des salariés (ADR 0005).
+- **Plants anciens dessinés** sur le plan de la placette (décision 8 de la 012-B), mission
+  à part.
+- **Tranche 3** : règle « date incohérente » (travaux sur une plantation plus âgée que
+  l'itinéraire), avec le relevé des interventions (Pascal, PR #106) ; son test attend la date de
+  plantation et l'itinéraire dans la tournée (report décidé par Pascal le 2026-10-28, PR #117).
+- **Pascal, terrain** (bilan du 2026-10-21 ; la 012 a démarré sans l'attendre, décision du
+  2026-10-27) : APK sur Couchey (import, ortho,
   mode avion, guidage, test des dix secondes) ; restauration de `exemple-v1.sursync` ;
-  comptes de Couchey contre QGIS (029) ; **essai au soleil** de la palette (ADR 0008 : badge
+  comptes de Couchey contre QGIS (029) ; **essai au soleil** de la palette, le même que celui de la 063 au Validé (ADR 0008 : badge
   du fix, texte orange, pastilles sur ortho claire, marqueur noir de la position ; le bouton
   « Retour » est devenu la flèche du bandeau), en clair et en sombre. Chaque essai au
   journal.
@@ -127,6 +128,27 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **066** mineurs et maintenance (PR #117, 7b2c46d, cycle 13) : KDoc de `Navigation.kt`, renvoi
+  terrain#23, doc d'`ExporterScenario`, test `dernier_controle` renommé ; release v0.7.58 déjà
+  publiée (vérifié le 2026-10-28).
+
+- **012-C1** mode poche et gestes de volume (PR #113, b9cf9d6) : 9 essais bons sur la v0.7.73
+  (Pascal, 2026-10-28). **012-C2** la voix et la vibration (PR #114, fee5b57), v0.7.74 installée,
+  voix entendue par Pascal ; cycle 12. **Captures** 064, 012-B2, 012-C1 faites (cycle 12).
+
+- **012-D1** le cœur de la dictée (`ApplicateurDictee`, `TextesDictee`, `:core`), PR #116
+  fusionnée le 2026-10-28 (fbc2f93), sur l'autorisation de Pascal.
+
+- Cycle 11, 2026-10-27 et 28 : **062** textes neutres sans plaque en sombre (PR #105) ;
+  **012-A** session de contrôle sur le journal de la tournée (PR #106) ; **063** couleurs
+  d'état sans plaque blanche, spec § 3 et ADR 0008 amendées (PR #107) ; **012-B1** écran du
+  contrôle (deux portes, arrivée, états, causes, Terminer) (PR #108) ; **064** carte en
+  paysage (PR #110) ; **012-B2** pointage à la boussole du téléphone, plan, regarnis, spec
+  § 1 et ADR 0003 amendées (PR #109) ; **065** jour civil sur l'heure du fix GNSS (PR #112),
+  brief vers Groma (pobsteta/groma#68) ; **012-C1** saisie au volume en mode poche (PR #113,
+  trois relectures) — fusionnées sur l'autorisation de Pascal ; releases
+  jusqu'à v0.7.68 ; amendement « photos » de la spec et de l'ADR 0007 (PR #115, porte n° 1).
 
 - Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus (PR #81) ; **040** accueil sur
   la liste des tournées (PR #82) ; **041** recherche et « Rendues » (PR #83) ; **043** vue
@@ -234,3 +256,10 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   boutons de Groma ; Paramètres, thème et voix comme Marculus · pour le forestier en forêt ·
   avant, la carte s'ouvrait seule, sans choix de fond ni de placette ; il retrouve ses gestes
   de Groma et de Marculus. *(Retenue par Pascal le 2026-10-27 : « 1 oui ».)*
+- cycle 12 · le contrôle téléphone en poche : l'agent dit l'état de chaque plant au volume, gants
+  aux mains, entend le numéro et l'état et sent la vibration · pour le forestier en forêt · avant, il
+  regardait l'écran à chaque plant (v0.7.74). *(Retenue par Pascal le 2026-10-28.)*
+- cycle 13 · le mode poche qui dit comment en sortir : la bande « 3 s sur volume haut pour sortir »
+  reste lisible quel que soit le défilement, et couché, le plan ne cache plus les boutons d'état ·
+  pour le forestier en forêt · avant, la bande pouvait être coupée sous la barre sans moyen de
+  remonter. *(Retenue par Pascal le 2026-10-28 ; livrée à la fusion et à la capture de la 067.)*

@@ -69,3 +69,51 @@ dictée** de la 013 sur l'écran du contrôle, car aucune autre mission ne la re
   l'agent.
 - **Échantillon terrain ajouté** : dicter une placette en forêt, vent compris ; importer le
   zip officiel, puis un zip altéré, qui doit être refusé.
+
+## Reprise au lancement, le 2026-10-27
+
+Décisions de Pascal du 2026-10-27 : « 1 oui, 2 oui » : la 012 est **lancée sans attendre
+l'essai de terrain de Couchey** (condition du bilan du 2026-10-21 levée), et le formulaire du
+contrôle s'ouvre par **deux portes**.
+
+**Phrase de mission réécrite :** Réaliser l'écran du contrôle de placette de la spec § 4.3
+(plan des plants autour du piquet, pointage relatif, états et causes aux boutons de volume et
+à la voix, regarnis, totaux, refus avec leurs codes, mode poche, écran maintenu allumé,
+synthèse vocale et vibration), ouvert depuis la carte et à l'arrivée du guidage, et écrire
+chaque saisie au journal de la tournée, pour que le forestier contrôle une placette sans
+regarder l'écran et que la liste des placettes sache ce qui est fait.
+
+**Entrées (deux portes, comme Groma) :**
+- un bouton **« Contrôler »** sur la carte quand une placette est choisie (mission 061 : la
+  placette choisie est affichée au bas de la carte) ;
+- **ouverture automatique en arrivant** sur la placette pendant le guidage (moins de 30 m, le
+  cercle de la placette de la spec § 4.2), avec possibilité de revenir au guidage.
+- Retour : du contrôle vers la carte (ou le guidage), comme les autres retours de la 061.
+
+**Ce qui a changé depuis l'écriture de la fiche (à respecter) :**
+- **Import du modèle Vosk** : il est fait dans Paramètres (mission 048, PR #92) ; la 012 ne
+  l'ajoute pas. Si le modèle manque, l'écran le dit et renvoie vers Paramètres → Dictée vocale.
+- **Saisies au journal** : chaque saisie passe le code de la tournée ouverte (031, 032) ; la
+  012 branche `DepotTournees.placettesControlees` (aujourd'hui vide, mission 061) pour que
+  la placette passe « Contrôlée » dans l'écran « Placettes » et sorte des « à faire » ; le
+  code de tournée reste le nom du dossier (hypothèse gardée jusqu'à la 012, décision du
+  2026-10-27) : dis si le journal impose autre chose.
+- **Sauvegarde** : déclencher la sauvegarde `.sursync` sur les saisies (dette de la 009 et de
+  la 011, bac à sable du kanban).
+- **Écran** : `BandeauCompact` (053) avec flèche de retour, styles de texte de Marculus (042,
+  aucun `fontSize`), thème Système / Clair / Sombre (051), textes neutres sans plaque
+  (062), cibles d'au moins 48 dp ; en mode poche, l'écran tactile est ignoré.
+- **Récepteur GNSS** : il tourne déjà (démarré à la première carte, 061) ; le pointage
+  utilise le fix existant, jamais une position hors de France (`Recentrage`, `Guidage`).
+
+**Agent :** `afficheur` (sonnet). **Temps de la main :** appuyer : l'agent rend d'abord à
+l'orchestrateur son **plan découpé** (écran, journal, voix, poche) ; si la mission est trop
+grosse pour une seule PR, il le dit et propose un découpage, que Pascal tranche.
+
+**Tests (en plus de ceux plus haut) :** les cas d'acceptation du testeur déjà écrits
+(`fixtures/dictee/`, cas DI-…, `fixtures/export/scenario-couchey.json`) passent sans modifier
+`fixtures/` ; la « date incohérente » (règle de `CLAUDE.md`) ; une saisie annulée ne rend pas
+la placette « Contrôlée » ; vu rouge une fois.
+
+**Fusion :** autorisation de Pascal à demander à la livraison (non couverte par « j'autorise
+tout »). Vérification par capture du téléphone sur la release (règle du 2026-10-27).
