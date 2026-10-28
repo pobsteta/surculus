@@ -73,14 +73,11 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **012-C1** saisir au volume, en mode poche (`afficheur`, appuyer), PR #113, plan tranché par
-  Pascal le 2026-10-28 (neuf décisions dans la fiche) ; relecture en cours. Puis **012-C2**
-  (voix, vibration) après la fusion. Fiche : `pilotage/missions/012c-volume-poche.md` (sur sa
-  branche).
-- **Captures de la 012-B2 et de la 064** sur la release qui porte f955af6 (orchestrateur),
-  dès que le téléphone de Pascal est branché : carte couchée (six boutons en 3 + 3, bandeau,
-  légende, ligne de la placette) et debout ; vue Pointer, plan et rangée d'essences du
-  regarni. Boussole et regarni à valider en forêt, à Couchey.
+- **Captures de la 064, de la 012-B2 et de la 012-C1** sur la release qui porte la fusion de
+  la #113 (orchestrateur), ce soir quand le téléphone de Pascal est branché : carte couchée
+  (six boutons en 3 + 3, bandeau, légende, ligne de la placette) et debout ; vue Pointer, plan
+  et rangée d'essences du regarni ; mode poche et les 9 essais de la PR #113 (rotation, volume
+  tenu au-delà de 3 s, retour par geste, 15 min). Boussole et regarni à valider en forêt, à Couchey.
 
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
@@ -103,7 +100,8 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Suite décidée de la 012 (2026-10-27) :** après la 012-C (C1 au Validé, puis C2), la 012-D.
+**Suite décidée de la 012 (2026-10-27 et 28) :** **012-C2** voix (`TextToSpeech`) et vibration,
+fiche 012-C (décisions 2, 4, 6, 8), puis la 012-D.
 
 - **012-D** dictée branchée sur l'écran du contrôle.
 
@@ -142,7 +140,8 @@ _En attente sous le plafond humain (3 PR en revue)._
   contrôle (deux portes, arrivée, états, causes, Terminer) (PR #108) ; **064** carte en
   paysage (PR #110) ; **012-B2** pointage à la boussole du téléphone, plan, regarnis, spec
   § 1 et ADR 0003 amendées (PR #109) ; **065** jour civil sur l'heure du fix GNSS (PR #112),
-  brief vers Groma (pobsteta/groma#68) — fusionnées sur l'autorisation de Pascal ; releases
+  brief vers Groma (pobsteta/groma#68) ; **012-C1** saisie au volume en mode poche (PR #113,
+  trois relectures) — fusionnées sur l'autorisation de Pascal ; releases
   jusqu'à v0.7.68.
 
 - Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus (PR #81) ; **040** accueil sur
