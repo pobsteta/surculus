@@ -206,6 +206,8 @@ dependencies {
     // La JNA doit être tirée en .aar (bibliothèques natives), comme dans Marculus.
     implementation(libs.vosk.android)
     implementation(libs.terrain.voix)
+    // Thème (mission 069) : le style de Marculus, valeurs en Long ARGB (Kotlin pur).
+    implementation(libs.terrain.style)
     implementation(variantOf(libs.jna) { artifactType("aar") })
 }
 

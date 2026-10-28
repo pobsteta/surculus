@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Égalité rôle par rôle avec le thème de Marculus v0.65.0 (mission 038). Les cinq rôles posés sont écrits en
+ * Égalité rôle par rôle avec les valeurs du brief de Marculus (mission 069, thème pris de terrain-style v0.7.1). Les cinq rôles posés sont écrits en
  * littéral ici (pas importés du thème) ; chacun des autres vaut le défaut de Material 3 (BOM 2026.02.01).
  */
 class ThemeTest {
