@@ -38,7 +38,7 @@ concordantes), après le calcul de Ramulus (`docs/referentiels/gnss-telephone.ya
 Le Mi 8 est à 7,20 m (DRMS) dans le tableau, cohérent ; le 7,22 m est une coquille de la Discussion (c'est le DRMS
 du P40), présente aussi dans le XML d'Europe PMC.
 
-**Motif corrigé, conclusion gardée** (décision de Pascal du 2026-10-28, « Corriger, puis fusionner ») : le repli
+**Motif corrigé, conclusion gardée** (décisions de Pascal du 2026-10-28 : « Garder, motif corrigé », puis « Corriger, puis fusionner » pour la formulation) : le repli
 téléphone ne tient pas seul la règle des 15 m. Par groupe, 95 % des positions tombent sous 13,4 à 13,6 m, ce qui laisse
 1,4 à 1,6 m sous 15 m ; mais pris un par un au CEP95, trois téléphones dépassent 15 m (Mi 8 Pro 16,34 m, A7 15,80 m,
 S5 16,72 m), et un seul modèle monte à 42 m, le Xcover 4 (CEP95 41,99 m).
