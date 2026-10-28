@@ -8,8 +8,10 @@
 package io.github.pobsteta.surculus.controle
 
 import android.os.Build
+import io.github.pobsteta.surculus.carte.SECONDES_DE_MOYENNE_ARRIVEE
 import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.guidage.Guidage
+import io.github.pobsteta.surculus.gpkg.Tournee
 import io.github.pobsteta.surculus.core.guidage.MoyennePosition
 import io.github.pobsteta.surculus.core.placette.Essences
 import io.github.pobsteta.surculus.core.reperes.PointGeographique
@@ -22,9 +24,6 @@ import io.github.pobsteta.surculus.core.session.JournalControle
 import io.github.pobsteta.surculus.core.session.OuvertureControle
 import io.github.pobsteta.surculus.core.session.SessionControle
 import io.github.pobsteta.surculus.core.session.SuiteSession
-
-/** Durée de la moyenne de position à l'arrivée (spec § 4.3), lancée toute seule à l'ouverture (décision de Pascal du 2026-10-27). */
-const val SECONDES_DE_MOYENNE_ARRIVEE = 5
 
 /** Où en est l'arrivée : on moyenne, ou on a un refus avec son code, ou la session est ouverte. */
 sealed interface EtatArrivee {
@@ -60,6 +59,13 @@ object ArriveeControle {
         return moyenne.moyenne()?.let { Arrivee.Lambert93(it) }
     }
 
+    /**
+     * Les essences connues de la session : les codes déjà portés par les plants de la tournée (écrits par sommieR depuis
+     * `essences.csv`, jamais une liste de l'application). Servent au regarni (qui garde l'essence du plant remplacé) et au
+     * refus `hors_referentiel` pour un code étranger à la tournée.
+     */
+    fun essencesDe(tournee: Tournee): Essences = Essences(tournee.plants.mapNotNull { it.essence?.takeIf(String::isNotBlank) }.toSet())
+
     /** Ouvre la session : refus avec son code, sans position, ou prête. Bloquant (journal) : hors du fil principal. */
     fun ouvrir(
         contexte: ContexteControle,
@@ -72,7 +78,10 @@ object ArriveeControle {
     ): EtatArrivee {
         val arrivee = arrivee(positions) ?: return EtatArrivee.SansPosition
         return when (val o = SessionControle.ouvrir(contexte, journal, horloge, essences, arrivee, codeLu?.trim()?.ifEmpty { null }, sauvegarde)) {
-            is OuvertureControle.Ouverte -> EtatArrivee.Ouverte(ControleurPlacette(o.session))
+            is OuvertureControle.Ouverte -> {
+                val rayon = contexte.placettes.firstOrNull { it.piquet.placette == o.session.rattachement.piquet.placette }?.rayonM ?: RAYON_PAR_DEFAUT_M
+                EtatArrivee.Ouverte(ControleurPlacette(o.session, rayon))
+            }
             is OuvertureControle.Refusee -> EtatArrivee.Refus(o.refus)
         }
     }
@@ -82,7 +91,14 @@ object ArriveeControle {
 object PermissionStockage {
     const val DERNIERE_API_A_DEMANDER = 28
 
-    fun aDemander(apiSdk: Int, accordee: Boolean): Boolean = apiSdk <= DERNIERE_API_A_DEMANDER && !accordee
+    /** Demandée une seule fois : si l'agent a déjà répondu, on ne redemande pas (décision de Pascal sur la #108, 2026-10-28). */
+    fun aDemander(apiSdk: Int, accordee: Boolean, dejaDemandee: Boolean = false): Boolean =
+        apiSdk <= DERNIERE_API_A_DEMANDER && !accordee && !dejaDemandee
 
-    fun aDemanderSurCetAppareil(accordee: Boolean): Boolean = aDemander(Build.VERSION.SDK_INT, accordee)
+    /** La ligne « la sauvegarde attend la permission » s'affiche tant que la permission manque, sur ces versions seulement. */
+    fun manque(apiSdk: Int, accordee: Boolean): Boolean = apiSdk <= DERNIERE_API_A_DEMANDER && !accordee
+
+    fun aDemanderSurCetAppareil(accordee: Boolean, dejaDemandee: Boolean): Boolean = aDemander(Build.VERSION.SDK_INT, accordee, dejaDemandee)
+
+    fun manqueSurCetAppareil(accordee: Boolean): Boolean = manque(Build.VERSION.SDK_INT, accordee)
 }

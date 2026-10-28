@@ -15,7 +15,7 @@ grades, distance tapée), le plan des plants autour du piquet et les regarnis, �
 amendements validés de la spec et de l'ADR 0003, et solder les reprises de la B1, pour que Pascal
 contrôle à Couchey une placette sans plant ancien, de bout en bout.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Ajouter à l'écran du contrôle de la B1 le pointage des plants (cap lu à la boussole du téléphone en magnétique pur, ou tapé au clavier en degrés ou grades, distance tapée), leur plan à l'échelle autour du piquet et les regarnis, écrire les amendements de la spec et de l'ADR 0003, et solder les quatre reprises de la B1 et le message sans fix, pour que Pascal contrôle à Couchey une placette sans plant ancien, de bout en bout (2026-10-28).
 
 ## Ce qui est déjà décidé (ne pas rediscuter)
 

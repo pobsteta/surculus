@@ -54,9 +54,11 @@ class ControleurPlacetteTest {
         assertEquals(GroupeCause.PATHOLOGIQUE, c.instantane().plant.groupeCause)
     }
 
-    @Test fun `Terminer sans etat dit est refuse et l'ecran le dit clairement`() = with(BancControle()) {
+    @Test fun `Terminer sans etat dit est refuse par la session seule et l'ecran le dit clairement`() = with(BancControle()) {
         val c = controleur()
-        val e = c.demanderTerminer()
+        // Le pilote ne juge plus : il ouvre la confirmation, c'est la session qui refuse au moment de terminer.
+        assertEquals(VueControle.TERMINER, c.demanderTerminer().vue)
+        val e = c.terminer()
         assertEquals(VueControle.PLANT, e.vue)
         val m = assertNotNull(e.message)
         assertTrue(m.erreur)
@@ -136,7 +138,6 @@ class ControleurPlacetteTest {
         assertTrue(e.aucunPlant)
         assertEquals("Aucun plant", e.titre)
         assertNull(e.numero)
-        assertFalse(e.peutTerminer)
     }
 
     @Test fun `plant precedent et suivant parcourent les plants dans l'ordre des numeros`() = with(BancControle()) {

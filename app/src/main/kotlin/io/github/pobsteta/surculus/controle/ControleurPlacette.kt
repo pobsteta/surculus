@@ -14,8 +14,17 @@ import io.github.pobsteta.surculus.core.placette.Totaux
 import io.github.pobsteta.surculus.core.placette.Verdict
 import io.github.pobsteta.surculus.core.session.EtatSession
 import io.github.pobsteta.surculus.core.session.PlantSession
+import io.github.pobsteta.surculus.core.placette.UuidPlant
+import io.github.pobsteta.surculus.core.reperes.AzimutSaisi
+import io.github.pobsteta.surculus.core.geo.UniteAzimut
 import io.github.pobsteta.surculus.core.session.SessionControle
+import io.github.pobsteta.surculus.core.session.SourceAzimut
 import io.github.pobsteta.surculus.core.session.SuiteSession
+import java.util.Locale
+import kotlin.math.roundToInt
+
+/** Rayon supposé quand l'appelant n'en donne pas (tests) : celui des placettes de Couchey. */
+const val RAYON_PAR_DEFAUT_M = 3.99
 
 /** Les vues de l'écran du contrôle (règle du 1664 : une idée par vue). */
 enum class VueControle {
@@ -27,6 +36,9 @@ enum class VueControle {
 
     /** La placette vient d'être terminée : « Contrôlée ». */
     TERMINEE,
+
+    /** Placer un nouveau plant : cap de la boussole (ou clavier) et distance (mission 012-B2). */
+    POINTER,
 }
 
 /** Message à l'écran : une information, ou un refus (en couleur d'erreur, avec son code quand il en a un). */
@@ -52,13 +64,22 @@ data class VuePlant(
     val causesVisibles: Boolean,
     val alerteTerminee: Boolean,
     val aucunPlant: Boolean,
-    val peutTerminer: Boolean,
+    /** Le plant courant est mort ou absent aujourd'hui : « Remplacer » (regarni) se propose. La session refuse le reste. */
+    val regarniPossible: Boolean,
     val aPrecedent: Boolean,
     val aSuivant: Boolean,
 )
 
 /** Totaux à confirmer à la fin : « 12 plants · 9 vivants · 2 abroutis · hauteur moyenne 78 cm ». */
 data class VueTotaux(val texte: String, val refus: String?)
+
+/** La vue Pointer : le regarni en attente, ou le pointage hors rayon à confirmer (jamais un refus : rien n'est écrit). */
+data class VuePointage(
+    /** Numéro du plant que le prochain pointage remplace ; `null` : un plant ordinaire. */
+    val regarniDe: Int?,
+    /** « Plant à 22 m, au-delà de… » : le texte de l'alerte de la session, avec « Confirmer » et « Refaire ». */
+    val aConfirmer: String?,
+)
 
 /** Tout ce que l'écran lit : fonction pure de l'état de la session, de la vue et du message. */
 data class EcranControle(
@@ -68,6 +89,8 @@ data class EcranControle(
     val plant: VuePlant,
     val totaux: VueTotaux,
     val message: MessageControle?,
+    val pointage: VuePointage,
+    val plan: PlanPlants,
 )
 
 /**
@@ -75,11 +98,87 @@ data class EcranControle(
  * l'écran montre. Aucune règle ici : états, causes, refus, « terminer » viennent de la session (012-A) ; ce pilote ne
  * garde que la vue ouverte et le dernier message. Méthodes bloquantes (journal) : hors du fil principal.
  */
-class ControleurPlacette(private val session: SessionControle) {
+class ControleurPlacette(private val session: SessionControle, private val rayonM: Double = RAYON_PAR_DEFAUT_M) {
     private var vue = VueControle.PLANT
     private var message: MessageControle? = null
+    private var enAttente: PointageEnAttente? = null
 
-    fun instantane(): EcranControle = TextesControle.ecran(session.etat(), vue, message)
+    /** Pointage hors rayon en attente de « Confirmer » ou « Refaire » : rien n'est écrit tant que l'agent n'a pas répondu. */
+    private data class PointageEnAttente(val distanceM: Double, val azimut: AzimutSaisi, val source: SourceAzimut, val alerte: String)
+
+    fun instantane(): EcranControle {
+        val etat = session.etat()
+        return TextesControle.ecran(etat, vue, message, enAttente?.alerte, PlanPlants.depuis(etat, session.rattachement.piquet.position, rayonM))
+    }
+
+    // ------------------------------------------------------------------ pointer (012-B2)
+
+    /** Ouvre la vue Pointer. */
+    fun ouvrirPointer(): EcranControle { vue = VueControle.POINTER; message = null; enAttente = null; return instantane() }
+
+    /** Pointe au cap lu par la boussole du téléphone (magnétique pur) ; sans cap, on le dit, rien n'est écrit. */
+    fun pointerAvecBoussole(distanceTexte: String, cap: CapMagnetique?): EcranControle {
+        if (cap == null) return refuser(MessageControle(TextesControle.SANS_CAP, erreur = true))
+        return pointer(distanceTexte, SaisiePointage.azimutBoussole(cap), SourceAzimut.BOUSSOLE_TELEPHONE)
+    }
+
+    /** Pointe au cap tapé (secours), dans [unite] : hors plage, refusé avec son code. */
+    fun pointerAuClavier(distanceTexte: String, azimutTexte: String, unite: UniteAzimut): EcranControle =
+        when (val a = SaisiePointage.azimut(azimutTexte, unite)) {
+            is LectureSaisie.Valeur -> pointer(distanceTexte, a.valeur, SourceAzimut.SAISIE)
+            is LectureSaisie.Illisible -> refuser(MessageControle(a.message, erreur = true))
+            is LectureSaisie.Refus -> refuser(TextesControle.message(SuiteSession.Refus.de(a.refus))!!)
+        }
+
+    private fun pointer(distanceTexte: String, azimut: AzimutSaisi, source: SourceAzimut): EcranControle =
+        when (val d = SaisiePointage.distance(distanceTexte)) {
+            is LectureSaisie.Valeur -> tenter(d.valeur, azimut, source, confirme = false)
+            is LectureSaisie.Illisible -> refuser(MessageControle(d.message, erreur = true))
+            is LectureSaisie.Refus -> refuser(TextesControle.message(SuiteSession.Refus.de(d.refus))!!)
+        }
+
+    /** « Confirmer » : le plant hors rayon est écrit, marqué confirmé (`hors_rayon_confirme`). */
+    fun confirmerHorsRayon(): EcranControle {
+        val a = enAttente ?: return instantane()
+        return tenter(a.distanceM, a.azimut, a.source, confirme = true)
+    }
+
+    /** « Refaire » : rien n'avait été écrit ; on revient aux champs. */
+    fun refaire(): EcranControle { enAttente = null; message = null; return instantane() }
+
+    private fun tenter(distanceM: Double, azimut: AzimutSaisi, source: SourceAzimut, confirme: Boolean): EcranControle {
+        // Un regarni garde l'essence du plant qu'il remplace (code déjà dans la tournée) ; un plant ordinaire n'en porte pas.
+        val avant = session.etat()
+        val essence = avant.regarniDe?.let { r -> avant.plants.firstOrNull { it.uuid == r }?.essence }
+        when (val suite = session.pointer(distanceM, azimut, source, essence, confirme)) {
+            is SuiteSession.Fait -> {
+                enAttente = null
+                vue = VueControle.PLANT
+                val apres = session.etat()
+                val numero = apres.plants.firstOrNull { it.uuid == apres.courant }?.numero
+                message = MessageControle(TextesControle.pointe(numero, azimut.degres, distanceM), erreur = false)
+            }
+            is SuiteSession.AConfirmer -> {
+                enAttente = PointageEnAttente(distanceM, azimut, source, suite.alerte.message)
+                vue = VueControle.POINTER
+                message = null
+            }
+            else -> refuser(TextesControle.message(suite)!!)
+        }
+        return instantane()
+    }
+
+    private fun refuser(m: MessageControle): EcranControle { enAttente = null; vue = VueControle.POINTER; message = m; return instantane() }
+
+    /** « Remplacer » le plant courant (mort ou absent) : le prochain pointage est son regarni ; la session refuse un plant sain. */
+    fun regarni(): EcranControle {
+        val suite = session.remplace()
+        if (suite is SuiteSession.Fait) { vue = VueControle.POINTER; message = null; enAttente = null } else message = TextesControle.message(suite)
+        return instantane()
+    }
+
+    /** L'agent touche un plant du plan : il devient le plant courant. */
+    fun choisir(plant: UuidPlant): EcranControle { session.choisir(plant); message = null; return instantane() }
 
     /** Dit l'état du plant courant. Sain et absent n'ont pas de cause : on passe au plant suivant (comme les boutons de volume, spec § 4.3). */
     fun dire(etat: EtatDsf): EcranControle = agir {
@@ -115,18 +214,11 @@ class ControleurPlacette(private val session: SessionControle) {
 
     fun annuler(): EcranControle = agir { session.annuler() }
 
-    /** Ouvre la vue de confirmation ; sans état dit, la session refuse (`RienASaisir`) et l'écran le dit. */
-    fun demanderTerminer(): EcranControle {
-        val e = session.etat()
-        if (e.plants.none { it.duJour != null }) {
-            message = TextesControle.message(SuiteSession.RienASaisir)
-            vue = VueControle.PLANT
-        } else {
-            message = null
-            vue = VueControle.TERMINER
-        }
-        return instantane()
-    }
+    /**
+     * Ouvre la vue de confirmation. Aucune règle ici : « Terminer » sans état dit est refusé par la session seule
+     * (`RienASaisir`), au moment de terminer, et l'écran répète sa réponse (décision de Pascal sur la #108, 2026-10-28).
+     */
+    fun demanderTerminer(): EcranControle { message = null; vue = VueControle.TERMINER; return instantane() }
 
     fun terminer(): EcranControle {
         when (val suite = session.terminer()) {
@@ -136,8 +228,8 @@ class ControleurPlacette(private val session: SessionControle) {
         return instantane()
     }
 
-    /** Revient à la vue Plant (« Reprendre »). */
-    fun reprendre(): EcranControle { vue = VueControle.PLANT; message = null; return instantane() }
+    /** Revient à la vue Plant (« Reprendre », ou retour depuis Pointer). */
+    fun reprendre(): EcranControle { vue = VueControle.PLANT; message = null; enAttente = null; return instantane() }
 
     private fun agir(commande: () -> SuiteSession): EcranControle {
         message = TextesControle.message(commande())
@@ -181,8 +273,20 @@ object TextesControle {
         SuiteSession.DicteeDemandee -> MessageControle("La dictée n'est pas encore disponible.", erreur = false)
     }
 
-    fun ecran(e: EtatSession, vue: VueControle, message: MessageControle?): EcranControle =
-        EcranControle(e.codePlacette, e.jour.toString(), vue, plant(e), totaux(e.totaux), message)
+    const val SANS_CAP = "Pas de cap : la boussole ne répond pas. Saisissez le cap au clavier."
+
+    /** « Plant n° 7 pointé : 143°, 6,2 m » (virgule décimale française). */
+    fun pointe(numero: Int?, azimutDeg: Double, distanceM: Double): String {
+        val d = String.format(Locale.FRANCE, "%.1f", distanceM)
+        return "Plant n° ${numero ?: "?"} pointé : ${azimutDeg.roundToInt()}°, $d m"
+    }
+
+    fun ecran(e: EtatSession, vue: VueControle, message: MessageControle?, aConfirmer: String? = null, plan: PlanPlants): EcranControle =
+        EcranControle(
+            e.codePlacette, e.jour.toString(), vue, plant(e), totaux(e.totaux), message,
+            VuePointage(regarniDe = e.regarniDe?.let { r -> e.plants.firstOrNull { it.uuid == r }?.numero }, aConfirmer = aConfirmer),
+            plan,
+        )
 
     fun plant(e: EtatSession): VuePlant {
         val courant: PlantSession? = e.plants.firstOrNull { it.uuid == e.courant }
@@ -210,7 +314,7 @@ object TextesControle {
             causesVisibles = observe != null && (observe.etat == EtatDsf.ATTEINT || observe.etat == EtatDsf.MORT),
             alerteTerminee = e.termine,
             aucunPlant = e.plants.isEmpty(),
-            peutTerminer = e.plants.any { it.duJour != null },
+            regarniPossible = observe != null && (observe.etat == EtatDsf.MORT || observe.etat == EtatDsf.ABSENT),
             aPrecedent = e.plants.isNotEmpty() && i != 0,
             aSuivant = e.plants.isNotEmpty() && i != e.plants.lastIndex,
         )

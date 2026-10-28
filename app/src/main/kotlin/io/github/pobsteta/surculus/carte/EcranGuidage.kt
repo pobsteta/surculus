@@ -54,7 +54,7 @@ import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.core.guidage.Libelles
-import io.github.pobsteta.surculus.core.guidage.MoyennePosition
+import io.github.pobsteta.surculus.core.session.Arrivee
 import io.github.pobsteta.surculus.core.placette.Piquet
 import io.github.pobsteta.surculus.core.placette.Rattache
 import io.github.pobsteta.surculus.core.placette.Rattachement
@@ -114,8 +114,6 @@ fun EcranGuidage(
     }
 }
 
-private const val SECONDES_DE_MOYENNE = 5
-
 private sealed interface Confirmation {
     data class EnCours(val n: Int) : Confirmation
     data class Fini(val verdict: Verdict<Rattache>, val codeSaisi: String?) : Confirmation
@@ -170,18 +168,14 @@ private fun GuidagePret(
     val piquets = remember(toutes) {
         toutes.mapNotNull { p -> if (p.code != null && p.position != null) Piquet(UuidPlacette(p.uuid), p.code!!, p.position!!) else null }
     }
-    val positionCourante = rememberUpdatedState(position)
+    val positionCourante = rememberUpdatedState(fix?.position)
     val enCours = confirmation is Confirmation.EnCours
     LaunchedEffect(enCours) {
         if (!enCours) return@LaunchedEffect
         val codeLu = code.trim().ifEmpty { null }
-        val moyenne = MoyennePosition()
-        repeat(SECONDES_DE_MOYENNE) { i ->
-            confirmation = Confirmation.EnCours(i)
-            delay(1000)
-            positionCourante.value?.let(moyenne::ajouter)
-        }
-        val m = moyenne.moyenne()
+        // La moyenne de 5 s est celle du contrôle : écrite une seule fois (`collecterPositionsArrivee`).
+        val positions = collecterPositionsArrivee(position = { positionCourante.value }, surSeconde = { i -> confirmation = Confirmation.EnCours(i) })
+        val m = (io.github.pobsteta.surculus.controle.ArriveeControle.arrivee(positions) as? Arrivee.Lambert93)?.position
         confirmation = if (m == null) null else Confirmation.Fini(Rattachement.rattacher(piquets, m, codeLu), codeLu)
     }
 
@@ -227,7 +221,7 @@ private fun GuidagePret(
             // Rouvrir le contrôle à la main (il s'est ouvert tout seul à l'arrivée, mission 012-B1).
             Button(onClick = onArrivee, modifier = Modifier.fillMaxWidth().height(64.dp)) { Text(stringResource(R.string.controle_controler)) }
             when (c) {
-                is Confirmation.EnCours -> Text(stringResource(R.string.guidage_moyenne, c.n, SECONDES_DE_MOYENNE), style = MaterialTheme.typography.bodyMedium)
+                is Confirmation.EnCours -> Text(stringResource(R.string.guidage_moyenne, c.n, SECONDES_DE_MOYENNE_ARRIVEE), style = MaterialTheme.typography.bodyMedium)
                 is Confirmation.Fini -> Resultat(c.verdict)
                 null -> {}
             }
