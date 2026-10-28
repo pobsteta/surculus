@@ -102,3 +102,24 @@ tranche à son retour, puis il code.
 
 À Couchey, Pascal contrôle une placette déjà pointée, téléphone en poche, au volume seul, et
 entend chaque numéro et chaque état.
+
+## Décisions de Pascal sur le plan (2026-10-28, questions posées une par une)
+
+Plan : `pilotage/missions/012c-plan.md` (6c46a8e).
+
+1. **Gestes de volume en mode poche seulement** ; hors du mode, le volume règle le son.
+2. **La voix annonce le plant suivant** après un sain ou un mort (« numéro 7, sain. Suivant, 8. »).
+3. **Double appui bas** : attendre 0,35 s avant d'écrire un volume bas court ; la session de la
+   012-A n'est pas touchée.
+4. **Garde-fous du mode poche, les trois, sans réglage** : sortie après 15 min sans geste, rappel
+   vocal « mode poche actif » à 5 min, retour système ignoré en poche.
+5. **Seuils tels quels, à essayer** : long 0,5 s, sortie 3 s, double 0,35 s, rebond 40 ms ;
+   essai avec des gants à Couchey, rouverts une fois si besoin.
+6. **« Placette déjà terminée » à chaque geste**, avant le numéro.
+7. **« Atteint » en poche, cause vide** ; elle s'ajoute à l'écran ou à la dictée (012-D).
+8. **Sans voix française, mode poche permis** avec le bandeau « Pas de voix française : regardez
+   l'écran », annonces écrites dans la bande, vibration gardée.
+9. **Deux PR** : **012-C1** (classeur de gestes, mode poche, tactile ignoré, écran allumé,
+   sorties, câblage à `SessionControle.appliquer`, retours à l'écran seulement) sur cette branche ;
+   **012-C2** (voix `TextToSpeech`, vibration, `VIBRATE`, alerte « déjà terminée » à la voix) sur
+   une branche à part, après la fusion de C1.
