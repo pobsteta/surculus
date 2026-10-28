@@ -11,7 +11,7 @@ l'écran du contrôle quel que soit le défilement, et empêcher le cercle du pl
 boutons d'état téléphone couché, pour que le forestier voie toujours comment sortir du mode poche et
 touche le bon bouton.
 
-**Redite par l'agent :** _à écrire par l'agent avant d'agir._
+**Redite par l'agent :** sortir la bande du mode poche de la zone qui défile pour qu'elle reste entière en haut, et borner le plan à un carré de 320 dp posé sous les boutons pour qu'il ne les recouvre plus couché.
 
 ## Ce qui a été vu (captures de l'orchestrateur, v0.7.73 et v0.7.74, 2026-10-28)
 

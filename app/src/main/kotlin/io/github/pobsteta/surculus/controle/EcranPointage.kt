@@ -188,7 +188,7 @@ fun PlanCanvas(plan: PlanPlants, onChoisir: (UuidPlant) -> Unit, modifier: Modif
     val styleNumero = MaterialTheme.typography.labelSmall.copy(color = neutre)
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Canvas(
-            Modifier.fillMaxWidth().heightIn(max = 320.dp).aspectRatio(1f)
+            Modifier.widthIn(max = COTE_PLAN_MAX_DP.dp).fillMaxWidth().aspectRatio(1f).align(Alignment.CenterHorizontally)
                 .pointerInput(plan) {
                     detectTapGestures { o ->
                         plan.plantTouche(o.x, o.y, size.width.toFloat(), tolerancePx = DimensionsControle.CIBLE_MIN.toPx() / 2f)?.let { onChoisir(it.uuid) }

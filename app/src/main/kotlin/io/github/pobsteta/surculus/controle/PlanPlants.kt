@@ -84,3 +84,12 @@ data class PlanPlants(
         }
     }
 }
+
+/** Côté maximal du plan, en dp : au-delà, le plan ne grandit pas (téléphone couché, tablette). */
+const val COTE_PLAN_MAX_DP = 320f
+
+/**
+ * Côté du carré du plan, en dp, pour une largeur disponible donnée (mission 067) : toute la largeur, sans dépasser [COTE_PLAN_MAX_DP].
+ * Le plan est un carré posé dans le flux, sous les boutons : il ne les recouvre jamais, debout ou couché.
+ */
+fun cotePlanDp(largeurDisponibleDp: Float): Float = largeurDisponibleDp.coerceIn(0f, COTE_PLAN_MAX_DP)

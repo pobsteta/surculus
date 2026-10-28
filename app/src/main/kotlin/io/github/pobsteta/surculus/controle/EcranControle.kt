@@ -18,6 +18,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -289,11 +290,15 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
     // Enregistré après le précédent, donc prioritaire : en poche, le retour système est ignoré (une poche appuie sur « retour »).
     BackHandler(enabled = !ModePoche.retourPris(poche)) { }
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (poche) {
-            rafraichir // lu pour que la bande se redessine à chaque annonce écrite
+    // La bande du mode poche est hors de la zone qui défile (mission 067) : entière et lisible quel que soit le défilement.
+    Column(Modifier.fillMaxSize()) {
+    if (poche) {
+        rafraichir // lu pour que la bande se redessine à chaque annonce écrite
+        Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             BandePoche(ligneVoix = if (sorties?.sansVoixFrancaise != false) AnnoncesPoche.BANDEAU_SANS_VOIX else null, annonce = sorties?.annonceEcrite)
         }
+    }
+    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (e.plant.alerteTerminee) {
             Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
@@ -309,6 +314,7 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
         }
         e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
         if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
     }
 }
 
