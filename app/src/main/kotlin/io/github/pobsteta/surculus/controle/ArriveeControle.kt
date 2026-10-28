@@ -80,7 +80,7 @@ object ArriveeControle {
         return when (val o = SessionControle.ouvrir(contexte, journal, horloge, essences, arrivee, codeLu?.trim()?.ifEmpty { null }, sauvegarde)) {
             is OuvertureControle.Ouverte -> {
                 val rayon = contexte.placettes.firstOrNull { it.piquet.placette == o.session.rattachement.piquet.placette }?.rayonM ?: RAYON_PAR_DEFAUT_M
-                EtatArrivee.Ouverte(ControleurPlacette(o.session, rayon))
+                EtatArrivee.Ouverte(ControleurPlacette(o.session, rayon, essences.liste()))
             }
             is OuvertureControle.Refusee -> EtatArrivee.Refus(o.refus)
         }

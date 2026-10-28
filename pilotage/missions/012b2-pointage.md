@@ -31,7 +31,7 @@ contrôle à Couchey une placette sans plant ancien, de bout en bout.
   complété par les décisions (clavier en secours, unité choisie à côté du champ), daté du jour.
 - **Reprises de la B1** (décisions de Pascal sur la #108, 2026-10-28) : partager la moyenne de 5 s
   entre guidage et contrôle ; laisser la session seule juge de « Terminer sans état » ; ne demander
-  la permission de stockage qu'une fois ; passer les essences de la tournée à la session (regarnis,
+  la permission de stockage qu'une fois ; passer les essences de la tournée à la session (regarnis : essence du remplacé proposée par défaut, modifiable parmi celles de la tournée, décision de Pascal du 2026-10-28 ;
   `hors_referentiel`).
 - **Message sans fix** (Pascal, 2026-10-28) : « Pas de position GNSS : approchez-vous du piquet et
   attendez un fix. » à la place de « lisez le code du piquet, puis recommencez » ; le champ du code

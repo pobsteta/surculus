@@ -234,6 +234,98 @@ class PointageControleTest {
         assertTrue(pointages().isEmpty())
     }
 
+    // ------------------------------------------------------------------ essence du regarni (décision de Pascal, 2026-10-28 : celle du remplacé, modifiable)
+
+    @Test fun `le regarni propose par defaut l'essence du plant remplace, avec le choix des essences de la tournee`() =
+        with(BancControle(essenceAncien = "CHS", essencesConnues = setOf("CHS", "PIN"))) {
+            val c = controleur()
+            c.dire(EtatDsf.MORT)
+            val e = c.regarni()
+            assertEquals("CHS", e.pointage.essenceChoisie)
+            assertEquals(listOf("CHS", "PIN"), e.pointage.essencesTournee)
+            c.pointerAvecBoussole("3", cap(45.0))
+            val v = pointages().single()
+            assertEquals("CHS", v.essence)
+            assertEquals("ancien-1", v.remplaceUuid)
+        }
+
+    @Test fun `le forestier change l'essence du regarni d'un geste parmi celles de la tournee`() =
+        with(BancControle(essenceAncien = "CHS", essencesConnues = setOf("CHS", "PIN"))) {
+            val c = controleur()
+            c.dire(EtatDsf.MORT)
+            c.regarni()
+            assertEquals("PIN", c.choisirEssence("PIN").pointage.essenceChoisie)
+            c.pointerAvecBoussole("3", cap(45.0))
+            val v = pointages().single()
+            assertEquals("PIN", v.essence)
+            assertEquals("ancien-1", v.remplaceUuid)
+        }
+
+    @Test fun `une essence etrangere a la tournee choisie pour le regarni est refusee hors_referentiel, rien n'est ecrit`() =
+        with(BancControle(essenceAncien = "CHS", essencesConnues = setOf("CHS", "PIN"))) {
+            val c = controleur()
+            c.dire(EtatDsf.MORT)
+            c.regarni()
+            c.choisirEssence("ZZZ")
+            val m = assertNotNull(c.pointerAvecBoussole("3", cap(45.0)).message)
+            assertTrue(m.texte.startsWith("hors_referentiel : "), m.texte)
+            assertTrue(pointages().isEmpty())
+        }
+
+    @Test fun `le remplace sans essence ne propose rien, le choix reste ouvert parmi les essences de la tournee`() =
+        with(BancControle(essenceAncien = null, essencesConnues = setOf("CHS", "PIN"))) {
+            val c = controleur()
+            c.dire(EtatDsf.MORT)
+            val e = c.regarni()
+            assertNull(e.pointage.essenceChoisie)
+            assertEquals(listOf("CHS", "PIN"), e.pointage.essencesTournee)
+            c.pointerAvecBoussole("3", cap(45.0))
+            assertNull(pointages().single().essence)
+        }
+
+    @Test fun `le remplace sans essence, le forestier en choisit une de la tournee`() =
+        with(BancControle(essenceAncien = null, essencesConnues = setOf("CHS", "PIN"))) {
+            val c = controleur()
+            c.dire(EtatDsf.MORT)
+            c.regarni()
+            c.choisirEssence("PIN")
+            c.pointerAvecBoussole("3", cap(45.0))
+            assertEquals("PIN", pointages().single().essence)
+        }
+
+    @Test fun `une tournee sans essence n'offre aucun choix et le regarni passe sans essence`() =
+        with(BancControle(essenceAncien = null, essencesConnues = emptySet())) {
+            val c = controleur()
+            c.dire(EtatDsf.MORT)
+            val e = c.regarni()
+            assertTrue(e.pointage.essencesTournee.isEmpty())
+            assertNull(e.pointage.essenceChoisie)
+            c.pointerAvecBoussole("3", cap(45.0))
+            assertNull(pointages().single().essence)
+        }
+
+    @Test fun `un plant ordinaire n'offre pas d'essence et un choix hors regarni est sans effet`() =
+        with(BancControle(nbPlantsAnterieurs = 0, essencesConnues = setOf("CHS", "PIN"))) {
+            val c = controleur()
+            val e = c.ouvrirPointer()
+            assertTrue(e.pointage.essencesTournee.isEmpty())
+            assertNull(c.choisirEssence("PIN").pointage.essenceChoisie)
+            c.pointerAvecBoussole("3", cap(45.0))
+            assertNull(pointages().single().essence)
+        }
+
+    @Test fun `le choix d'essence ne survit pas au regarni, le suivant repart de l'essence de son remplace`() =
+        with(BancControle(essenceAncien = "CHS", essencesConnues = setOf("CHS", "PIN"))) {
+            val c = controleur()
+            c.dire(EtatDsf.MORT)
+            c.regarni()
+            c.choisirEssence("PIN")
+            c.pointerAvecBoussole("3", cap(45.0))
+            c.plantPrecedent()
+            c.dire(EtatDsf.MORT)
+            assertEquals("CHS", c.regarni().pointage.essenceChoisie)
+        }
+
     @Test fun `Annuler defait le pointage`() = with(BancControle(nbPlantsAnterieurs = 0)) {
         val c = controleur()
         c.pointerAvecBoussole("3", cap(10.0))

@@ -54,6 +54,9 @@ value class CodeEssence(val code: String) {
 class Essences(connues: Set<String>) {
     private val codes = connues.toSet()
 
+    /** Les codes de la tournée, triés : ce que l'écran offre au choix (aucune liste dans l'application). */
+    fun liste(): List<String> = codes.sorted()
+
     fun valider(code: String): Verdict<CodeEssence> =
         if (code in codes) Verdict.Accepte(CodeEssence(code)) else Verdict.Refuse(RefusPlacette.EssenceInconnue(code))
 }

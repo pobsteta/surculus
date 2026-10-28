@@ -77,6 +77,10 @@ data class VueTotaux(val texte: String, val refus: String?)
 data class VuePointage(
     /** Numéro du plant que le prochain pointage remplace ; `null` : un plant ordinaire. */
     val regarniDe: Int?,
+    /** Regarni : l'essence qui sera écrite (celle du remplacé par défaut), `null` : aucune. */
+    val essenceChoisie: String? = null,
+    /** Regarni : les essences de la tournée offertes au choix ; vide pour un plant ordinaire. */
+    val essencesTournee: List<String> = emptyList(),
     /** « Plant à 22 m, au-delà de… » : le texte de l'alerte de la session, avec « Confirmer » et « Refaire ». */
     val aConfirmer: String?,
 )
@@ -98,17 +102,28 @@ data class EcranControle(
  * l'écran montre. Aucune règle ici : états, causes, refus, « terminer » viennent de la session (012-A) ; ce pilote ne
  * garde que la vue ouverte et le dernier message. Méthodes bloquantes (journal) : hors du fil principal.
  */
-class ControleurPlacette(private val session: SessionControle, private val rayonM: Double = RAYON_PAR_DEFAUT_M) {
+class ControleurPlacette(
+    private val session: SessionControle,
+    private val rayonM: Double = RAYON_PAR_DEFAUT_M,
+    /** Les essences de la tournée (codes déjà portés par ses plants) : seules offertes au regarni. */
+    private val essencesTournee: List<String> = emptyList(),
+) {
     private var vue = VueControle.PLANT
     private var message: MessageControle? = null
     private var enAttente: PointageEnAttente? = null
+    /** Essence du regarni en attente : celle du remplacé au départ, changée par le forestier ; `null` : aucune. */
+    private var essenceRegarni: String? = null
 
     /** Pointage hors rayon en attente de « Confirmer » ou « Refaire » : rien n'est écrit tant que l'agent n'a pas répondu. */
     private data class PointageEnAttente(val distanceM: Double, val azimut: AzimutSaisi, val source: SourceAzimut, val alerte: String)
 
     fun instantane(): EcranControle {
         val etat = session.etat()
-        return TextesControle.ecran(etat, vue, message, enAttente?.alerte, PlanPlants.depuis(etat, session.rattachement.piquet.position, rayonM))
+        val regarni = etat.regarniDe != null
+        return TextesControle.ecran(
+            etat, vue, message, enAttente?.alerte, PlanPlants.depuis(etat, session.rattachement.piquet.position, rayonM),
+            essenceRegarni.takeIf { regarni }, if (regarni) essencesTournee else emptyList(),
+        )
     }
 
     // ------------------------------------------------------------------ pointer (012-B2)
@@ -147,12 +162,12 @@ class ControleurPlacette(private val session: SessionControle, private val rayon
     fun refaire(): EcranControle { enAttente = null; message = null; return instantane() }
 
     private fun tenter(distanceM: Double, azimut: AzimutSaisi, source: SourceAzimut, confirme: Boolean): EcranControle {
-        // Un regarni garde l'essence du plant qu'il remplace (code déjà dans la tournée) ; un plant ordinaire n'en porte pas.
-        val avant = session.etat()
-        val essence = avant.regarniDe?.let { r -> avant.plants.firstOrNull { it.uuid == r }?.essence }
+        // Un regarni porte l'essence proposée (celle du remplacé, ou celle choisie) ; la session la valide. Un plant ordinaire n'en porte pas.
+        val essence = if (session.etat().regarniDe != null) essenceRegarni else null
         when (val suite = session.pointer(distanceM, azimut, source, essence, confirme)) {
             is SuiteSession.Fait -> {
                 enAttente = null
+                essenceRegarni = null
                 vue = VueControle.PLANT
                 val apres = session.etat()
                 val numero = apres.plants.firstOrNull { it.uuid == apres.courant }?.numero
@@ -173,7 +188,18 @@ class ControleurPlacette(private val session: SessionControle, private val rayon
     /** « Remplacer » le plant courant (mort ou absent) : le prochain pointage est son regarni ; la session refuse un plant sain. */
     fun regarni(): EcranControle {
         val suite = session.remplace()
-        if (suite is SuiteSession.Fait) { vue = VueControle.POINTER; message = null; enAttente = null } else message = TextesControle.message(suite)
+        if (suite is SuiteSession.Fait) {
+            vue = VueControle.POINTER; message = null; enAttente = null
+            // Par défaut, l'essence du plant remplacé (décision de Pascal, 2026-10-28) ; modifiable par choisirEssence.
+            val etat = session.etat()
+            essenceRegarni = etat.regarniDe?.let { r -> etat.plants.firstOrNull { it.uuid == r }?.essence?.takeIf(String::isNotBlank) }
+        } else message = TextesControle.message(suite)
+        return instantane()
+    }
+
+    /** Regarni en attente : change l'essence d'un geste (`null` : aucune). Sans regarni en attente, sans effet. La session refuse un code étranger à la tournée. */
+    fun choisirEssence(code: String?): EcranControle {
+        if (session.etat().regarniDe != null) essenceRegarni = code
         return instantane()
     }
 
@@ -281,10 +307,13 @@ object TextesControle {
         return "Plant n° ${numero ?: "?"} pointé : ${azimutDeg.roundToInt()}°, $d m"
     }
 
-    fun ecran(e: EtatSession, vue: VueControle, message: MessageControle?, aConfirmer: String? = null, plan: PlanPlants): EcranControle =
+    fun ecran(
+        e: EtatSession, vue: VueControle, message: MessageControle?, aConfirmer: String? = null, plan: PlanPlants,
+        essenceChoisie: String? = null, essencesTournee: List<String> = emptyList(),
+    ): EcranControle =
         EcranControle(
             e.codePlacette, e.jour.toString(), vue, plant(e), totaux(e.totaux), message,
-            VuePointage(regarniDe = e.regarniDe?.let { r -> e.plants.firstOrNull { it.uuid == r }?.numero }, aConfirmer = aConfirmer),
+            VuePointage(regarniDe = e.regarniDe?.let { r -> e.plants.firstOrNull { it.uuid == r }?.numero }, aConfirmer = aConfirmer, essenceChoisie = essenceChoisie, essencesTournee = essencesTournee),
             plan,
         )
 

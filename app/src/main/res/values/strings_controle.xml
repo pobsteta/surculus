@@ -31,6 +31,7 @@
     <string name="controle_distance">Distance (m)</string>
     <string name="controle_pointer_plant">Pointer le plant</string>
     <string name="controle_pointer_regarni">Pointer le regarni</string>
+    <string name="controle_regarni_essence">Essence du regarni</string>
     <string name="controle_regarni_de">Regarni du plant n° %1$d</string>
     <string name="controle_aide_pointer">Téléphone à plat, bord haut vers le plant.</string>
     <string name="controle_boussole_faible">Boussole peu fiable. Dessinez un 8 avec le téléphone.</string>

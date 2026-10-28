@@ -9,7 +9,10 @@ package io.github.pobsteta.surculus.controle
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -73,6 +76,18 @@ fun VuePointerEcran(
     val p = e.pointage
 
     p.regarniDe?.let { Text(stringResource(R.string.controle_regarni_de, it), style = MaterialTheme.typography.titleMedium, color = couleurNeutre()) }
+    if (p.regarniDe != null && p.essencesTournee.isNotEmpty()) {
+        // Une seule touche change l'essence ; l'essence du plant remplacé est déjà choisie. Pas de clavier.
+        Text(stringResource(R.string.controle_regarni_essence), style = MaterialTheme.typography.titleSmall, color = couleurNeutre())
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            p.essencesTournee.forEach { code ->
+                val m = Modifier.widthIn(min = DimensionsControle.ACTION).height(DimensionsControle.ACTION)
+                val action = { agir { choisirEssence(code) } }
+                if (code == p.essenceChoisie) FilledTonalButton(onClick = action, modifier = m) { Text(code, color = couleurNeutre(), style = MaterialTheme.typography.titleMedium) }
+                else OutlinedButton(onClick = action, modifier = m) { Text(code, color = couleurNeutre(), style = MaterialTheme.typography.titleMedium) }
+            }
+        }
+    }
 
     if (auClavier) {
         OutlinedTextField(
