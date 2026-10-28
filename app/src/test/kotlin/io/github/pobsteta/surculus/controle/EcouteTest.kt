@@ -7,6 +7,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -387,6 +388,116 @@ class EcouteTest {
         }
         assertEquals("Champignons", TextesControle.libelle(io.github.pobsteta.surculus.core.placette.GroupeCause.PATHOLOGIQUE))
         assertEquals("champignons", io.github.pobsteta.surculus.core.session.TextesDictee.cause(io.github.pobsteta.surculus.core.placette.GroupeCause.PATHOLOGIQUE))
+    }
+
+    // --- aller-retour 1 de la PR #121
+
+    @Test fun `relachement rapide - le unk final dans la seconde qui suit l'ouverture ne dit rien`() = with(Banc()) {
+        pilote.tenir(); t = 1_000; pret()
+        t = 1_300; pilote.relacher()
+        t = 1_400; pilote.phrase("[unk]")
+        assertTrue(phrases.isEmpty())
+        assertTrue(voix.dits.isEmpty())
+    }
+
+    @Test fun `sortie de poche pendant l'ecoute - la fermeture se sent, deux coups`() = with(Banc()) {
+        pilote.tenir(); t = 100; pret()
+        pilote.arreterEtOublier()
+        assertEquals(MotifsVibration.FERMEE.toList(), vibreur.motifs.last())
+    }
+
+    @Test fun `relache pendant l'annonce - deux coups de fermeture`() = with(Banc()) {
+        pilote.tenir(); t = 100; pret()
+        t = 1_000; pilote.phrase("atteint")
+        pilote.resultat(AnnoncePoche("Numéro 7, atteint.", MotifsVibration.ATTEINT))
+        t = 1_200; pilote.relacher()
+        assertEquals(MotifsVibration.FERMEE.toList(), vibreur.motifs.last())
+    }
+
+    @Test fun `une phrase comprise qui n'ecrit rien ne vibre pas - redite, suivant, remplace`() = with(BancControle()) {
+        val c = controleur()
+        c.dicter("atteint")
+        c.dicter("atteint")
+        assertTrue("déjà" in c.derniereAnnonce!!.texte)
+        assertNull(c.derniereAnnonce?.motif, "redite")
+        c.dicter("suivant")
+        assertNull(c.derniereAnnonce?.motif, "suivant")
+        c.dicter("mort")
+        c.dicter("remplace")
+        assertNull(c.derniereAnnonce?.motif, "remplace")
+        assertNotEquals(MotifsVibration.TIC.toList(), c.derniereAnnonce?.motif?.toList())
+    }
+
+    @Test fun `l'aspect du bouton micro - seule la couleur depend de l'ecoute, l'ouverture comme l'ecoute sont pleines`() {
+        assertTrue(AspectMicro.plein(AffichageEcoute.OUVERTURE))
+        assertTrue(AspectMicro.plein(AffichageEcoute.ECOUTE))
+        assertFalse(AspectMicro.plein(AffichageEcoute.FERMEE))
+        assertFalse(AspectMicro.plein(AffichageEcoute.RIEN))
+    }
+
+    @Test fun `les boutons sous le message - Installer si le modele manque, Reglages si le micro est refuse pour de bon`() {
+        assertEquals(emptyList(), ActionsDictee.pour(EtatPermissionMicro.ACCORDEE, modeleInstalle = true))
+        assertEquals(emptyList(), ActionsDictee.pour(EtatPermissionMicro.REFUSEE, modeleInstalle = true))
+        assertEquals(listOf(ActionDictee.INSTALLER), ActionsDictee.pour(EtatPermissionMicro.ACCORDEE, modeleInstalle = false))
+        assertEquals(listOf(ActionDictee.REGLAGES), ActionsDictee.pour(EtatPermissionMicro.REFUSEE_DEFINITIVEMENT, modeleInstalle = true))
+        assertEquals(listOf(ActionDictee.INSTALLER, ActionDictee.REGLAGES), ActionsDictee.pour(EtatPermissionMicro.REFUSEE_DEFINITIVEMENT, modeleInstalle = false))
+    }
+
+    @Test fun `orientation - verrouillee a l'entree en poche, libre des la sortie`() {
+        val valeurs = ArrayList<Int>()
+        val mode = ModePoche()
+        val desabonner = VerrouOrientation { valeurs += it }.suivre(mode)
+        assertEquals(listOf(VerrouOrientation.LIBRE), valeurs, "hors poche : libre")
+        mode.entrer(0)
+        assertEquals(VerrouOrientation.VERROUILLEE, valeurs.last())
+        mode.sortir(RaisonSortie.TROIS_SECONDES)
+        assertEquals(VerrouOrientation.LIBRE, valeurs.last())
+        mode.entrer(10)
+        mode.sortir(RaisonSortie.ARRIERE_PLAN)
+        assertEquals(VerrouOrientation.LIBRE, valeurs.last())
+        mode.entrer(20)
+        mode.sortir(RaisonSortie.INACTIVITE)
+        assertEquals(VerrouOrientation.LIBRE, valeurs.last())
+        desabonner()
+        mode.entrer(30)
+        assertEquals(VerrouOrientation.LIBRE, valeurs.last(), "désabonné : plus rien")
+    }
+
+    @Test fun `orientation - une Activity recreee en mode poche reverrouille tout de suite`() {
+        val mode = ModePoche().apply { entrer(0) }
+        val valeurs = ArrayList<Int>()
+        VerrouOrientation { valeurs += it }.suivre(mode)
+        assertEquals(listOf(VerrouOrientation.VERROUILLEE), valeurs)
+    }
+
+    @Test fun `orientation - les constantes sont celles d'Android`() {
+        assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED, VerrouOrientation.VERROUILLEE)
+        assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, VerrouOrientation.LIBRE)
+    }
+
+    @Test fun `la rotation reste gardee - un changement de configuration ne leve pas le mode`() {
+        val mode = ModePoche().apply { entrer(0) }
+        mode.surArret(changementDeConfiguration = true)
+        assertTrue(mode.actif)
+        mode.surArret(changementDeConfiguration = false)
+        assertFalse(mode.actif)
+    }
+
+    @Test fun `apres une remise a zero, les repetitions de la touche encore tenue ne repartent pas au systeme`() {
+        val mode = ModePoche().apply { entrer(0) }
+        val pont = PontPoche(mode)
+        val sorties = ArrayList<io.github.pobsteta.surculus.core.session.SortieClasseur>()
+        pont.ecoute = { sorties += it }
+        assertTrue(pont.touche(io.github.pobsteta.surculus.core.session.Touche.BAS, true, 0))
+        pont.avancer(500)
+        pont.remettreAZero() // appel, verrouillage : onPause
+        val bas = io.github.pobsteta.surculus.core.session.Touche.BAS
+        assertTrue(pont.touche(bas, true, 600, repetition = true), "répétition prise")
+        assertTrue(pont.touche(bas, true, 700, repetition = true))
+        assertTrue(pont.touche(bas, false, 800), "le relâchement est pris aussi")
+        assertFalse(pont.touche(bas, true, 900, repetition = true), "relâchée : plus rien n'est pris")
+        // Un vrai nouvel appui, mode actif, est repris par le classeur.
+        assertTrue(pont.touche(bas, true, 1_000))
     }
 
     // --- câblage (sources)

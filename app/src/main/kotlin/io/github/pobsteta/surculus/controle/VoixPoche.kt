@@ -67,8 +67,7 @@ object AnnoncesPoche {
 
     /**
      * L'annonce d'une phrase dictée (012-D2) : le texte est celui de l'`IssueDictee` (TextesDictee), la vibration celle de
-     * l'état écrit ([etat], lu après l'écriture) ou du refus. Une confirmation sans écriture (redite, suivant, remplace) fait
-     * le petit tic. Après « Terminer », l'alerte passe d'abord, comme pour les gestes.
+     * l'état écrit ([etat], lu après l'écriture) ou du refus. Une confirmation sans écriture (redite, suivant, remplace) ne vibre pas. Après « Terminer », l'alerte passe d'abord, comme pour les gestes.
      */
     fun pourIssue(issue: IssueDictee, etat: EtatDsf?): AnnoncePoche = when (issue) {
         is IssueDictee.Refusee -> AnnoncePoche(issue.annonce, MotifsVibration.REFUS, erreur = true)
@@ -82,8 +81,10 @@ object AnnoncesPoche {
             },
             erreur = issue.placetteTerminee,
         )
+        // Une phrase comprise qui n'écrit rien ne vibre pas : la voix suffit (décision de Pascal, 2026-10-28). Le tic de 30 ms
+        // garde son seul sens, « atteint armé » au volume haut.
         is IssueDictee.Redite, is IssueDictee.Suivant, is IssueDictee.RemplaceEnAttente ->
-            AnnoncePoche(issue.annonce, MotifsVibration.TIC, erreur = issue.placetteTerminee)
+            AnnoncePoche(issue.annonce, null, erreur = issue.placetteTerminee)
     }
 
     /**

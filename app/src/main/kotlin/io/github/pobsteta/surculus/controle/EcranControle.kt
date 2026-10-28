@@ -45,6 +45,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -115,7 +117,7 @@ object ControleursOuverts {
  * « Terminer » ne perd rien, la placette reste « à faire ».
  */
 @Composable
-fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit) {
+fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onParametres: () -> Unit = {}) {
     val ctx = LocalContext.current
     val chargement = chargerTournee(id)
     val (fix, _) = rememberFix()
@@ -187,7 +189,7 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit) {
                     is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)
                     is EtatArrivee.Refus -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
                     EtatArrivee.SansPosition -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
-                    is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour)
+                    is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour, onParametres)
                 }
             }
         }
@@ -227,7 +229,7 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
 
 /** La session ouverte : la vue Plant, la confirmation de fin, ou « Contrôlée ». */
 @Composable
-private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages: ReglagesControle, stockageRefuse: Boolean, onRetour: () -> Unit) {
+private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages: ReglagesControle, stockageRefuse: Boolean, onRetour: () -> Unit, onParametres: () -> Unit) {
     var ecran by remember(controleur) { mutableStateOf<EcranControle?>(null) }
     val scope = rememberCoroutineScope()
     LaunchedEffect(controleur) { ecran = withContext(Dispatchers.IO) { controleur.instantane() } }
@@ -342,7 +344,12 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
                 Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
             }
             when (e.vue) {
-                VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, ligneDictee = ligneDictee, onPoche = {
+                VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, ligneDictee = ligneDictee, actionsDictee = ActionsDictee.pour(EcouteApp.etatPermission(ctx), EcouteApp.modeleInstalle(ctx)), onActionDictee = { a ->
+                    when (a) {
+                        ActionDictee.REGLAGES -> ouvrirReglagesApplication(ctx)
+                        ActionDictee.INSTALLER -> onParametres()
+                    }
+                }, onPoche = {
                     val entrer: () -> Unit = {
                         mode.entrer(SystemClock.uptimeMillis())
                         sorties?.annoncer(AnnoncesPoche.entree(e.plant.numero))
@@ -369,7 +376,7 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
 
 @Composable
 private fun VuePlantEcran(
-    e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit, poche: Boolean, ligneDictee: String?,
+    e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit, poche: Boolean, ligneDictee: String?, actionsDictee: List<ActionDictee>, onActionDictee: (ActionDictee) -> Unit,
     onPoche: () -> Unit, onMicro: () -> Unit, onMicroRelache: () -> Unit,
 ) {
     val p = e.plant
@@ -465,6 +472,12 @@ private fun VuePlantEcran(
             BoutonMicro(Modifier.weight(1f), onAppui = onMicro, onRelache = onMicroRelache)
         }
         ligneDictee?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        // Sous le message : le bouton qui mène où l'on répare (jamais en poche, le toucher y est ignoré).
+        actionsDictee.forEach { a ->
+            OutlinedButton(onClick = { onActionDictee(a) }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+                Text(stringResource(if (a == ActionDictee.REGLAGES) R.string.controle_dictee_reglages else R.string.controle_dictee_installer), color = couleurNeutre())
+            }
+        }
     }
 }
 
@@ -540,13 +553,19 @@ private fun BoutonMicro(modifier: Modifier, onAppui: () -> Unit, onRelache: () -
     DisposableEffect(Unit) { onDispose { relache() } }
     val ecoute = EcouteApp.affichage == AffichageEcoute.ECOUTE || EcouteApp.affichage == AffichageEcoute.OUVERTURE
     val libelle = stringResource(if (ecoute) R.string.controle_micro_ecoute else R.string.controle_micro)
-    if (ecoute) {
-        Button(onClick = {}, interactionSource = interactions, modifier = modifier.height(DimensionsControle.ACTION), contentPadding = PaddingValues(horizontal = 4.dp)) { Text(libelle) }
-    } else {
-        OutlinedButton(onClick = {}, interactionSource = interactions, modifier = modifier.height(DimensionsControle.ACTION), contentPadding = PaddingValues(horizontal = 4.dp)) {
-            Text(libelle, color = couleurNeutre())
-        }
-    }
+    // UN SEUL bouton, jamais deux composables selon l'état : changer de composable sous le doigt enverrait un Cancel et
+    // fermerait l'écoute aussitôt. Seules les couleurs changent.
+    val plein = AspectMicro.plein(EcouteApp.affichage)
+    OutlinedButton(
+        onClick = {},
+        interactionSource = interactions,
+        modifier = modifier.height(DimensionsControle.ACTION),
+        contentPadding = PaddingValues(horizontal = 4.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = if (plein) MaterialTheme.colorScheme.primary else Color.Transparent,
+            contentColor = if (plein) MaterialTheme.colorScheme.onPrimary else couleurNeutre(),
+        ),
+    ) { Text(libelle) }
 }
 
 @Composable
@@ -590,4 +609,11 @@ private fun VueTerminee(e: EcranControle, agir: (ControleurPlacette.() -> EcranC
 private fun Totaux(e: EcranControle) {
     val t = e.totaux
     if (t.refus != null) Text(t.refus, color = couleurErreur()) else Text(t.texte, style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
+}
+
+/** Ouvre les réglages Android de Surculus (autorisations), quand le micro est refusé pour de bon. */
+private fun ouvrirReglagesApplication(ctx: android.content.Context) {
+    val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.fromParts("package", ctx.packageName, null))
+        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+    try { ctx.startActivity(intent) } catch (_: Exception) { /* pas d'écran de réglages : le message reste */ }
 }

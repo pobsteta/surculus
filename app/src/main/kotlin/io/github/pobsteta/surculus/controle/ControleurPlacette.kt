@@ -268,6 +268,7 @@ class ControleurPlacette(
                 MessageControle(m, erreur = avant.termine)
             }
             ActionGeste.AnnulerDerniereSaisie -> MessageControle(TextesControle.ANNULE, erreur = false)
+            // Chemin mort depuis la 012-D2 : le long bas ouvre le micro dans l'écran, il n'arrive plus ici. Gardé pour la table de la spec.
             ActionGeste.OuvrirDictee -> null
         } else TextesControle.message(suite)
         val apres = session.etat()

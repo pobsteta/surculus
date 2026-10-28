@@ -108,7 +108,7 @@ class MachineEcouteTest {
 
     @Test fun `arret force - ferme tout, sans reouverture`() {
         val m = ouverte()
-        assertEquals(listOf<EffetEcoute>(Fermer), m.arretForce())
+        assertEquals(listOf<EffetEcoute>(Fermer, VibrerFermeture), m.arretForce())
         assertEquals(EtatEcoute.FERMEE, m.etat)
         assertFalse(m.tenue)
         assertEquals(emptyList(), m.avancer(60_000, false))
@@ -163,7 +163,7 @@ class MachineEcouteTest {
     @Test fun `touche relachee pendant l'annonce - elle finit, le micro ne se rouvre pas`() {
         val m = ouverte()
         m.phrase("atteint", 1_500, true)
-        assertEquals(emptyList(), m.relacher(1_800))
+        assertEquals(listOf<EffetEcoute>(VibrerFermeture), m.relacher(1_800))
         assertEquals(EtatEcoute.FERMEE, m.etat)
         assertEquals(emptyList(), m.annonceTerminee(3_000))
         assertEquals(EtatEcoute.FERMEE, m.etat)
@@ -269,5 +269,47 @@ class MachineEcouteTest {
         assertEquals(emptyList(), m.avancer(100_000, false))
         assertEquals(EtatEcoute.OUVERTE, m.etat)
         assertNull(m.echeance())
+    }
+
+    // --- aller-retour 1 : fermetures qui se sentent, seconde de bruit en toute situation
+
+    @Test fun `arret force pendant une annonce - la fermeture vibre aussi`() {
+        val m = ouverte()
+        m.phrase("atteint", 1_500, true)
+        assertEquals(EtatEcoute.SUSPENDUE, m.etat)
+        assertEquals(listOf<EffetEcoute>(Fermer, VibrerFermeture), m.arretForce())
+    }
+
+    @Test fun `arret force pendant l'ouverture - rien a sentir, le micro n'etait pas ouvert`() {
+        val m = MachineEcoute()
+        m.tenir(0)
+        assertEquals(listOf<EffetEcoute>(Fermer), m.arretForce())
+    }
+
+    @Test fun `relache pendant une annonce - la fermeture vibre, le micro ne se rouvre pas`() {
+        val m = ouverte()
+        m.phrase("atteint", 1_500, true)
+        assertEquals(listOf<EffetEcoute>(VibrerFermeture), m.relacher(1_800))
+        assertEquals(EtatEcoute.FERMEE, m.etat)
+        assertEquals(emptyList(), m.annonceTerminee(3_000))
+    }
+
+    @Test fun `relachement rapide - le unk final rendu dans la seconde apres l'ouverture est ignore aussi`() {
+        val m = ouverte(pretA = 1_000)
+        assertEquals(listOf<EffetEcoute>(Fermer, VibrerFermeture), m.relacher(1_300))
+        assertEquals(emptyList(), m.phrase("[unk]", 1_400, true), "même fermée, la seconde de bruit joue")
+        assertEquals(emptyList(), m.phrase("atteint", 1_450, true), "le résultat final attendu est consommé")
+    }
+
+    @Test fun `relachement rapide - un unk apres la seconde est transmis`() {
+        val m = ouverte(pretA = 1_000)
+        m.relacher(1_300)
+        assertEquals(listOf<EffetEcoute>(Appliquer("[unk]")), m.phrase("[unk]", 2_000, true))
+    }
+
+    @Test fun `relachement rapide - une vraie phrase dans la seconde est prise`() {
+        val m = ouverte(pretA = 1_000)
+        m.relacher(1_300)
+        assertEquals(listOf<EffetEcoute>(Appliquer("atteint")), m.phrase("atteint", 1_400, true))
     }
 }

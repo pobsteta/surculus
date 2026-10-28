@@ -91,7 +91,8 @@ class MachineEcoute {
         private set
 
     private var debutOuvertureMs = 0L
-    private var ouvertA = 0L
+    /** Instant de la dernière ouverture réelle du micro ; très ancien tant qu'aucune n'a eu lieu. */
+    private var ouvertA = -DelaisEcoute.BRUIT_APRES_OUVERTURE_MS
     private var unInstantDit = false
     private var suspenduDepuisMs = 0L
     private var resultatAttenduJusqua: Long? = null
@@ -112,7 +113,8 @@ class MachineEcoute {
                 resultatAttenduJusqua = instantMs + DelaisEcoute.RESULTAT_FINAL_MS
                 listOf(EffetEcoute.Fermer, EffetEcoute.VibrerFermeture)
             }
-            EtatEcoute.SUSPENDUE -> { etat = EtatEcoute.FERMEE; emptyList() } // l'annonce finit, le micro est déjà coupé
+            // L'annonce finit, le micro est déjà coupé : la fermeture se sent quand même (deux coups), l'agent a lâché.
+            EtatEcoute.SUSPENDUE -> { etat = EtatEcoute.FERMEE; listOf(EffetEcoute.VibrerFermeture) }
             EtatEcoute.OUVERTURE, EtatEcoute.FERMEE -> emptyList() // OUVERTURE : se ferme dès que le moteur est prêt
         }
     }
@@ -139,13 +141,19 @@ class MachineEcoute {
         return listOf(EffetEcoute.Fermer)
     }
 
-    /** Sortie du mode poche, `onPause`/`onStop`, écran quitté : tout se ferme, rien ne se rouvre. */
+    /**
+     * Sortie du mode poche, `onPause`/`onStop`, écran quitté : tout se ferme, rien ne se rouvre. Si le micro était ouvert ou
+     * suspendu, la fermeture se sent (deux coups). Le résultat final que Vosk rend encore est **jeté** : l'application quitte
+     * le premier plan ou le mode poche se lève, une phrase ne doit plus écrire à ce moment.
+     */
     fun arretForce(): List<EffetEcoute> {
         tenue = false
         resultatAttenduJusqua = null
-        if (etat == EtatEcoute.FERMEE) return emptyList()
-        etat = EtatEcoute.FERMEE
-        return listOf(EffetEcoute.Fermer)
+        return when (etat) {
+            EtatEcoute.FERMEE -> emptyList()
+            EtatEcoute.OUVERTURE -> { etat = EtatEcoute.FERMEE; listOf(EffetEcoute.Fermer) }
+            EtatEcoute.OUVERTE, EtatEcoute.SUSPENDUE -> { etat = EtatEcoute.FERMEE; listOf(EffetEcoute.Fermer, EffetEcoute.VibrerFermeture) }
+        }
     }
 
     /**
@@ -158,7 +166,8 @@ class MachineEcoute {
         if (etat != EtatEcoute.OUVERTE && !attendu) return emptyList()
         val brut = texte.trim()
         val bruit = brut.isEmpty() || brut == INCONNU
-        if (bruit && etat == EtatEcoute.OUVERTE && instantMs - ouvertA < DelaisEcoute.BRUIT_APRES_OUVERTURE_MS) return emptyList()
+        // La seconde de bruit joue quel que soit l'état : un relâchement rapide rend son résultat final dans cette seconde.
+        if (bruit && instantMs - ouvertA < DelaisEcoute.BRUIT_APRES_OUVERTURE_MS) { resultatAttenduJusqua = null; return emptyList() }
         if (brut.isEmpty()) return emptyList()
         if (etat != EtatEcoute.OUVERTE) resultatAttenduJusqua = null // le résultat final est arrivé
         if (voixDisponible && etat == EtatEcoute.OUVERTE) {

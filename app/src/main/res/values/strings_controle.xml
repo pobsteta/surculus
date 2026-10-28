@@ -22,6 +22,8 @@
     <string name="controle_micro">Tenir pour parler</string>
     <string name="controle_micro_ecoute">J\'écoute…</string>
     <string name="controle_regarni_propose">Remplace le plant n° %1$d : pointez le regarni</string>
+    <string name="controle_dictee_reglages">Réglages</string>
+    <string name="controle_dictee_installer">Installer la dictée</string>
     <string name="controle_regarni_pointer">Pointer</string>
     <string name="controle_annuler">Annuler</string>
     <string name="controle_terminer">Terminer</string>

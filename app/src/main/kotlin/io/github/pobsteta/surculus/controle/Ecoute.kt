@@ -99,6 +99,27 @@ object TextesEcoute {
         if (!modeleInstalle) MODELE_ABSENT_LIGNE else PermissionMicro.ligne(permission)
 }
 
+/** Le bouton plein (couleurs inversées) pendant l'écoute : c'est la **seule** chose qui change sur le bouton micro. */
+object AspectMicro {
+    fun plein(a: AffichageEcoute): Boolean = a == AffichageEcoute.ECOUTE || a == AffichageEcoute.OUVERTURE
+}
+
+/** Les boutons de réparation sous le message de la dictée (hors du mode poche seulement). */
+enum class ActionDictee {
+    /** Réglages Android de l'application : le micro est refusé pour de bon. */
+    REGLAGES,
+
+    /** Paramètres, Dictée vocale : le modèle manque. */
+    INSTALLER,
+}
+
+object ActionsDictee {
+    fun pour(permission: EtatPermissionMicro, modeleInstalle: Boolean): List<ActionDictee> = buildList {
+        if (!modeleInstalle) add(ActionDictee.INSTALLER)
+        if (permission == EtatPermissionMicro.REFUSEE_DEFINITIVEMENT) add(ActionDictee.REGLAGES)
+    }
+}
+
 /** Le micro vu du pilote : ouvre (hors du fil principal, le chargement du modèle est long) et ferme. */
 interface PortMicro {
     /** Charge le modèle si besoin et ouvre le micro. Rend la main tout de suite ; la suite revient par `moteurPret`, `phrase` ou `erreur`. */
