@@ -14,7 +14,7 @@ l'écran (boutons de volume selon la table de la spec, mode poche qui ignore le 
 maintenu allumé, vibration et synthèse vocale du numéro et de l'état), pour que le forestier, gants
 aux mains et téléphone en poche, dise l'état de chaque plant d'une seule main.
 
-**Redite par l'agent :** _(à remplir par l'agent avant d'agir)_
+**Redite par l'agent :** Rendre, sans code, le plan qui dit comment le forestier, téléphone en poche et gants aux mains, dira l'état de chaque plant au seul volume (gestes, mode poche, voix, vibration), avec le conflit « atteint » / sortie à 3 s résolu et les questions de sens posées à Pascal, pour qu'il tranche avant que le code s'écrive.
 
 ## Décisions de Pascal à respecter (2026-10-27)
 
