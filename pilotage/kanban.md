@@ -104,7 +104,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 **Suite décidée de la 012 (2026-10-27) :** après la 012-C2 (au Validé), la 012-D.
 
-- **012-D** dictée branchée sur l'écran du contrôle.
+- **012-D** dictée branchée sur l'écran du contrôle (`afficheur`, appuyer) : plan sans code
+  lancé le 2026-10-28 (fiche `pilotage/missions/012d-dictee.md`, branche `mission/012d-dictee`) ;
+  code après la fusion de la #114 et les réponses de Pascal.
 
 **Ensuite, au signal de Pascal :**
 
