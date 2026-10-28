@@ -19,9 +19,9 @@ _Idées, à trier au prochain `/mission`._
   du 2026-10-17, `~/dev/briefs/traites/2026-10-23-traite-terrain-gnss-publie.md`) ;
   réexamen de l'ADR 0004 (osmdroid archivé depuis le 2024-11-20, ADR 0009) : la 034 n'y
   ajoute qu'un renvoi daté.
-- **Dettes de la 009** : demander `WRITE_EXTERNAL_STORAGE` à l'exécution (Android 8-9)
-  et brancher le déclenchement de la sauvegarde sur les saisies (011, 012) ; essai de
-  restauration sur deux téléphones après la 011 et la 012.
+- **Dettes de la 009** : essai de restauration sur deux téléphones après la 012 (la
+  permission `WRITE_EXTERNAL_STORAGE` est demandée par la 012-B1, la sauvegarde est
+  branchée sur les saisies par la 012-A).
 - **Pascal (spec § 5)** : l'empreinte des photos au journal exige un type de ligne qui
   n'existe pas ; à trancher avant la mission photo.
 - **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées
@@ -53,7 +53,7 @@ _Idées, à trier au prochain `/mission`._
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
   désignés).
 - **Pascal** : écrire à Centipède (version de RGF93) ; informer les employeurs des
-  agents (finalité des horodatages et positions) ; matériel de pointage ; plantation
+  agents (finalité des horodatages et positions) ; plantation
   d'essai d'automne 2026 ; successeur ;
   coût (surfaces, prix d'un regarni, ressaisie) ; revérifier les art. 3-1.1 et 3-2 du
   fascicule 34 ; URL du guide des chênaies continentales.
@@ -91,8 +91,8 @@ _Idées, à trier au prochain `/mission`._
   `Download/` dans `Download/Surculus/` le 2026-10-27, journal). Vérifié par capture de
   l'orchestrateur le 2026-10-27 : accueil, liste et carte conformes ; texte gris sur la
   plaque blanche en sombre illisible (mission 062 lancée).
-- **Pascal, essai de la release v0.7.67** (2026-10-28) : 062 et 063 vérifiées par capture de
-  l'orchestrateur en sombre et en clair ; essai au soleil de la 063 (pastilles pâlies de la
+- **Pascal, essai de la release v0.7.67** (2026-10-28) : 062 vérifiée par capture de
+  l'orchestrateur sur la v0.7.64, 063 sur la v0.7.67, en sombre et en clair ; essai au soleil de la 063 (pastilles pâlies de la
   liste à 2,3-2,6:1 acceptées sous réserve de cet essai) ; contrôle 012-B1 de bout en bout
   à Couchey, sur le terrain (pas de position simulée), avec la tournée d'essai
   `Download/Surculus/couchey-essai-plants.zip` (non importée, données d'essai).
@@ -103,7 +103,8 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Suite décidée de la 012 (2026-10-27, dans cet ordre) :**
+**Suite décidée de la 012 (2026-10-27 et 28) :** 012-C puis 012-D, dans l'ordre du
+découpage ; l'heure UTC, décidée le 2026-10-28, avant l'essai d'automne.
 
 - **012-C** volume, mode poche, voix de sortie ; sortie du mode poche par un appui de 3 s
   sur volume haut et à « Terminer ».
@@ -129,9 +130,10 @@ _En attente sous le plafond humain (3 PR en revue)._
   à part.
 - **Tranche 3** : règle « date incohérente » (travaux sur une plantation plus âgée que
   l'itinéraire), avec le relevé des interventions (Pascal, PR #106).
-- **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK sur Couchey (import, ortho,
+- **Pascal, terrain** (bilan du 2026-10-21 ; la 012 a démarré sans l'attendre, décision du
+  2026-10-27) : APK sur Couchey (import, ortho,
   mode avion, guidage, test des dix secondes) ; restauration de `exemple-v1.sursync` ;
-  comptes de Couchey contre QGIS (029) ; **essai au soleil** de la palette (ADR 0008 : badge
+  comptes de Couchey contre QGIS (029) ; **essai au soleil** de la palette, le même que celui de la 063 au Validé (ADR 0008 : badge
   du fix, texte orange, pastilles sur ortho claire, marqueur noir de la position ; le bouton
   « Retour » est devenu la flèche du bandeau), en clair et en sombre. Chaque essai au
   journal.
