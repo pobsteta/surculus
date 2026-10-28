@@ -73,14 +73,10 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **012-B2** pointer les plants à la boussole du téléphone, plan à l'échelle et regarnis
-  (`afficheur`, appuyer), PR #109. Relue « prête pour Pascal » (CI verte) ; reprise en cours
-  sur la décision de Pascal du 2026-10-28 : le regarni prend par défaut l'essence du plant
-  remplacé, modifiable parmi les essences de la tournée ; seconde relecture ensuite. Conflit
-  probable avec la #110 (`EcranGuidage.kt`). Boussole à valider en forêt. Fiche :
-  `pilotage/missions/012b2-pointage.md` (sur sa branche).
-- **064** la carte utilisable en paysage (`afficheur`, appuyer), PR #110, CI verte ;
-  relecture en cours. Fiche : `pilotage/missions/064-carte-paysage.md` (sur sa branche).
+- **Captures de la 012-B2 et de la 064** sur la release qui porte f955af6 (orchestrateur),
+  dès que le téléphone de Pascal est branché : carte couchée (six boutons en 3 + 3, bandeau,
+  légende, ligne de la placette) et debout ; vue Pointer, plan et rangée d'essences du
+  regarni. Boussole et regarni à valider en forêt, à Couchey.
 
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
@@ -145,8 +141,10 @@ découpage ; l'heure UTC, décidée le 2026-10-28, avant l'essai d'automne.
 - Cycle 11, 2026-10-27 et 28 : **062** textes neutres sans plaque en sombre (PR #105) ;
   **012-A** session de contrôle sur le journal de la tournée (PR #106) ; **063** couleurs
   d'état sans plaque blanche, spec § 3 et ADR 0008 amendées (PR #107) ; **012-B1** écran du
-  contrôle (deux portes, arrivée, états, causes, Terminer) (PR #108) — fusionnées sur
-  l'autorisation de Pascal ; releases jusqu'à v0.7.67.
+  contrôle (deux portes, arrivée, états, causes, Terminer) (PR #108) ; **064** carte en
+  paysage (PR #110) ; **012-B2** pointage à la boussole du téléphone, plan, regarnis, spec
+  § 1 et ADR 0003 amendées (PR #109) — fusionnées sur l'autorisation de Pascal ; releases
+  jusqu'à v0.7.68.
 
 - Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus (PR #81) ; **040** accueil sur
   la liste des tournées (PR #82) ; **041** recherche et « Rendues » (PR #83) ; **043** vue

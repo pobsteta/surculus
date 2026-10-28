@@ -556,3 +556,4 @@
 2026-10-28 · relecteur · PR #109 · 2026-10-28 — Relecteur, PR #109 (012-B2), seconde relecture, tête b8035d8 : prête pour Pascal ; essence du regarni conforme à la décision « celle du remplacé, modifiable » (8 tests, CI verte, fusion sans conflit avec main b3262fd) ; question de sens non bloquante : touche « Aucune » (proposition : non).
 2026-10-28 · Pascal · PR #109 · « Non, pas de touche » : pas de touche « Aucune » pour revenir à un regarni sans essence.
 2026-10-28 · Claude (orchestrateur) · v0.7.68 · Release de la fusion de la #110 (b3262fd) publiée et téléchargée ; téléphone non branché (`adb devices` vide) : captures de la 064 en attente.
+2026-10-28 · Claude (orchestrateur) · PR #109 · Fusionnée (f955af6) sur l'autorisation de Pascal (« Oui, fusionne »), CI verte sur b8035d8 ; captures de la 012-B2 et de la 064 sur la release qui porte ce commit, dès que le téléphone est branché.
