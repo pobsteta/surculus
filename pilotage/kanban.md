@@ -98,10 +98,6 @@ _Idées, à trier au prochain `/mission`._
 - **sommieR** : démo de Marsannay-la-Côte (pobsteta/sommieR#65) et ortho tuilée EPSG:3857
   (pobsteta/sommieR#66), briefs envoyés, sans réponse ; session pilotée par Pascal.
 
-- **012-D1** le cœur de la dictée dans `:core` (`dev`, appuyer), lancée le 2026-10-28 sur
-  `mission/012d-dictee` ; décisions Q4, Q5, Q9, Q10, Q12 dans la fiche
-  `pilotage/missions/012d-dictee.md`, plan `012d-plan.md` (f734cef).
-
 ## Planifié
 
 _En attente sous le plafond humain (3 PR en revue)._
@@ -144,6 +140,9 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **012-D1** le cœur de la dictée (`ApplicateurDictee`, `TextesDictee`, `:core`), PR #116
+  fusionnée le 2026-10-28 (fbc2f93), sur l'autorisation de Pascal.
 
 - Cycle 11, 2026-10-27 et 28 : **062** textes neutres sans plaque en sombre (PR #105) ;
   **012-A** session de contrôle sur le journal de la tournée (PR #106) ; **063** couleurs
