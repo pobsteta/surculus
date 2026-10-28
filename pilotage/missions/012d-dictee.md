@@ -4,7 +4,8 @@
 > `imperatrice/skills/mission/fiche-mission.md`. Quatrième des missions de la 012
 > (A session, 63b0659 ; B1 écran, 6bcb50d ; B2 pointage, f955af6 ; C1 volume et poche, b9cf9d6 ;
 > C2 voix et vibration, PR #114 en attente ; **D dictée**).
-> Plan d'origine : `pilotage/missions/012-plan.md` (§ 4 et § 5, étape 4).
+> Plan d'origine : `pilotage/missions/012-plan.md` (§ 4 et § 5, étape 4), sur `pilotage/cycle-11`
+> (085eb5c), pas encore sur `main` : il y arrive avec la PR #111.
 > **Lancement :** le 2026-10-28, depuis `main` (5bfb1c5), **en plan d'abord, sans code** (décision
 > de Pascal : « Préparer la 012-D »). Le code part après la fusion de la #114 et les réponses de
 > Pascal, pour ne pas toucher l'écran du contrôle en même temps que la C2.
@@ -49,7 +50,7 @@ Un fichier `pilotage/missions/012d-plan.md`, sur cette branche, avec :
   laquelle avance au plant suivant, « remplace », « annule », « suivant », « non observé » sans
   mesure, redite sans ligne, correction avec `remplace_uuid` ;
 - **les refus** : texte exact dit à la voix pour chacun (mot non reconnu, « hauteur » sans état,
-  hauteur hors de 1 à 400 cm, « vide », cause sur un plant absent, placette déjà terminée) ; et
+  hauteur hors de 1 à 400 cm, « vide », cause sur un plant absent) ; placette déjà terminée : voir décision 3 ci-dessous (écrite, avec l'alerte, pas un refus) ; et
   sans voix française (décision 7) ;
 - **la permission `RECORD_AUDIO`** : quand elle est demandée, ce qui arrive au refus et au refus
   définitif, en mode poche et hors du mode ;
@@ -114,3 +115,21 @@ tranche, puis il code après la fusion de la #114.
 
 À Couchey, Pascal contrôle une placette déjà pointée, téléphone en poche, dit « atteint » au
 volume puis « insectes » à la voix, et entend la cause confirmée ; la tournée rendue porte la cause.
+
+## Décisions de Pascal sur le plan (2026-10-28, questions posées une par une)
+
+Plan : `pilotage/missions/012d-plan.md` (f734cef).
+
+- **Q4. Seul « suivant » fait avancer** : une phrase d'état, de cause ou de hauteur reste sur le
+  plant courant ; la voix confirme toujours le numéro.
+- **Q5. Correction d'état : garder si permis** ; cause, détail et hauteur sont gardés quand le
+  nouvel état les accepte, retirés pour « absent » et « non observé », et la voix dit ce qui est
+  retiré (passage par `preciser`).
+- **Q9. Placette déjà terminée : écrite, avec l'alerte** à chaque phrase, comme les gestes (012-C,
+  décisions 3 et 6). La première version de cette fiche la rangeait parmi les refus : erreur de
+  l'orchestrateur, corrigée.
+- **Q10. Textes du § 5 du plan tels quels**, réunis dans `TextesDictee`, revus à Couchey.
+- **Q12. Deux PR** : **012-D1** (`:core` seul : `ApplicateurDictee`, `IssueDictee`, `TextesDictee`,
+  rejeu de `fixtures/dictee/` à travers la session) lancée tout de suite, sur cette branche ;
+  **012-D2** (écoute branchée dans `:app`) sur une branche à part, après la fusion de la #114 et de
+  la D1. Les questions 1 à 3, 6 à 8 et 11 (écoute, micro, écran) seront posées avant la D2.
