@@ -36,11 +36,12 @@ moyenne 6,50 m, pondérée ou non ; CEP95 13,38 m en multifréquence (x̄ 5,62 m
 **Source relue par l'acquéreur de Surculus le 2026-10-28** (PMC HTML et Europe PMC XML, lignes de données
 concordantes), après le calcul de Ramulus (`docs/referentiels/gnss-telephone.yaml` de son dépôt, écart E1).
 Le Mi 8 est à 7,20 m (DRMS) dans le tableau, cohérent ; le 7,22 m est une coquille de la Discussion (c'est le DRMS
-du P40), lue sur le seul HTML.
+du P40), présente aussi dans le XML d'Europe PMC.
 
-**Motif corrigé, conclusion gardée** (décision de Pascal du 2026-10-28, « Garder, motif corrigé ») : le repli
-téléphone ne tient pas seul la règle des 15 m, parce qu'un CEP95 de 13,4 à 13,6 m laisse 5 % des positions au-delà
-et ne laisse aucune marge sous 15 m, et que certains modèles montent à 42 m.
+**Motif corrigé, conclusion gardée** (décision de Pascal du 2026-10-28, « Corriger, puis fusionner ») : le repli
+téléphone ne tient pas seul la règle des 15 m. Par groupe, 95 % des positions tombent sous 13,4 à 13,6 m, ce qui laisse
+1,4 à 1,6 m sous 15 m ; mais pris un par un au CEP95, trois téléphones dépassent 15 m (Mi 8 Pro 16,34 m, A7 15,80 m,
+S5 16,72 m), et un seul modèle monte à 42 m, le Xcover 4 (CEP95 41,99 m).
 
 **Seuils** : aucun seuil de Surculus ne dépend de ces chiffres (recherche dans la spec, les ADR, `core/` et `app/`).
 La règle des 15 m vient de l'import 0.31.1 de sommieR (`R/travaux_qfield.R` l. 303) ; `Controle.DISTANCE_MAX_M` = 15,0
