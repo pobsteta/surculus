@@ -8,7 +8,7 @@
  * Origine : dépôt Groma (https://github.com/pobsteta/groma), fichier android/groma-core/src/main/kotlin/groma/core/Gnss.kt,
  *           état au commit f12b644 (2026-10-16). Reprise provisoire (ADR 0003, mission 003)
  *           jusqu'à l'extraction en bibliothèque commune (ADR 0008).
- * Modifications : paquet ; horodatage et drapeau « simulé » dans FixGnss ; évaluation de l'âge du fix et des corrections (PolitiqueFix).
+ * Modifications : paquet ; horodatage et drapeau « simulé » dans FixGnss ; heure UTC complète et instant de réception sur l'horloge monotone dans FixGnss (heureUtcMs, recuMonotoneMs, mission 065) ; évaluation de l'âge du fix et des corrections (PolitiqueFix).
  */
 package io.github.pobsteta.surculus.core.gnss
 

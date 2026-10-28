@@ -8,7 +8,7 @@
  * Origine : dépôt Groma (https://github.com/pobsteta/groma), fichier android/groma-core/src/main/kotlin/groma/core/Nmea.kt,
  *           état au commit f12b644 (2026-10-16). Reprise provisoire (ADR 0003, mission 003)
  *           jusqu'à l'extraction en bibliothèque commune (ADR 0008).
- * Modifications : paquet ; horloge injectable et horodatage de réception de chaque fix (LecteurNmea) ; heure UTC de la GGA gardée dans TrameGga et FixGnss.
+ * Modifications : paquet ; horloge injectable et horodatage de réception de chaque fix (LecteurNmea) ; heure UTC de la GGA gardée dans TrameGga et FixGnss ; date de la RMC (TrameRmc.instantUtcMs) et heure UTC complète du fix (FixGnss.heureUtcMs, mission 065) ; horloge monotone de LecteurNmea (FixGnss.recuMonotoneMs).
  */
 package io.github.pobsteta.surculus.core.gnss
 

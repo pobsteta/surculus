@@ -8,7 +8,7 @@
  * Origine : dépôt Groma (https://github.com/pobsteta/groma), fichier android/app/src/main/kotlin/groma/app/gnss/ServiceGnssRtk.kt,
  *           état au commit f12b644 (2026-10-16). Reprise provisoire (ADR 0003, mission 003)
  *           jusqu'à l'extraction en bibliothèque commune (ADR 0008).
- * Modifications : paquet ; imports ; horodatage, évaluation de l'âge du fix et des corrections.
+ * Modifications : paquet ; imports ; horodatage, évaluation de l'âge du fix et des corrections ; horloge monotone passée à LecteurNmea (mission 065).
  */
 package io.github.pobsteta.surculus.gnss
 
