@@ -51,7 +51,7 @@ import kotlin.system.exitProcess
  *
  * Usage : `./gradlew :gpkg:exporterScenario -Ptournee=<dossier> -Pscenario=<json> -Psortie=<dossier>`
  *
- * - `<dossier>` de la tournée : celui qui contient `travaux.gpkg` (`ci/sommier/sortie/tournee-sans`) ;
+ * - `<dossier>` de la tournée : celui qui contient `travaux.gpkg` (`ci/sommier/sortie/tournee-depart`) ;
  * - `<sortie>` : reçoit `export-surculus.zip`, `export-surculus/travaux.gpkg` (le zip décompressé) et `bilan-export.json`.
  *
  * Le scénario désigne les placettes **par leur code** (`P35-01`) : la CI régénère la démo à chaque exécution,

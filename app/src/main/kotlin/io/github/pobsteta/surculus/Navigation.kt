@@ -27,8 +27,8 @@ data class EtatNavigation(
     /** Placette sur laquelle la carte est centrée à l'ouverture ; `null` : carte cadrée sur toute la tournée. */
     val centreId: String? = null,
     /**
-     * Le récepteur GNSS est lancé dans cette tournée (décision de Pascal, 2026-10-27, comme Groma : `EcranCarte.kt` l. 207 le
-     * démarre, `MainActivity.kt` l. 92-93 ne l'arrête qu'en sortant du projet). Posé à la première carte ou au premier
+     * Le récepteur GNSS est lancé dans cette tournée (décision de Pascal, 2026-10-27, comme Groma : `MainActivity` le démarre et
+     * l'arrête par un `DisposableEffect` sur [recepteurDemande], pas un écran). Posé à la première carte ou au premier
      * guidage, gardé en revenant aux placettes, levé en revenant à l'accueil.
      */
     val recepteurOuvert: Boolean = false,
@@ -46,7 +46,7 @@ data class EtatNavigation(
 ) {
     val estRacine: Boolean get() = destination == Destination.TOURNEES && tourneeId == null
 
-    /** Vrai tant que la carte, le guidage ou l'essai GNSS est ouvert : le récepteur y tourne (mission 047), pas ailleurs, ni sur « Placettes » (décision de Pascal, 2026-10-27, comme Groma). */
+    /** Vrai dans une tournée dont le récepteur a été ouvert (carte, guidage ou contrôle ; il reste demandé en revenant aux placettes, levé à l'accueil, voir [recepteurOuvert]) et sur l'essai GNSS : le récepteur y tourne (mission 047), pas sur les Paramètres ni à l'accueil (décision de Pascal, 2026-10-27, comme Groma). */
     val recepteurDemande: Boolean get() = (tourneeId != null && recepteurOuvert) || destination == Destination.ESSAI
 
     fun ouvrirParametres() = EtatNavigation(Destination.PARAMETRES)
@@ -85,7 +85,7 @@ data class EtatNavigation(
         else -> null
     }
 
-    /** Pour `rememberSaveable` (rotation) : `[destination, tourneeId, placetteId, carte, centreId]`, chaînes vides pour null. */
+    /** Pour `rememberSaveable` (rotation) : `[destination, tourneeId, placetteId, carte, centreId, recepteurOuvert, controleId, arriveeVue]`, chaînes vides pour null. */
     fun enListe(): List<String> = listOf(destination.name, tourneeId.orEmpty(), placetteId.orEmpty(), carte.toString(), centreId.orEmpty(), recepteurOuvert.toString(), controleId.orEmpty(), arriveeVue.toString())
 
     companion object {

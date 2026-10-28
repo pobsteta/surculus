@@ -11,7 +11,7 @@
 test sans date relevés aux relectures précédentes, sans changer le comportement de l'application,
 pour que le successeur ne lise rien de faux dans le code.
 
-**Redite par l'agent :** _à écrire par l'agent avant d'agir._
+**Redite par l'agent :** Corriger sans toucher au comportement quatre choses fausses ou incomplètes (KDoc de `Navigation.kt`, commentaire « ECART terrain-voix », doc d'`ExporterScenario.kt`, test de date incohérente sans date) pour que le successeur ne lise rien de faux.
 
 ## Ce qui est à faire
 

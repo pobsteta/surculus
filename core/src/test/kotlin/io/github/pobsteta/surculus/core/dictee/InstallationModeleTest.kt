@@ -80,10 +80,9 @@ class InstallationModeleTest {
     fun `ECART terrain-voix - un import refuse par installer efface le modele deja installe`() {
         // Constat (terrain-voix d840329) : `installer` efface le dossier cible sur tout échec, empreinte fausse comprise.
         // Surculus s'en protège : `ModeleVoskImport` contrôle nom, empreinte et contenu non vide AVANT d'appeler
-        // `installer`, donc une empreinte fausse n'arrive jamais jusqu'ici. Ce test fixe le constat pour le brief vers
-        // `terrain` ; s'il devient rouge parce que `terrain` a corrigé, on l'inverse : remplacer la dernière
+        // `installer`, donc une empreinte fausse n'arrive jamais jusqu'ici. Ce test fixe le constat remonté à `terrain`
+        // (pobsteta/terrain#23, décision de Pascal, 2026-10-24) ; s'il devient rouge parce que `terrain` a corrigé, on l'inverse : remplacer la dernière
         // assertion par `assertTrue(File(racine, "installe/.installe").exists())`.
-        // Brief vers `terrain` : à venir (pilotage/briefs/vers-terrain/).
         val bon = zip("vosk-model-small-fr-0.22/a.txt" to "a")
         assertTrue(installation(sha(bon)).installer(bon).isSuccess)
         val autre = zip("vosk-model-small-fr-0.22/b.txt" to "b", "vosk-model-small-fr-0.22/c.txt" to "c")
