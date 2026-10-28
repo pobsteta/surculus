@@ -8,21 +8,38 @@
 package io.github.pobsteta.surculus.carte
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.core.gnss.QualiteFix
+import io.github.pobsteta.surculus.gpkg.EtatSuivi
+import io.github.pobsteta.surculus.gpkg.FormePastille
+import io.github.pobsteta.surculus.gpkg.Pastille
 import io.github.pobsteta.surculus.gpkg.Teinte
 import io.github.pobsteta.surculus.ui.theme.LocalSombre
+import io.github.pobsteta.surculus.ui.theme.SchemaClair
+import io.github.pobsteta.surculus.ui.theme.SchemaSombre
 
 /**
  * Contraste WCAG entre deux couleurs opaques, de 1 à 21 (mission 051) : (L claire + 0,05) / (L sombre + 0,05).
- * Seuil de lisibilité du texte : [CONTRASTE_MINIMAL].
+ * Seuil de lisibilité du texte : [CONTRASTE_MINIMAL] ; seuil d'une pastille (WCAG 1.4.11) : [CONTRASTE_PASTILLE].
  */
 fun contraste(a: Color, b: Color): Float {
     val haut = maxOf(a.luminance(), b.luminance())
@@ -32,14 +49,90 @@ fun contraste(a: Color, b: Color): Float {
 
 const val CONTRASTE_MINIMAL = 4.5f
 
+/** Contraste minimal d'un élément qui n'est pas du texte contre ses voisins (WCAG 2.2, 1.4.11). */
+const val CONTRASTE_PASTILLE = 3f
+
 /**
- * Mission 051 : en thème sombre, les teintes d'état (vert, orange, rouge, noir de [Palette]) tombent sous 4,5:1 sur le
- * fond (voir `ContrasteTest`). On ne change pas ces couleurs : le texte d'état se pose sur une plaque blanche, comme le
- * badge du fix pose du blanc sur sa teinte. En thème clair, rien ne change.
+ * Couleurs d'état lues selon le thème (mission 063, décision de Pascal du 2026-10-27 ; remplace la plaque blanche de la 051).
+ * En clair, rien ne change. En sombre, aucun texte n'est écrit en couleur d'état : le texte est en `onSurface`, les
+ * erreurs et refus en `error` du thème (comme Marculus), et l'état est porté par une pastille cernée d'un filet blanc
+ * ([PastilleEtat], [PastilleDisque]). Fonctions pures : le test juge les mêmes valeurs que l'écran.
+ */
+object CouleursEtat {
+    /** Texte neutre : noir en clair, `onSurface` en sombre. */
+    fun neutre(sombre: Boolean): Color = if (sombre) SchemaSombre.onSurface else Palette.Noir
+
+    /** Texte d'erreur ou de refus : rouge d'état en clair, `error` du thème en sombre. */
+    fun erreur(sombre: Boolean): Color = if (sombre) SchemaSombre.error else Palette.Rouge
+
+    /** Texte d'un état (vert, orange, noir) : sa teinte en clair, `onSurface` en sombre. */
+    fun texte(teinte: Color, sombre: Boolean): Color = if (sombre) SchemaSombre.onSurface else teinte
+
+    /** Fond réel sous les textes et les pastilles (Surface de MainActivity = `surface`). */
+    fun fond(sombre: Boolean): Color = if (sombre) SchemaSombre.surface else SchemaClair.surface
+
+    /** Filet des pastilles : blanc, en sombre seulement. */
+    val filet: Color = Color(0xFFFFFFFF)
+}
+
+@Composable fun couleurNeutre(): Color = CouleursEtat.neutre(LocalSombre.current)
+
+@Composable fun couleurErreur(): Color = CouleursEtat.erreur(LocalSombre.current)
+
+@Composable fun couleurTexteEtat(teinte: Color): Color = CouleursEtat.texte(teinte, LocalSombre.current)
+
+/** Texte d'un état : en clair, dans sa teinte ; en sombre, en `onSurface` précédé d'une pastille cernée de blanc. */
+@Composable
+fun TexteEtat(
+    texte: String,
+    teinte: Color,
+    modifier: Modifier = Modifier,
+    style: TextStyle = LocalTextStyle.current,
+    fontWeight: FontWeight? = null,
+) {
+    val sombre = LocalSombre.current
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        if (sombre) {
+            PastilleDisque(teinte, 14.dp)
+            Spacer(Modifier.width(6.dp))
+        }
+        Text(texte, style = style, fontWeight = fontWeight, color = CouleursEtat.texte(teinte, sombre))
+    }
+}
+
+/** Disque de couleur cerné d'un filet blanc (en clair : disque nu, comme avant). */
+@Composable
+fun PastilleDisque(teinte: Color, taille: Dp) {
+    val sombre = LocalSombre.current
+    val filet = if (sombre) (taille.value / 7f).dp else 0.dp
+    Box(Modifier.size(taille).background(if (sombre) CouleursEtat.filet else Color.Transparent, CircleShape).padding(filet).background(teinte, CircleShape))
+}
+
+/**
+ * Pastille d'une placette (liste, légende) : disque plein, anneau, ou disque noir marqué d'un « ? ». En sombre, un filet
+ * blanc l'entoure (comme sur la carte) ; en clair, rien ne change.
  */
 @Composable
-fun Modifier.plaqueEtat(): Modifier =
-    if (LocalSombre.current) clip(RoundedCornerShape(6.dp)).background(Palette.Blanc).padding(horizontal = 8.dp, vertical = 2.dp) else this
+fun PastilleEtat(etat: EtatSuivi, taille: Dp, grisee: Boolean = false) {
+    val p = Pastille.de(etat)
+    val teinte = Palette.de(p.teinte)
+    val couleur = if (grisee) teinte.copy(alpha = 0.55f) else teinte
+    val sombre = LocalSombre.current
+    val filet = if (sombre) (taille.value / 14f).dp else 0.dp
+    val lisere = if (sombre) Modifier.border(filet, CouleursEtat.filet, CircleShape) else Modifier
+    val epaisseur = (taille.value * 5f / 28f).dp
+    val blanc = if (sombre) CouleursEtat.filet else Color.Transparent
+    when (p.forme) {
+        FormePastille.ANNEAU -> Box(Modifier.size(taille).then(lisere).padding(filet).border(epaisseur, couleur, CircleShape).padding(epaisseur).then(lisere))
+        FormePastille.DISQUE_PLEIN -> Box(Modifier.size(taille).background(blanc, CircleShape).padding(filet).background(couleur, CircleShape))
+        FormePastille.DISQUE_AVEC_POINT_INTERROGATION -> Box(
+            Modifier.size(taille).background(blanc, CircleShape).padding(filet).background(couleur, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("?", color = Color.White, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+        }
+    }
+}
 
 /** Quatre couleurs au plus (règle du 1664), contrastées pour le plein soleil : noir sur blanc et trois teintes d'état. */
 object Palette {

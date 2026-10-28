@@ -27,7 +27,7 @@ class EcranPlacettesSourcesTest {
     @Test
     fun `une ligne de placette fait au moins 64 dp, la pastille est celle de la carte`() {
         assertTrue("heightIn(min = 64.dp)" in placettes)
-        assertTrue("Pastille.de(" in placettes)
+        assertTrue("PastilleEtat(" in placettes, "la pastille est celle de la carte (Palette.kt, mission 063)")
     }
 
     @Test
@@ -85,5 +85,27 @@ class EcranPlacettesSourcesTest {
         assertTrue("rememberSaveable(" in carte && "choisieUuid" in carte)
         assertTrue("probleme(p)" in carte, "placette sans position ou hors de France : message, pas de navigation")
         assertTrue("carte_placette_sans_position" in chaines && "carte_placette_hors_france" in chaines)
+    }
+
+    /** Mission 062 : texte neutre, sans plaque blanche, dans la couleur du thème. */
+    private fun bloc(source: String, depuis: String, jusqua: String): String {
+        val i = source.indexOf(depuis)
+        assertTrue(i >= 0, depuis)
+        return source.substring(i, source.indexOf(jusqua, i))
+    }
+
+    @Test
+    fun `la ligne du compte des placettes n'a pas de plaque et prend la couleur du theme`() {
+        val b = bloc(placettes, "R.plurals.placettes_compte", "if (ordre.nombre == 0)")
+        assertFalse("plaqueEtat" in b, b)
+        assertTrue("MaterialTheme.colorScheme.onSurface" in b, b)
+    }
+
+    @Test
+    fun `la ligne de la placette choisie n'a pas de plaque et prend la couleur du theme`() {
+        val b = bloc(carte, "R.string.carte_choisie_distance", "// Attributions du fond")
+        assertFalse("plaqueEtat" in b, b)
+        assertTrue("MaterialTheme.colorScheme.onSurface" in b, b)
+        assertFalse("fontSize" in b)
     }
 }

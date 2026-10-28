@@ -69,6 +69,21 @@ object JourCivil {
     val FUSEAU: ZoneId = ZoneId.of("Europe/Paris")
 
     fun de(instant: Instant): LocalDate = instant.atZone(FUSEAU).toLocalDate()
+
+    /** Un fix GNSS sert au jour civil s'il a au plus 5 s (borne incluse) et un âge non négatif (spec § 5). */
+    const val AGE_FIX_MAX_MS = 5_000L
+
+    /**
+     * Jour civil d'une saisie : sur l'heure GNSS **telle qu'enregistrée** quand le fix a un âge compris entre 0 et
+     * [AGE_FIX_MAX_MS] inclus, sinon sur l'heure du téléphone. Un âge négatif (fix postérieur à la saisie), trop grand
+     * ou inconnu écarte le fix. Instants en millisecondes Unix UTC.
+     */
+    fun deSaisie(saisiLeUtcMs: Long, heureGnssMs: Long?, ageFixMs: Long?): LocalDate =
+        de(Instant.ofEpochMilli(instantRetenuMs(saisiLeUtcMs, heureGnssMs, ageFixMs)))
+
+    /** L'instant (ms Unix UTC) qui fonde le jour civil : l'heure GNSS si le fix est utilisable, sinon celle du téléphone. */
+    fun instantRetenuMs(saisiLeUtcMs: Long, heureGnssMs: Long?, ageFixMs: Long?): Long =
+        if (heureGnssMs != null && ageFixMs != null && ageFixMs in 0..AGE_FIX_MAX_MS) heureGnssMs else saisiLeUtcMs
 }
 
 /** Contrôle déjà écrit dans la tournée. */

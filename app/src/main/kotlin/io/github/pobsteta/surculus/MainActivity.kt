@@ -22,6 +22,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import io.github.pobsteta.surculus.carte.EcranCarte
 import io.github.pobsteta.surculus.carte.EcranGuidage
+import io.github.pobsteta.surculus.controle.EcranControle
+import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.essai.EcranEssaiGnss
 import io.github.pobsteta.surculus.gnss.ConfigRtk
 import io.github.pobsteta.surculus.gnss.PilotageRecepteur
@@ -89,10 +91,24 @@ class MainActivity : ComponentActivity() {
                     Column(Modifier.fillMaxSize()) {
                         val tourneeId = nav.tourneeId
                         val placetteId = nav.placetteId
-                        if (tourneeId != null && placetteId != null) {
-                            EcranGuidage(tourneeId, placetteId, onRetour = { nav = nav.retour() ?: nav })
+                        val controleId = nav.controleId
+                        if (tourneeId != null && controleId != null) {
+                            // Mission 012-B1 : le contrôle d'une placette, ouvert par la carte ou à l'arrivée du guidage.
+                            EcranControle(tourneeId, controleId, onRetour = { nav = nav.retour() ?: nav })
+                        } else if (tourneeId != null && placetteId != null) {
+                            EcranGuidage(tourneeId, placetteId,
+                                arriveeVue = nav.arriveeVue,
+                                onArrivee = { nav = nav.controlerDepuisGuidage() },
+                                onRearme = { nav = nav.apresDistance(Guidage.SEUIL_REARMEMENT_M) },
+                                onRetour = { nav = nav.retour() ?: nav },
+                            )
                         } else if (tourneeId != null && nav.carte) {
-                            EcranCarte(tourneeId, centreId = nav.centreId, onRetour = { nav = nav.retour() ?: nav }, onGuider = { nav = nav.guider(it) })
+                            EcranCarte(tourneeId,
+                                centreId = nav.centreId,
+                                onRetour = { nav = nav.retour() ?: nav },
+                                onGuider = { nav = nav.guider(it) },
+                                onControler = { nav = nav.controler(it) },
+                            )
                         } else if (tourneeId != null) {
                             // Mission 061, comme Groma : la tournée s'ouvre sur ses placettes, la carte vient d'un appui.
                             EcranPlacettes(

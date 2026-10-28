@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.MyLocation
@@ -61,6 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.disabled
@@ -82,6 +84,7 @@ import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.core.guidage.Libelles
 import io.github.pobsteta.surculus.gpkg.EtatSuivi
 import io.github.pobsteta.surculus.ui.BandeauCompact
+import io.github.pobsteta.surculus.ui.theme.LocalSombre
 import io.github.pobsteta.surculus.gpkg.FormePastille
 import io.github.pobsteta.surculus.gpkg.Geometrie
 import io.github.pobsteta.surculus.gpkg.ObjetSurfacique
@@ -113,7 +116,7 @@ import org.osmdroid.views.overlay.TilesOverlay
  * l'ouverture de la tournée : elle ne change pas pendant la tournée. Ni travaux ni vides à ce stade.
  */
 @Composable
-fun EcranCarte(id: String, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit) {
+fun EcranCarte(id: String, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit = {}) {
     when (val c = chargerTournee(id)) {
         Chargement.EnCours -> Column {
             BandeauCarte(stringResource(R.string.carte_titre), onRetour)
@@ -121,7 +124,7 @@ fun EcranCarte(id: String, centreId: String?, onRetour: () -> Unit, onGuider: (S
         }
         is Chargement.Refus -> Column {
             BandeauCarte(stringResource(R.string.carte_titre), onRetour)
-            Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge) }
+            Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_refus, c.message), color = couleurErreur()) }
         }
         is Chargement.Pret -> {
             // L'ortho chantier n'est proposée que si le dossier de la tournée porte un fichier tuilé exploitable. On attend
@@ -137,7 +140,7 @@ fun EcranCarte(id: String, centreId: String?, onRetour: () -> Unit, onGuider: (S
                     Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
                 }
             } else {
-                CartePrete(c.tournee, ortho, centreId, onRetour, onGuider)
+                CartePrete(c.tournee, ortho, centreId, onRetour, onGuider, onControler)
             }
         }
     }
@@ -290,7 +293,7 @@ private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
 }
 
 @Composable
-private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit) {
+private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit) {
     val ctx = LocalContext.current
     val (fix, refusee) = rememberFix()
     val carto = ouverte.cartographie
@@ -366,12 +369,12 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
         )
         Column(Modifier.weight(1f).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
         if (empriseHorsFrance) {
-            Text(stringResource(R.string.carte_emprise_hors_france), color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
+            Text(stringResource(R.string.carte_emprise_hors_france), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
         }
         if (fix != null && Guidage.versLambert93(fix.position) == null) {
-            Text(stringResource(R.string.carte_hors_france), color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
+            Text(stringResource(R.string.carte_hors_france), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
         }
-        if (refusee) Text(stringResource(R.string.carte_permission), color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
+        if (refusee) Text(stringResource(R.string.carte_permission), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
 
         // Rogne la carte à ses bords (mission 060) : osmdroid et Compose ne le font pas, la carte recouvrait le bandeau.
         Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
@@ -461,6 +464,17 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
                 // (la position GNSS si elle tombe en France, zoom 17 au moins, sinon l'emprise de la tournée : `Recentrage.cible`).
                 val cibleNaviguer = cibleNavigation(choisie, toutes, controlees, fix?.position?.let { Guidage.versLambert93(it) })
                 Column(Modifier.align(Alignment.BottomEnd).padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Porte n° 1 du contrôle (mission 012-B1) : « Contrôler » seulement quand une placette est choisie.
+                    if (choisie != null) {
+                        SmallFloatingActionButton(
+                            onClick = { onControler(choisie.uuid) },
+                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ) {
+                            Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.controle_controler))
+                        }
+                    }
                     SmallFloatingActionButton(
                         onClick = { cibleNaviguer?.let { onGuider(it.uuid) } },
                         modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics { if (cibleNaviguer == null) disabled() },
@@ -509,16 +523,16 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
 
         // Légende : un décompte par état, dans la couleur du disque ; « sans état » seulement s'il y en a.
         val nombres = remember(placettes) { decomptes(placettes) }
-        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp).plaqueEtat(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(stringResource(R.string.carte_legende_jamais, nombres.getValue(EtatSuivi.JAMAIS)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Rouge)
-            Text(stringResource(R.string.carte_legende_a_programmer, nombres.getValue(EtatSuivi.A_PROGRAMMER)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Orange)
-            Text(stringResource(R.string.carte_legende_a_jour, nombres.getValue(EtatSuivi.A_JOUR)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Vert)
+        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            LigneLegende(EtatSuivi.JAMAIS, stringResource(R.string.carte_legende_jamais, nombres.getValue(EtatSuivi.JAMAIS)), Palette.Rouge)
+            LigneLegende(EtatSuivi.A_PROGRAMMER, stringResource(R.string.carte_legende_a_programmer, nombres.getValue(EtatSuivi.A_PROGRAMMER)), Palette.Orange)
+            LigneLegende(EtatSuivi.A_JOUR, stringResource(R.string.carte_legende_a_jour, nombres.getValue(EtatSuivi.A_JOUR)), Palette.Vert)
             if (nombres.getValue(EtatSuivi.INCONNU) > 0) {
-                Text(stringResource(R.string.carte_legende_inconnu, nombres.getValue(EtatSuivi.INCONNU)), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = Palette.Noir)
+                LigneLegende(EtatSuivi.INCONNU, stringResource(R.string.carte_legende_inconnu, nombres.getValue(EtatSuivi.INCONNU)), Palette.Noir)
             }
         }
         if (carto.anomalies.isNotEmpty()) {
-            Text(stringResource(R.string.carte_anomalies, carto.anomalies.size), style = MaterialTheme.typography.bodyMedium, color = Palette.Orange, modifier = Modifier.padding(horizontal = 8.dp).plaqueEtat())
+            TexteEtat(stringResource(R.string.carte_anomalies, carto.anomalies.size), Palette.Orange, Modifier.padding(horizontal = 8.dp), MaterialTheme.typography.bodyMedium)
         }
 
         // La placette choisie (un appui sur son marqueur, ou l'appui sur l'écran « Placettes ») : son code et sa distance.
@@ -529,14 +543,15 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
             if (probleme != null) {
                 Text(
                     stringResource(if (probleme == ProblemePlacette.SANS_POSITION) R.string.carte_placette_sans_position else R.string.carte_placette_hors_france, p.code.orEmpty()),
-                    color = Palette.Rouge, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).plaqueEtat(),
+                    color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
                 )
             } else Text(
                 if (d != null) stringResource(R.string.carte_choisie_distance, p.code.orEmpty(), Libelles.distance(d)) else stringResource(R.string.carte_choisie, p.code.orEmpty()),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).plaqueEtat(),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }
 
@@ -544,5 +559,23 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
         FondsCarte.mentions(fondAffiche, voirCadastre).joinToString(" · ").takeIf { it.isNotEmpty() }
             ?.let { Text(it, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)) }
         }
+    }
+}
+
+/**
+ * Une ligne de la légende (mission 063). En clair : le texte dans la teinte de la pastille, comme avant. En sombre : la
+ * pastille cernée de blanc (même forme que sur la carte) puis le texte en `onSurface`, sans le symbole du libellé.
+ */
+@Composable
+private fun LigneLegende(etat: EtatSuivi, libelle: String, teinte: Color) {
+    val style = MaterialTheme.typography.bodyMedium
+    if (LocalSombre.current) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            PastilleEtat(etat, 16.dp)
+            Spacer(Modifier.width(4.dp))
+            Text(libelle.substringAfter(' '), style = style, fontWeight = FontWeight.Bold, color = couleurTexteEtat(teinte))
+        }
+    } else {
+        Text(libelle, style = style, fontWeight = FontWeight.Bold, color = teinte)
     }
 }

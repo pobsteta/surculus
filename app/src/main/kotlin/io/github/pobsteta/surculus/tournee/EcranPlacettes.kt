@@ -49,9 +49,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.carte.Chargement
-import io.github.pobsteta.surculus.carte.Palette
+import io.github.pobsteta.surculus.carte.PastilleEtat
+import io.github.pobsteta.surculus.carte.couleurErreur
 import io.github.pobsteta.surculus.carte.chargerTournee
-import io.github.pobsteta.surculus.carte.plaqueEtat
 import io.github.pobsteta.surculus.gpkg.EtatSuivi
 import io.github.pobsteta.surculus.gpkg.FormePastille
 import io.github.pobsteta.surculus.gpkg.Pastille
@@ -78,7 +78,7 @@ fun EcranPlacettes(id: String, onRetour: () -> Unit, onCarte: () -> Unit, onPlac
         }
         is Chargement.Refus -> Column {
             BandeauPlacettes(stringResource(R.string.placettes_titre), onRetour, onCarte = null)
-            Corps { Text(stringResource(R.string.carte_refus, c.message), color = Palette.Rouge) }
+            Corps { Text(stringResource(R.string.carte_refus, c.message), color = couleurErreur()) }
         }
         is Chargement.Pret -> {
             val t = c.tournee.tournee
@@ -91,7 +91,8 @@ fun EcranPlacettes(id: String, onRetour: () -> Unit, onCarte: () -> Unit, onPlac
                     Text(
                         pluralStringResource(R.plurals.placettes_compte, ordre.nombre, ordre.nombre, ordre.aFaire.size),
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).plaqueEtat(),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     )
                     if (ordre.nombre == 0) {
                         Text(stringResource(R.string.placettes_vide), modifier = Modifier.padding(16.dp))
@@ -143,7 +144,7 @@ private fun LignePlacette(p: PlacetteTournee, statut: StatutLigne, onClick: () -
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            PastilleEtat(p.etatSuivi, grisee = !aFaire)
+            PastilleEtat(p.etatSuivi, 28.dp, grisee = !aFaire)
             Column(Modifier.weight(1f)) {
                 Text(p.code ?: stringResource(R.string.placettes_sans_code), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = couleurTexte)
                 Text(
@@ -165,19 +166,4 @@ private fun libelleEtat(e: EtatSuivi): Int = when (e) {
     EtatSuivi.A_PROGRAMMER -> R.string.placettes_etat_a_programmer
     EtatSuivi.A_JOUR -> R.string.placettes_etat_a_jour
     EtatSuivi.INCONNU -> R.string.placettes_etat_inconnu
-}
-
-/** Même pastille que sur la carte (forme et teinte de [Pastille.de]) : disque plein, anneau, ou disque noir marqué d'un « ? ». */
-@Composable
-private fun PastilleEtat(etat: EtatSuivi, grisee: Boolean) {
-    val p = Pastille.de(etat)
-    val teinte = Palette.de(p.teinte)
-    val couleur = if (grisee) teinte.copy(alpha = 0.55f) else teinte
-    when (p.forme) {
-        FormePastille.ANNEAU -> Box(Modifier.size(28.dp).border(BorderStroke(5.dp, couleur), CircleShape))
-        FormePastille.DISQUE_PLEIN -> Box(Modifier.size(28.dp).background(couleur, CircleShape))
-        FormePastille.DISQUE_AVEC_POINT_INTERROGATION -> Box(Modifier.size(28.dp).background(couleur, CircleShape), contentAlignment = Alignment.Center) {
-            Text("?", color = Color.White, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
-        }
-    }
 }

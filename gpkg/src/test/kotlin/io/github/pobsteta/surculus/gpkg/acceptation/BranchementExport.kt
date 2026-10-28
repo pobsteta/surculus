@@ -3,6 +3,7 @@ package io.github.pobsteta.surculus.gpkg.acceptation
 import com.google.gson.JsonObject
 import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.placette.CodeEssence
+import io.github.pobsteta.surculus.core.placette.CodesRefus
 import io.github.pobsteta.surculus.core.placette.Essences
 import io.github.pobsteta.surculus.core.placette.EtatPlant
 import io.github.pobsteta.surculus.core.placette.JourCivil
@@ -10,7 +11,6 @@ import io.github.pobsteta.surculus.core.placette.Observation
 import io.github.pobsteta.surculus.core.placette.Observations
 import io.github.pobsteta.surculus.core.placette.Placette
 import io.github.pobsteta.surculus.core.placette.Pointage
-import io.github.pobsteta.surculus.core.placette.RefusPlacette
 import io.github.pobsteta.surculus.core.placette.Totaux
 import io.github.pobsteta.surculus.core.placette.UuidControle
 import io.github.pobsteta.surculus.core.placette.UuidPlacette
@@ -177,8 +177,10 @@ private object ExportReel : ExportTournee {
     // ---- les saisies, en objets du domaine
 
     private fun deriver(piquet: PointLambert93, epsg: CodeEpsg, distanceM: Double, azimutDeg: Double, jour: LocalDate) =
-        (PointDerive.deriver(piquet, epsg, distanceM, ((AzimutSaisi.valider(azimutDeg, io.github.pobsteta.surculus.core.geo.UniteAzimut.DEGRES)) as Resultat.Accepte).valeur, jour) as? Resultat.Accepte)?.valeur
-            ?: throw RefusAvantExport("hors_france")
+        when (val r = PointDerive.deriver(piquet, epsg, distanceM, ((AzimutSaisi.valider(azimutDeg, io.github.pobsteta.surculus.core.geo.UniteAzimut.DEGRES)) as Resultat.Accepte).valeur, jour)) {
+            is Resultat.Accepte -> r.valeur
+            is Resultat.Refuse -> throw RefusAvantExport(CodesRefus.code(r.refus))
+        }
 
     private fun uuidDe(nom: String): String = UUID.nameUUIDFromBytes(("acceptation-export:$nom").toByteArray(Charsets.UTF_8)).toString()
 
@@ -205,19 +207,17 @@ private object ExportReel : ExportTournee {
                 val id = p.get("uuid").asString
                 val unite = (CodesUniteAzimut.lire(p.get("unite_azimut").asString) as Resultat.Accepte).valeur
                 val azimut = (AzimutSaisi.valider(p.get("azimut_mag").asDouble, unite) as Resultat.Accepte).valeur
-                val derive = (PointDerive.deriver(piquet, epsg, p.get("distance_m").asDouble, azimut, LocalDate.ofInstant(visite, ZoneOffset.UTC)) as? Resultat.Accepte)?.valeur
-                    ?: throw RefusAvantExport("hors_france")
+                val derive = when (val r = PointDerive.deriver(piquet, epsg, p.get("distance_m").asDouble, azimut, LocalDate.ofInstant(visite, ZoneOffset.UTC))) {
+                    is Resultat.Accepte -> r.valeur
+                    is Resultat.Refuse -> throw RefusAvantExport(CodesRefus.code(r.refus))
+                }
                 val remplace = p.texte("remplace_uuid")?.let(::UuidPlant)
                 val essence = p.texte("essence")?.let(::CodeEssence)
                 val plant = (Pointage.pointer(UuidPlant(id), domaine, derive, visite.minusSeconds(1800), essence, remplace, confirmeHorsRayon = true) as Verdict.Accepte).valeur
                 val observation = when (val v = Observations.valider(p.get("etat").asString, p.texte("cause_groupe"), p.texte("cause_detail"), p.entier("hauteur_cm"))) {
                     is Verdict.Accepte -> v.valeur
-                    is Verdict.Refuse -> throw RefusAvantExport(
-                        when (v.refus) {
-                            is RefusPlacette.EtatInconnu, is RefusPlacette.GroupeCauseInconnu -> "hors_referentiel"
-                            else -> v.refus.motif
-                        },
-                    )
+                    // Table des codes de la production (mission 012-A) : plus de correspondance écrite dans le test.
+                    is Verdict.Refuse -> throw RefusAvantExport(CodesRefus.code(v.refus))
                     else -> error("Verdict inattendu : $v")
                 }
                 if (remplace != null) remplaces += remplace
@@ -227,7 +227,7 @@ private object ExportReel : ExportTournee {
             val totaux = when (val v = Totaux.deduire(lignes.map { EtatPlant(it.plant, it.observation) }, remplaces)) {
                 is Verdict.Accepte -> v.valeur
                 // Deux plants de même UUID dans un contrôle : le domaine le refuse avant l'export (EX-30), c'est un UUID en double.
-                is Verdict.Refuse -> throw RefusAvantExport(if (v.refus is RefusPlacette.PlantEnDoubleDansControle) "uuid_en_double" else v.refus.motif)
+                is Verdict.Refuse -> throw RefusAvantExport(CodesRefus.code(v.refus))
                 else -> error("Verdict inattendu : $v")
             }
             controles += ControleSaisi(
