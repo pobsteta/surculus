@@ -63,7 +63,11 @@ class MainActivity : ComponentActivity() {
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             programmer()
         }
-        if (PocheApp.mode.actif) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (PocheApp.mode.actif) {
+            // Après une rotation : l'ancienne Activity a retiré son `tic`, la nouvelle réarme la minuterie (15 min, 3 s, 0,35 s).
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            programmer()
+        }
         val reglagesAffichage = DepotTournees.reglagesAffichage(this)
         setContent {
             // Plein écran (mission 044) : faux par défaut, gardé sur le téléphone ; les barres reviennent au glissement.

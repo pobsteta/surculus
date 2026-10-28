@@ -128,6 +128,13 @@ class ModePocheTest {
         assertTrue("BackHandler(enabled = !ModePoche.retourPris(poche))" in source("controle/EcranControle.kt"))
     }
 
+    @Test fun `apres une rotation la nouvelle Activity rearme la minuterie des 15 minutes`() {
+        val activite = source("MainActivity.kt")
+        val onCreate = activite.substringAfter("override fun onCreate").substringBefore("setContent")
+        assertTrue("if (PocheApp.mode.actif) {" in onCreate && "programmer()" in onCreate.substringAfter("if (PocheApp.mode.actif) {"),
+            "onCreate doit rearmer programmer() quand le mode poche est actif")
+    }
+
     @Test fun `les repetitions d'une touche prise, apres la sortie a 3 s, ne repartent pas au systeme`() {
         val (p, m, _) = pont()
         m.entrer(0)
