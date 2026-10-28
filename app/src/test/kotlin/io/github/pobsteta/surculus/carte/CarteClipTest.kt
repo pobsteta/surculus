@@ -24,7 +24,7 @@ class CarteClipTest {
         val appel = ecran.substring(debut, ecran.indexOf("factory", debut))
         assertTrue("clipToBounds()" in appel, "AndroidView(MapView) doit porter clipToBounds()")
         assertTrue(
-            Regex("Box\\(Modifier\\.weight\\(1f\\)\\.fillMaxWidth\\(\\)\\.clipToBounds\\(\\)\\)").containsMatchIn(ecran),
+            Regex("Box(?:WithConstraints)?\\(Modifier\\.weight\\(1f\\)\\.fillMaxWidth\\(\\)\\.clipToBounds\\(\\)\\)").containsMatchIn(ecran),
             "la Box de la carte doit porter clipToBounds()",
         )
         assertTrue("import androidx.compose.ui.draw.clipToBounds" in ecran)
