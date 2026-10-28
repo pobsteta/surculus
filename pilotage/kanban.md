@@ -259,3 +259,7 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
 - cycle 12 · le contrôle téléphone en poche : l'agent dit l'état de chaque plant au volume, gants
   aux mains, entend le numéro et l'état et sent la vibration · pour le forestier en forêt · avant, il
   regardait l'écran à chaque plant (v0.7.74). *(Retenue par Pascal le 2026-10-28.)*
+- cycle 13 · le mode poche qui dit comment en sortir : la bande « 3 s sur volume haut pour sortir »
+  reste lisible quel que soit le défilement, et couché, le plan ne cache plus les boutons d'état ·
+  pour le forestier en forêt · avant, la bande pouvait être coupée sous la barre sans moyen de
+  remonter. *(Retenue par Pascal le 2026-10-28 ; livrée à la fusion et à la capture de la 067.)*
