@@ -72,6 +72,9 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **066** mineurs et maintenance (`dev`, appuyer), lancée au cycle 12 (2026-10-28) ; fiche
+  `pilotage/missions/066-mineurs-maintenance.md` (sur sa branche).
+
 - **012-C2** la voix et la vibration du mode poche (`afficheur`, appuyer), lancée le 2026-10-28
   depuis b9cf9d6 ; fusion après l'essai de la C1 sur le téléphone. Fiche :
   `pilotage/missions/012c2-voix-vibration.md` (sur sa branche).
@@ -118,7 +121,7 @@ _En attente sous le plafond humain (3 PR en revue)._
   illisible » si le fichier ne s'ouvre pas.
 - **Test de rendu des écrans** (Robolectric ou émulateur en CI) : le bandeau caché de la 055
   a échappé aux tests qui lisent les sources.
-- **Mineurs** : KDoc périmés de `Navigation.kt` l. 36 et 61 ; test « plantation plus âgée
+- **Mineurs** (dans la 066, cycle 12) : KDoc périmés de `Navigation.kt` l. 36 et 61 ; test « plantation plus âgée
   que l'itinéraire » sans date ; release v0.7.58 restée en brouillon après la #99.
 - **Photos de placette et de plant** : spec et ADR 0007 amendées, validées par Pascal
   (PR #115, porte n° 1, 2026-10-28) ; brief vers sommieR envoyé. Mission de code à découper,
