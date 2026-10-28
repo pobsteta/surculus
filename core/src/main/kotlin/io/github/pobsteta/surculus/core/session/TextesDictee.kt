@@ -9,12 +9,18 @@
  */
 package io.github.pobsteta.surculus.core.session
 
+import io.github.pobsteta.surculus.core.placette.GroupeCause
+
 /**
  * Les textes dits à la voix (et écrits dans la bande, sans voix française) par la dictée : `pilotage/missions/012d-plan.md`
  * § 4 et § 5, **tels quels** (décision Q10 de Pascal, 2026-10-28), à revoir à Couchey. Fonctions pures, sans Android.
  * Jamais de code technique à la voix : il reste à l'écran.
  *
- * Le seul texte que le plan ne donne pas est celui des mesures retirées par une correction (Q5) : « Retiré : cause, hauteur. »
+ * Le seul texte que le plan ne donne pas est celui des mesures retirées par une correction (Q5) : « Retiré : cause, mangé,
+ * hauteur. » (décision de Pascal, 2026-10-28 : « détail » se dit « mangé » ; seuls les mots concernés sont dits).
+ *
+ * Alerte « Placette déjà terminée. » (décision de Pascal, 2026-10-28) : elle précède toute phrase **comprise**, refus
+ * compris, mais jamais « Pas compris. ».
  */
 object TextesDictee {
     const val PAS_COMPRIS = "Pas compris."
@@ -42,11 +48,14 @@ object TextesDictee {
     fun etat(code: String) = if (code == "non_observe") "non observé" else code
 
     /** Libellé dit d'un groupe de cause (celui de l'écran ; `climat` et `indéterminé` : « autre ou inconnu »). */
-    fun cause(groupe: String) = when (groupe) {
-        "entomologique" -> "insectes"
-        "pathologique" -> "champignon"
-        "animaux" -> "animaux"
-        else -> "autre ou inconnu"
+    fun cause(groupe: String) = cause(checkNotNull(GroupeCause.lire(groupe)) { "groupe de cause inconnu : $groupe" })
+
+    // Doublon connu avec `ControleurPlacette.libelle` de `:app` (écran « Champignons », voix « champignon ») : à régler dans la D2.
+    fun cause(groupe: GroupeCause) = when (groupe) {
+        GroupeCause.ENTOMOLOGIQUE -> "insectes"
+        GroupeCause.PATHOLOGIQUE -> "champignon"
+        GroupeCause.ANIMAUX -> "animaux"
+        GroupeCause.ABIOTIQUE_COMPLEXE_INDETERMINE -> "autre ou inconnu"
     }
 
     /** « Numéro 7, atteint. » */
@@ -62,7 +71,7 @@ object TextesDictee {
         return if (retire.isEmpty()) dit else "$dit ${retires(retire)}"
     }
 
-    /** Ce que la correction a retiré (décision Q5) : « Retiré : cause, hauteur. » */
+    /** Ce que la correction a retiré (décision Q5) : « Retiré : cause, mangé, hauteur. » */
     fun retires(retire: List<String>) = "Retiré : ${retire.joinToString(", ")}."
 
     fun causeDite(n: Int, groupe: String) = "${numero(n)}, ${cause(groupe)}."

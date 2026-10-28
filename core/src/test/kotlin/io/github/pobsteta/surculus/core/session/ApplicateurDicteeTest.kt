@@ -136,6 +136,8 @@ class ApplicateurDicteeTest {
         refus(null, "hauteur quarante-cinq", Raison.HAUTEUR_SANS_ETAT, "Hauteur refusée. Dites d'abord l'état.")
         refus("absent", "hauteur quarante-cinq", Raison.HAUTEUR_SUR_ABSENT, "Pas de hauteur sur un plant absent.")
         refus("non_observe", "hauteur quarante-cinq", Raison.HAUTEUR_SUR_NON_OBSERVE, "Pas de hauteur sur un plant non observé.")
+        refus(null, "hauteur cinq cents", Raison.HAUTEUR_SANS_ETAT, "Hauteur refusée. Dites d'abord l'état.")
+        refus(null, "hauteur zéro", Raison.HAUTEUR_SANS_ETAT, "Hauteur refusée. Dites d'abord l'état.")
         refus("atteint", "hauteur zéro", Raison.HAUTEUR_HORS_BORNES, "Hauteur de 1 à 400 centimètres.")
         refus("atteint", "hauteur quatre cent un", Raison.HAUTEUR_HORS_BORNES, "Hauteur de 1 à 400 centimètres.")
         refus("atteint", "hauteur", Raison.HAUTEUR_HORS_BORNES, "Hauteur de 1 à 400 centimètres.")
@@ -159,6 +161,8 @@ class ApplicateurDicteeTest {
         val aucun = assertIs<IssueDictee.Refusee>(ApplicateurDictee.appliquer("atteint", s))
         assertEquals(Raison.AUCUN_PLANT, aucun.raison)
         assertEquals("Plus de plant à dire.", aucun.annonce)
+        assertEquals("Plus de plant à dire.", ApplicateurDictee.appliquer("hauteur zéro", s).annonce)
+        assertEquals("Plus de plant à dire.", ApplicateurDictee.appliquer("hauteur", s).annonce)
         assertEquals(0, b.journal.lignes.size)
     }
 
@@ -301,7 +305,7 @@ class ApplicateurDicteeTest {
     @Test
     fun `correction vers absent - tout est retire et dit`() {
         val (issue, obs, _) = corrigee(tout, "absent")
-        assertEquals("Correction. Numéro 1, absent. Retiré : cause, détail, hauteur.", issue.annonce)
+        assertEquals("Correction. Numéro 1, absent. Retiré : cause, mangé, hauteur.", issue.annonce)
         val o = assertIs<Observation.Observe>(obs)
         assertEquals("absent", o.etat.code)
         assertNull(o.causeGroupe)

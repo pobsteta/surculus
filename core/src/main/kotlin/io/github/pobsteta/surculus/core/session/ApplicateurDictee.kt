@@ -27,6 +27,9 @@ import io.github.pobsteta.surculus.core.session.IssueDictee.Raison
  * et hauteur quand le nouvel état les permet et dit ce qu'elle retire (Q5) ; une placette terminée reste
  * écrite, avec l'alerte avant l'annonce (Q9) ; textes de [TextesDictee] (Q10).
  *
+ * Alerte de placette terminée (décision de Pascal, 2026-10-28) : « Placette déjà terminée. » précède toute phrase
+ * **comprise**, refus compris, jamais « Pas compris. ».
+ *
  * Les méthodes de la session sont bloquantes (journal) : à appeler hors du fil principal, comme la session.
  */
 object ApplicateurDictee {
@@ -44,8 +47,15 @@ object ApplicateurDictee {
         val analyse = AnalyseurDictee.analyser(phrase)
         if (analyse !is ResultatDictee.Accepte) {
             val p = AnalyseurDictee.normaliser(phrase)
+            // Même règle « commence par hauteur » que AnalyseurDictee.analyser (l. 31-34) : une phrase qui commence par
+            // « hauteur » est une demande de hauteur dont le nombre est faux. Sans plant courant : « Plus de plant à dire. » ;
+            // sans état, « dites d'abord l'état » passe avant les bornes (décision de Pascal, 2026-10-28).
             return if (p == Grammaire.MOT_HAUTEUR || p.startsWith(Grammaire.MOT_HAUTEUR + " ")) {
-                refus(Raison.HAUTEUR_HORS_BORNES, TextesDictee.HAUTEUR_HORS_BORNES)
+                when {
+                    courant == null -> refus(Raison.AUCUN_PLANT, TextesDictee.AUCUN_PLANT)
+                    etat == null -> refus(Raison.HAUTEUR_SANS_ETAT, TextesDictee.HAUTEUR_SANS_ETAT)
+                    else -> refus(Raison.HAUTEUR_HORS_BORNES, TextesDictee.HAUTEUR_HORS_BORNES)
+                }
             } else {
                 // Rien de compris : ce n'est pas une phrase de la grammaire, donc pas d'alerte de placette.
                 IssueDictee.Refusee(Raison.PAS_COMPRIS, TextesDictee.PAS_COMPRIS, terminee)
@@ -133,7 +143,7 @@ object ApplicateurDictee {
         val hauteur = ancien.hauteurCm?.takeIf { nouveau != EtatDicte.ABSENT }
         val retire = buildList {
             if (ancien.causeGroupe != null && cause == null) add("cause")
-            if (ancien.causeDetail != null && detail == null) add("détail")
+            if (ancien.causeDetail != null && detail == null) add("mangé")
             if (ancien.hauteurCm != null && hauteur == null) add("hauteur")
         }
         return session.dire(nouveau.code, cause?.code, detail, hauteur) to retire
