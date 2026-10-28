@@ -73,10 +73,14 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **062** en thème sombre, pas de plaque blanche sous les textes neutres (« Placette … · … km »
-  au bas de la carte, « n placettes · k à faire ») (`dev`, lâcher), en cours depuis le
-  2026-10-27 au soir, lancée après la clôture des autres missions du cycle. Fiche :
-  `pilotage/missions/062-texte-neutre-sans-plaque.md`.
+- **012-B2** pointer les plants à la boussole du téléphone, plan à l'échelle et regarnis
+  (`afficheur`, appuyer), PR #109. Relue « prête pour Pascal » (CI verte) ; reprise en cours
+  sur la décision de Pascal du 2026-10-28 : le regarni prend par défaut l'essence du plant
+  remplacé, modifiable parmi les essences de la tournée ; seconde relecture ensuite. Conflit
+  probable avec la #110 (`EcranGuidage.kt`). Boussole à valider en forêt. Fiche :
+  `pilotage/missions/012b2-pointage.md` (sur sa branche).
+- **064** la carte utilisable en paysage (`afficheur`, appuyer), PR #110, CI verte ;
+  relecture en cours. Fiche : `pilotage/missions/064-carte-paysage.md` (sur sa branche).
 
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
@@ -87,6 +91,11 @@ _Idées, à trier au prochain `/mission`._
   `Download/` dans `Download/Surculus/` le 2026-10-27, journal). Vérifié par capture de
   l'orchestrateur le 2026-10-27 : accueil, liste et carte conformes ; texte gris sur la
   plaque blanche en sombre illisible (mission 062 lancée).
+- **Pascal, essai de la release v0.7.67** (2026-10-28) : 062 et 063 vérifiées par capture de
+  l'orchestrateur en sombre et en clair ; essai au soleil de la 063 (pastilles pâlies de la
+  liste à 2,3-2,6:1 acceptées sous réserve de cet essai) ; contrôle 012-B1 de bout en bout
+  à Couchey, sur le terrain (pas de position simulée), avec la tournée d'essai
+  `Download/Surculus/couchey-essai-plants.zip` (non importée, données d'essai).
 - **sommieR** : démo de Marsannay-la-Côte (pobsteta/sommieR#65) et ortho tuilée EPSG:3857
   (pobsteta/sommieR#66), briefs envoyés, sans réponse ; session pilotée par Pascal.
 
@@ -94,13 +103,14 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Prochaine mission proposée (clôture du cycle 10) :**
+**Suite décidée de la 012 (2026-10-27, dans cet ordre) :**
 
-- **Plaque blanche en sombre**, suite (051, « on verra plus tard ») ; la 062 traite les deux
-  textes neutres demandés par Pascal. Reste : pastilles vert foncé sur fond noir, six textes
-  sans plaque (relecture de la PR #95), aplat de 260 dp sous le radar du guidage, palette
-  d'état et « légende en noir » (anciennes sorties de la 038 du 2026-10-24), et « essai au
-  soleil » de la spec à revoir avec.
+- **012-C** volume, mode poche, voix de sortie ; sortie du mode poche par un appui de 3 s
+  sur volume haut et à « Terminer ».
+- **012-D** dictée branchée sur l'écran du contrôle.
+- **Heure UTC du fix GNSS** pour le jour civil du contrôle (aujourd'hui l'heure du
+  téléphone, écart à la spec § 4.4), mission courte avant l'essai d'automne (Pascal,
+  2026-10-28).
 
 **Ensuite, au signal de Pascal :**
 
@@ -115,8 +125,10 @@ _En attente sous le plafond humain (3 PR en revue)._
   a échappé aux tests qui lisent les sources.
 - **Mineurs** : KDoc périmés de `Navigation.kt` l. 36 et 61 ; test « plantation plus âgée
   que l'itinéraire » sans date ; release v0.7.58 restée en brouillon après la #99.
-- **012** écran du contrôle de placette (`afficheur`, appuyer) : branche la dictée, l'import
-  du modèle et les saisies (`placettesControlees`).
+- **Plants anciens dessinés** sur le plan de la placette (décision 8 de la 012-B), mission
+  à part.
+- **Tranche 3** : règle « date incohérente » (travaux sur une plantation plus âgée que
+  l'itinéraire), avec le relevé des interventions (Pascal, PR #106).
 - **Pascal, terrain avant la 012** (bilan du 2026-10-21) : APK sur Couchey (import, ortho,
   mode avion, guidage, test des dix secondes) ; restauration de `exemple-v1.sursync` ;
   comptes de Couchey contre QGIS (029) ; **essai au soleil** de la palette (ADR 0008 : badge
@@ -127,6 +139,12 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- Cycle 11, 2026-10-27 et 28 : **062** textes neutres sans plaque en sombre (PR #105) ;
+  **012-A** session de contrôle sur le journal de la tournée (PR #106) ; **063** couleurs
+  d'état sans plaque blanche, spec § 3 et ADR 0008 amendées (PR #107) ; **012-B1** écran du
+  contrôle (deux portes, arrivée, états, causes, Terminer) (PR #108) — fusionnées sur
+  l'autorisation de Pascal ; releases jusqu'à v0.7.67.
 
 - Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus (PR #81) ; **040** accueil sur
   la liste des tournées (PR #82) ; **041** recherche et « Rendues » (PR #83) ; **043** vue
