@@ -1,7 +1,7 @@
 # Brief `surculus` → `sommieR` — photos de placette et de plant
 
-> **Statut** : brouillon, 2026-10-28, à envoyer après la validation de l'amendement de la spec
-> par Pascal (porte n° 1) · **Émis par** : session `surculus` (orchestrateur) · **Urgence** : faible.
+> **Statut** : ouvert, 2026-10-28, amendement de la spec validé par Pascal (porte n° 1, PR
+> pobsteta/surculus#115) · **Émis par** : session `surculus` (orchestrateur) · **Urgence** : faible.
 
 ## Décisions de Pascal (2026-10-28)
 
