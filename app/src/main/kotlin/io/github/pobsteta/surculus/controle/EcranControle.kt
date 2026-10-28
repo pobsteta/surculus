@@ -10,8 +10,11 @@ package io.github.pobsteta.surculus.controle
 import android.Manifest
 import android.os.SystemClock
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import io.github.pobsteta.surculus.core.session.Geste
 import io.github.pobsteta.surculus.core.session.SortieClasseur
 import android.content.pm.PackageManager
 import androidx.activity.compose.BackHandler
@@ -42,6 +45,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -112,7 +117,7 @@ object ControleursOuverts {
  * « Terminer » ne perd rien, la placette reste « à faire ».
  */
 @Composable
-fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit) {
+fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onParametres: () -> Unit = {}) {
     val ctx = LocalContext.current
     val chargement = chargerTournee(id)
     val (fix, _) = rememberFix()
@@ -184,7 +189,7 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit) {
                     is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)
                     is EtatArrivee.Refus -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
                     EtatArrivee.SansPosition -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
-                    is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour)
+                    is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour, onParametres)
                 }
             }
         }
@@ -224,7 +229,7 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
 
 /** La session ouverte : la vue Plant, la confirmation de fin, ou « Contrôlée ». */
 @Composable
-private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages: ReglagesControle, stockageRefuse: Boolean, onRetour: () -> Unit) {
+private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages: ReglagesControle, stockageRefuse: Boolean, onRetour: () -> Unit, onParametres: () -> Unit) {
     var ecran by remember(controleur) { mutableStateOf<EcranControle?>(null) }
     val scope = rememberCoroutineScope()
     LaunchedEffect(controleur) { ecran = withContext(Dispatchers.IO) { controleur.instantane() } }
@@ -240,22 +245,44 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
     val sorties = PocheApp.sorties
     // L'état vit dans `sorties` (hors de Compose) ; ce compteur ne sert qu'à redessiner la bande.
     var rafraichir by remember { mutableStateOf(0) }
+    // Permission du micro (012-D2, plan § 6) : demandée à l'appui sur « Mode poche » et sur le micro, l'écran sous les yeux,
+    // jamais en poche. Refusée, le mode poche entre quand même : la saisie au volume ne dépend jamais du micro.
+    var apresPermission by remember { mutableStateOf<(() -> Unit)?>(null) }
+    val demanderMicro = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { accordee ->
+        EcouteApp.permissionRefusee = if (accordee) null
+        else PermissionMicro.apresDemande(false, activite?.shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) == true)
+        rafraichir++
+        apresPermission?.invoke()
+        apresPermission = null
+    }
     DisposableEffect(controleur) {
         poche = mode.actif
         val desabonner = mode.abonner { actif, raison ->
             poche = actif
-            if (!actif) { sorties?.effacer(); rafraichir++ }
+            if (!actif) { EcouteApp.arreterEtOublier(); sorties?.effacer(); rafraichir++ }
             if (!actif && raison != RaisonSortie.VUE_QUITTEE) sorties?.annoncer(AnnoncesPoche.sortie())
             val annonce = raison?.let { TextesControle.sortiePoche(it) }
             if (!actif && annonce != null) scope.launch { verrou.withLock { ecran = withContext(Dispatchers.IO) { controleur.annoncer(annonce) } } }
         }
         // Les gestes de volume arrivent dans l'ordre et s'appliquent un par un.
         sorties?.surTexte = { rafraichir++ }
+        // Les phrases de la dictée passent par le même verrou que les gestes : l'une après l'autre, dans l'ordre.
+        EcouteApp.brancher { phrase ->
+            scope.launch {
+                verrou.withLock {
+                    var annonce: AnnoncePoche? = null
+                    ecran = withContext(Dispatchers.IO) { controleur.dicter(phrase).also { annonce = controleur.derniereAnnonce } }
+                    annonce?.let { EcouteApp.resultat(it) }
+                }
+            }
+        }
         PocheApp.pont.surRappel = { sorties?.annoncer(AnnoncesPoche.rappel()) }
         PocheApp.pont.ecoute = { sortie ->
             sorties?.signal(sortie)
             when (sortie) {
-                is SortieClasseur.Geste -> scope.launch {
+                // Volume bas tenu 0,5 s : le micro s'ouvre ; il se ferme quand la touche est relâchée (tenir pour parler).
+                is SortieClasseur.Geste -> if (sortie.geste == Geste.VOLUME_BAS_LONG) EcouteApp.tenir() else scope.launch {
+                    EcouteApp.effacerLignes()
                     verrou.withLock {
                         var annonce: AnnoncePoche? = null
                         ecran = withContext(Dispatchers.IO) { controleur.geste(sortie.geste).also { annonce = controleur.derniereAnnonce } }
@@ -268,11 +295,14 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
                         controleur.derniereAnnonce?.let { sorties?.annoncer(it) }
                     }
                 }
+                SortieClasseur.BasRelacheApresLong -> EcouteApp.relacher()
                 SortieClasseur.Tic, SortieClasseur.Bourdon -> {}
             }
         }
         onDispose {
             desabonner()
+            EcouteApp.brancher(null)
+            if (activite?.isChangingConfigurations == true) EcouteApp.arreter() else EcouteApp.arreterEtOublier()
             PocheApp.pont.ecoute = null
             PocheApp.pont.surRappel = null
             sorties?.surTexte = null
@@ -292,11 +322,21 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
 
     // La bande du mode poche est hors de la zone qui défile (mission 067) : entière et lisible quel que soit le défilement.
     Column(Modifier.fillMaxSize()) {
+        val ctx = LocalContext.current
+        EcouteApp.version // lu pour que la bande se redessine à chaque changement de l'écoute
+        val ligneDictee = TextesEcoute.ligneEtat(EcouteApp.etatPermission(ctx), EcouteApp.modeleInstalle(ctx))
         if (poche) {
             rafraichir // lu pour que la bande se redessine à chaque annonce écrite
             Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                BandePoche(ligneVoix = if (sorties?.sansVoixFrancaise != false) AnnoncesPoche.BANDEAU_SANS_VOIX else null, annonce = sorties?.annonceEcrite)
+                BandePoche(
+                    ligneVoix = if (sorties?.sansVoixFrancaise != false) AnnoncesPoche.BANDEAU_SANS_VOIX else null,
+                    // Le résultat de la dictée est déjà dans le bloc d'écoute : pas de doublon avec l'annonce écrite.
+                    annonce = sorties?.annonceEcrite.takeIf { EcouteApp.compris == null },
+                    ligneDictee = ligneDictee,
+                )
             }
+        } else if (EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null) {
+            Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
         }
         Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -304,10 +344,26 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
                 Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
             }
             when (e.vue) {
-                VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, onPoche = {
-                    mode.entrer(SystemClock.uptimeMillis())
-                    sorties?.annoncer(AnnoncesPoche.entree(e.plant.numero))
-                })
+                VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, ligneDictee = ligneDictee, actionsDictee = ActionsDictee.pour(EcouteApp.etatPermission(ctx), EcouteApp.modeleInstalle(ctx)), onActionDictee = { a ->
+                    when (a) {
+                        ActionDictee.REGLAGES -> ouvrirReglagesApplication(ctx)
+                        ActionDictee.INSTALLER -> onParametres()
+                    }
+                }, onPoche = {
+                    val entrer: () -> Unit = {
+                        mode.entrer(SystemClock.uptimeMillis())
+                        sorties?.annoncer(AnnoncesPoche.entree(e.plant.numero))
+                    }
+                    if (EcouteApp.modeleInstalle(ctx) && PermissionMicro.aDemander(EcouteApp.etatPermission(ctx))) {
+                        apresPermission = entrer
+                        demanderMicro.launch(Manifest.permission.RECORD_AUDIO)
+                    } else entrer()
+                }, onMicro = {
+                    if (EcouteApp.modeleInstalle(ctx) && PermissionMicro.aDemander(EcouteApp.etatPermission(ctx))) {
+                        apresPermission = null
+                        demanderMicro.launch(Manifest.permission.RECORD_AUDIO)
+                    } else EcouteApp.tenir()
+                }, onMicroRelache = { EcouteApp.relacher() })
                 VueControle.TERMINER -> VueTerminer(e, ::agir)
                 VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
                 VueControle.POINTER -> VuePointerEcran(e, tournee, reglages, ::agir)
@@ -319,7 +375,10 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
 }
 
 @Composable
-private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit, poche: Boolean, onPoche: () -> Unit) {
+private fun VuePlantEcran(
+    e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit, poche: Boolean, ligneDictee: String?, actionsDictee: List<ActionDictee>, onActionDictee: (ActionDictee) -> Unit,
+    onPoche: () -> Unit, onMicro: () -> Unit, onMicroRelache: () -> Unit,
+) {
     val p = e.plant
     // 1. La seule chose en grand : le numéro du plant ; 2. son état ; 3. l'état d'avant, en petit.
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -337,6 +396,15 @@ private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> Ecra
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
         p.etatDuJour?.let { PastilleForme(it, 32.dp); Spacer(Modifier.width(8.dp)) }
         Text(p.libelleEtat, style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
+    }
+    // Un « remplace » dicté en poche attend ici : à la sortie du mode, la vue propose de pointer le regarni (012-D2, Q8).
+    e.pointage.regarniDe?.let { n ->
+        if (!poche) {
+            Text(stringResource(R.string.controle_regarni_propose, n), style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
+            Button(onClick = { agir { ouvrirPointer() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT)) {
+                Text(stringResource(R.string.controle_regarni_pointer), style = MaterialTheme.typography.titleLarge)
+            }
+        }
     }
     p.precedent?.let {
         Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth())
@@ -395,9 +463,20 @@ private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> Ecra
         }
     }
     // 7. Le mode poche : le téléphone au fond de la poche, les états au volume (voix et vibration : mission 012-C2).
+    // 8. Hors du mode poche, le micro se tient pour parler, comme en poche le volume bas (012-D2).
     if (!poche) {
-        OutlinedButton(onClick = onPoche, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
-            Text(stringResource(R.string.controle_poche), color = couleurNeutre())
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = onPoche, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION), contentPadding = PaddingValues(horizontal = 4.dp)) {
+                Text(stringResource(R.string.controle_poche), color = couleurNeutre())
+            }
+            BoutonMicro(Modifier.weight(1f), onAppui = onMicro, onRelache = onMicroRelache)
+        }
+        ligneDictee?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        // Sous le message : le bouton qui mène où l'on répare (jamais en poche, le toucher y est ignoré).
+        actionsDictee.forEach { a ->
+            OutlinedButton(onClick = { onActionDictee(a) }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+                Text(stringResource(if (a == ActionDictee.REGLAGES) R.string.controle_dictee_reglages else R.string.controle_dictee_installer), color = couleurNeutre())
+            }
         }
     }
 }
@@ -407,17 +486,86 @@ private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> Ecra
  * [ligneVoix] garde la place de la ligne « Pas de voix française : regardez l'écran » de la 012-C2.
  */
 @Composable
-private fun BandePoche(ligneVoix: String? = null, annonce: AnnoncePoche? = null) {
+private fun BandePoche(ligneVoix: String? = null, annonce: AnnoncePoche? = null, ligneDictee: String? = null) {
     Column(
         Modifier.fillMaxWidth().border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(stringResource(R.string.controle_poche_bande), style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
-        Text(stringResource(R.string.controle_poche_aide), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
+        // Une seule idée à la fois : pendant l'écoute, le bloc J'ÉCOUTE prend la place de l'aide de sortie.
+        if (!blocEcouteVisible()) Text(stringResource(R.string.controle_poche_aide), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
+        BlocEcoute()
+        ligneDictee?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurErreur()) }
         ligneVoix?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre()) }
         // Sans voix française, l'annonce s'écrit ici (en grand : on la lit d'un coup d'œil) ; un refus en couleur d'erreur.
         annonce?.let { Text(it.texte, style = MaterialTheme.typography.titleLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
     }
+}
+
+private fun blocEcouteVisible(): Boolean = EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null
+
+/**
+ * L'écoute, en deux lignes : en grand « J'ÉCOUTE » / « ÉCOUTE FERMÉE », puis la comparaison entendu / compris (ou refusé, en
+ * couleur d'erreur) : le forestier compare ce qu'il a dit à ce que la machine a retenu (plan § 2).
+ */
+@Composable
+private fun BlocEcoute() {
+    EcouteApp.version // lu pour se redessiner à chaque changement
+    val grand = TextesEcoute.grand(EcouteApp.affichage)
+    val entendu = EcouteApp.entendu
+    val compris = EcouteApp.compris
+    grand?.let { Text(it, style = MaterialTheme.typography.headlineMedium, color = couleurNeutre()) }
+    entendu?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre()) }
+    compris?.let {
+        val erreur = EcouteApp.comprisErreur
+        Text(TextesEcoute.compris(it, erreur), style = MaterialTheme.typography.titleMedium, color = if (erreur) couleurErreur() else couleurNeutre())
+    }
+}
+
+/** Hors du mode poche, le même bloc dans son cadre. */
+@Composable
+private fun BlocEcouteEncadre() {
+    Column(
+        Modifier.fillMaxWidth().border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) { BlocEcoute() }
+}
+
+/**
+ * Le micro hors du mode poche : on le **tient** pour parler, on le lâche pour finir (comme Marculus). Piloté par les interactions
+ * du bouton ; un doigt qui glisse hors du bouton (Cancel) ferme comme un relâchement, et le bouton qui disparaît aussi.
+ */
+@Composable
+private fun BoutonMicro(modifier: Modifier, onAppui: () -> Unit, onRelache: () -> Unit) {
+    EcouteApp.version // lu pour changer d'aspect pendant l'écoute
+    val interactions = remember { MutableInteractionSource() }
+    val appui by rememberUpdatedState(onAppui)
+    val relache by rememberUpdatedState(onRelache)
+    LaunchedEffect(interactions) {
+        interactions.interactions.collect { i ->
+            when (i) {
+                is PressInteraction.Press -> appui()
+                is PressInteraction.Release, is PressInteraction.Cancel -> relache()
+                else -> Unit
+            }
+        }
+    }
+    DisposableEffect(Unit) { onDispose { relache() } }
+    val ecoute = EcouteApp.affichage == AffichageEcoute.ECOUTE || EcouteApp.affichage == AffichageEcoute.OUVERTURE
+    val libelle = stringResource(if (ecoute) R.string.controle_micro_ecoute else R.string.controle_micro)
+    // UN SEUL bouton, jamais deux composables selon l'état : changer de composable sous le doigt enverrait un Cancel et
+    // fermerait l'écoute aussitôt. Seules les couleurs changent.
+    val plein = AspectMicro.plein(EcouteApp.affichage)
+    OutlinedButton(
+        onClick = {},
+        interactionSource = interactions,
+        modifier = modifier.height(DimensionsControle.ACTION),
+        contentPadding = PaddingValues(horizontal = 4.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = if (plein) MaterialTheme.colorScheme.primary else Color.Transparent,
+            contentColor = if (plein) MaterialTheme.colorScheme.onPrimary else couleurNeutre(),
+        ),
+    ) { Text(libelle) }
 }
 
 @Composable
@@ -461,4 +609,11 @@ private fun VueTerminee(e: EcranControle, agir: (ControleurPlacette.() -> EcranC
 private fun Totaux(e: EcranControle) {
     val t = e.totaux
     if (t.refus != null) Text(t.refus, color = couleurErreur()) else Text(t.texte, style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
+}
+
+/** Ouvre les réglages Android de Surculus (autorisations), quand le micro est refusé pour de bon. */
+private fun ouvrirReglagesApplication(ctx: android.content.Context) {
+    val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.fromParts("package", ctx.packageName, null))
+        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+    try { ctx.startActivity(intent) } catch (_: Exception) { /* pas d'écran de réglages : le message reste */ }
 }

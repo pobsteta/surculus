@@ -13,9 +13,11 @@ import io.github.pobsteta.surculus.core.placette.Observation
 import io.github.pobsteta.surculus.core.placette.Totaux
 import io.github.pobsteta.surculus.core.placette.Verdict
 import io.github.pobsteta.surculus.core.session.ActionGeste
+import io.github.pobsteta.surculus.core.session.ApplicateurDictee
 import io.github.pobsteta.surculus.core.session.EtatSession
 import io.github.pobsteta.surculus.core.session.Geste
 import io.github.pobsteta.surculus.core.session.GestesPlacette
+import io.github.pobsteta.surculus.core.session.IssueDictee
 import io.github.pobsteta.surculus.core.session.PlantSession
 import io.github.pobsteta.surculus.core.placette.UuidPlant
 import io.github.pobsteta.surculus.core.reperes.AzimutSaisi
@@ -23,6 +25,7 @@ import io.github.pobsteta.surculus.core.geo.UniteAzimut
 import io.github.pobsteta.surculus.core.session.SessionControle
 import io.github.pobsteta.surculus.core.session.SourceAzimut
 import io.github.pobsteta.surculus.core.session.SuiteSession
+import io.github.pobsteta.surculus.core.session.TextesDictee
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -265,6 +268,7 @@ class ControleurPlacette(
                 MessageControle(m, erreur = avant.termine)
             }
             ActionGeste.AnnulerDerniereSaisie -> MessageControle(TextesControle.ANNULE, erreur = false)
+            // Chemin mort depuis la 012-D2 : le long bas ouvre le micro dans l'écran, il n'arrive plus ici. Gardé pour la table de la spec.
             ActionGeste.OuvrirDictee -> null
         } else TextesControle.message(suite)
         val apres = session.etat()
@@ -272,6 +276,27 @@ class ControleurPlacette(
             geste, suite, plant?.numero, apres.plants.firstOrNull { it.uuid == apres.courant }?.numero,
             memePlant = apres.courant == avant.courant, termine = avant.termine && apres.termine,
         )
+        return instantane()
+    }
+
+    /**
+     * Applique une phrase dictée (mission 012-D2) : [ApplicateurDictee] confronte la phrase à l'état du plant courant et la fait
+     * écrire par la session (aucune règle ici). L'écran répète le texte que la voix dit ; le refus de la session garde son code
+     * (spec § 6) à l'écran, jamais à la voix. Méthode bloquante (journal) : hors du fil principal.
+     */
+    fun dicter(phrase: String): EcranControle {
+        val issue = ApplicateurDictee.appliquer(phrase, session)
+        val apres = session.etat()
+        val etat = (issue as? IssueDictee.Ecrite)?.let { e ->
+            (apres.plants.firstOrNull { it.numero == e.numero }?.duJour as? Observation.Observe)?.etat
+        }
+        val codee = (issue as? IssueDictee.Refusee)?.refusSession?.let(TextesControle::message)
+        message = if (codee != null) {
+            codee.copy(texte = (if (issue.placetteTerminee) TextesControle.DEJA_TERMINEE_PREFIXE else "") + codee.texte)
+        } else {
+            MessageControle(issue.annonce, erreur = issue is IssueDictee.Refusee || issue.placetteTerminee)
+        }
+        derniereAnnonce = AnnoncesPoche.pourIssue(issue, etat)
         return instantane()
     }
 
@@ -317,13 +342,11 @@ object TextesControle {
         EtatDsf.ABSENT -> "Absent"
     }
 
-    /** Libellés courts des quatre groupes de cause du DSF (`etats-plants.yaml`, `causes_dsf_groupes_bilan`). */
-    fun libelle(groupe: GroupeCause): String = when (groupe) {
-        GroupeCause.ENTOMOLOGIQUE -> "Insectes"
-        GroupeCause.PATHOLOGIQUE -> "Champignons"
-        GroupeCause.ANIMAUX -> "Animaux"
-        GroupeCause.ABIOTIQUE_COMPLEXE_INDETERMINE -> "Autre ou inconnu"
-    }
+    /**
+     * Libellés courts des quatre groupes de cause du DSF (`etats-plants.yaml`, `causes_dsf_groupes_bilan`) : **le même mot que
+     * la voix** (`TextesDictee.cause`, mission 012-D2), avec une majuscule.
+     */
+    fun libelle(groupe: GroupeCause): String = TextesDictee.cause(groupe).replaceFirstChar { it.titlecase(Locale.FRANCE) }
 
     const val ANNULE = "Annulé."
     const val UNE_TOUCHE_A_LA_FOIS = "Une touche à la fois."

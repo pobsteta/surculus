@@ -120,17 +120,25 @@ class PontPoche(private val mode: ModePoche, private val classeur: ClasseurGeste
     private val prises = HashSet<Touche>()
 
     /**
+     * Touches tenues au moment d'une remise à zéro (appel, verrouillage) : le classeur les a oubliées, mais leurs répétitions
+     * et leur relâchement restent pris jusqu'au relâchement, pour que le volume du système ne s'affiche pas.
+     */
+    private val orphelines = HashSet<Touche>()
+
+    /**
      * Une touche de volume bouge. Rend `true` si elle est prise (mode poche, ou touche déjà prise et pas encore relâchée),
      * `false` si le système la garde. [repetition] : appui répété d'une touche tenue (Android répète le `onKeyDown`).
      */
     fun touche(touche: Touche, appuyee: Boolean, instantMs: Long, repetition: Boolean = false): Boolean {
-        if (repetition) return touche in prises
+        if (repetition) return touche in prises || touche in orphelines
         if (appuyee) {
+            orphelines -= touche // un vrai nouvel appui
             if (!mode.actif) return false
             prises += touche
             traiter(classeur.appuye(touche, instantMs), instantMs)
             return true
         }
+        if (orphelines.remove(touche)) return true
         if (touche !in prises) return false
         prises -= touche
         traiter(classeur.relache(touche, instantMs), instantMs)
@@ -152,14 +160,14 @@ class PontPoche(private val mode: ModePoche, private val classeur: ClasseurGeste
     }
 
     /** L'application perd le focus : un relâchement perdu ne doit rien laisser en attente. */
-    fun remettreAZero() { classeur.remettreAZero(); prises.clear() }
+    fun remettreAZero() { classeur.remettreAZero(); orphelines += prises; prises.clear() }
 
     private fun traiter(sorties: List<SortieClasseur>, instantMs: Long) {
         for (s in sorties) {
             when (s) {
                 is SortieClasseur.Geste -> mode.activite(instantMs)
                 SortieClasseur.Bourdon -> mode.sortir(RaisonSortie.TROIS_SECONDES)
-                SortieClasseur.Tic, SortieClasseur.DeuxTouches -> {}
+                SortieClasseur.Tic, SortieClasseur.DeuxTouches, SortieClasseur.BasRelacheApresLong -> {}
             }
             ecoute?.invoke(s)
         }
@@ -177,5 +185,28 @@ object PocheApp {
 
     fun installer(contexte: android.content.Context) {
         if (sorties == null) sorties = SortiesPoche(VoixAndroid(contexte), VibreurAndroid(contexte))
+    }
+}
+
+/**
+ * En mode poche l'orientation est verrouillée à celle de l'entrée (décision de Pascal, 2026-10-28, aller-retour 1 de la 012-D2) :
+ * un téléphone qui tourne dans la poche recréerait l'Activity en pleine écoute. Elle redevient libre à la sortie. Kotlin pur :
+ * [appliquer] reçoit la valeur de `requestedOrientation`.
+ */
+class VerrouOrientation(private val appliquer: (Int) -> Unit) {
+    fun surMode(actif: Boolean) = appliquer(if (actif) VERROUILLEE else LIBRE)
+
+    /** Suit le [mode] (et applique tout de suite son état : une Activity recréée en mode poche reverrouille). Rend de quoi se désabonner. */
+    fun suivre(mode: ModePoche): () -> Unit {
+        surMode(mode.actif)
+        return mode.abonner { actif, _ -> surMode(actif) }
+    }
+
+    companion object {
+        /** `ActivityInfo.SCREEN_ORIENTATION_LOCKED` : garde l'orientation du moment. */
+        const val VERROUILLEE = 14
+
+        /** `ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED` : le système décide, la rotation est libre. */
+        const val LIBRE = -1
     }
 }

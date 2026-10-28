@@ -205,12 +205,12 @@ class ApplicateurDicteeTest {
     }
 
     @Test
-    fun `climat et indetermine se disent autre ou inconnu, champignon et animaux gardent leur mot`() {
+    fun `climat et indetermine se disent autre ou inconnu, champignons et animaux gardent leur mot`() {
         val (_, s) = bancAvec()
         ApplicateurDictee.appliquer("atteint", s)
         assertEquals("Numéro 1, autre ou inconnu.", ApplicateurDictee.appliquer("climat", s).annonce)
         assertEquals("Numéro 1, autre ou inconnu.", ApplicateurDictee.appliquer("indéterminé", s).annonce)
-        assertEquals("Numéro 1, champignon.", ApplicateurDictee.appliquer("champignon", s).annonce)
+        assertEquals("Numéro 1, champignons.", ApplicateurDictee.appliquer("champignon", s).annonce)
         assertEquals("Numéro 1, animaux.", ApplicateurDictee.appliquer("animaux", s).annonce)
     }
 

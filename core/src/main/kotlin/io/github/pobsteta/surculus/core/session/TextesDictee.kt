@@ -50,10 +50,10 @@ object TextesDictee {
     /** Libellé dit d'un groupe de cause (celui de l'écran ; `climat` et `indéterminé` : « autre ou inconnu »). */
     fun cause(groupe: String) = cause(checkNotNull(GroupeCause.lire(groupe)) { "groupe de cause inconnu : $groupe" })
 
-    // Doublon connu avec `ControleurPlacette.libelle` de `:app` (écran « Champignons », voix « champignon ») : à régler dans la D2.
+    // Un seul libellé pour la voix et l'écran (012-D2) : `TextesControle.libelle(GroupeCause)` de `:app` le reprend, avec une majuscule.
     fun cause(groupe: GroupeCause) = when (groupe) {
         GroupeCause.ENTOMOLOGIQUE -> "insectes"
-        GroupeCause.PATHOLOGIQUE -> "champignon"
+        GroupeCause.PATHOLOGIQUE -> "champignons"
         GroupeCause.ANIMAUX -> "animaux"
         GroupeCause.ABIOTIQUE_COMPLEXE_INDETERMINE -> "autre ou inconnu"
     }
