@@ -15,7 +15,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -34,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -186,35 +188,38 @@ fun PlanCanvas(plan: PlanPlants, onChoisir: (UuidPlant) -> Unit, modifier: Modif
     val neutre = couleurNeutre()
     val mesure = rememberTextMeasurer()
     val styleNumero = MaterialTheme.typography.labelSmall.copy(color = neutre)
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Canvas(
-            Modifier.widthIn(max = COTE_PLAN_MAX_DP.dp).fillMaxWidth().aspectRatio(1f).align(Alignment.CenterHorizontally)
-                .pointerInput(plan) {
-                    detectTapGestures { o ->
-                        plan.plantTouche(o.x, o.y, size.width.toFloat(), tolerancePx = DimensionsControle.CIBLE_MIN.toPx() / 2f)?.let { onChoisir(it.uuid) }
-                    }
-                },
-        ) {
-            val cote = size.minDimension
-            val c = Offset(cote / 2f, cote / 2f)
-            drawCircle(neutre, radius = plan.rayonM.toFloat() * plan.echelle(cote), center = c, style = Stroke(width = 2.dp.toPx()))
-            // Le piquet : une croix.
-            val q = 6.dp.toPx()
-            drawLine(neutre, Offset(c.x - q, c.y), Offset(c.x + q, c.y), strokeWidth = 2.dp.toPx())
-            drawLine(neutre, Offset(c.x, c.y - q), Offset(c.x, c.y + q), strokeWidth = 2.dp.toPx())
-            val pastille = 22.dp.toPx()
-            plan.plants.forEach { plant ->
-                val px = plan.versPixels(plant, cote)
-                val centre = Offset(px.x, px.y)
-                if (plant.etat != null) dessinerEtat(plant.etat, centre, pastille, sombre)
-                else drawCircle(neutre, radius = pastille / 5f, center = centre)
-                if (plant.courant) drawCircle(neutre, radius = pastille * 0.8f, center = centre, style = Stroke(width = 3.dp.toPx()))
-                drawText(mesure, plant.numero.toString(), Offset(centre.x + pastille * 0.5f, centre.y - pastille * 0.9f), style = styleNumero)
+    BoxWithConstraints(modifier.fillMaxWidth()) {
+    val coteDp = cotePlanDp(maxWidth.value, LocalConfiguration.current.screenHeightDp.toFloat()).dp
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Canvas(
+                Modifier.align(Alignment.CenterHorizontally).size(coteDp)
+                    .pointerInput(plan) {
+                        detectTapGestures { o ->
+                            plan.plantTouche(o.x, o.y, size.width.toFloat(), tolerancePx = DimensionsControle.CIBLE_MIN.toPx() / 2f)?.let { onChoisir(it.uuid) }
+                        }
+                    },
+            ) {
+                val cote = size.minDimension
+                val c = Offset(cote / 2f, cote / 2f)
+                drawCircle(neutre, radius = plan.rayonM.toFloat() * plan.echelle(cote), center = c, style = Stroke(width = 2.dp.toPx()))
+                // Le piquet : une croix.
+                val q = 6.dp.toPx()
+                drawLine(neutre, Offset(c.x - q, c.y), Offset(c.x + q, c.y), strokeWidth = 2.dp.toPx())
+                drawLine(neutre, Offset(c.x, c.y - q), Offset(c.x, c.y + q), strokeWidth = 2.dp.toPx())
+                val pastille = 22.dp.toPx()
+                plan.plants.forEach { plant ->
+                    val px = plan.versPixels(plant, cote)
+                    val centre = Offset(px.x, px.y)
+                    if (plant.etat != null) dessinerEtat(plant.etat, centre, pastille, sombre)
+                    else drawCircle(neutre, radius = pastille / 5f, center = centre)
+                    if (plant.courant) drawCircle(neutre, radius = pastille * 0.8f, center = centre, style = Stroke(width = 3.dp.toPx()))
+                    drawText(mesure, plant.numero.toString(), Offset(centre.x + pastille * 0.5f, centre.y - pastille * 0.9f), style = styleNumero)
+                }
             }
-        }
-        Text(stringResource(R.string.controle_plan), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        if (plan.nonDessines > 0) {
-            Text(stringResource(R.string.controle_plants_anciens, plan.nonDessines), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.controle_plan), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (plan.nonDessines > 0) {
+                Text(stringResource(R.string.controle_plants_anciens, plan.nonDessines), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }

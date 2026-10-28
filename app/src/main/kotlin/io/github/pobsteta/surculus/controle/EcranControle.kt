@@ -292,29 +292,29 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
 
     // La bande du mode poche est hors de la zone qui défile (mission 067) : entière et lisible quel que soit le défilement.
     Column(Modifier.fillMaxSize()) {
-    if (poche) {
-        rafraichir // lu pour que la bande se redessine à chaque annonce écrite
-        Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            BandePoche(ligneVoix = if (sorties?.sansVoixFrancaise != false) AnnoncesPoche.BANDEAU_SANS_VOIX else null, annonce = sorties?.annonceEcrite)
+        if (poche) {
+            rafraichir // lu pour que la bande se redessine à chaque annonce écrite
+            Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                BandePoche(ligneVoix = if (sorties?.sansVoixFrancaise != false) AnnoncesPoche.BANDEAU_SANS_VOIX else null, annonce = sorties?.annonceEcrite)
+            }
         }
-    }
-    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        if (e.plant.alerteTerminee) {
-            Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
+        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (e.plant.alerteTerminee) {
+                Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
+            }
+            when (e.vue) {
+                VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, onPoche = {
+                    mode.entrer(SystemClock.uptimeMillis())
+                    sorties?.annoncer(AnnoncesPoche.entree(e.plant.numero))
+                })
+                VueControle.TERMINER -> VueTerminer(e, ::agir)
+                VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
+                VueControle.POINTER -> VuePointerEcran(e, tournee, reglages, ::agir)
+            }
+            e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
+            if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        when (e.vue) {
-            VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, onPoche = {
-                mode.entrer(SystemClock.uptimeMillis())
-                sorties?.annoncer(AnnoncesPoche.entree(e.plant.numero))
-            })
-            VueControle.TERMINER -> VueTerminer(e, ::agir)
-            VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
-            VueControle.POINTER -> VuePointerEcran(e, tournee, reglages, ::agir)
-        }
-        e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
-        if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
     }
 }
 

@@ -85,11 +85,16 @@ data class PlanPlants(
     }
 }
 
-/** Côté maximal du plan, en dp : au-delà, le plan ne grandit pas (téléphone couché, tablette). */
-const val COTE_PLAN_MAX_DP = 320f
+/** Hauteur réservée, en dp, autour du plan couché : barre d'application et marges. */
+const val RESERVE_HAUTEUR_PLAN_DP = 88f
 
 /**
- * Côté du carré du plan, en dp, pour une largeur disponible donnée (mission 067) : toute la largeur, sans dépasser [COTE_PLAN_MAX_DP].
- * Le plan est un carré posé dans le flux, sous les boutons : il ne les recouvre jamais, debout ou couché.
+ * Côté du carré du plan, en dp (mission 067). Debout, il prend toute la largeur disponible ([largeurDp]).
+ * Couché (écran plus large que haut), il est limité à la hauteur de l'écran moins [RESERVE_HAUTEUR_PLAN_DP] : le plan tient
+ * dans une vue sans recouvrir de bouton. Le plan est posé dans le flux, sous les boutons.
  */
-fun cotePlanDp(largeurDisponibleDp: Float): Float = largeurDisponibleDp.coerceIn(0f, COTE_PLAN_MAX_DP)
+fun cotePlanDp(largeurDp: Float, hauteurEcranDp: Float): Float {
+    val couche = largeurDp > hauteurEcranDp
+    val cote = if (couche) minOf(largeurDp, hauteurEcranDp - RESERVE_HAUTEUR_PLAN_DP) else largeurDp
+    return cote.coerceAtLeast(0f)
+}
