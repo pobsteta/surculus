@@ -14,6 +14,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -65,19 +66,18 @@ import io.github.pobsteta.surculus.carte.Chargement
 import io.github.pobsteta.surculus.carte.PastilleDisque
 import io.github.pobsteta.surculus.carte.Palette
 import io.github.pobsteta.surculus.carte.chargerTournee
+import io.github.pobsteta.surculus.carte.collecterPositionsArrivee
 import io.github.pobsteta.surculus.carte.couleurErreur
 import io.github.pobsteta.surculus.carte.couleurNeutre
 import io.github.pobsteta.surculus.carte.rememberFix
-import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.placette.EtatDsf
-import io.github.pobsteta.surculus.core.placette.Essences
 import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.gpkg.ContexteDeTournee
 import io.github.pobsteta.surculus.sauvegarde.SauvegardeApp
+import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.LigneTournee
 import io.github.pobsteta.surculus.ui.BandeauCompact
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -112,12 +112,18 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit) {
     val placette = ouverte?.tournee?.placettes?.firstOrNull { it.uuid == placetteUuid }
     val cle = ControleursOuverts.cle(id, placetteUuid)
 
-    // Permission de stockage, Android 8 et 9 seulement : demandée une fois à l'ouverture ; refusée, elle est expliquée, et rien n'est bloqué.
+    // Permission de stockage, Android 8 et 9 seulement : demandée **une seule fois** (le réglage s'en souvient) ; tant qu'elle
+    // manque, une ligne en petit l'explique, et rien n'est bloqué.
+    val reglages = remember { DepotTournees.reglagesControle(ctx) }
     var stockageRefuse by remember { mutableStateOf(false) }
     val demanderStockage = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> stockageRefuse = !ok }
     LaunchedEffect(Unit) {
         val accordee = ContextCompat.checkSelfPermission(ctx, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-        if (PermissionStockage.aDemanderSurCetAppareil(accordee)) demanderStockage.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        stockageRefuse = PermissionStockage.manqueSurCetAppareil(accordee)
+        if (PermissionStockage.aDemanderSurCetAppareil(accordee, reglages.stockageDejaDemande)) {
+            reglages.stockageDejaDemande = true
+            demanderStockage.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
     }
     // On libère le contrôleur en quittant vraiment l'écran, pas à la rotation.
     val activite = ctx as? android.app.Activity
@@ -131,19 +137,15 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit) {
     // L'arrivée (décisions de Pascal du 2026-10-27) : la moyenne de 5 s part toute seule, avec son décompte, puis la règle des 15 m.
     LaunchedEffect(cle, essai, ouverte) {
         if (ouverte == null || ControleursOuverts.get(cle) != null) return@LaunchedEffect
-        val positions = ArrayList<Position>()
-        repeat(SECONDES_DE_MOYENNE_ARRIVEE) { n ->
-            arrivee = EtatArrivee.Moyenne(n)
-            delay(1000)
-            fixActuel.value?.position?.let(positions::add)
-        }
+        // La moyenne de 5 s est celle du guidage : écrite une seule fois (`collecterPositionsArrivee`).
+        val positions = collecterPositionsArrivee(position = { fixActuel.value?.position }, surSeconde = { n -> arrivee = EtatArrivee.Moyenne(n) })
         val resultat = withContext(Dispatchers.IO) {
             runCatching {
                 ArriveeControle.ouvrir(
                     contexte = ContexteDeTournee.de(ouverte.tournee),
                     journal = SauvegardeApp.journal(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
                     horloge = SauvegardeApp.horloge(ctx) { null },
-                    essences = Essences(emptySet()),
+                    essences = ArriveeControle.essencesDe(ouverte.tournee),
                     positions = positions,
                     codeLu = code,
                     sauvegarde = SauvegardeApp.ecoute(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
@@ -174,7 +176,7 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit) {
                     is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)
                     is EtatArrivee.Refus -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
                     EtatArrivee.SansPosition -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
-                    is EtatArrivee.Ouverte -> VueSession(a.controleur, stockageRefuse, onRetour)
+                    is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour)
                 }
             }
         }
@@ -214,7 +216,7 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
 
 /** La session ouverte : la vue Plant, la confirmation de fin, ou « Contrôlée ». */
 @Composable
-private fun VueSession(controleur: ControleurPlacette, stockageRefuse: Boolean, onRetour: () -> Unit) {
+private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages: ReglagesControle, stockageRefuse: Boolean, onRetour: () -> Unit) {
     var ecran by remember(controleur) { mutableStateOf<EcranControle?>(null) }
     val scope = rememberCoroutineScope()
     LaunchedEffect(controleur) { ecran = withContext(Dispatchers.IO) { controleur.instantane() } }
@@ -222,7 +224,8 @@ private fun VueSession(controleur: ControleurPlacette, stockageRefuse: Boolean, 
         scope.launch { ecran = withContext(Dispatchers.IO) { controleur.commande() } }
     }
     val e = ecran ?: return
-    BackHandler(enabled = e.vue == VueControle.TERMINER) { agir { reprendre() } }
+    // Le geste « retour » depuis Pointer ou Terminer revient au plant ; depuis le plant, il quitte l'écran (plan § 3).
+    BackHandler(enabled = e.vue == VueControle.TERMINER || e.vue == VueControle.POINTER) { agir { reprendre() } }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -233,6 +236,7 @@ private fun VueSession(controleur: ControleurPlacette, stockageRefuse: Boolean, 
             VueControle.PLANT -> VuePlantEcran(e, ::agir)
             VueControle.TERMINER -> VueTerminer(e, ::agir)
             VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
+            VueControle.POINTER -> VuePointerEcran(e, tournee, reglages, ::agir)
         }
         e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
         if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -295,12 +299,23 @@ private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> Ecra
             Text(stringResource(R.string.controle_sans_cause), color = couleurNeutre())
         }
     }
-    // 6. Deux actions.
+    // Regarni : seulement sur un plant mort ou absent (la session refuse les autres).
+    if (p.regarniPossible) {
+        OutlinedButton(onClick = { agir { regarni() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+            Text(stringResource(R.string.controle_remplacer), color = couleurNeutre())
+        }
+    }
+    // 5. Le plan à l'échelle : toucher un plant le choisit.
+    PlanCanvas(e.plan, onChoisir = { id -> agir { choisir(id) } })
+    // 6. Trois actions.
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = { agir { annuler() } }, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION)) {
+        OutlinedButton(onClick = { agir { ouvrirPointer() } }, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION), contentPadding = PaddingValues(horizontal = 4.dp)) {
+            Text(stringResource(R.string.controle_pointer), color = couleurNeutre())
+        }
+        OutlinedButton(onClick = { agir { annuler() } }, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION), contentPadding = PaddingValues(horizontal = 4.dp)) {
             Text(stringResource(R.string.controle_annuler), color = couleurNeutre())
         }
-        Button(onClick = { agir { demanderTerminer() } }, enabled = true, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION)) {
+        Button(onClick = { agir { demanderTerminer() } }, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION), contentPadding = PaddingValues(horizontal = 4.dp)) {
             Text(stringResource(R.string.controle_terminer))
         }
     }

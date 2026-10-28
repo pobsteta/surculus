@@ -41,8 +41,15 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
 * GNSS : récepteur RTK u-blox ZED-F9P en Bluetooth (SPP), corrections NTRIP Centipède
   quand le réseau passe ; repli sur le GNSS du téléphone, précision affichée et
   enregistrée. ([ADR 0003](adr/0003-gnss-et-reperes.md))
-* Pointage d'un plant sans RTK fixe : distance et azimut depuis le piquet. **Matériel de
-  pointage à nommer par Pascal** (boussole de visée, télémètre, ruban).
+* Pointage d'un plant sans RTK fixe : **distance horizontale tapée** (ruban ou télémètre, au
+  choix de l'agent) et **azimut lu par la boussole du téléphone** (capteur magnétique, nord
+  magnétique), depuis le piquet ; décision de Pascal du 2026-10-27, amendement du 2026-10-28
+  (mission 012-B2). L'écran montre la précision du capteur, demande l'étalonnage quand elle est
+  faible (« dessinez un 8 ») et prévient quand le champ magnétique est perturbé, sans bloquer.
+  Un azimut tapé au clavier reste possible **en secours**, dans l'unité choisie à côté du champ
+  (degrés ou grades, mémorisée par tournée). La source de l'azimut (`boussole_telephone` ou
+  `saisie`) est enregistrée dans chaque pointage. **À confirmer par un essai en forêt contre une
+  boussole de visée** (§ 10, question 1).
 * **Affichage** (amendement du brief, 2026-10-22) : style commun avec Marculus et Groma,
   tiré de la bibliothèque `terrain` ([ADR 0008](adr/0008-bibliotheques-communes.md),
   acceptée le 2026-10-23) ; **choix du thème Système / Clair / Sombre** dans
@@ -79,7 +86,7 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
 |---|---|
 | Points du GeoPackage | Lambert-93, ordre (x = E, y = N), mètres ; **EPSG:2154** (contrat sommieR 0.31.1) tant que sommieR n'est pas passé à **EPSG:9794** (RGF93 v2b / Lambert-93), cible de toute la tournée (ADR 0003) |
 | Position GNSS brute | référentiel **de la source** : **RGF93** (ETRS89) si RTK corrigé par Centipède, dont les bases diffusent des coordonnées RGF93 ; **WGS 84** (EPSG:4326) si autonome. Ordre (latitude, longitude) en degrés décimaux. Convertie en EPSG:2154 avant écriture ; la source et le référentiel sont enregistrés |
-| Azimut saisi | lu à la boussole, donc **magnétique** ; unité de la boussole **déclarée** (degrés ou grades), convertie en degrés |
+| Azimut saisi | lu à la boussole du téléphone (degrés) ou tapé au clavier en secours, dans l'unité choisie (degrés ou grades) ; donc **magnétique** ; converti en degrés ; la déclinaison est ajoutée **une seule fois**, par la session de contrôle (jamais par le capteur ni par la boussole du téléphone) |
 | Azimut géographique | azimut magnétique **+ déclinaison** au point et à la date, par un modèle géomagnétique embarqué (WMM2025, valable jusqu'à fin 2029, puis son successeur, ou IGRF) ; déclinaison enregistrée |
 | Azimut dans le quadrillage | azimut géographique **− convergence des méridiens** au point, calculée par la projection Lambert-93 (environ −5° à Brest, +3° à Strasbourg) ; c'est cet azimut qui place le plant en EPSG:2154 ; convergence enregistrée |
 | Numérotation des plants | par l'azimut **géographique** depuis le piquet, sens horaire, [0, 360[ |
@@ -517,7 +524,8 @@ jamais dans la base de sommieR.
 
 ## 10. Questions ouvertes
 
-1. **Matériel de pointage** des plants sans RTK fixe (Pascal).
+1. **Matériel de pointage** des plants sans RTK fixe (Pascal). *Tranchée le 2026-10-27 : boussole du
+   téléphone, distance tapée, clavier en secours ; essai en forêt contre une boussole de visée à faire.*
 2. **Plantation d'essai** pour l'automne 2026 (Pascal) et **successeur** (Pascal).
 3. **Coût** : surfaces plantées par an, prix d'un regarni, temps de ressaisie (Pascal).
 4. **Plantations à constater** : sommieR met-il dans la tournée leur contour, leur nombre

@@ -123,6 +123,17 @@ object DepotTournees {
         })
     }
 
+    /** Réglages du contrôle (unité de l'azimut tapé par tournée, permission de stockage déjà demandée), sur le téléphone seulement. */
+    fun reglagesControle(ctx: Context): io.github.pobsteta.surculus.controle.ReglagesControle {
+        val prefs = ctx.applicationContext.getSharedPreferences("controle", Context.MODE_PRIVATE)
+        return io.github.pobsteta.surculus.controle.ReglagesControle(object : MagasinAffichage {
+            override fun lireBooleen(cle: String, parDefaut: Boolean) = prefs.getBoolean(cle, parDefaut)
+            override fun ecrireBooleen(cle: String, valeur: Boolean) { prefs.edit().putBoolean(cle, valeur).apply() }
+            override fun lireTexte(cle: String) = prefs.getString(cle, null)
+            override fun ecrireTexte(cle: String, valeur: String) { prefs.edit().putString(cle, valeur).apply() }
+        })
+    }
+
     fun ligne(dossier: File): LigneTournee {
         val gpkg = File(dossier, ImportTournee.NOM_GPKG)
         return try {
