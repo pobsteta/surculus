@@ -25,6 +25,29 @@ d'un téléphone fait en moyenne 6,1 m d'erreur horizontale, CEP95 13,4 m, jusqu
 pour un modèle (Purfürst 2022, tableau 4). Le repli téléphone ne tient donc pas seul la
 règle des 15 m.
 
+**Correction du 2026-10-28** (de la phrase « Erreur corrigée » ci-dessus, qui reste telle quelle ; brief de
+Ramulus du 2026-10-28, `~/dev/briefs/vers-surculus/2026-10-28-ramulus-citation-purfurst.md`, décision G2 de Ramulus
+prise par Pascal). Les chiffres « 6,1 m en moyenne, CEP95 13,4 m » sont ceux de la ligne « All » du tableau 4 de
+Purfürst 2022 (x̄ 6,14 m, CEP95 13,38 m, n = 131 338), qui inclut le récepteur géodésique de référence Geo 7X
+(n = 12 096) : ils ne décrivent pas les seuls téléphones. Pour les téléphones seuls (10 appareils, n = 119 242) :
+moyenne 6,50 m, pondérée ou non ; CEP95 13,38 m en multifréquence (x̄ 5,62 m) et 13,64 m en monofréquence
+(x̄ 7,07 m) ; pire téléphone, le Xcover 4, CEP95 41,99 m (x̄ 10,44 m), peut-être porté par des valeurs aberrantes
+(CEP99,7 47,25 m, écart-type 10,19 m). Le « 42 m » d'origine tient donc, pour un modèle de téléphone.
+**Source relue par l'acquéreur de Surculus le 2026-10-28** (PMC HTML et Europe PMC XML, lignes de données
+concordantes), après le calcul de Ramulus (`docs/referentiels/gnss-telephone.yaml` de son dépôt, écart E1).
+Le Mi 8 est à 7,20 m (DRMS) dans le tableau, cohérent ; le 7,22 m est une coquille de la Discussion (c'est le DRMS
+du P40), présente aussi dans le XML d'Europe PMC.
+
+**Motif corrigé, conclusion gardée** (décisions de Pascal du 2026-10-28 : « Garder, motif corrigé », puis « Corriger, puis fusionner » pour la formulation) : le repli
+téléphone ne tient pas seul la règle des 15 m. Par groupe, 95 % des positions tombent sous 13,4 à 13,6 m, ce qui laisse
+1,4 à 1,6 m sous 15 m ; mais pris un par un au CEP95, trois téléphones dépassent 15 m (Mi 8 Pro 16,34 m, A7 15,80 m,
+S5 16,72 m), et un seul modèle monte à 42 m, le Xcover 4 (CEP95 41,99 m).
+
+**Seuils** : aucun seuil de Surculus ne dépend de ces chiffres (recherche dans la spec, les ADR, `core/` et `app/`).
+La règle des 15 m vient de l'import 0.31.1 de sommieR (`R/travaux_qfield.R` l. 303) ; `Controle.DISTANCE_MAX_M` = 15,0
+la reprend. Examinés et écartés : les 30 m et 40 m du guidage (arrivée et réarmement), les classes de fix à 0,05, 0,5 et
+3 m, le 0,5 m de l'essai terrain. Seul le motif de la conclusion ci-dessus s'appuie sur Purfürst.
+
 Ce qui est vérifié : az_grille = az_mag + D − γ, avec γ = n·(λ − 3°), n = 0,7256 ; γ
 vaut −5,43° à Brest et +3,45° à Strasbourg ; c'est la formule de `groma-core`
 (`Azimut.geographiqueVersGrille`, `Projections.kt`, algorithmes IGN ALG0003/ALG0004),
