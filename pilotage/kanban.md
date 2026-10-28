@@ -65,10 +65,6 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **069** thème pris de `terrain-style` (tag v0.7.1), plus de copie (`dev`, appuyer), brief Marculus,
-  lancée au cycle 13 (2026-10-28).
-- **070** citation de Purfürst corrigée dans l'ADR 0003 (`archiviste`), brief Ramulus, lancée au
-  cycle 13 (2026-10-28).
 - **012-D2** le micro, tenir pour parler (`afficheur`, appuyer), lancée au cycle 13 (2026-10-28) ;
   fiche `pilotage/missions/012d2-micro.md`.
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
@@ -128,6 +124,10 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **069** thème pris de `terrain-style` (bb2b519, tag v0.7.1), plus de copie (PR #122, 07aba21) ;
+  **070** citation de Purfürst corrigée et vérifiée dans l'ADR 0003 (PR #120, dcaa1da) ; briefs
+  Marculus et Ramulus traités (cycle 13).
 
 - **067** bande du mode poche toujours visible, plan couché sous les boutons (PR #118, 8a7d379,
   cycle 13) ; captures à faire sur la release.
