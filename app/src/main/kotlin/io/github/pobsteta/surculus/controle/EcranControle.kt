@@ -263,7 +263,7 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
     // Le geste « retour » depuis Pointer ou Terminer revient au plant ; depuis le plant, il quitte l'écran (plan § 3).
     BackHandler(enabled = e.vue == VueControle.TERMINER || e.vue == VueControle.POINTER) { agir { reprendre() } }
     // Enregistré après le précédent, donc prioritaire : en poche, le retour système est ignoré (une poche appuie sur « retour »).
-    BackHandler(enabled = poche) { }
+    BackHandler(enabled = !ModePoche.retourPris(poche)) { }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (poche) BandePoche()

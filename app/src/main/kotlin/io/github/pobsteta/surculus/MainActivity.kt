@@ -31,7 +31,6 @@ import io.github.pobsteta.surculus.carte.EcranGuidage
 import io.github.pobsteta.surculus.controle.EcranControle
 import io.github.pobsteta.surculus.controle.ModePoche
 import io.github.pobsteta.surculus.controle.PocheApp
-import io.github.pobsteta.surculus.controle.RaisonSortie
 import io.github.pobsteta.surculus.core.session.Touche
 import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.essai.EcranEssaiGnss
@@ -55,8 +54,6 @@ class MainActivity : ComponentActivity() {
     private val horloge = Handler(Looper.getMainLooper())
     private val tic = Runnable { PocheApp.pont.avancer(SystemClock.uptimeMillis()); programmer() }
     private var desabonner: (() -> Unit)? = null
-    /** Touches de volume prises à l'appui : leur relâchement l'est aussi, même si le mode s'est levé entre-temps. */
-    private val touchesPrises = HashSet<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -187,8 +184,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         val touche = toucheDeVolume(keyCode)
-        if (touche != null && PocheApp.mode.actif) {
-            if (event.repeatCount == 0 && PocheApp.pont.touche(touche, appuyee = true, instantMs = event.eventTime)) touchesPrises += keyCode
+        // Les répétitions d'une touche tenue restent prises jusqu'au relâchement, même après la sortie à 3 s.
+        if (touche != null && PocheApp.pont.touche(touche, appuyee = true, instantMs = event.eventTime, repetition = event.repeatCount > 0)) {
             programmer()
             return true
         }
@@ -197,11 +194,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         val touche = toucheDeVolume(keyCode)
-        if (touche != null && keyCode in touchesPrises) {
-            touchesPrises -= keyCode
-            PocheApp.pont.touche(touche, appuyee = false, instantMs = event.eventTime)
+        // Le relâchement est pris aussi, pour que le système n'affiche pas le volume.
+        if (touche != null && PocheApp.pont.touche(touche, appuyee = false, instantMs = event.eventTime)) {
             programmer()
-            return true // le relâchement est pris aussi, pour que le système n'affiche pas le volume
+            return true
         }
         return super.onKeyUp(keyCode, event)
     }
@@ -209,13 +205,12 @@ class MainActivity : ComponentActivity() {
     /** Appel, verrouillage, autre application : un relâchement peut se perdre, le classeur repart propre. */
     override fun onPause() {
         PocheApp.pont.remettreAZero()
-        touchesPrises.clear()
         super.onPause()
     }
 
     /** L'application quitte le premier plan : le mode poche se lève par prudence (agent « enfermé »). */
     override fun onStop() {
-        PocheApp.mode.sortir(RaisonSortie.ARRIERE_PLAN)
+        PocheApp.mode.surArret(isChangingConfigurations)
         super.onStop()
     }
 

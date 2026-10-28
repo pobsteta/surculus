@@ -67,6 +67,11 @@ class ModePoche {
         if (actif && instantMs - derniereActiviteMs >= INACTIVITE_MS) sortir(RaisonSortie.INACTIVITE)
     }
 
+    /** L'Activity s'arrête : une rotation ([changementDeConfiguration]) ne lève rien, un vrai passage en arrière-plan lève le mode. */
+    fun surArret(changementDeConfiguration: Boolean) {
+        if (!changementDeConfiguration) sortir(RaisonSortie.ARRIERE_PLAN)
+    }
+
     /** Instant où l'inactivité lèvera le mode ; `null` hors du mode. */
     fun echeanceInactiviteMs(): Long? = if (actif) derniereActiviteMs + INACTIVITE_MS else null
 
@@ -93,11 +98,24 @@ class PontPoche(private val mode: ModePoche, private val classeur: ClasseurGeste
         mode.abonner { actif, _ -> if (!actif) classeur.remettreAZero() }
     }
 
-    /** Une touche de volume bouge. Rend `true` si elle est prise (mode poche), `false` si le système la garde. */
-    fun touche(touche: Touche, appuyee: Boolean, instantMs: Long): Boolean {
-        if (!mode.actif) return false
-        val sorties = if (appuyee) classeur.appuye(touche, instantMs) else classeur.relache(touche, instantMs)
-        traiter(sorties, instantMs)
+    /** Touches prises à l'appui : leurs répétitions et leur relâchement le sont aussi, même si le mode s'est levé entre-temps. */
+    private val prises = HashSet<Touche>()
+
+    /**
+     * Une touche de volume bouge. Rend `true` si elle est prise (mode poche, ou touche déjà prise et pas encore relâchée),
+     * `false` si le système la garde. [repetition] : appui répété d'une touche tenue (Android répète le `onKeyDown`).
+     */
+    fun touche(touche: Touche, appuyee: Boolean, instantMs: Long, repetition: Boolean = false): Boolean {
+        if (repetition) return touche in prises
+        if (appuyee) {
+            if (!mode.actif) return false
+            prises += touche
+            traiter(classeur.appuye(touche, instantMs), instantMs)
+            return true
+        }
+        if (touche !in prises) return false
+        prises -= touche
+        traiter(classeur.relache(touche, instantMs), instantMs)
         return true
     }
 
@@ -115,7 +133,7 @@ class PontPoche(private val mode: ModePoche, private val classeur: ClasseurGeste
     }
 
     /** L'application perd le focus : un relâchement perdu ne doit rien laisser en attente. */
-    fun remettreAZero() = classeur.remettreAZero()
+    fun remettreAZero() { classeur.remettreAZero(); prises.clear() }
 
     private fun traiter(sorties: List<SortieClasseur>, instantMs: Long) {
         for (s in sorties) {

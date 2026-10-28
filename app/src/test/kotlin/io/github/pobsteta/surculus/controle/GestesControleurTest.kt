@@ -4,6 +4,7 @@ import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.session.Geste
 import io.github.pobsteta.surculus.core.session.PlacettesControlees
+import io.github.pobsteta.surculus.core.session.SortieClasseur
 import io.github.pobsteta.surculus.core.session.Touche
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -115,10 +116,17 @@ class GestesControleurTest {
     @Test fun `un fix en Somalie n'ouvre aucune session - les touches de volume n'ont rien a ecrire`() = with(BancControle()) {
         val somalie = Position(latitude = 2.0469, longitude = 45.3182)
         assertIs<EtatArrivee.Refus>(ouvrir(positions = listOf(somalie)))
+        val controleur = (ouvrir(positions = listOf(somalie)) as? EtatArrivee.Ouverte)?.controleur
         val mode = ModePoche().apply { entrer(0) }
-        val pont = PontPoche(mode) // aucune écoute : pas de contrôleur, donc personne pour appliquer le geste
+        val pont = PontPoche(mode)
+        // L'écoute fait ce que fait l'écran : appliquer le geste au contrôleur, s'il y en a un.
+        pont.ecoute = { if (it is SortieClasseur.Geste) controleur?.geste(it.geste) }
         pont.touche(Touche.HAUT, true, 0)
         pont.touche(Touche.HAUT, false, 100)
+        pont.touche(Touche.BAS, true, 1_000)
+        pont.touche(Touche.BAS, false, 1_100)
+        pont.avancer(2_000)
+        assertNull(controleur, "aucune session ouverte hors de France")
         assertEquals(0, journal.nombreDeLignes)
         assertEquals(0, sauvegarde.saisies)
     }

@@ -108,4 +108,37 @@ class ModePocheTest {
         p.avancer(20_000)
         assertTrue(vus.isEmpty(), "$vus")
     }
+
+    // --- reprise de la relecture de la PR #113
+
+    @Test fun `une rotation ne leve pas le mode poche, un vrai passage en arriere-plan le leve`() {
+        val m = ModePoche().apply { entrer(0) }
+        m.surArret(changementDeConfiguration = true)
+        assertTrue(m.actif, "tourner le telephone en mode poche : le mode reste actif")
+        m.surArret(changementDeConfiguration = false)
+        assertFalse(m.actif)
+    }
+
+    private fun source(chemin: String) = java.io.File("src/main/kotlin/io/github/pobsteta/surculus/$chemin").readText()
+
+    @Test fun `l'Activity passe par la garde de rotation et l'ecran par retourPris`() {
+        val activite = source("MainActivity.kt")
+        assertTrue("PocheApp.mode.surArret(isChangingConfigurations)" in activite)
+        assertFalse("sortir(RaisonSortie.ARRIERE_PLAN)" in activite, "pas de sortie sans garde dans l'Activity")
+        assertTrue("BackHandler(enabled = !ModePoche.retourPris(poche))" in source("controle/EcranControle.kt"))
+    }
+
+    @Test fun `les repetitions d'une touche prise, apres la sortie a 3 s, ne repartent pas au systeme`() {
+        val (p, m, _) = pont()
+        m.entrer(0)
+        assertTrue(p.touche(Touche.HAUT, true, 0))
+        p.avancer(3_000)
+        assertFalse(m.actif)
+        assertTrue(p.touche(Touche.HAUT, true, 3_100, repetition = true), "repetition prise")
+        assertTrue(p.touche(Touche.HAUT, true, 3_200, repetition = true))
+        assertTrue(p.touche(Touche.HAUT, false, 3_300), "le relachement est pris aussi")
+        assertFalse(p.touche(Touche.HAUT, true, 4_000), "hors du mode, une nouvelle touche est au systeme")
+        assertFalse(p.touche(Touche.HAUT, true, 4_100, repetition = true))
+        assertFalse(p.touche(Touche.HAUT, false, 4_200))
+    }
 }
