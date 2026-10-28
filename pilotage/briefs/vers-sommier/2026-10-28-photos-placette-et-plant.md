@@ -21,16 +21,19 @@ blocage ».
    (`controler_photos_constat`) et `photo(k$uuid)` les dépose avec le contrôle. À vérifier
    par la session `sommieR`.
 2. **Couche ajoutée** `photos_terrain` (ignorée par l'import 0.31.1, comme les autres couches
-   ajoutées, ADR 0007) : sujet (`placette` ou `plant`), `plant_uuid`, azimut de visée et sa
-   référence, précision, source GNSS, âge du fix, empreinte SHA-256, position du fix.
+   ajoutées, ADR 0007) : ses champs sont ceux de `docs/spec.md` § 5 (sujet, placette, plant,
+   azimut de visée magnétique, déclinaison, modèle, précision, source et référentiel du GNSS,
+   âge du fix, position simulée, empreinte SHA-256, position du fix).
 3. **Fichiers** : JPEG seulement, `DCIM/<photo_uuid>.jpg`, 2048 px de côté long. **EXIF** :
    position dans le repère réel de la source (`GPSMapDatum` « ETRS89 » en RTK Centipède,
    « WGS-84 » en GNSS autonome), heure UTC du fix, `GPSHPositioningError`, azimut de visée
    magnétique (`GPSImgDirectionRef = M`), `DateTimeOriginal` à l'heure de Paris avec
-   `OffsetTimeOriginal`. Aucune position quand le fix a plus de 5 s ou est simulé.
+   `OffsetTimeOriginal`. Aucune position quand le fix a plus de 5 s, est simulé ou tombe hors de France.
 4. **Garanties de l'export** : jamais de ligne de `photos` sans `constat_uuid`, ni de photo d'un
    contrôle non exporté ou annulé (lu dans `R/qfield.R` l. 629-647 : une ligne orpheline fait
-   refuser toute la tournée, une photo d'un contrôle absent est perdue sans message).
+   refuser toute la tournée, une photo d'un contrôle absent est perdue sans message). Les lignes de
+   `photos` versées par sommieR à l'aller restent telles quelles ; les photos reprises de la
+   tournée précédente ne sont jamais réexportées.
 
 ## Ce qui est demandé
 

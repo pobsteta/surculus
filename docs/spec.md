@@ -228,10 +228,11 @@ point à Brest et à Strasbourg.
     `photos` versées par sommieR à l'aller restent telles quelles dans l'export.
   * **Fichier** : JPEG seulement, **réduit à la prise** à 2048 px de côté long, qualité 85
     (sommieR ne modifie jamais un fichier) ; nom sans nom d'agent ni de propriétaire
-    (ADR 0005) : `DCIM/<photo_uuid>.jpg`, unique à la fusion de plusieurs opérateurs.
+    (ADR 0005) : sur l'appareil `Pictures/Surculus/<code-tournée>/<photo_uuid>.jpg` (ADR 0005),
+    dans l'export `DCIM/<photo_uuid>.jpg`, unique à la fusion de plusieurs opérateurs.
   * **EXIF** (repères ci-dessous) : position et heure UTC du **fix en cours** de Surculus
     (récepteur RTK s'il est branché, sinon GNSS du téléphone) seulement si ce fix a **au plus
-    5 s** et n'est pas simulé (règle de `visite_le`, § 5) ; sinon la photo est prise sans
+    5 s** (règle de `visite_le`, § 5) et n'est pas une position simulée (ADR 0003, ligne « Fix ») ; sinon la photo est prise sans
     position et l'écran le dit. `DateTimeOriginal` à l'heure de Paris avec
     `OffsetTimeOriginal` (sommieR lit `DateTimeOriginal`) ; jamais `Artist` ni `Copyright`.
   * **Azimut de visée** : cap brut de la boussole du téléphone, **magnétique**, comme
@@ -240,9 +241,11 @@ point à Brest et à Strasbourg.
     plat, ne vaut pas ici) ; loin de la canne et du récepteur RTK.
   * **Ordre d'écriture** : capture, réduction, EXIF, empreinte SHA-256, publication dans le
     stockage partagé ; l'empreinte entre au journal (ligne `photo`, § 5). Une photo annulée
-    n'est jamais exportée ; son fichier reste sur l'appareil.
+    n'est jamais exportée.
   * **Annuler** une photo **efface son fichier** de l'appareil ; le journal garde l'empreinte et
-    l'annulation. Annuler cette annulation ne rend pas la photo : elle est signalée comme perdue.
+    l'annulation. **Exception** à la règle « annuler une annulation refait » (§ 5, journal),
+    conséquence de cette décision : annuler l'annulation d'une photo ne rend pas le fichier, la
+    photo est signalée comme perdue.
   * **Hors du mode poche** : prendre une photo demande l'écran. Sur l'écran de prise de vue,
     **n'importe quelle touche de volume déclenche** (gants), le bouton reste à l'écran.
   * **Vie privée** : le dossier des photos de Surculus porte un fichier `.nomedia`, pour
@@ -343,8 +346,8 @@ Règles du brief (arbitrages de Pascal ; sources dans `docs/referentiels/seuils-
   `photo` et relit la v1 ; les photos ne sont pas dans le `.sursync`, elles sortent par
   l'« archive du jour » (ADR 0005). Après une restauration, une photo absente est retirée de
   l'export et signalée, sans bloquer. Le document `docs/formats/sursync-v2.md`, son schéma et ses
-  fixtures sont à écrire par la mission de code ; le critère F3 de la CI passe alors à sept
-  couches ajoutées (ADR 0007).
+  fixtures sont à écrire par la mission de code ; le critère F3 de la CI compte sept couches
+  ajoutées dès que l'export écrit `photos_terrain` (ADR 0007, même règle).
 * Export `<tournée>.zip` : `travaux.gpkg` complété, `DCIM/`. La tournée passe *rendue*
   et reste consultable. ([format d'échange](formats/sursync-v1.md) ; la fusion relève de l'ADR 0006, réservée et non écrite, voir [l'index](adr/README.md))
 
@@ -374,7 +377,7 @@ rien.
 | `constats_reprise` | POLYGON (surface constatée) | `uuid`, `methode` (plein, cemagref, grappes), `pas_lignes`, `departs` (les deux départs tirés), `essence`, `nb_plants_chantier`, `nb_sains`, `nb_atteints`, `nb_morts`, `nb_absents`, `taux_brut_pct`, `ic_bas_pct`, `ic_haut_pct`, `seuil_pct`, `seuil_source`, `alerte` (bool), `visite_le`, `operateur` |
 | `vides` | POLYGON | `uuid`, `constat_uuid` ou `placette_uuid`, `surface_are`, `origine` (trace, propose), `visite_le`, `operateur` |
 | `projet` | — | `nom`, `foret`, `operateur`, `prepare_le`, `version_sommier`, `version_surculus` |
-| `photos_terrain` | POINT, dans le repère de la tournée (EPSG:2154), converti comme les autres points (§ 3) (position du fix, s'il a au plus 5 s, n'est pas simulé et tombe en France ; sinon pas de point) | `photo_uuid` (= `photos.uuid`), `sujet` (`placette`, `plant`), `placette_uuid`, `plant_uuid` (sujet `plant`), `azimut_visee_mag_deg`, `declinaison_deg`, `modele_geomagnetique`, `precision_m`, `source_gnss`, `referentiel_source` (`RGF93`, `WGS84`, comme `positions_controles`), `age_fix_ms`, `simulee` (bool), `sha256` (amendé le 2026-10-28) |
+| `photos_terrain` | POINT, dans le repère de la tournée lu dans `gpkg_spatial_ref_sys` (EPSG:2154 aujourd'hui, ADR 0007), converti comme les autres points (§ 3) (position du fix, s'il a au plus 5 s, n'est pas simulé et tombe en France ; sinon pas de point) | `photo_uuid` (= `photos.uuid`), `sujet` (`placette`, `plant`), `placette_uuid`, `plant_uuid` (sujet `plant`), `azimut_visee_mag_deg`, `declinaison_deg`, `modele_geomagnetique`, `precision_m`, `source_gnss`, `referentiel_source` (`RGF93`, `WGS84`, comme `positions_controles`), `age_fix_ms`, `simulee` (bool), `sha256` (amendé le 2026-10-28) |
 
 En aller, la tournée 0.31.1 ne porte ni le contour des plantations à constater, ni leur
 nombre de plants, leurs lignes, leur date de réception ou leurs cloisonnements
@@ -598,4 +601,6 @@ jamais dans la base de sommieR.
 10. **Photos** (2026-10-28) : relire la présentation GÉOPOS de l'IGN (écart ETRS89 / ITRF) et
    les p. 1 et 9 de PNW-GTR-526 ; chercher un protocole français publié de photo de placette
    (DSF, INRAE, ONF) ; mesurer sur appareil l'axe de la boussole tenu vertical, le masquage de
-   la position par MediaStore (`ACCESS_MEDIA_LOCATION`) et le poids réel des photos.
+   la position par MediaStore (`ACCESS_MEDIA_LOCATION`), le poids réel des photos, et le
+   `.nomedia` face au stockage MediaStore de l'ADR 0005 (création sous le stockage limité,
+   relecture après réinstallation, effacement d'une photo annulée).
