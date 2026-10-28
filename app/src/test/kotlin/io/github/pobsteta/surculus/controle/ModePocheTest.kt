@@ -93,7 +93,7 @@ class ModePocheTest {
     @Test fun `le pont donne la prochaine echeance, classeur ou inactivite`() {
         val (p, m, _) = pont()
         m.entrer(0)
-        assertEquals(15 * 60_000L, p.echeance())
+        assertEquals(5 * 60_000L, p.echeance(), "le rappel vocal (012-C2) vient avant la sortie")
         p.touche(Touche.BAS, true, 10)
         p.touche(Touche.BAS, false, 60)
         assertEquals(410L, p.echeance())

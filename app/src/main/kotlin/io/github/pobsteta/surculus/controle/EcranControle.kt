@@ -235,24 +235,46 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
     val activite = LocalContext.current as? android.app.Activity
     var poche by remember { mutableStateOf(mode.actif) }
     val verrou = remember { Mutex() }
+    // Voix et vibration (012-C2) : sans voix française, l'annonce s'écrit dans la bande ; le bandeau le dit à l'entrée.
+    val sorties = PocheApp.sorties
+    var annonceEcrite by remember { mutableStateOf<AnnoncePoche?>(null) }
+    var sansVoix by remember { mutableStateOf(false) }
     DisposableEffect(controleur) {
         poche = mode.actif
         val desabonner = mode.abonner { actif, raison ->
             poche = actif
+            if (!actif) annonceEcrite = null
+            if (!actif && raison != RaisonSortie.VUE_QUITTEE) sorties?.annoncer(AnnoncesPoche.sortie())
             val annonce = raison?.let { TextesControle.sortiePoche(it) }
             if (!actif && annonce != null) scope.launch { verrou.withLock { ecran = withContext(Dispatchers.IO) { controleur.annoncer(annonce) } } }
         }
         // Les gestes de volume arrivent dans l'ordre et s'appliquent un par un.
+        sorties?.surTexte = { annonceEcrite = it }
+        PocheApp.pont.surRappel = { sorties?.annoncer(AnnoncesPoche.rappel()) }
         PocheApp.pont.ecoute = { sortie ->
+            sorties?.signal(sortie)
             when (sortie) {
-                is SortieClasseur.Geste -> scope.launch { verrou.withLock { ecran = withContext(Dispatchers.IO) { controleur.geste(sortie.geste) } } }
-                SortieClasseur.DeuxTouches -> scope.launch { verrou.withLock { ecran = withContext(Dispatchers.IO) { controleur.deuxTouches() } } }
+                is SortieClasseur.Geste -> scope.launch {
+                    verrou.withLock {
+                        var annonce: AnnoncePoche? = null
+                        ecran = withContext(Dispatchers.IO) { controleur.geste(sortie.geste).also { annonce = controleur.derniereAnnonce } }
+                        annonce?.let { sorties?.annoncer(it) }
+                    }
+                }
+                SortieClasseur.DeuxTouches -> scope.launch {
+                    verrou.withLock {
+                        ecran = withContext(Dispatchers.IO) { controleur.deuxTouches() }
+                        controleur.derniereAnnonce?.let { sorties?.annoncer(it) }
+                    }
+                }
                 SortieClasseur.Tic, SortieClasseur.Bourdon -> {}
             }
         }
         onDispose {
             desabonner()
             PocheApp.pont.ecoute = null
+            PocheApp.pont.surRappel = null
+            sorties?.surTexte = null
             if (activite?.isChangingConfigurations != true) mode.sortir(RaisonSortie.VUE_QUITTEE)
         }
     }
@@ -268,13 +290,17 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
     BackHandler(enabled = !ModePoche.retourPris(poche)) { }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (poche) BandePoche()
+        if (poche) BandePoche(ligneVoix = if (sansVoix) AnnoncesPoche.BANDEAU_SANS_VOIX else null, annonce = annonceEcrite)
         Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (e.plant.alerteTerminee) {
             Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
         }
         when (e.vue) {
-            VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, onPoche = { mode.entrer(SystemClock.uptimeMillis()) })
+            VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, onPoche = {
+                sansVoix = sorties?.sansVoixFrancaise ?: true
+                mode.entrer(SystemClock.uptimeMillis())
+                sorties?.annoncer(AnnoncesPoche.entree(e.plant.numero))
+            })
             VueControle.TERMINER -> VueTerminer(e, ::agir)
             VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
             VueControle.POINTER -> VuePointerEcran(e, tournee, reglages, ::agir)
@@ -373,7 +399,7 @@ private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> Ecra
  * [ligneVoix] garde la place de la ligne « Pas de voix française : regardez l'écran » de la 012-C2.
  */
 @Composable
-private fun BandePoche(ligneVoix: String? = null) {
+private fun BandePoche(ligneVoix: String? = null, annonce: AnnoncePoche? = null) {
     Column(
         Modifier.fillMaxWidth().border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -381,6 +407,8 @@ private fun BandePoche(ligneVoix: String? = null) {
         Text(stringResource(R.string.controle_poche_bande), style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
         Text(stringResource(R.string.controle_poche_aide), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
         ligneVoix?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre()) }
+        // Sans voix française, l'annonce s'écrit ici (en grand : on la lit d'un coup d'œil) ; un refus en couleur d'erreur.
+        annonce?.let { Text(it.texte, style = MaterialTheme.typography.titleLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
     }
 }
 

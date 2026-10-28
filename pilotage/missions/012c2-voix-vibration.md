@@ -14,7 +14,10 @@ mode poche (synthèse vocale `TextToSpeech` en français du numéro et de l'éta
 motif par événement), pour que le forestier, téléphone en poche, sache sans regarder quel plant il
 vient de dire et dans quel état.
 
-**Redite par l'agent :** _(à remplir par l'agent avant d'agir)_
+**Redite par l'agent :** Brancher sur le mode poche de la C1 une annonce vocale française
+(`TextToSpeech`, textes et motifs du plan § 7 et § 8) et une vibration par événement, avec repli écrit dans la bande et bandeau
+si la voix française manque, pour que le forestier, téléphone en poche, sache sans regarder quel plant il vient de dire et dans
+quel état.
 
 ## Décisions de Pascal à respecter (fiche 012-C, 2026-10-28)
 

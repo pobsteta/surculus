@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Dictée hors ligne (Vosk) : le micro, demandé à l'exécution -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Mode poche (012-C2) : un motif de vibration par geste ; permission normale, sans fenêtre de demande -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Sauvegarde .sursync sous Documents/Surculus/ : MediaStore dès l'API 29 (sans permission), dossier public avant -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
