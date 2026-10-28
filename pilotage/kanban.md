@@ -73,12 +73,10 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **065** le jour civil du contrôle pris sur l'heure du fix GNSS (`dev`, appuyer), lancée le
-  2026-10-28 depuis f955af6. Fiche : `pilotage/missions/065-jour-civil-heure-gnss.md` (sur sa
+- **012-C1** saisir au volume, en mode poche (`afficheur`, appuyer), PR #113, plan tranché par
+  Pascal le 2026-10-28 (neuf décisions dans la fiche) ; relecture en cours. Puis **012-C2**
+  (voix, vibration) après la fusion. Fiche : `pilotage/missions/012c-volume-poche.md` (sur sa
   branche).
-- **012-C** saisir le contrôle sans regarder l'écran (`afficheur`, appuyer), **plan d'abord,
-  sans code**, lancée le 2026-10-28 ; Pascal tranche le plan à son retour. Fiche :
-  `pilotage/missions/012c-volume-poche.md` (sur sa branche).
 - **Captures de la 012-B2 et de la 064** sur la release qui porte f955af6 (orchestrateur),
   dès que le téléphone de Pascal est branché : carte couchée (six boutons en 3 + 3, bandeau,
   légende, ligne de la placette) et debout ; vue Pointer, plan et rangée d'essences du
@@ -105,7 +103,7 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Suite décidée de la 012 (2026-10-27) :** après la 012-C (au Validé, en plan), la 012-D.
+**Suite décidée de la 012 (2026-10-27) :** après la 012-C (C1 au Validé, puis C2), la 012-D.
 
 - **012-D** dictée branchée sur l'écran du contrôle.
 
@@ -143,7 +141,8 @@ _En attente sous le plafond humain (3 PR en revue)._
   d'état sans plaque blanche, spec § 3 et ADR 0008 amendées (PR #107) ; **012-B1** écran du
   contrôle (deux portes, arrivée, états, causes, Terminer) (PR #108) ; **064** carte en
   paysage (PR #110) ; **012-B2** pointage à la boussole du téléphone, plan, regarnis, spec
-  § 1 et ADR 0003 amendées (PR #109) — fusionnées sur l'autorisation de Pascal ; releases
+  § 1 et ADR 0003 amendées (PR #109) ; **065** jour civil sur l'heure du fix GNSS (PR #112),
+  brief vers Groma (pobsteta/groma#68) — fusionnées sur l'autorisation de Pascal ; releases
   jusqu'à v0.7.68.
 
 - Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus (PR #81) ; **040** accueil sur
