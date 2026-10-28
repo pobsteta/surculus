@@ -22,8 +22,7 @@ _Idées, à trier au prochain `/mission`._
 - **Dettes de la 009** : essai de restauration sur deux téléphones après la 012 (la
   permission `WRITE_EXTERNAL_STORAGE` est demandée par la 012-B1, la sauvegarde est
   branchée sur les saisies par la 012-A).
-- **Pascal (spec § 5)** : l'empreinte des photos au journal exige un type de ligne qui
-  n'existe pas ; à trancher avant la mission photo.
+
 - **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées
   (export, 032) ; l'essai sur téléphone est sur la carte « terrain avant la 012 ».
 - **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
@@ -118,6 +117,11 @@ fiche 012-C (décisions 2, 4, 6, 8), puis la 012-D.
   a échappé aux tests qui lisent les sources.
 - **Mineurs** : KDoc périmés de `Navigation.kt` l. 36 et 61 ; test « plantation plus âgée
   que l'itinéraire » sans date ; release v0.7.58 restée en brouillon après la #99.
+- **Photos de placette et de plant** (décision de Pascal du 2026-10-28 : « Placette + plant au
+  besoin ») : une photo de la placette prise du piquet, nord en haut, et une photo facultative
+  d'un plant difficile à retrouver. Avant la mission : amendement de la spec (§ 4.3, § 5, couche
+  `photos` aujourd'hui rattachée au seul `constat_uuid`), type de ligne du journal pour
+  l'empreinte des photos (§ 5), et brief vers sommieR pour l'import (porte n° 1).
 - **Plants anciens dessinés** sur le plan de la placette (décision 8 de la 012-B), mission
   à part.
 - **Tranche 3** : règle « date incohérente » (travaux sur une plantation plus âgée que
