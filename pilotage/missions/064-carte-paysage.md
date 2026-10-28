@@ -13,7 +13,7 @@ le même défaut) à l'écran couché, pour que les six boutons (Contrôler, nav
 cible), le bandeau, la légende et la ligne de la placette restent tous visibles et touchables en
 paysage, sans bloquer l'application en portrait.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Faire passer les boutons de la carte sur deux colonnes quand la hauteur visible ne suffit pas (paysage), sans rien changer au portrait.
 
 ## Vérifié à la source
 

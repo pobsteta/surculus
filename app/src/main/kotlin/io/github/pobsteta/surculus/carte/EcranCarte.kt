@@ -18,6 +18,9 @@ import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -292,6 +295,7 @@ private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit) {
     val ctx = LocalContext.current
@@ -377,7 +381,7 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
         if (refusee) Text(stringResource(R.string.carte_permission), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
 
         // Rogne la carte à ses bords (mission 060) : osmdroid et Compose ne le font pas, la carte recouvrait le bandeau.
-        Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
+        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
             run {
                 val couchesRef = remember(ouverte) { arrayOfNulls<Couches>(1) }
                 AndroidView(
@@ -463,7 +467,16 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
                 // prochaine à faire ; inactif s'il n'y en a pas), zoom avant, zoom arrière, maison (cadrer la tournée), cible
                 // (la position GNSS si elle tombe en France, zoom 17 au moins, sinon l'emprise de la tournée : `Recentrage.cible`).
                 val cibleNaviguer = cibleNavigation(choisie, toutes, controlees, fix?.position?.let { Guidage.versLambert93(it) })
-                Column(Modifier.align(Alignment.BottomEnd).padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Mission 064 : en paysage la hauteur visible ne suffit plus à une colonne ; les boutons passent en deux colonnes
+                // (`DispositionBoutons`). En portrait, une seule colonne, comme avant.
+                val nombreBoutons = if (choisie != null) 6 else 5
+                val parColonne = DispositionBoutons.boutonsParColonne(maxHeight.value, nombreBoutons)
+                FlowColumn(
+                    Modifier.align(Alignment.BottomEnd).padding(DispositionBoutons.MARGE_DP.dp),
+                    verticalArrangement = Arrangement.spacedBy(DispositionBoutons.ECART_DP.dp),
+                    horizontalArrangement = Arrangement.spacedBy(DispositionBoutons.ECART_DP.dp),
+                    maxItemsInEachColumn = parColonne,
+                ) {
                     // Porte n° 1 du contrôle (mission 012-B1) : « Contrôler » seulement quand une placette est choisie.
                     if (choisie != null) {
                         SmallFloatingActionButton(
