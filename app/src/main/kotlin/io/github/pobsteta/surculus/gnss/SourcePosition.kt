@@ -132,6 +132,9 @@ object SourcePosition {
             vitesseMs = if (l.hasSpeed()) l.speed.toDouble() else null,
             origine = OrigineFix.TELEPHONE,
             simule = estSimulee(l),
+            // Heure des satellites (`Location.time`, GPS) et instant de la mesure sur l'horloge monotone (mission 065).
+            heureUtcMs = l.time.takeIf { it > 0L },
+            recuMonotoneMs = l.elapsedRealtimeNanos / 1_000_000L,
         )
     }
 }

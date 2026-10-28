@@ -13,7 +13,9 @@
 son heure UTC, pour que le jour civil d'un contrôle se calcule sur l'heure GNSS quand le fix a au
 plus 5 s, comme le veut la spec, et non sur l'heure du téléphone, qui peut être fausse en forêt.
 
-**Redite par l'agent :** _(à remplir par l'agent avant d'agir)_
+**Redite par l'agent :** Faire que l'écran du contrôle donne à la session le dernier fix GNSS avec son heure UTC et son instant
+monotone (téléphone : `Location.time` ; récepteur : heure de la GGA + date de la RMC), pour que le jour civil
+d'un contrôle vienne de l'heure GNSS quand le fix a au plus 5 s, et de l'heure du téléphone sinon.
 
 ## Ce qui existe
 

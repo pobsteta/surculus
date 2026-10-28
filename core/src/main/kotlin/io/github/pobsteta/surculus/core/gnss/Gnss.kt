@@ -95,6 +95,14 @@ data class FixGnss(
     val qualiteAnnoncee: QualiteFix? = null,
     /** Vrai si Android signale une position simulée (`Location.isMock()`) : détectée et enregistrée, ADR 0003. */
     val simule: Boolean = false,
+    /**
+     * Heure UTC **complète** de la mesure (ms Unix, jour compris) quand la source la donne : l'heure GNSS du téléphone, ou
+     * la GGA du récepteur complétée par la date de la RMC. Null sinon : le jour civil retombe sur l'heure du téléphone
+     * (spec § 5). Mission 065.
+     */
+    val heureUtcMs: Long? = null,
+    /** Instant (ms) où le fix a été reçu sur l'horloge monotone (`SystemClock.elapsedRealtime`) : l'âge du fix se mesure dessus. Null si inconnu. */
+    val recuMonotoneMs: Long? = null,
 )
 
 /** Pourquoi un fix est refusé par [PolitiqueFix.evaluer]. */
