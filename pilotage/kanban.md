@@ -44,11 +44,6 @@ _Idées, à trier au prochain `/mission`._
   tient-elle ? Proposition de l'orchestrateur : trancher au retour de Couchey, avant la 038.
   Marculus a aussi envoyé un brief à `terrain` pour une palette qui reste verte, et ajouté
   un choix Système / Clair / Sombre (« utile peut-être pour Surculus »).
-- **Maintenance** : le commentaire du test « ECART terrain-voix »
-  (`core/src/test/.../dictee/InstallationModeleTest.kt` l. 86) dit « brief à venir » ; le
-  faire pointer vers pobsteta/terrain#23 à la prochaine mission de code (Pascal, 2026-10-24).
-- **Maintenance** : la doc d'`ExporterScenario.kt` (l. 51) cite `tournee-sans` au lieu
-  de `tournee-depart`.
 - **Missions 010 et 014** : en attente de moyens (serveur WebDAV d'essai, appareils
   désignés).
 - **Pascal** : écrire à Centipède (version de RGF93) ; informer les employeurs des
@@ -74,9 +69,6 @@ _Idées, à trier au prochain `/mission`._
 
 - **067** bande du mode poche toujours visible, plan couché sous les boutons (`afficheur`,
   appuyer), lancée au cycle 13 (2026-10-28) ; fiche `pilotage/missions/067-bande-poche-plan-couche.md`.
-- **066** mineurs et maintenance (`dev`, appuyer), lancée au cycle 12 (2026-10-28) ; PR #117
-  relue prête (cycle 13) : question de Pascal sur le test « plantation plus âgée » et fusion.
-
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
   `couchey-demo-avec-ortho.zip`, bandeau, cinq boutons, Paramètres (thème en liste,
@@ -102,7 +94,7 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 - **012-D2** écoute branchée dans `:app` (micro, permission, anti-larsen) ; #114 et D1 fusionnées.
   Décidé (Pascal, 2026-10-28) : en poche, « tenir pour parler » sur volume bas, sans bouton ; hors
-  poche, bouton micro comme Marculus. Questions 3, 6-8 et 11 du plan à poser avant.
+  poche, bouton micro comme Marculus. Questions du plan toutes tranchées le 2026-10-28 ; part après la fusion de la 067 (même écran).
 
 **Ensuite, au signal de Pascal :**
 
@@ -115,8 +107,6 @@ _En attente sous le plafond humain (3 PR en revue)._
   illisible » si le fichier ne s'ouvre pas.
 - **Test de rendu des écrans** (Robolectric ou émulateur en CI) : le bandeau caché de la 055
   a échappé aux tests qui lisent les sources.
-- **Mineurs** (dans la 066, cycle 12) : KDoc périmés de `Navigation.kt` l. 36 et 61 ; test « plantation plus âgée
-  que l'itinéraire » sans date (reporté à la tranche 3, Pascal, 2026-10-28) ; release v0.7.58 restée en brouillon après la #99.
 - **Photos de placette et de plant** : spec et ADR 0007 amendées, validées par Pascal
   (PR #115, porte n° 1, 2026-10-28) ; brief vers sommieR envoyé. Mission de code à découper,
   précédée des mesures sur appareil de la spec § 10, point 10 (`.nomedia`, boussole tenue
@@ -125,7 +115,8 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **Plants anciens dessinés** sur le plan de la placette (décision 8 de la 012-B), mission
   à part.
 - **Tranche 3** : règle « date incohérente » (travaux sur une plantation plus âgée que
-  l'itinéraire), avec le relevé des interventions (Pascal, PR #106).
+  l'itinéraire), avec le relevé des interventions (Pascal, PR #106) ; son test attend la date de
+  plantation et l'itinéraire dans la tournée (report décidé par Pascal le 2026-10-28, PR #117).
 - **Pascal, terrain** (bilan du 2026-10-21 ; la 012 a démarré sans l'attendre, décision du
   2026-10-27) : APK sur Couchey (import, ortho,
   mode avion, guidage, test des dix secondes) ; restauration de `exemple-v1.sursync` ;
@@ -137,6 +128,10 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **066** mineurs et maintenance (PR #117, 7b2c46d, cycle 13) : KDoc de `Navigation.kt`, renvoi
+  terrain#23, doc d'`ExporterScenario`, test `dernier_controle` renommé ; release v0.7.58 déjà
+  publiée (vérifié le 2026-10-28).
 
 - **012-C1** mode poche et gestes de volume (PR #113, b9cf9d6) : 9 essais bons sur la v0.7.73
   (Pascal, 2026-10-28). **012-C2** la voix et la vibration (PR #114, fee5b57), v0.7.74 installée,
