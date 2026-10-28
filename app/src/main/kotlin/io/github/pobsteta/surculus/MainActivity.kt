@@ -1,6 +1,12 @@
 package io.github.pobsteta.surculus
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -23,6 +29,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import io.github.pobsteta.surculus.carte.EcranCarte
 import io.github.pobsteta.surculus.carte.EcranGuidage
 import io.github.pobsteta.surculus.controle.EcranControle
+import io.github.pobsteta.surculus.controle.ModePoche
+import io.github.pobsteta.surculus.controle.PocheApp
+import io.github.pobsteta.surculus.core.session.Touche
 import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.essai.EcranEssaiGnss
 import io.github.pobsteta.surculus.gnss.ConfigRtk
@@ -42,8 +51,23 @@ import io.github.pobsteta.surculus.sauvegarde.EcranRestauration
  * Tournée ouverte : Placettes, puis Carte, puis Guidage (mission 061). Le contrôle des plants (mission 012) viendra après le guidage.
  */
 class MainActivity : ComponentActivity() {
+    private val horloge = Handler(Looper.getMainLooper())
+    private val tic = Runnable { PocheApp.pont.avancer(SystemClock.uptimeMillis()); programmer() }
+    private var desabonner: (() -> Unit)? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Mode poche (mission 012-C1) : l'écran reste allumé tant qu'il dure ; le temps (3 s, 0,35 s, 15 min) passe par un Handler.
+        desabonner = PocheApp.mode.abonner { actif, _ ->
+            if (actif) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            programmer()
+        }
+        if (PocheApp.mode.actif) {
+            // Après une rotation : l'ancienne Activity a retiré son `tic`, la nouvelle réarme la minuterie (15 min, 3 s, 0,35 s).
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            programmer()
+        }
         val reglagesAffichage = DepotTournees.reglagesAffichage(this)
         setContent {
             // Plein écran (mission 044) : faux par défaut, gardé sur le téléphone ; les barres reviennent au glissement.
@@ -144,5 +168,59 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun programmer() {
+        horloge.removeCallbacks(tic)
+        val echeance = PocheApp.pont.echeance() ?: return
+        horloge.postDelayed(tic, (echeance - SystemClock.uptimeMillis()).coerceAtLeast(0))
+    }
+
+    private fun toucheDeVolume(keyCode: Int): Touche? = when (keyCode) {
+        KeyEvent.KEYCODE_VOLUME_UP -> Touche.HAUT
+        KeyEvent.KEYCODE_VOLUME_DOWN -> Touche.BAS
+        else -> null
+    }
+
+    /** En mode poche, le toucher est ignoré (spec § 4.3, ADR 0004). */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean =
+        if (ModePoche.toucherPris(PocheApp.mode.actif)) super.dispatchTouchEvent(ev) else true
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        val touche = toucheDeVolume(keyCode)
+        // Les répétitions d'une touche tenue restent prises jusqu'au relâchement, même après la sortie à 3 s.
+        if (touche != null && PocheApp.pont.touche(touche, appuyee = true, instantMs = event.eventTime, repetition = event.repeatCount > 0)) {
+            programmer()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        val touche = toucheDeVolume(keyCode)
+        // Le relâchement est pris aussi, pour que le système n'affiche pas le volume.
+        if (touche != null && PocheApp.pont.touche(touche, appuyee = false, instantMs = event.eventTime)) {
+            programmer()
+            return true
+        }
+        return super.onKeyUp(keyCode, event)
+    }
+
+    /** Appel, verrouillage, autre application : un relâchement peut se perdre, le classeur repart propre. */
+    override fun onPause() {
+        PocheApp.pont.remettreAZero()
+        super.onPause()
+    }
+
+    /** L'application quitte le premier plan : le mode poche se lève par prudence (agent « enfermé »). */
+    override fun onStop() {
+        PocheApp.mode.surArret(isChangingConfigurations)
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        horloge.removeCallbacks(tic)
+        desabonner?.invoke()
+        super.onDestroy()
     }
 }

@@ -15,6 +15,9 @@
     <string name="controle_aucun_plant">Aucun plant dans cette placette : pointez-en un.</string>
     <string name="controle_cause">Cause</string>
     <string name="controle_sans_cause">Sans cause, plant suivant</string>
+    <string name="controle_poche">Mode poche</string>
+    <string name="controle_poche_bande">MODE POCHE</string>
+    <string name="controle_poche_aide">3 s sur volume haut pour sortir</string>
     <string name="controle_annuler">Annuler</string>
     <string name="controle_terminer">Terminer</string>
     <string name="controle_terminer_titre">Terminer %1$s ?</string>
