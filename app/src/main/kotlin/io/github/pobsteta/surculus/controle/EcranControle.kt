@@ -73,6 +73,8 @@ import io.github.pobsteta.surculus.carte.rememberFix
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.gpkg.ContexteDeTournee
+import io.github.pobsteta.surculus.gnss.FixPourSession
+import io.github.pobsteta.surculus.gnss.SourcePosition
 import io.github.pobsteta.surculus.sauvegarde.SauvegardeApp
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.LigneTournee
@@ -144,7 +146,7 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit) {
                 ArriveeControle.ouvrir(
                     contexte = ContexteDeTournee.de(ouverte.tournee),
                     journal = SauvegardeApp.journal(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
-                    horloge = SauvegardeApp.horloge(ctx) { null },
+                    horloge = SauvegardeApp.horloge(ctx) { FixPourSession.depuis(SourcePosition.fix.value) },
                     essences = ArriveeControle.essencesDe(ouverte.tournee),
                     positions = positions,
                     codeLu = code,
