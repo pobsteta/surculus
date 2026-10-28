@@ -72,17 +72,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **066** mineurs et maintenance (`dev`, appuyer), lancée au cycle 12 (2026-10-28) ; fiche
-  `pilotage/missions/066-mineurs-maintenance.md` (sur sa branche).
-
-- **012-C2** la voix et la vibration du mode poche (`afficheur`, appuyer), lancée le 2026-10-28
-  depuis b9cf9d6 ; fusion après l'essai de la C1 sur le téléphone. Fiche :
-  `pilotage/missions/012c2-voix-vibration.md` (sur sa branche).
-- **Captures de la 064, de la 012-B2 et de la 012-C1** sur la release qui porte la fusion de
-  la #113 (orchestrateur), ce soir quand le téléphone de Pascal est branché : carte couchée
-  (six boutons en 3 + 3, bandeau, légende, ligne de la placette) et debout ; vue Pointer, plan
-  et rangée d'essences du regarni ; mode poche et les 9 essais de la PR #113 (rotation, volume
-  tenu au-delà de 3 s, retour par geste, 15 min). Boussole et regarni à valider en forêt, à Couchey.
+- **066** mineurs et maintenance (`dev`, appuyer), lancée au cycle 12 (2026-10-28) ; PR #117
+  relue prête (cycle 13) : question de Pascal sur le test « plantation plus âgée » et fusion.
 
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
@@ -105,10 +96,14 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Suite décidée de la 012 (2026-10-27) :** après la 012-C2 (au Validé), la 012-D.
+**Suite décidée de la 012 (2026-10-27) :** la 012-D2.
 
-- **012-D2** écoute branchée dans `:app` (micro, permission, bouton « Micro », anti-larsen), après
-  la fusion de la #114 et de la D1 ; questions 1-3, 6-8 et 11 du plan à poser avant.
+- **012-D2** écoute branchée dans `:app` (micro, permission, anti-larsen) ; #114 et D1 fusionnées.
+  Décidé (Pascal, 2026-10-28) : en poche, « tenir pour parler » sur volume bas, sans bouton ; hors
+  poche, bouton micro comme Marculus. Questions 3, 6-8 et 11 du plan à poser avant.
+- **Bande du mode poche et plan couché** (`afficheur`) : bande coupée sous la barre quand l'écran
+  était défilé à l'entrée ; en paysage, le cercle du plan chevauche les boutons d'état (captures
+  du 2026-10-28, cycle 12).
 
 **Ensuite, au signal de Pascal :**
 
@@ -143,6 +138,10 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **012-C1** mode poche et gestes de volume (PR #113, b9cf9d6) : 9 essais bons sur la v0.7.73
+  (Pascal, 2026-10-28). **012-C2** la voix et la vibration (PR #114, fee5b57), v0.7.74 installée,
+  voix entendue par Pascal ; cycle 12. **Captures** 064, 012-B2, 012-C1 faites (cycle 12).
 
 - **012-D1** le cœur de la dictée (`ApplicateurDictee`, `TextesDictee`, `:core`), PR #116
   fusionnée le 2026-10-28 (fbc2f93), sur l'autorisation de Pascal.
@@ -263,3 +262,6 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   boutons de Groma ; Paramètres, thème et voix comme Marculus · pour le forestier en forêt ·
   avant, la carte s'ouvrait seule, sans choix de fond ni de placette ; il retrouve ses gestes
   de Groma et de Marculus. *(Retenue par Pascal le 2026-10-27 : « 1 oui ».)*
+- cycle 12 · le contrôle téléphone en poche : l'agent dit l'état de chaque plant au volume, gants
+  aux mains, entend le numéro et l'état et sent la vibration · pour le forestier en forêt · avant, il
+  regardait l'écran à chaque plant (v0.7.74). *(Retenue par Pascal le 2026-10-28.)*
