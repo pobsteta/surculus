@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Écran du contrôle d'une placette (mission 012-B1). Les mots des états, des causes et des refus sont dans TextesControle (testés en Kotlin pur). -->
+<resources>
+    <string name="controle_titre">Contrôle %1$s</string>
+    <string name="controle_titre_sans_code">Contrôle</string>
+    <string name="controle_source">%1$s · %2$s</string>
+    <string name="controle_moyenne">Position moyennée : %1$d / %2$d s</string>
+    <string name="controle_moyenne_aide">Restez au piquet. La placette s\'ouvre toute seule.</string>
+    <string name="controle_sans_position">Pas de position GNSS : lisez le code du piquet, puis recommencez.</string>
+    <string name="controle_recommencer">Recommencer</string>
+    <string name="controle_alerte_terminee">Placette déjà terminée : ce que vous dites s\'ajoute.</string>
+    <string name="controle_stockage_refuse">La sauvegarde hors de l\'appareil attend la permission de stockage. La saisie continue.</string>
+    <string name="controle_plant_precedent">Plant précédent</string>
+    <string name="controle_plant_suivant">Plant suivant</string>
+    <string name="controle_aucun_plant">Aucun plant à contrôler dans cette placette : le pointage des plants vient avec la prochaine version.</string>
+    <string name="controle_cause">Cause</string>
+    <string name="controle_sans_cause">Sans cause, plant suivant</string>
+    <string name="controle_annuler">Annuler</string>
+    <string name="controle_terminer">Terminer</string>
+    <string name="controle_terminer_titre">Terminer %1$s ?</string>
+    <string name="controle_reprendre">Reprendre</string>
+    <string name="controle_controlee">%1$s contrôlée</string>
+    <string name="controle_fermer">Fermer</string>
+    <string name="controle_controler">Contrôler</string>
+</resources>

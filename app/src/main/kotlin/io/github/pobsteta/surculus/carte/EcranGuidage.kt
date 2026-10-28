@@ -52,7 +52,6 @@ import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.ui.theme.LocalSombre
 import io.github.pobsteta.surculus.core.geo.PointLambert93
 import io.github.pobsteta.surculus.core.gnss.FixGnss
-import io.github.pobsteta.surculus.core.guidage.DetecteurArrivee
 import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.core.guidage.Libelles
 import io.github.pobsteta.surculus.core.guidage.MoyennePosition
@@ -73,7 +72,16 @@ import kotlin.math.roundToInt
  * Rien n'est écrit au journal à ce stade (mission 031 pas fusionnée).
  */
 @Composable
-fun EcranGuidage(id: String, placetteUuid: String, onRetour: () -> Unit) {
+fun EcranGuidage(
+    id: String,
+    placetteUuid: String,
+    arriveeVue: Boolean = false,
+    /** Arrivée (moins de 30 m) ou bouton « Contrôler » : ouvre le contrôle (mission 012-B1). */
+    onArrivee: () -> Unit = {},
+    /** L'agent est ressorti à 40 m : l'ouverture automatique est de nouveau permise. */
+    onRearme: () -> Unit = {},
+    onRetour: () -> Unit,
+) {
     val chargement = chargerTournee(id)
     val cible = (chargement as? Chargement.Pret)?.tournee?.tournee?.placettes?.firstOrNull { it.uuid == placetteUuid && it.position != null }
     val (fix, _) = rememberFix()
@@ -99,7 +107,7 @@ fun EcranGuidage(id: String, placetteUuid: String, onRetour: () -> Unit) {
                     if (cible == null) {
                         Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = couleurErreur()) }
                     } else {
-                        GuidagePret(cible, chargement.tournee.tournee.placettes, fix)
+                        GuidagePret(cible, chargement.tournee.tournee.placettes, fix, arriveeVue, onArrivee, onRearme)
                     }
             }
         }
@@ -114,7 +122,14 @@ private sealed interface Confirmation {
 }
 
 @Composable
-private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, fix: FixGnss?) {
+private fun GuidagePret(
+    cible: PlacetteTournee,
+    toutes: List<PlacetteTournee>,
+    fix: FixGnss?,
+    arriveeVue: Boolean,
+    onArrivee: () -> Unit,
+    onRearme: () -> Unit,
+) {
     val cap = fix?.let { Guidage.cap(it.position, cible.position!!) }
     val position = fix?.let { Guidage.versLambert93(it.position) }
     var son by remember { mutableStateOf(true) }
@@ -137,10 +152,18 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, f
             }
         }
     }
-    val detecteur = remember { DetecteurArrivee() }
+    // Arrivée (mission 012-B1) : un seul bip et une seule ouverture du contrôle par arrivée. Le drapeau est dans l'état de
+    // navigation, car cet écran est recomposé à neuf au retour du contrôle : un détecteur local rouvrirait en boucle.
+    // Il se baisse à 40 m (`Guidage.SEUIL_REARMEMENT_M`).
+    val vue = rememberUpdatedState(arriveeVue)
     LaunchedEffect(cap?.distanceM) {
         val d = cap?.distanceM ?: return@LaunchedEffect
-        if (detecteur.entree(d) && sonActif.value) tonalite?.startTone(ToneGenerator.TONE_PROP_BEEP2, 500)
+        if (vue.value) {
+            if (d >= Guidage.SEUIL_REARMEMENT_M) onRearme()
+        } else if (Guidage.estArrive(d)) {
+            if (sonActif.value) tonalite?.startTone(ToneGenerator.TONE_PROP_BEEP2, 500)
+            onArrivee()
+        }
     }
 
     // Rattachement : moyenne de la position pendant quelques secondes, puis la règle des 15 m (ou le code lu).
@@ -201,6 +224,8 @@ private fun GuidagePret(cible: PlacetteTournee, toutes: List<PlacetteTournee>, f
                 enabled = c !is Confirmation.EnCours,
                 modifier = Modifier.fillMaxWidth().height(64.dp),
             ) { Text(stringResource(R.string.guidage_rattacher)) }
+            // Rouvrir le contrôle à la main (il s'est ouvert tout seul à l'arrivée, mission 012-B1).
+            Button(onClick = onArrivee, modifier = Modifier.fillMaxWidth().height(64.dp)) { Text(stringResource(R.string.controle_controler)) }
             when (c) {
                 is Confirmation.EnCours -> Text(stringResource(R.string.guidage_moyenne, c.n, SECONDES_DE_MOYENNE), style = MaterialTheme.typography.bodyMedium)
                 is Confirmation.Fini -> Resultat(c.verdict)

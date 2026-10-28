@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.MyLocation
@@ -115,7 +116,7 @@ import org.osmdroid.views.overlay.TilesOverlay
  * l'ouverture de la tournée : elle ne change pas pendant la tournée. Ni travaux ni vides à ce stade.
  */
 @Composable
-fun EcranCarte(id: String, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit) {
+fun EcranCarte(id: String, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit = {}) {
     when (val c = chargerTournee(id)) {
         Chargement.EnCours -> Column {
             BandeauCarte(stringResource(R.string.carte_titre), onRetour)
@@ -139,7 +140,7 @@ fun EcranCarte(id: String, centreId: String?, onRetour: () -> Unit, onGuider: (S
                     Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).padding(24.dp)) { Text(stringResource(R.string.carte_ouverture)) }
                 }
             } else {
-                CartePrete(c.tournee, ortho, centreId, onRetour, onGuider)
+                CartePrete(c.tournee, ortho, centreId, onRetour, onGuider, onControler)
             }
         }
     }
@@ -292,7 +293,7 @@ private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
 }
 
 @Composable
-private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit) {
+private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit) {
     val ctx = LocalContext.current
     val (fix, refusee) = rememberFix()
     val carto = ouverte.cartographie
@@ -463,6 +464,17 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
                 // (la position GNSS si elle tombe en France, zoom 17 au moins, sinon l'emprise de la tournée : `Recentrage.cible`).
                 val cibleNaviguer = cibleNavigation(choisie, toutes, controlees, fix?.position?.let { Guidage.versLambert93(it) })
                 Column(Modifier.align(Alignment.BottomEnd).padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Porte n° 1 du contrôle (mission 012-B1) : « Contrôler » seulement quand une placette est choisie.
+                    if (choisie != null) {
+                        SmallFloatingActionButton(
+                            onClick = { onControler(choisie.uuid) },
+                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ) {
+                            Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.controle_controler))
+                        }
+                    }
                     SmallFloatingActionButton(
                         onClick = { cibleNaviguer?.let { onGuider(it.uuid) } },
                         modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics { if (cibleNaviguer == null) disabled() },
