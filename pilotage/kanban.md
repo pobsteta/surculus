@@ -119,11 +119,11 @@ _En attente sous le plafond humain (3 PR en revue)._
   a échappé aux tests qui lisent les sources.
 - **Mineurs** : KDoc périmés de `Navigation.kt` l. 36 et 61 ; test « plantation plus âgée
   que l'itinéraire » sans date ; release v0.7.58 restée en brouillon après la #99.
-- **Photos de placette et de plant** (décision de Pascal du 2026-10-28 : « Placette + plant au
-  besoin ») : une photo de la placette prise du piquet, nord en haut, et une photo facultative
-  d'un plant difficile à retrouver. Avant la mission : amendement de la spec (§ 4.3, § 5, couche
-  `photos` aujourd'hui rattachée au seul `constat_uuid`), type de ligne du journal pour
-  l'empreinte des photos (§ 5), et brief vers sommieR pour l'import (porte n° 1).
+- **Photos de placette et de plant** : spec et ADR 0007 amendées, validées par Pascal
+  (PR #115, porte n° 1, 2026-10-28) ; brief vers sommieR envoyé. Mission de code à découper,
+  précédée des mesures sur appareil de la spec § 10, point 10 (`.nomedia`, boussole tenue
+  verticale, masquage de la position, poids). Hors code, Pascal : ajouter les photos à
+  l'information des salariés (ADR 0005).
 - **Plants anciens dessinés** sur le plan de la placette (décision 8 de la 012-B), mission
   à part.
 - **Tranche 3** : règle « date incohérente » (travaux sur une plantation plus âgée que
@@ -148,7 +148,7 @@ _En attente sous le plafond humain (3 PR en revue)._
   § 1 et ADR 0003 amendées (PR #109) ; **065** jour civil sur l'heure du fix GNSS (PR #112),
   brief vers Groma (pobsteta/groma#68) ; **012-C1** saisie au volume en mode poche (PR #113,
   trois relectures) — fusionnées sur l'autorisation de Pascal ; releases
-  jusqu'à v0.7.68.
+  jusqu'à v0.7.68 ; amendement « photos » de la spec et de l'ADR 0007 (PR #115, porte n° 1).
 
 - Cycle 10, 2026-10-24 et 27 : **038** thème vert de Marculus (PR #81) ; **040** accueil sur
   la liste des tournées (PR #82) ; **041** recherche et « Rendues » (PR #83) ; **043** vue
