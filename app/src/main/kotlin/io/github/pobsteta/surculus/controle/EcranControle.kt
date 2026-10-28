@@ -237,19 +237,19 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
     val verrou = remember { Mutex() }
     // Voix et vibration (012-C2) : sans voix française, l'annonce s'écrit dans la bande ; le bandeau le dit à l'entrée.
     val sorties = PocheApp.sorties
-    var annonceEcrite by remember { mutableStateOf<AnnoncePoche?>(null) }
-    var sansVoix by remember { mutableStateOf(false) }
+    // L'état vit dans `sorties` (hors de Compose) ; ce compteur ne sert qu'à redessiner la bande.
+    var rafraichir by remember { mutableStateOf(0) }
     DisposableEffect(controleur) {
         poche = mode.actif
         val desabonner = mode.abonner { actif, raison ->
             poche = actif
-            if (!actif) annonceEcrite = null
+            if (!actif) { sorties?.effacer(); rafraichir++ }
             if (!actif && raison != RaisonSortie.VUE_QUITTEE) sorties?.annoncer(AnnoncesPoche.sortie())
             val annonce = raison?.let { TextesControle.sortiePoche(it) }
             if (!actif && annonce != null) scope.launch { verrou.withLock { ecran = withContext(Dispatchers.IO) { controleur.annoncer(annonce) } } }
         }
         // Les gestes de volume arrivent dans l'ordre et s'appliquent un par un.
-        sorties?.surTexte = { annonceEcrite = it }
+        sorties?.surTexte = { rafraichir++ }
         PocheApp.pont.surRappel = { sorties?.annoncer(AnnoncesPoche.rappel()) }
         PocheApp.pont.ecoute = { sortie ->
             sorties?.signal(sortie)
@@ -290,14 +290,16 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
     BackHandler(enabled = !ModePoche.retourPris(poche)) { }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (poche) BandePoche(ligneVoix = if (sansVoix) AnnoncesPoche.BANDEAU_SANS_VOIX else null, annonce = annonceEcrite)
+        if (poche) {
+            rafraichir // lu pour que la bande se redessine à chaque annonce écrite
+            BandePoche(ligneVoix = if (sorties?.sansVoixFrancaise != false) AnnoncesPoche.BANDEAU_SANS_VOIX else null, annonce = sorties?.annonceEcrite)
+        }
         Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (e.plant.alerteTerminee) {
             Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
         }
         when (e.vue) {
             VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, onPoche = {
-                sansVoix = sorties?.sansVoixFrancaise ?: true
                 mode.entrer(SystemClock.uptimeMillis())
                 sorties?.annoncer(AnnoncesPoche.entree(e.plant.numero))
             })

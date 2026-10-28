@@ -270,7 +270,7 @@ class ControleurPlacette(
         val apres = session.etat()
         derniereAnnonce = AnnoncesPoche.pourSuite(
             geste, suite, plant?.numero, apres.plants.firstOrNull { it.uuid == apres.courant }?.numero,
-            memePlant = apres.courant == avant.courant, termine = avant.termine,
+            memePlant = apres.courant == avant.courant, termine = avant.termine && apres.termine,
         )
         return instantane()
     }

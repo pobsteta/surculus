@@ -103,6 +103,15 @@ class VoixPocheTest {
         assertTrue(c.derniereAnnonce!!.texte.startsWith("placette déjà terminée. Numéro 3, mort."), c.derniereAnnonce!!.texte)
     }
 
+    @Test fun `double appui bas apres Terminer - la placette est rouverte, pas d'alerte de placette terminee`() = with(BancControle()) {
+        val c = controleur()
+        c.geste(Geste.VOLUME_HAUT_COURT)
+        c.demanderTerminer(); c.terminer(); c.reprendre()
+        c.geste(Geste.VOLUME_BAS_DOUBLE_COURT)
+        assertEquals("annulé.", c.derniereAnnonce?.texte)
+        assertContentEquals(MotifsVibration.ANNULE, c.derniereAnnonce?.motif)
+    }
+
     @Test fun `entree, sortie, retour, rappel`() {
         assertEquals("mode poche actif. Numéro 7.", AnnoncesPoche.entree(7).texte)
         assertEquals("mode poche actif.", AnnoncesPoche.entree(null).texte)
@@ -160,6 +169,18 @@ class VoixPocheTest {
         assertTrue(m.dits.isEmpty())
         assertEquals("numéro 1, sain. Suivant, 2.", ecrits.single().texte)
         assertEquals(listOf(MotifsVibration.SAIN.toList()), v.motifs)
+    }
+
+    @Test fun `l'annonce ecrite et le bandeau sont tenus hors de Compose, ils traversent la rotation`() {
+        val s = SortiesPoche(MoteurFaux(francais = false), VibreurFaux())
+        assertTrue(s.sansVoixFrancaise)
+        s.annoncer(AnnoncesPoche.rappel())
+        assertEquals(AnnoncesPoche.rappel(), s.annonceEcrite, "lue dans SortiesPoche, sans surTexte (l'ecran recree)")
+        s.effacer()
+        assertNull(s.annonceEcrite)
+        val e = source("controle/EcranControle.kt")
+        assertFalse("sansVoix by remember" in e || "annonceEcrite by remember" in e, "pas d'etat local de Compose")
+        assertTrue("sorties?.sansVoixFrancaise" in e)
     }
 
     @Test fun `initialisation de la voix en echec - meme repli ecrit`() {

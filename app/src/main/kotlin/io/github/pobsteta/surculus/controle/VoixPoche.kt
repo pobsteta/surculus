@@ -121,10 +121,16 @@ class SortiesPoche(private val moteur: MoteurVoix, private val vibreur: Vibreur)
 
     val sansVoixFrancaise: Boolean get() = !moteur.francaisDisponible
 
+    /** Dernière annonce écrite faute de voix : tenue ici, hors de Compose, pour traverser la rotation comme le mode poche. */
+    var annonceEcrite: AnnoncePoche? = null
+        private set
+
+    fun effacer() { annonceEcrite = null }
+
     fun annoncer(a: AnnoncePoche) {
         a.motif?.let(::vibrer)
         val dit = moteur.francaisDisponible && try { moteur.dire(a.texte) } catch (_: Exception) { false }
-        if (!dit) surTexte?.invoke(a)
+        if (!dit) { annonceEcrite = a; surTexte?.invoke(a) }
     }
 
     /** Les signaux du classeur qui ne se disent pas : le tic (« atteint armé ») et le bourdon de sortie. */
