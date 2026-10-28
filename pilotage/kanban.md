@@ -98,15 +98,18 @@ _Idées, à trier au prochain `/mission`._
 - **sommieR** : démo de Marsannay-la-Côte (pobsteta/sommieR#65) et ortho tuilée EPSG:3857
   (pobsteta/sommieR#66), briefs envoyés, sans réponse ; session pilotée par Pascal.
 
+- **012-D1** le cœur de la dictée dans `:core` (`dev`, appuyer), lancée le 2026-10-28 sur
+  `mission/012d-dictee` ; décisions Q4, Q5, Q9, Q10, Q12 dans la fiche
+  `pilotage/missions/012d-dictee.md`, plan `012d-plan.md` (f734cef).
+
 ## Planifié
 
 _En attente sous le plafond humain (3 PR en revue)._
 
 **Suite décidée de la 012 (2026-10-27) :** après la 012-C2 (au Validé), la 012-D.
 
-- **012-D** dictée branchée sur l'écran du contrôle (`afficheur`, appuyer) : plan sans code
-  lancé le 2026-10-28 (fiche `pilotage/missions/012d-dictee.md`, branche `mission/012d-dictee`) ;
-  code après la fusion de la #114 et les réponses de Pascal.
+- **012-D2** écoute branchée dans `:app` (micro, permission, bouton « Micro », anti-larsen), après
+  la fusion de la #114 et de la D1 ; questions 1-3, 6-8 et 11 du plan à poser avant.
 
 **Ensuite, au signal de Pascal :**
 
