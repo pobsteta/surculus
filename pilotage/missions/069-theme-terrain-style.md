@@ -14,7 +14,7 @@
 par rôle, pour que les trois applications du projet nemeton tiennent leurs couleurs d'une seule
 source.
 
-**Redite par l'agent :** _à écrire par l'agent avant d'agir._
+**Redite par l'agent :** Remplacer la copie littérale du thème vert de Marculus par la dépendance à `terrain-style` épinglée au tag v0.7.1, et prouver par un test rôle par rôle que les couleurs de Surculus restent exactement celles du brief, pour que les trois applications tiennent leurs couleurs d'une seule source.
 
 ## Décisions de Pascal à respecter
 
