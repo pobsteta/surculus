@@ -29,6 +29,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import io.github.pobsteta.surculus.carte.EcranCarte
 import io.github.pobsteta.surculus.carte.EcranGuidage
 import io.github.pobsteta.surculus.controle.AnnoncesPoche
+import io.github.pobsteta.surculus.controle.EcouteApp
 import io.github.pobsteta.surculus.controle.EcranControle
 import io.github.pobsteta.surculus.controle.ModePoche
 import io.github.pobsteta.surculus.controle.PocheApp
@@ -60,6 +61,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PocheApp.installer(this)
+        EcouteApp.installer(this)
         // Mode poche (mission 012-C1) : l'écran reste allumé tant qu'il dure ; le temps (3 s, 0,35 s, 15 min) passe par un Handler.
         desabonner = PocheApp.mode.abonner { actif, _ ->
             if (actif) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -212,6 +214,8 @@ class MainActivity : ComponentActivity() {
     /** Appel, verrouillage, autre application : un relâchement peut se perdre, le classeur repart propre. */
     override fun onPause() {
         PocheApp.pont.remettreAZero()
+        // Le micro se ferme (appel, verrouillage, autre application) et ne se rouvre pas seul au retour (012-D2).
+        EcouteApp.arreter()
         // Une rotation n'est pas un appel : seule une vraie pause fait redire « mode poche actif » au retour.
         pauseSansRotation = !isChangingConfigurations
         super.onPause()
@@ -226,6 +230,7 @@ class MainActivity : ComponentActivity() {
 
     /** L'application quitte le premier plan : le mode poche se lève par prudence (agent « enfermé »). */
     override fun onStop() {
+        EcouteApp.arreter()
         PocheApp.mode.surArret(isChangingConfigurations)
         super.onStop()
     }

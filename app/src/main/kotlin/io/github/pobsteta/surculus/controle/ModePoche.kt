@@ -159,7 +159,7 @@ class PontPoche(private val mode: ModePoche, private val classeur: ClasseurGeste
             when (s) {
                 is SortieClasseur.Geste -> mode.activite(instantMs)
                 SortieClasseur.Bourdon -> mode.sortir(RaisonSortie.TROIS_SECONDES)
-                SortieClasseur.Tic, SortieClasseur.DeuxTouches -> {}
+                SortieClasseur.Tic, SortieClasseur.DeuxTouches, SortieClasseur.BasRelacheApresLong -> {}
             }
             ecoute?.invoke(s)
         }

@@ -123,7 +123,7 @@ class VoixPocheTest {
 
     // --- motifs
 
-    @Test fun `les motifs sont ceux du plan, tous distincts et de moins d'une seconde`() {
+    @Test fun `les motifs sont ceux du plan (neuf de la C2, deux de la D2), tous distincts et de moins d'une seconde`() {
         assertContentEquals(longArrayOf(0, 60), MotifsVibration.SAIN)
         assertContentEquals(longArrayOf(0, 60, 80, 60), MotifsVibration.ATTEINT)
         assertContentEquals(longArrayOf(0, 400), MotifsVibration.MORT)
@@ -134,7 +134,7 @@ class VoixPocheTest {
         assertContentEquals(longArrayOf(0, 100, 100, 100), MotifsVibration.ENTREE)
         assertContentEquals(longArrayOf(0, 400, 100, 60), MotifsVibration.DEJA_TERMINEE)
         val tous = MotifsVibration.tous
-        assertEquals(9, tous.size)
+        assertEquals(11, tous.size) // les neuf de la C2 et les deux du micro (012-D2)
         assertEquals(tous.size, tous.map { it.toList() }.toSet().size, "deux motifs identiques")
         tous.forEach { assertTrue(it.sum() < 1_000, "motif trop long : ${it.toList()}") }
     }

@@ -18,6 +18,11 @@
     <string name="controle_poche">Mode poche</string>
     <string name="controle_poche_bande">MODE POCHE</string>
     <string name="controle_poche_aide">3 s sur volume haut pour sortir</string>
+    <!-- Dictée vocale, tenir pour parler (mission 012-D2) -->
+    <string name="controle_micro">Tenir pour parler</string>
+    <string name="controle_micro_ecoute">J\'écoute…</string>
+    <string name="controle_regarni_propose">Remplace le plant n° %1$d : pointez le regarni</string>
+    <string name="controle_regarni_pointer">Pointer</string>
     <string name="controle_annuler">Annuler</string>
     <string name="controle_terminer">Terminer</string>
     <string name="controle_terminer_titre">Terminer %1$s ?</string>
