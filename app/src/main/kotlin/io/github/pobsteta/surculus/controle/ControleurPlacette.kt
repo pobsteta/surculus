@@ -113,6 +113,10 @@ class ControleurPlacette(
 ) {
     private var vue = VueControle.PLANT
     private var message: MessageControle? = null
+
+    /** Ce que la voix et la vibration disent du dernier geste de volume (012-C2) ; `null` avant tout geste. */
+    var derniereAnnonce: AnnoncePoche? = null
+        private set
     private var enAttente: PointageEnAttente? = null
     /** Essence du regarni en attente : celle du remplacé au départ, changée par le forestier ; `null` : aucune. */
     private var essenceRegarni: String? = null
@@ -263,11 +267,20 @@ class ControleurPlacette(
             ActionGeste.AnnulerDerniereSaisie -> MessageControle(TextesControle.ANNULE, erreur = false)
             ActionGeste.OuvrirDictee -> null
         } else TextesControle.message(suite)
+        val apres = session.etat()
+        derniereAnnonce = AnnoncesPoche.pourSuite(
+            geste, suite, plant?.numero, apres.plants.firstOrNull { it.uuid == apres.courant }?.numero,
+            memePlant = apres.courant == avant.courant, termine = avant.termine && apres.termine,
+        )
         return instantane()
     }
 
     /** Les deux touches de volume ensemble : ignorées, on le dit (rien n'est écrit). */
-    fun deuxTouches(): EcranControle { message = MessageControle(TextesControle.UNE_TOUCHE_A_LA_FOIS, erreur = true); return instantane() }
+    fun deuxTouches(): EcranControle {
+        message = MessageControle(TextesControle.UNE_TOUCHE_A_LA_FOIS, erreur = true)
+        derniereAnnonce = AnnoncesPoche.deuxTouches()
+        return instantane()
+    }
 
     /** Une annonce du mode poche (sortie, rappel) : information à l'écran, jamais une faute. */
     fun annoncer(texte: String): EcranControle { message = MessageControle(texte, erreur = false); return instantane() }

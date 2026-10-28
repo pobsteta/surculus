@@ -28,6 +28,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import io.github.pobsteta.surculus.carte.EcranCarte
 import io.github.pobsteta.surculus.carte.EcranGuidage
+import io.github.pobsteta.surculus.controle.AnnoncesPoche
 import io.github.pobsteta.surculus.controle.EcranControle
 import io.github.pobsteta.surculus.controle.ModePoche
 import io.github.pobsteta.surculus.controle.PocheApp
@@ -54,9 +55,11 @@ class MainActivity : ComponentActivity() {
     private val horloge = Handler(Looper.getMainLooper())
     private val tic = Runnable { PocheApp.pont.avancer(SystemClock.uptimeMillis()); programmer() }
     private var desabonner: (() -> Unit)? = null
+    private var pauseSansRotation = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        PocheApp.installer(this)
         // Mode poche (mission 012-C1) : l'écran reste allumé tant qu'il dure ; le temps (3 s, 0,35 s, 15 min) passe par un Handler.
         desabonner = PocheApp.mode.abonner { actif, _ ->
             if (actif) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -209,7 +212,16 @@ class MainActivity : ComponentActivity() {
     /** Appel, verrouillage, autre application : un relâchement peut se perdre, le classeur repart propre. */
     override fun onPause() {
         PocheApp.pont.remettreAZero()
+        // Une rotation n'est pas un appel : seule une vraie pause fait redire « mode poche actif » au retour.
+        pauseSansRotation = !isChangingConfigurations
         super.onPause()
+    }
+
+    /** Retour d'un appel ou du verrouillage, mode poche resté actif : la voix le dit (012-C2, plan § 6). */
+    override fun onResume() {
+        super.onResume()
+        if (pauseSansRotation && PocheApp.mode.actif) PocheApp.sorties?.annoncer(AnnoncesPoche.retour())
+        pauseSansRotation = false
     }
 
     /** L'application quitte le premier plan : le mode poche se lève par prudence (agent « enfermé »). */

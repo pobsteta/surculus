@@ -38,6 +38,7 @@ class ModePoche {
     var actif: Boolean = false
         private set
     private var derniereActiviteMs = 0L
+    private var rappele = false
     private val abonnes = ArrayList<(Boolean, RaisonSortie?) -> Unit>()
 
     /** Écoute les changements : `(actif, raison)` ; la raison n'est donnée qu'à la sortie. Rend de quoi se désabonner. */
@@ -50,6 +51,7 @@ class ModePoche {
         if (actif) return
         actif = true
         derniereActiviteMs = instantMs
+        rappele = false
         abonnes.toList().forEach { it(true, null) }
     }
 
@@ -60,7 +62,17 @@ class ModePoche {
     }
 
     /** Un geste vient d'être fait : l'inactivité repart de zéro. */
-    fun activite(instantMs: Long) { derniereActiviteMs = instantMs }
+    fun activite(instantMs: Long) { derniereActiviteMs = instantMs; rappele = false }
+
+    /** Cinq minutes sans geste : vrai **une seule fois** par période sans geste (012-C2), jamais hors du mode. */
+    fun rappelDu(instantMs: Long): Boolean {
+        if (!actif || rappele || instantMs - derniereActiviteMs < RAPPEL_MS) return false
+        rappele = true
+        return true
+    }
+
+    /** Instant du rappel vocal ; `null` hors du mode, ou si le rappel de cette période est fait. */
+    fun echeanceRappelMs(): Long? = if (actif && !rappele) derniereActiviteMs + RAPPEL_MS else null
 
     /** Lève le mode si [INACTIVITE_MS] se sont écoulées sans geste. */
     fun verifier(instantMs: Long) {
@@ -78,6 +90,9 @@ class ModePoche {
     companion object {
         const val INACTIVITE_MS = 15 * 60_000L
 
+        /** Rappel vocal « mode poche actif » après cinq minutes sans geste (décision de Pascal du 2026-10-28). */
+        const val RAPPEL_MS = 5 * 60_000L
+
         /** Le toucher est-il pris en compte ? Non, en mode poche. */
         fun toucherPris(actif: Boolean): Boolean = !actif
 
@@ -93,6 +108,9 @@ class ModePoche {
 class PontPoche(private val mode: ModePoche, private val classeur: ClasseurGestes = ClasseurGestes()) {
     /** Reçoit les gestes et les signaux (deux touches, tic) ; la vibration de la 012-C2 s'y branche. */
     var ecoute: ((SortieClasseur) -> Unit)? = null
+
+    /** Cinq minutes sans geste : la voix rappelle que le mode poche est actif (012-C2). */
+    var surRappel: (() -> Unit)? = null
 
     init {
         mode.abonner { actif, _ -> if (!actif) classeur.remettreAZero() }
@@ -124,12 +142,13 @@ class PontPoche(private val mode: ModePoche, private val classeur: ClasseurGeste
         if (!mode.actif) return
         traiter(classeur.avancer(instantMs), instantMs)
         mode.verifier(instantMs)
+        if (mode.rappelDu(instantMs)) surRappel?.invoke()
     }
 
     /** Prochain instant où [avancer] aura quelque chose à faire ; `null` hors du mode poche. */
     fun echeance(): Long? {
         if (!mode.actif) return null
-        return listOfNotNull(classeur.echeance(), mode.echeanceInactiviteMs()).minOrNull()
+        return listOfNotNull(classeur.echeance(), mode.echeanceInactiviteMs(), mode.echeanceRappelMs()).minOrNull()
     }
 
     /** L'application perd le focus : un relâchement perdu ne doit rien laisser en attente. */
@@ -151,4 +170,12 @@ class PontPoche(private val mode: ModePoche, private val classeur: ClasseurGeste
 object PocheApp {
     val mode = ModePoche()
     val pont = PontPoche(mode)
+
+    /** La voix et la vibration (012-C2) ; posées par l'Activity au démarrage, avant que le mode puisse s'ouvrir. */
+    @Volatile var sorties: SortiesPoche? = null
+        private set
+
+    fun installer(contexte: android.content.Context) {
+        if (sorties == null) sorties = SortiesPoche(VoixAndroid(contexte), VibreurAndroid(contexte))
+    }
 }
