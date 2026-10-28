@@ -67,6 +67,9 @@ class BancControle(
     nbPlantsAnterieurs: Int = 12,
     precedent: Observation? = Observation.Observe(EtatDsf.ATTEINT),
     val emprise: EmpriseLambert93? = null,
+    /** Essence portée par les plants du passage précédent (code de la tournée) ; `null` : aucune. */
+    essenceAncien: String? = null,
+    essencesConnues: Set<String> = emptySet(),
 ) {
     companion object {
         val POSITION_P1 = PointLambert93(xMetres = 846_164.76, yMetres = 6_686_123.26)
@@ -83,7 +86,7 @@ class BancControle(
 
     val journal = JournalEnMemoire()
     val horloge = HorlogeDeTest()
-    val essences = Essences(emptySet())
+    val essences = Essences(essencesConnues)
     val contexte = ContexteControle(
         operateur = "Agent d'essai",
         placettes = listOf(
@@ -93,7 +96,7 @@ class BancControle(
         epsg = CodeEpsg.RGF93_V1_LAMBERT93,
         empriseForet = emprise,
         plantsAnterieurs = mapOf(
-            P1 to (1..nbPlantsAnterieurs).map { PlantAnterieur(UuidPlant("ancien-$it"), it, null, null, precedent) },
+            P1 to (1..nbPlantsAnterieurs).map { PlantAnterieur(UuidPlant("ancien-$it"), it, essenceAncien, null, precedent) },
         ),
     )
     val sauvegarde = EcouteComptee()

@@ -47,25 +47,34 @@ Options envisagées :
 | Sujet | Règle |
 |---|---|
 | Piquet (installation) | RTK fixe exigé ; sans 4G, **journal UBX brut et post-traitement** (RTKLIB, RINEX de la base), comme Groma (`docs/terrain.md`) ; sinon précision obtenue enregistrée et dite |
-| Plant | observation primaire **relative au piquet** : distance horizontale (m), azimut magnétique brut, unité de la boussole (degrés ou grades), déclinaison et convergence appliquées, date ; EPSG dérivé |
+| Plant | observation primaire **relative au piquet** : distance horizontale (m), azimut magnétique brut (boussole du téléphone en degrés, ou saisi au clavier en secours dans l'unité choisie, degrés ou grades), sa source, déclinaison et convergence appliquées, date ; EPSG dérivé |
 | Unités d'azimut | refus **avant normalisation** hors [0, 360[ en degrés et hors [0, 400[ en grades (`groma-core` normalise : à ne pas reprendre tel quel) |
-| Déclinaison | modèle géomagnétique embarqué (`docs/referentiels/modele-geomagnetique.md`), au point et à la date ; WMM2025 copié de Groma, bornes 2025-01-01 à 2029-12-31 (mission 005, arbitrage de Pascal du 2026-10-16) ; altitude prise à 0 m (écart < 0,005° pour 500 m, testé) |
+| Déclinaison | modèle géomagnétique embarqué (`docs/referentiels/modele-geomagnetique.md`), au point et à la date ; WMM2025 copié de Groma, bornes 2025-01-01 à 2029-12-31 (mission 005, arbitrage de Pascal du 2026-10-16) ; altitude prise à 0 m (écart < 0,005° pour 500 m, testé) ; ajoutée **une seule fois**, par la session de contrôle : le capteur du téléphone fournit un cap magnétique pur, jamais la déclinaison du système Android (deux modèles ne se cumulent pas ; un test de source l'interdit) |
 | Convergence | γ = n·(λ − 3°), formule de `groma-core` ; **une seule** implémentation (proj4j retiré) |
 | Règle des 15 m | position **moyennée** quelques secondes, précision enregistrée ; placette la plus proche ; si le fix est hors des 15 m mais que l'agent **confirme l'identité** (code lu sur le piquet), le contrôle prend la **position stockée du piquet** et garde à part la position GNSS mesurée, avec le drapeau « rattaché par identité » (arbitrage de Pascal) |
 | Fix | horodaté ; un fix plus vieux que quelques secondes est refusé ; un RTK dont les corrections sont trop vieilles est rétrogradé ; une **position simulée** (`Location.isMock()`) est détectée et enregistrée |
 | Référentiel de source | enregistré tel quel (« RGF93, base Centipède X », « WGS 84 non transformé ») |
 | Code EPSG | **EPSG:9794** pour toute la tournée **quand sommieR le fera** (brief `vers-sommier`) ; d'ici là EPSG:2154, contrat 0.31.1 (arbitrage de Pascal) |
-| Perturbation magnétique | visée inverse proposée ; compas tenu loin de la canne et du téléphone |
+| Perturbation magnétique | visée inverse proposée ; téléphone tenu à plat, loin de la canne, du récepteur RTK et de toute masse métallique ; précision du capteur et champ magnétique affichés ; étalonnage demandé (« dessinez un 8 ») quand le capteur se dit peu fiable ; on avertit, on ne bloque pas ; seuils fixés à l'essai en forêt |
+
+### Amendement du 2026-10-28 (mission 012-B2, décisions de Pascal du 2026-10-27)
+
+La boussole du téléphone remplace la boussole de visée pour les plants, **sous réserve de l'essai en forêt**
+(spec § 10, question 1). Le cap est lu au capteur d'orientation du téléphone, tenu à plat, bord haut vers le
+plant, par moyenne de la dernière seconde à l'appui sur « Pointer ». Un clavier de secours permet de taper l'azimut,
+dans l'unité choisie à côté du champ (degrés ou grades, mémorisée par tournée). La précision du capteur n'est pas
+gardée au journal (format de valeurs v1 inchangé). Les deux pièges de la boussole d'un téléphone sont traités : la
+déclinaison n'est ajoutée qu'une fois, et un capteur peu fiable ou un champ perturbé avertit l'agent sans le bloquer.
 
 ## Le crible FRANCE
 
 | Lettre | Question | Réponse (une ligne) | Ce que ça coûte |
 |---|---|---|---|
-| **F**rugale | La plus simple qui tienne ? | Oui : RTK au seul piquet, boussole et ruban pour les plants, formules de `groma-core`. | Extraction du transport Bluetooth et du service RTK de l'application Groma (tranche 1). |
+| **F**rugale | La plus simple qui tienne ? | Oui : RTK au seul piquet, boussole du téléphone et ruban pour les plants, formules de `groma-core`. | Extraction du transport Bluetooth et du service RTK de l'application Groma (tranche 1). |
 | **R**esponsable | Qui fait quoi ? | Surculus calcule et enregistre chaque terme ; l'agent déclare l'unité de sa boussole et confirme l'identité du piquet. | Un oubli de déclaration des grades fausse les azimuts : demandée à l'ouverture de la tournée. |
-| **A**nticipateur | Si l'imprévu arrive ? | Sans 4G : post-traitement ; GNSS faible : rattachement par identité ; position simulée détectée ; modèle géomagnétique daté. | Dépendance à Centipède, réseau bénévole sans garantie de service ; mise à jour du modèle en 2029. |
+| **A**nticipateur | Si l'imprévu arrive ? | Sans 4G : post-traitement ; GNSS faible : rattachement par identité ; position simulée détectée ; modèle géomagnétique daté. | Dépendance à Centipède, réseau bénévole sans garantie de service ; mise à jour du modèle en 2029 ; boussole du téléphone perturbée par le métal : précision et champ affichés, clavier en secours. |
 | **N**ovateur | Toutes les idées ? | Quatre options, BLE gardé ouvert, post-traitement repris de Groma. | Un essai terrain pour pointer quelques plants des deux façons. |
-| **C**oût | Coût pour l'ensemble ? | Un récepteur RTK et son antenne par agent (prix à chiffrer par Pascal) ; Centipède gratuit. | Matériel par agent ; temps de la main ajouté à chaque plant pointé à la boussole. |
+| **C**oût | Coût pour l'ensemble ? | Un récepteur RTK et son antenne par agent (prix à chiffrer par Pascal) ; Centipède gratuit. | Matériel par agent (aucun matériel de plus pour le pointage des plants : le téléphone fait boussole) ; temps de la main ajouté à chaque plant pointé. |
 | **É**cologique | Que réutilise-t-on, qui réutilisera ? | `groma-core` (GPL), conventions IGN, Centipède ouvert. | Copie provisoire du transport GNSS de Groma jusqu'à l'ADR 0008. |
 
 ## Valeurs sacrifiées

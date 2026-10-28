@@ -30,6 +30,28 @@ class ContrasteControleTest {
         }
     }
 
+    @Test fun `la question hors rayon, en orange, se lit a 4,5 pour 1 en clair et en sombre`() {
+        listOf(false, true).forEach { sombre ->
+            val c = CouleursEtat.texte(Palette.Orange, sombre)
+            assertTrue(contraste(c, fond(sombre)) >= CONTRASTE_MINIMAL, "orange, sombre=$sombre : ${contraste(c, fond(sombre))}")
+        }
+    }
+
+    @Test fun `le cap, la distance et l'aide de la vue Pointer se lisent a 4,5 pour 1`() {
+        // Le cap en grand est en neutre (bon) ou en erreur (douteux) ; l'aide en gris onSurfaceVariant : mêmes couleurs que l'écran Plant.
+        listOf(false, true).forEach { sombre ->
+            val schema = if (sombre) SchemaSombre else SchemaClair
+            listOf(CouleursEtat.neutre(sombre), CouleursEtat.erreur(sombre), schema.onSurfaceVariant).forEach {
+                assertTrue(contraste(it, fond(sombre)) >= CONTRASTE_MINIMAL, "sombre=$sombre")
+            }
+        }
+    }
+
+    @Test fun `le plan se dessine en sombre avec le filet blanc des pastilles, et la tolerance du toucher fait 48 dp`() {
+        assertTrue(contraste(CouleursEtat.filet, fond(true)) >= CONTRASTE_PASTILLE)
+        assertTrue(DimensionsControle.CIBLE_MIN.value >= 48f)
+    }
+
     @Test fun `le texte du bouton plein (Terminer) se lit sur son fond`() {
         listOf(SchemaClair, SchemaSombre).forEach { s ->
             assertTrue(contraste(s.onPrimary, s.primary) >= CONTRASTE_MINIMAL, "texte du bouton plein")

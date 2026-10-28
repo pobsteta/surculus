@@ -6,6 +6,7 @@ import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.placette.RefusPlacette
 import io.github.pobsteta.surculus.core.session.Arrivee
 import io.github.pobsteta.surculus.core.session.SuiteSession
+import io.github.pobsteta.surculus.carte.SECONDES_DE_MOYENNE_ARRIVEE
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -102,6 +103,23 @@ class ArriveeControleTest {
         listOf(26, 27, 28).forEach { assertTrue(PermissionStockage.aDemander(it, accordee = false), "API $it") }
         listOf(29, 30, 34, 35).forEach { assertTrue(!PermissionStockage.aDemander(it, accordee = false), "API $it") }
         assertTrue(!PermissionStockage.aDemander(27, accordee = true))
+        // Une seule fois : déjà demandée, on ne redemande pas, mais la ligne d'explication reste tant qu'elle manque.
+        assertTrue(!PermissionStockage.aDemander(27, accordee = false, dejaDemandee = true))
+        assertTrue(PermissionStockage.manque(27, accordee = false))
+        assertTrue(!PermissionStockage.manque(34, accordee = false))
+    }
+
+    @Test fun `les essences de la session sont celles des plants de la tournee, sans liste de l'application`() {
+        fun plant(u: String, e: String?) = io.github.pobsteta.surculus.gpkg.PlantLu(u, "placette-1", 1, e, false, null, null)
+        val t = io.github.pobsteta.surculus.gpkg.Tournee(
+            epsg = io.github.pobsteta.surculus.core.reperes.CodeEpsg.RGF93_V1_LAMBERT93, srsId = 2154, couches = emptyList(), placettes = emptyList(),
+            controles = emptyList(), empriseForet = null, projet = null,
+            plants = listOf(plant("a", "CHS"), plant("b", "CHS"), plant("c", null), plant("d", " ")), etats = emptyList(),
+        )
+        val e = ArriveeControle.essencesDe(t)
+        assertTrue(e.valider("CHS") is io.github.pobsteta.surculus.core.placette.Verdict.Accepte)
+        assertTrue(e.valider("ZZZ") is io.github.pobsteta.surculus.core.placette.Verdict.Refuse)
+        assertTrue(ArriveeControle.essencesDe(t.copy(plants = emptyList())).valider("CHS") is io.github.pobsteta.surculus.core.placette.Verdict.Refuse)
     }
 
     @Test fun `un refus de stockage ne bloque pas la saisie - la session n'en depend pas`() = with(BancControle()) {

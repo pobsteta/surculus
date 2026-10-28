@@ -68,20 +68,23 @@ object DimensionsControle {
 @Composable
 fun PastilleForme(etat: EtatDsf, taille: Dp = DimensionsControle.PASTILLE, modifier: Modifier = Modifier) {
     val sombre = LocalSombre.current
-    val teinte = ApparenceEtat.teinte(etat)
-    val forme = ApparenceEtat.forme(etat)
     Canvas(modifier.size(taille)) {
-        val trait = size.minDimension / 6f
-        val filet = if (sombre) size.minDimension / 12f else 0f
-        if (sombre) dessiner(forme, CouleursEtat.filet, trait + 2 * filet, filet * 2)
-        dessiner(forme, teinte, trait, 0f)
+        dessinerEtat(etat, Offset(size.width / 2, size.height / 2), size.minDimension, sombre)
     }
 }
 
-private fun DrawScope.dessiner(forme: FormeEtat, couleur: Color, trait: Float, elargi: Float) {
-    val c = Offset(size.width / 2, size.height / 2)
-    val marge = size.minDimension / 6f
-    val r = size.minDimension / 2 - marge
+/** Une pastille d'état de côté [cote] (pixels) centrée en [centre] ; en sombre, cernée d'un filet blanc (règle de la 063). Aussi pour le plan. */
+fun DrawScope.dessinerEtat(etat: EtatDsf, centre: Offset, cote: Float, sombre: Boolean) {
+    val trait = cote / 6f
+    val filet = if (sombre) cote / 12f else 0f
+    val forme = ApparenceEtat.forme(etat)
+    if (sombre) dessiner(forme, CouleursEtat.filet, trait + 2 * filet, filet * 2, centre, cote)
+    dessiner(forme, ApparenceEtat.teinte(etat), trait, 0f, centre, cote)
+}
+
+private fun DrawScope.dessiner(forme: FormeEtat, couleur: Color, trait: Float, elargi: Float, c: Offset, cote: Float) {
+    val marge = cote / 6f
+    val r = cote / 2 - marge
     when (forme) {
         FormeEtat.DISQUE -> drawCircle(couleur, radius = r + elargi / 2, center = c, style = Fill)
         FormeEtat.ANNEAU -> drawCircle(couleur, radius = r, center = c, style = Stroke(width = trait))
