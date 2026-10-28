@@ -88,12 +88,25 @@ class RegleAFaireTest {
     }
 
     @Test
-    fun `plantation plus agee que l'itineraire - une date incoherente ne change rien, le tri ne plante pas et chaque placette reste listee`() {
-        // Cas de date incohérente de CLAUDE.md : le tri ne lit aucune date ; une tournée entière en `a_jour` se lit et se
-        // trie sans exception, aucune placette ne disparaît.
+    fun `dernier_controle absurde (1900, 2099) - tri stable, aucune placette a faire, chaque placette reste listee`() {
+        // Le vrai cas « plantation plus âgée que l'itinéraire » (CLAUDE.md, spec § 4.1) est REPORTÉ à la tranche 3
+        // (décision de Pascal, 2026-10-28, règle « date incohérente », PR #106), faute de date de plantation et
+        // d'itinéraire dans la tournée. Ce test-ci ne couvre que des `dernier_controle` absurdes : le tri ne lit aucune date ; une tournée entière en `a_jour`, dates
+        // absurdes comprises, se lit et se trie sans exception, aucune placette ne disparaît.
         val f = TourneeDeTest.couchey(dossier)
-        Sqlite.ouvrir(f).use { cnx -> cnx.createStatement().use { it.executeUpdate("UPDATE placettes SET etat_suivi = 'a_jour'") } }
-        val o = ordonnerPlacettes(LecteurTournee.lire(f).placettes, emptySet())
+        // Dates incohérentes posées dans le fichier (seule colonne datée de `placettes`, spec § 5) : un contrôle de 1900,
+        // bien avant toute plantation, et un autre en 2099, après l'itinéraire. Le tri ne les lit pas (règle 1a).
+        Sqlite.ouvrir(f).use { cnx ->
+            cnx.createStatement().use {
+                it.executeUpdate("UPDATE placettes SET etat_suivi = 'a_jour'")
+                it.executeUpdate("UPDATE placettes SET dernier_controle = '1900-01-01 00:00:00' WHERE code_placette = 'P35-01'")
+                it.executeUpdate("UPDATE placettes SET dernier_controle = '2099-12-31 23:59:59' WHERE code_placette = 'P35-02'")
+            }
+        }
+        val lues = LecteurTournee.lire(f).placettes
+        assertEquals("1900-01-01 00:00:00", lues.first { it.code == "P35-01" }.dernierControle)
+        assertEquals("2099-12-31 23:59:59", lues.first { it.code == "P35-02" }.dernierControle)
+        val o = ordonnerPlacettes(lues, emptySet())
         assertEquals(3, o.nombre)
         assertEquals(0, o.aFaire.size)
     }
