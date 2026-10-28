@@ -72,6 +72,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **067** bande du mode poche toujours visible, plan couché sous les boutons (`afficheur`,
+  appuyer), lancée au cycle 13 (2026-10-28) ; fiche `pilotage/missions/067-bande-poche-plan-couche.md`.
 - **066** mineurs et maintenance (`dev`, appuyer), lancée au cycle 12 (2026-10-28) ; PR #117
   relue prête (cycle 13) : question de Pascal sur le test « plantation plus âgée » et fusion.
 
@@ -101,9 +103,6 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **012-D2** écoute branchée dans `:app` (micro, permission, anti-larsen) ; #114 et D1 fusionnées.
   Décidé (Pascal, 2026-10-28) : en poche, « tenir pour parler » sur volume bas, sans bouton ; hors
   poche, bouton micro comme Marculus. Questions 3, 6-8 et 11 du plan à poser avant.
-- **Bande du mode poche et plan couché** (`afficheur`) : bande coupée sous la barre quand l'écran
-  était défilé à l'entrée ; en paysage, le cercle du plan chevauche les boutons d'état (captures
-  du 2026-10-28, cycle 12).
 
 **Ensuite, au signal de Pascal :**
 
@@ -117,7 +116,7 @@ _En attente sous le plafond humain (3 PR en revue)._
 - **Test de rendu des écrans** (Robolectric ou émulateur en CI) : le bandeau caché de la 055
   a échappé aux tests qui lisent les sources.
 - **Mineurs** (dans la 066, cycle 12) : KDoc périmés de `Navigation.kt` l. 36 et 61 ; test « plantation plus âgée
-  que l'itinéraire » sans date ; release v0.7.58 restée en brouillon après la #99.
+  que l'itinéraire » sans date (reporté à la tranche 3, Pascal, 2026-10-28) ; release v0.7.58 restée en brouillon après la #99.
 - **Photos de placette et de plant** : spec et ADR 0007 amendées, validées par Pascal
   (PR #115, porte n° 1, 2026-10-28) ; brief vers sommieR envoyé. Mission de code à découper,
   précédée des mesures sur appareil de la spec § 10, point 10 (`.nomedia`, boussole tenue
