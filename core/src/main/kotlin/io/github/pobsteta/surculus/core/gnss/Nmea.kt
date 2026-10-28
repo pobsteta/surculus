@@ -8,7 +8,7 @@
  * Origine : dépôt Groma (https://github.com/pobsteta/groma), fichier android/groma-core/src/main/kotlin/groma/core/Nmea.kt,
  *           état au commit f12b644 (2026-10-16). Reprise provisoire (ADR 0003, mission 003)
  *           jusqu'à l'extraction en bibliothèque commune (ADR 0008).
- * Modifications : paquet ; horloge injectable et horodatage de réception de chaque fix (LecteurNmea) ; heure UTC de la GGA gardée dans TrameGga et FixGnss.
+ * Modifications : paquet ; horloge injectable et horodatage de réception de chaque fix (LecteurNmea) ; heure UTC de la GGA gardée dans TrameGga et FixGnss ; date de la RMC (TrameRmc.instantUtcMs) et heure UTC complète du fix (FixGnss.heureUtcMs, mission 065) ; horloge monotone de LecteurNmea (FixGnss.recuMonotoneMs).
  */
 package io.github.pobsteta.surculus.core.gnss
 
@@ -37,7 +37,12 @@ data class TrameGga(
 data class TrameGsa(val pdop: Double?, val hdop: Double?, val vdop: Double?)
 
 /** Decoded RMC: course and speed over ground; course absent when still. */
-data class TrameRmc(val capDeg: Double?, val vitesseMs: Double?)
+data class TrameRmc(
+    val capDeg: Double?,
+    val vitesseMs: Double?,
+    /** Instant UTC (ms Unix) de la RMC, date (`ddmmyy`) et heure comprises ; null si le statut n'est pas « A » ou la date manque. */
+    val instantUtcMs: Long? = null,
+)
 
 /** One GSV message of a sequence: satellites in view of one system. */
 data class TrameGsv(val systeme: String, val nbMessages: Int, val numMessage: Int, val satellitesEnVue: Int, val satellites: List<SatelliteVu>)
@@ -123,7 +128,40 @@ object Nmea {
     /** RMC: field 7 speed over ground (knots), field 8 course over ground (° true). */
     fun rmc(phrase: String): TrameRmc? {
         val f = champs(phrase, "RMC") ?: return null
-        return TrameRmc(f.getOrNull(8)?.toDoubleOrNull(), f.getOrNull(7)?.toDoubleOrNull()?.let { it * NOEUD_EN_MS })
+        val instant = if (f.getOrNull(2) == "A") instantUtc(f.getOrNull(9), f.getOrNull(1)) else null
+        return TrameRmc(f.getOrNull(8)?.toDoubleOrNull(), f.getOrNull(7)?.toDoubleOrNull()?.let { it * NOEUD_EN_MS }, instant)
+    }
+
+    private const val JOUR_MS = 86_400_000L
+
+    /** Heure du jour `hhmmss[.ss]` en millisecondes depuis minuit UTC, null si illisible. */
+    private fun heureDuJourMs(heure: String?): Long? {
+        if (heure == null || heure.length < 6 || !heure.take(6).all { it.isDigit() }) return null
+        val h = heure.substring(0, 2).toInt(); val m = heure.substring(2, 4).toInt(); val s = heure.substring(4, 6).toInt()
+        val frac = if (heure.length > 6) (heure.substring(6).toDoubleOrNull() ?: return null) else 0.0
+        if (h > 23 || m > 59 || s > 60 || frac < 0.0 || frac >= 1.0) return null
+        return ((h * 60L + m) * 60L + s) * 1000L + Math.round(frac * 1000.0)
+    }
+
+    /** Date `ddmmyy` (UTC, années 2000 à 2099) et heure `hhmmss.ss` en ms Unix, null si l'un des deux est illisible. */
+    private fun instantUtc(date: String?, heure: String?): Long? {
+        if (date == null || date.length != 6 || !date.all { it.isDigit() }) return null
+        val dansLeJour = heureDuJourMs(heure) ?: return null
+        val jour = runCatching {
+            java.time.LocalDate.of(2000 + date.substring(4, 6).toInt(), date.substring(2, 4).toInt(), date.substring(0, 2).toInt())
+        }.getOrNull() ?: return null
+        return jour.toEpochDay() * JOUR_MS + dansLeJour
+    }
+
+    /**
+     * Instant UTC complet d'un fix : l'heure du jour de la GGA, le jour de la RMC. La RMC et la GGA peuvent encadrer minuit
+     * UTC : on prend le jour (veille, même jour, lendemain) qui met l'heure de la GGA au plus près de celle de la RMC.
+     */
+    private fun instantDuFix(heureGga: String?, rmc: TrameRmc?): Long? {
+        val reference = rmc?.instantUtcMs ?: return null
+        val dansLeJour = heureDuJourMs(heureGga) ?: return null
+        val jourRmc = Math.floorDiv(reference, JOUR_MS)
+        return (jourRmc - 1..jourRmc + 1).map { it * JOUR_MS + dansLeJour }.minByOrNull { Math.abs(it - reference) }
     }
 
     fun gsv(phrase: String): TrameGsv? {
@@ -142,12 +180,12 @@ object Nmea {
     }
 
     /** Whole fix from a GGA and the latest GST, GSA and RMC. */
-    fun fix(gga: TrameGga, gst: TrameGst? = null, gsa: TrameGsa? = null, rmc: TrameRmc? = null, satellites: List<SatelliteVu> = emptyList(), horodatageMs: Long) = FixGnss(
+    fun fix(gga: TrameGga, gst: TrameGst? = null, gsa: TrameGsa? = null, rmc: TrameRmc? = null, satellites: List<SatelliteVu> = emptyList(), horodatageMs: Long, recuMonotoneMs: Long? = null) = FixGnss(
         position = gga.position, qualite = gga.qualite, nbSatellites = gga.nbSatellites, hdop = gga.hdop ?: gsa?.hdop,
         altitudeM = gga.altitudeM, ageCorrectionsS = gga.ageCorrectionsS, precisionHorizontaleM = gst?.precisionHorizontaleM,
         horodatageMs = horodatageMs, heureUtc = gga.heureUtc,
         pdop = gsa?.pdop, vdop = gsa?.vdop, stationRef = gga.stationRef, capDeg = rmc?.capDeg, vitesseMs = rmc?.vitesseMs,
-        satellites = satellites,
+        satellites = satellites, heureUtcMs = instantDuFix(gga.heureUtc, rmc), recuMonotoneMs = recuMonotoneMs,
     )
 
     /** NMEA `ddmm.mmmm` + hemisphere → signed decimal degrees. */
@@ -169,7 +207,12 @@ object Nmea {
  * the latest GST (accuracy), GSA (dilutions), RMC (course, speed) and the
  * last complete GSV sequences (sky plot).
  */
-class LecteurNmea(private val horloge: () -> Long = System::currentTimeMillis) {
+class LecteurNmea(
+    /** Horloge monotone de l'appareil (`SystemClock.elapsedRealtime`) ; absente, les fix n'ont pas d'instant monotone. */
+    private val horlogeMonotone: (() -> Long)? = null,
+    // En dernier : `LecteurNmea { maintenant }` continue de désigner l'horloge murale.
+    private val horloge: () -> Long = System::currentTimeMillis,
+) {
     private val decoupeur = NmeaDecoupeur()
     private var gst: TrameGst? = null
     private var gsa: TrameGsa? = null
@@ -196,7 +239,7 @@ class LecteurNmea(private val horloge: () -> Long = System::currentTimeMillis) {
             }
             Nmea.gga(t)?.let { g ->
                 derniereGga = t
-                fixes += Nmea.fix(g, gst, gsa, rmc, complets.values.flatten(), horodatageMs = horloge())
+                fixes += Nmea.fix(g, gst, gsa, rmc, complets.values.flatten(), horodatageMs = horloge(), recuMonotoneMs = horlogeMonotone?.invoke())
             }
         }
         return trames to fixes
