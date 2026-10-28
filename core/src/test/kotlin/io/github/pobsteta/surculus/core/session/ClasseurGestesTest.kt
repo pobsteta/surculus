@@ -88,7 +88,8 @@ class ClasseurGestesTest {
         val c = ClasseurGestes()
         c.appuye(Touche.BAS, 0)
         assertEquals(listOf(geste(Geste.VOLUME_BAS_LONG)), c.avancer(500))
-        assertEquals(emptyList(), c.relache(Touche.BAS, 900))
+        // 012-D2 : le relâchement après le long est signalé (tenir pour parler), sans autre geste.
+        assertEquals(listOf(SortieClasseur.BasRelacheApresLong), c.relache(Touche.BAS, 900))
         assertEquals(emptyList(), c.avancer(5_000))
         // Un appui court juste après un long n'est pas un double.
         c.appuye(Touche.BAS, 1_000)
@@ -151,5 +152,61 @@ class ClasseurGestesTest {
         assertEquals(1_500L, c.echeance())
         c.avancer(1_500)
         assertEquals(4_000L, c.echeance())
+    }
+
+    // --- 012-D2 : tenir pour parler
+
+    @Test fun `bas relache apres un long - le signal vient une seule fois, au relachement`() {
+        val c = ClasseurGestes()
+        c.appuye(Touche.BAS, 0)
+        assertEquals(listOf(geste(Geste.VOLUME_BAS_LONG)), c.avancer(500))
+        assertEquals(emptyList(), c.avancer(4_000)) // tenu : rien de plus
+        assertEquals(listOf(SortieClasseur.BasRelacheApresLong), c.relache(Touche.BAS, 4_100))
+        assertEquals(emptyList(), c.relache(Touche.BAS, 4_200))
+    }
+
+    @Test fun `bas court - aucun signal de relachement, le mort vient apres la fenetre`() {
+        val c = ClasseurGestes()
+        c.appuye(Touche.BAS, 0)
+        assertEquals(emptyList(), c.relache(Touche.BAS, 200))
+        assertEquals(listOf(geste(Geste.VOLUME_BAS_COURT)), c.avancer(550))
+    }
+
+    @Test fun `haut long relache - pas de signal de micro`() {
+        val c = ClasseurGestes()
+        c.appuye(Touche.HAUT, 0)
+        c.avancer(500)
+        assertEquals(listOf(geste(Geste.VOLUME_HAUT_LONG)), c.relache(Touche.HAUT, 900))
+    }
+
+    @Test fun `bas long puis deux touches - le micro ouvert se ferme quand meme au relachement du bas`() {
+        val c = ClasseurGestes()
+        c.appuye(Touche.BAS, 0)
+        c.avancer(500)
+        assertEquals(listOf(SortieClasseur.DeuxTouches), c.appuye(Touche.HAUT, 600))
+        assertEquals(listOf(SortieClasseur.BasRelacheApresLong), c.relache(Touche.BAS, 700))
+        assertEquals(emptyList(), c.relache(Touche.HAUT, 800))
+    }
+
+    @Test fun `bas long, haut relache avant - le signal vient au relachement du bas`() {
+        val c = ClasseurGestes()
+        c.appuye(Touche.BAS, 0)
+        c.avancer(500)
+        c.appuye(Touche.HAUT, 600)
+        assertEquals(emptyList(), c.relache(Touche.HAUT, 700))
+        assertEquals(listOf(SortieClasseur.BasRelacheApresLong), c.relache(Touche.BAS, 800))
+    }
+
+    @Test fun `haut tenu puis bas - le bas ne signale rien, aucun micro n'a ete ouvert`() {
+        val c = ClasseurGestes()
+        c.appuye(Touche.HAUT, 0)
+        c.appuye(Touche.BAS, 100)
+        c.avancer(1_000)
+        assertEquals(emptyList(), c.relache(Touche.BAS, 1_100))
+    }
+
+    @Test fun `les seuils de la C1 sont inchanges`() {
+        val s = SeuilsGestes()
+        assertEquals(500L, s.longMs); assertEquals(3_000L, s.sortieMs); assertEquals(350L, s.doubleMs); assertEquals(40L, s.rebondMs)
     }
 }

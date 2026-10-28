@@ -14,7 +14,7 @@ pour parler » (volume bas tenu en mode poche, bouton micro tenu hors du mode po
 chaque phrase passée à `ApplicateurDictee` et confirmée à la voix, pour que le forestier dise la
 cause, la hauteur ou une correction gants aux mains, téléphone en poche.
 
-**Redite par l'agent :** _à écrire par l'agent avant d'agir._
+**Redite par l'agent :** Je branche le micro de Vosk sur l'écran du contrôle en « tenir pour parler » (volume bas tenu en mode poche, bouton micro tenu hors du mode poche), chaque phrase passant par `ApplicateurDictee` et revenant à la voix et à la bande (J'ÉCOUTE, entendu / compris), micro coupé pendant les annonces, pour que le forestier dise l'état, la cause ou la hauteur gants aux mains, téléphone en poche.
 
 ## Décisions de Pascal à respecter (2026-10-28, questions posées une par une)
 
