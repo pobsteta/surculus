@@ -16,7 +16,7 @@ val ENTREES_MENU: List<EntreeMenu> = listOf(EntreeMenu.OUVRIR_DOSSIER, EntreeMen
  * Restauration s'ouvrent depuis Paramètres et y ramènent.
  * Mission 061, comme Groma : une tournée ouverte donne d'abord ses **placettes** ; la carte s'ouvre depuis une placette
  * ([centreId]) ou l'icône carte (cadrée sur la tournée) ; une placette choisie sur la carte donne le guidage.
- * Retours : Guidage, Carte, Placettes, Tournées.
+ * Retours : Contrôle, Guidage, Carte, Placettes, Tournées.
  */
 data class EtatNavigation(
     val destination: Destination = Destination.TOURNEES,
