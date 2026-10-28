@@ -67,8 +67,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **067** bande du mode poche toujours visible, plan couché sous les boutons (`afficheur`,
-  appuyer), lancée au cycle 13 (2026-10-28) ; fiche `pilotage/missions/067-bande-poche-plan-couche.md`.
+- **012-D2** le micro, tenir pour parler (`afficheur`, appuyer), lancée au cycle 13 (2026-10-28) ;
+  fiche `pilotage/missions/012d2-micro.md`.
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
   `couchey-demo-avec-ortho.zip`, bandeau, cinq boutons, Paramètres (thème en liste,
@@ -91,12 +91,6 @@ _Idées, à trier au prochain `/mission`._
 _En attente sous le plafond humain (3 PR en revue)._
 
 **Suite décidée de la 012 (2026-10-27) :** la 012-D2.
-
-- **012-D2** écoute branchée dans `:app` (micro, permission, anti-larsen) ; #114 et D1 fusionnées.
-  Décidé (Pascal, 2026-10-28) : en poche, « tenir pour parler » sur volume bas, sans bouton ; hors
-  poche, bouton micro comme Marculus. Questions du plan toutes tranchées le 2026-10-28 ; part après la fusion de la 067 (même écran).
-
-**Ensuite, au signal de Pascal :**
 
 - **049** accueil retrouvé au retour (recherche, vue colonnes) ; ne pas réutiliser la clé
   `vue_kanban`.
@@ -128,6 +122,9 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **067** bande du mode poche toujours visible, plan couché sous les boutons (PR #118, 8a7d379,
+  cycle 13) ; captures à faire sur la release.
 
 - **066** mineurs et maintenance (PR #117, 7b2c46d, cycle 13) : KDoc de `Navigation.kt`, renvoi
   terrain#23, doc d'`ExporterScenario`, test `dernier_controle` renommé ; release v0.7.58 déjà
