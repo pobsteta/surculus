@@ -72,6 +72,9 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **012-C2** la voix et la vibration du mode poche (`afficheur`, appuyer), lancée le 2026-10-28
+  depuis b9cf9d6 ; fusion après l'essai de la C1 sur le téléphone. Fiche :
+  `pilotage/missions/012c2-voix-vibration.md` (sur sa branche).
 - **Captures de la 064, de la 012-B2 et de la 012-C1** sur la release qui porte la fusion de
   la #113 (orchestrateur), ce soir quand le téléphone de Pascal est branché : carte couchée
   (six boutons en 3 + 3, bandeau, légende, ligne de la placette) et debout ; vue Pointer, plan
@@ -99,8 +102,7 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Suite décidée de la 012 (2026-10-27 et 28) :** **012-C2** voix (`TextToSpeech`) et vibration,
-fiche 012-C (décisions 2, 4, 6, 8), puis la 012-D.
+**Suite décidée de la 012 (2026-10-27) :** après la 012-C2 (au Validé), la 012-D.
 
 - **012-D** dictée branchée sur l'écran du contrôle.
 
