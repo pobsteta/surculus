@@ -12,7 +12,10 @@ import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.core.placette.Observation
 import io.github.pobsteta.surculus.core.placette.Totaux
 import io.github.pobsteta.surculus.core.placette.Verdict
+import io.github.pobsteta.surculus.core.session.ActionGeste
 import io.github.pobsteta.surculus.core.session.EtatSession
+import io.github.pobsteta.surculus.core.session.Geste
+import io.github.pobsteta.surculus.core.session.GestesPlacette
 import io.github.pobsteta.surculus.core.session.PlantSession
 import io.github.pobsteta.surculus.core.placette.UuidPlant
 import io.github.pobsteta.surculus.core.reperes.AzimutSaisi
@@ -241,6 +244,35 @@ class ControleurPlacette(
     fun annuler(): EcranControle = agir { session.annuler() }
 
     /**
+     * Applique un geste des boutons de volume (mission 012-C1, spec § 4.3, table [GestesPlacette]) par la session, et dit à
+     * l'écran ce qui a été fait : « Dit : n° 7, sain. » Le numéro est celui du plant **dit**, lu avant l'écriture (sain et mort
+     * passent ensuite au suivant). Après « Terminer », la saisie est permise et l'alerte passe **avant** le numéro (décision de
+     * Pascal du 2026-10-28).
+     */
+    fun geste(geste: Geste): EcranControle {
+        val avant = session.etat()
+        val plant = avant.plants.firstOrNull { it.uuid == avant.courant }
+        val suite = session.appliquer(geste)
+        val action = GestesPlacette.action(geste)
+        message = if (suite is SuiteSession.Fait) when (action) {
+            is ActionGeste.Dire -> {
+                val dit = TextesControle.dit(plant?.numero, action.etat)
+                val m = if (avant.termine) TextesControle.DEJA_TERMINEE_PREFIXE + dit else dit
+                MessageControle(m, erreur = avant.termine)
+            }
+            ActionGeste.AnnulerDerniereSaisie -> MessageControle(TextesControle.ANNULE, erreur = false)
+            ActionGeste.OuvrirDictee -> null
+        } else TextesControle.message(suite)
+        return instantane()
+    }
+
+    /** Les deux touches de volume ensemble : ignorées, on le dit (rien n'est écrit). */
+    fun deuxTouches(): EcranControle { message = MessageControle(TextesControle.UNE_TOUCHE_A_LA_FOIS, erreur = true); return instantane() }
+
+    /** Une annonce du mode poche (sortie, rappel) : information à l'écran, jamais une faute. */
+    fun annoncer(texte: String): EcranControle { message = MessageControle(texte, erreur = false); return instantane() }
+
+    /**
      * Ouvre la vue de confirmation. Aucune règle ici : « Terminer » sans état dit est refusé par la session seule
      * (`RienASaisir`), au moment de terminer, et l'écran répète sa réponse (décision de Pascal sur la #108, 2026-10-28).
      */
@@ -278,6 +310,21 @@ object TextesControle {
         GroupeCause.PATHOLOGIQUE -> "Champignons"
         GroupeCause.ANIMAUX -> "Animaux"
         GroupeCause.ABIOTIQUE_COMPLEXE_INDETERMINE -> "Autre ou inconnu"
+    }
+
+    const val ANNULE = "Annulé."
+    const val UNE_TOUCHE_A_LA_FOIS = "Une touche à la fois."
+    const val DEJA_TERMINEE_PREFIXE = "Placette déjà terminée. "
+
+    /** « Dit : n° 7, sain. » : ce que le geste vient d'écrire (le numéro dit, pas le suivant). */
+    fun dit(numero: Int?, etat: EtatDsf): String = "Dit : n° ${numero ?: "?"}, ${libelle(etat).lowercase(Locale.FRANCE)}."
+
+    /** Pourquoi le mode poche s'est levé, pour qui revient à l'écran ; `null` : la sortie se voit déjà (Terminer, autre vue). */
+    fun sortiePoche(raison: RaisonSortie): String? = when (raison) {
+        RaisonSortie.TROIS_SECONDES -> "Mode poche terminé."
+        RaisonSortie.INACTIVITE -> "Mode poche terminé : 15 minutes sans geste."
+        RaisonSortie.ARRIERE_PLAN -> "Mode poche terminé : l'application a quitté l'écran."
+        RaisonSortie.TERMINER, RaisonSortie.VUE_QUITTEE -> null
     }
 
     const val PAS_ENCORE_DIT = "pas encore dit"

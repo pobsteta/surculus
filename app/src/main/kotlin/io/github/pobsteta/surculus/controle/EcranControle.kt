@@ -8,6 +8,11 @@
 package io.github.pobsteta.surculus.controle
 
 import android.Manifest
+import android.os.SystemClock
+import androidx.compose.foundation.border
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import io.github.pobsteta.surculus.core.session.SortieClasseur
 import android.content.pm.PackageManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -225,17 +230,51 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
     fun agir(commande: ControleurPlacette.() -> EcranControle) {
         scope.launch { ecran = withContext(Dispatchers.IO) { controleur.commande() } }
     }
+    // Mode poche (mission 012-C1) : l'état vit hors de Compose (PocheApp) et traverse la rotation.
+    val mode = PocheApp.mode
+    val activite = LocalContext.current as? android.app.Activity
+    var poche by remember { mutableStateOf(mode.actif) }
+    val verrou = remember { Mutex() }
+    DisposableEffect(controleur) {
+        poche = mode.actif
+        val desabonner = mode.abonner { actif, raison ->
+            poche = actif
+            val annonce = raison?.let { TextesControle.sortiePoche(it) }
+            if (!actif && annonce != null) scope.launch { verrou.withLock { ecran = withContext(Dispatchers.IO) { controleur.annoncer(annonce) } } }
+        }
+        // Les gestes de volume arrivent dans l'ordre et s'appliquent un par un.
+        PocheApp.pont.ecoute = { sortie ->
+            when (sortie) {
+                is SortieClasseur.Geste -> scope.launch { verrou.withLock { ecran = withContext(Dispatchers.IO) { controleur.geste(sortie.geste) } } }
+                SortieClasseur.DeuxTouches -> scope.launch { verrou.withLock { ecran = withContext(Dispatchers.IO) { controleur.deuxTouches() } } }
+                SortieClasseur.Tic, SortieClasseur.Bourdon -> {}
+            }
+        }
+        onDispose {
+            desabonner()
+            PocheApp.pont.ecoute = null
+            if (activite?.isChangingConfigurations != true) mode.sortir(RaisonSortie.VUE_QUITTEE)
+        }
+    }
+    // « Terminer » ou toute autre vue que le plant : le mode poche se lève (le regarni et les totaux se font à l'écran).
+    LaunchedEffect(ecran?.vue) {
+        val vue = ecran?.vue
+        if (vue != null && vue != VueControle.PLANT) mode.sortir(if (vue == VueControle.TERMINEE) RaisonSortie.TERMINER else RaisonSortie.VUE_QUITTEE)
+    }
     val e = ecran ?: return
     // Le geste « retour » depuis Pointer ou Terminer revient au plant ; depuis le plant, il quitte l'écran (plan § 3).
     BackHandler(enabled = e.vue == VueControle.TERMINER || e.vue == VueControle.POINTER) { agir { reprendre() } }
+    // Enregistré après le précédent, donc prioritaire : en poche, le retour système est ignoré (une poche appuie sur « retour »).
+    BackHandler(enabled = !ModePoche.retourPris(poche)) { }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (poche) BandePoche()
         Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (e.plant.alerteTerminee) {
             Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
         }
         when (e.vue) {
-            VueControle.PLANT -> VuePlantEcran(e, ::agir)
+            VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, onPoche = { mode.entrer(SystemClock.uptimeMillis()) })
             VueControle.TERMINER -> VueTerminer(e, ::agir)
             VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
             VueControle.POINTER -> VuePointerEcran(e, tournee, reglages, ::agir)
@@ -246,7 +285,7 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
 }
 
 @Composable
-private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit) {
+private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit, poche: Boolean, onPoche: () -> Unit) {
     val p = e.plant
     // 1. La seule chose en grand : le numéro du plant ; 2. son état ; 3. l'état d'avant, en petit.
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -320,6 +359,28 @@ private fun VuePlantEcran(e: EcranControle, agir: (ControleurPlacette.() -> Ecra
         Button(onClick = { agir { demanderTerminer() } }, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION), contentPadding = PaddingValues(horizontal = 4.dp)) {
             Text(stringResource(R.string.controle_terminer))
         }
+    }
+    // 7. Le mode poche : le téléphone au fond de la poche, les états au volume (voix et vibration : mission 012-C2).
+    if (!poche) {
+        OutlinedButton(onClick = onPoche, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+            Text(stringResource(R.string.controle_poche), color = couleurNeutre())
+        }
+    }
+}
+
+/**
+ * La bande du mode poche : la seule chose à voir en poche, et comment en sortir. Texte `onSurface` cerné d'un filet (063) ;
+ * [ligneVoix] garde la place de la ligne « Pas de voix française : regardez l'écran » de la 012-C2.
+ */
+@Composable
+private fun BandePoche(ligneVoix: String? = null) {
+    Column(
+        Modifier.fillMaxWidth().border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(stringResource(R.string.controle_poche_bande), style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
+        Text(stringResource(R.string.controle_poche_aide), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
+        ligneVoix?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre()) }
     }
 }
 
