@@ -12,7 +12,7 @@ Purfürst 2022 dans l'ADR 0003 (les chiffres « 6,1 m, CEP95 13,4 m » sont ceux
 tableau 4, qui inclut le récepteur de référence Geo 7X) et vérifier qu'aucun seuil de Surculus n'en
 dépend, pour que la justification du repli téléphone repose sur les chiffres des seuls téléphones.
 
-**Redite par l'agent :** _à écrire par l'agent avant d'agir._
+**Redite par l'agent :** Ajouter à l'ADR 0003, sous la phrase d'origine conservée, une correction datée du 2026-10-28 qui donne les chiffres des téléphones seuls (attribués à Ramulus, source non relue faute d'accès au web) et dit quels seuils de Surculus en dépendent (aucun).
 
 ## Le brief (constat de Ramulus)
 

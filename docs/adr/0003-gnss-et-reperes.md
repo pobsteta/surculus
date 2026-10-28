@@ -25,6 +25,21 @@ d'un téléphone fait en moyenne 6,1 m d'erreur horizontale, CEP95 13,4 m, jusqu
 pour un modèle (Purfürst 2022, tableau 4). Le repli téléphone ne tient donc pas seul la
 règle des 15 m.
 
+**Correction du 2026-10-28** (de la phrase « Erreur corrigée » ci-dessus, qui reste telle quelle ; brief de
+Ramulus du 2026-10-28, `~/dev/briefs/vers-surculus/2026-10-28-ramulus-citation-purfurst.md`, décision de Pascal G2).
+Les chiffres « 6,1 m, CEP95 13,4 m » sont ceux de la ligne « All » du tableau 4 de Purfürst 2022, qui inclut le
+récepteur géodésique de référence Geo 7X (n = 12 096 sur 131 338 mesures) : ils ne décrivent pas les seuls téléphones.
+Pour les téléphones seuls, d'après Ramulus (`docs/referentiels/gnss-telephone.yaml` de son dépôt, écart E1) :
+moyenne 6,50 m (calculée par Ramulus, vérifiée par son relecteur) ; CEP95 13,38 m en multifréquence et 13,64 m en
+monofréquence ; pire téléphone, le Xcover 4, CEP95 41,99 m (donc le « 42 m » d'origine tient, pour un téléphone).
+**Source non relue par Surculus** (aucun accès au web lors de la mission 070) : ces chiffres sont ceux de Ramulus, non
+vérifiés ici, et la moyenne n'a pas été recalculée. Limite signalée par Ramulus : tableau lu sur le XML d'Europe PMC, et la
+source donne le Mi 8 à 7,20 m ou 7,22 m (incohérence non résolue). Seuils : **aucun seuil de Surculus ne dépend de ces
+chiffres** (recherche dans la spec, les ADR, `core/` et `app/`). La règle des 15 m vient de l'import 0.31.1 de sommieR
+(`R/travaux_qfield.R` l. 303), non de Purfürst ; `Controle.DISTANCE_MAX_M` = 15,0 la reprend. Seule la justification
+du repli téléphone (« ne tient pas seul la règle des 15 m ») s'appuie sur ces chiffres ; elle tient avec les chiffres
+corrigés (CEP95 de 13,4 m proche de 15 m, 42 m pour le pire modèle), à confirmer par Pascal s'il le juge utile.
+
 Ce qui est vérifié : az_grille = az_mag + D − γ, avec γ = n·(λ − 3°), n = 0,7256 ; γ
 vaut −5,43° à Brest et +3,45° à Strasbourg ; c'est la formule de `groma-core`
 (`Azimut.geographiqueVersGrille`, `Projections.kt`, algorithmes IGN ALG0003/ALG0004),
