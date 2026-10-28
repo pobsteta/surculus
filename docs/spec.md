@@ -92,6 +92,7 @@ placettes, puis rend à sommieR un dossier qu'il importe sans changement.
 | Numérotation des plants | par l'azimut **géographique** depuis le piquet, sens horaire, [0, 360[ |
 | Distance | mètres, **horizontale**. Une distance mesurée dans la pente est ramenée à l'horizontale si la pente est saisie |
 | Surface | ares pour les vides, hectares pour les interventions (aire calculée en EPSG:2154) |
+| Position dans l'EXIF d'une photo | **WGS 84**, comme l'exige la norme EXIF (`GPSMapDatum`), (latitude, longitude) en degrés ; une position RGF93 est écrite telle quelle (écart inférieur au mètre, sans objet pour une photo) et sa source est au journal ; heure UTC du fix (`GPSDateStamp`, `GPSTimeStamp`), précision (`GPSHPositioningError`), azimut de visée (`GPSImgDirection`, référence `M` ou `T`) (amendé le 2026-10-28) |
 
 Des tests vérifient qu'une placette française tombe en France métropolitaine (Corse comprise), qu'une inversion (x, y)
 ou (lat, lon) est détectée, et que la chaîne déclinaison puis convergence donne le bon
@@ -207,6 +208,21 @@ point à Brest et à Strasbourg.
   de Pascal), `nb_abroutis` (vivants abroutis), `h_moy_cm`.
 * Un contrôle par placette et par jour ; on corrige le premier tant que la tournée n'est
   pas rendue.
+* **Photos** (amendé le 2026-10-28, décisions de Pascal : « Placette + plant au besoin »,
+  « on part sur une photo nord en haut, ajouter les métadonnées sur l'exif, GNSS du téléphone
+  actif », « Le fix en cours de Surculus », « Repère de boussole, sans blocage ») :
+  * une **photo de la placette**, prise depuis le piquet en visant le **nord** : le viseur
+    montre une flèche du nord lue à la boussole du téléphone, sans jamais bloquer le
+    déclencheur ; l'azimut réel de visée est enregistré, la photo prise de travers reste
+    lisible ;
+  * une **photo facultative d'un plant**, quand il est difficile à retrouver, rattachée à ce
+    plant ;
+  * chaque photo porte dans son **EXIF** la position et l'heure du **fix GNSS en cours** de
+    Surculus (récepteur RTK s'il est branché, sinon GNSS du téléphone), sa précision, et
+    l'azimut de visée avec sa référence (magnétique ou géographique). Sans fix, la photo est
+    prise quand même, sans position dans l'EXIF, et l'écran le signale ;
+  * la photo est écrite **dès la prise** (ADR 0005) et son empreinte entre au journal (§ 5).
+  Hors du mode poche seulement : prendre une photo demande l'écran.
 * **Pas d'alerte de reprise sur une placette seule** : 10 plants donnent un taux à
   ±25 points (`protocole-constat-reprise.md`). La placette sert le suivi dans le temps et
   la localisation des pertes ; le taux de la plantation vient du § 4.4.
@@ -310,7 +326,7 @@ rien.
 | `placettes` | aller, retour en ajout | `uuid`, `code_placette`, `travaux_id`, `rayon_m`, `materialisation`, `ug`, `etat_suivi`, `dernier_controle`, `dernier_besoin` |
 | `travaux_surf`, `travaux_lin`, `travaux_pt` | retour | `uuid`, `code_travaux`, `nature_travaux`, `annee`, `quantite`, `unite`, `nb_plants`, `montant_eur`, `modalite`, `essence_objectif`, `execution`, `intervenant`, `prevu`, `motif_ecart`, `date_reception`, `visite_le`, `operateur`, `precision_m`, `source_gnss`, `observations` |
 | `controles` | retour | `uuid`, `placette_uuid`, `nb_total`, `nb_vivants`, `h_moy_cm`, `nb_abroutis`, `concurrence`, `besoin`, `visite_le`, `operateur`, `observations` |
-| `photos` + `DCIM/` | retour | `uuid`, `constat_uuid`, `fichier`, `prise_le` |
+| `photos` + `DCIM/` | retour | `uuid`, `constat_uuid`, `fichier`, `prise_le` ; une photo de placette ou de plant a pour `constat_uuid` l'`uuid` du contrôle (`controles`), que l'import 0.31.1 relie déjà à ses photos (amendé le 2026-10-28) |
 
 **Couches ajoutées par Surculus**, écrites dès la tranche 1 et **ignorées par l'import
 0.31.1** tant que sommieR ne les lit pas (briefs `vers-sommier` à mettre à jour) :
@@ -323,6 +339,7 @@ rien.
 | `constats_reprise` | POLYGON (surface constatée) | `uuid`, `methode` (plein, cemagref, grappes), `pas_lignes`, `departs` (les deux départs tirés), `essence`, `nb_plants_chantier`, `nb_sains`, `nb_atteints`, `nb_morts`, `nb_absents`, `taux_brut_pct`, `ic_bas_pct`, `ic_haut_pct`, `seuil_pct`, `seuil_source`, `alerte` (bool), `visite_le`, `operateur` |
 | `vides` | POLYGON | `uuid`, `constat_uuid` ou `placette_uuid`, `surface_are`, `origine` (trace, propose), `visite_le`, `operateur` |
 | `projet` | — | `nom`, `foret`, `operateur`, `prepare_le`, `version_sommier`, `version_surculus` |
+| `photos_terrain` | POINT (position du fix, si fix) | `photo_uuid` (= `photos.uuid`), `sujet` (`placette`, `plant`), `placette_uuid`, `plant_uuid` (sujet `plant`), `azimut_visee_deg`, `reference_azimut` (`magnetique`, `geographique`), `precision_m`, `source_gnss`, `referentiel_source`, `age_fix_ms`, `sha256` (amendé le 2026-10-28) |
 
 En aller, la tournée 0.31.1 ne porte ni le contour des plantations à constater, ni leur
 nombre de plants, leurs lignes, leur date de réception ou leurs cloisonnements
@@ -407,6 +424,7 @@ tournée. Dans le fichier `.sursync`, la tournée n'est écrite qu'une fois, dan
 | `controle` | le contrôle | placette, jour civil, opérateur |
 | `pointage` | le plant | observation brute (distance horizontale, azimut saisi et unité) et termes dérivés (déclinaison, convergence, position, EPSG) |
 | `etat` | la ligne de `etats_plants` | contrôle, plant, état, cause, détail, hauteur |
+| `photo` | la photo | contrôle, sujet (placette ou plant), plant, fichier, empreinte SHA-256 du fichier écrit, heure de prise, position et précision du fix (ou son absence), source GNSS, âge du fix, azimut de visée et sa référence (amendé le 2026-10-28) |
 | `annulation` | l'objet de la ligne annulée | rien ; `remplace_uuid` désigne la ligne annulée |
 | `saut_horloge` | l'appareil | écart mesuré, heure avant et après |
 
@@ -473,6 +491,7 @@ dans Surculus.
 | Un plant appartient à une seule placette et garde son UUID ; un UUID de plant en double est refusé | Surculus | 1 |
 | Numérotation de Groma sans masquage (les plants n'ont pas de diamètre) ; un plant pointé après coup prend le numéro suivant le plus grand déjà donné, sans renuméroter ; pente ≥ 90° refusée ; date hors validité du WMM2025 (après le 31/12/2029) refusée | Surculus | 1 |
 | États et causes uniquement ceux de `etats-plants.yaml` ; une cause sur un plant sain ou absent est refusée | Surculus | 1 |
+| Une photo est rattachée à un contrôle de la tournée ; une photo de plant, à un plant de la même placette ; le fichier existe et son empreinte SHA-256 est celle du journal ; une position d'EXIF hors de France est signalée (placette en Somalie) (amendé le 2026-10-28) | Surculus ; présence du fichier : sommieR 0.31.1 (`controler_photos_constat`) | 1 |
 | `h_moy_cm` = moyenne des hauteurs des plants vivants (sains + atteints) mesurés, arrondie à l'entier le plus proche, **demi vers le haut** (42,5 → 43 ; en R, `floor(x + 0.5)`, pas `round()`) (sommieR exige un entier, `R/registre6.R` l. 174) ; absent si aucune hauteur ; `hauteur_cm` entier strictement positif | Surculus | 1 |
 | `cause_detail` libre, seule constante reconnue « abroutissement » ; détail refusé sur un plant absent ou non observé, permis seul (sans cause) sur un atteint ou un mort ; sur un plant sain, seul « abroutissement » est permis (arbitrage de Pascal du 2026-10-16, mission 002 ; dictée : décision 4 du 2026-10-21) | Surculus | 1 |
 | Un plant « non observé » ne porte aucune mesure (hauteur, cause, détail) ; hauteur refusée sur un plant absent ; un seul état par plant dans un contrôle ; numéro déjà pris dans la placette refusé (comme `sommier_pointer_plant`) | Surculus | 1 |
