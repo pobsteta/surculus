@@ -17,7 +17,7 @@ le plant courant de l'écran du contrôle, ouverte par « volume bas, appui long
 la voix, pour que le forestier dise la cause d'un plant atteint, sa hauteur ou une correction sans
 regarder l'écran ni retirer ses gants.
 
-**Redite par l'agent :** _à écrire par l'agent avant d'agir._
+**Redite par l'agent :** Brancher le micro de Vosk sur le plant courant de l'écran du contrôle (appui long sur volume bas en mode poche, bouton « Micro » hors du mode), confronter chaque phrase de la grammaire fermée à l'état du plant puis l'écrire par la session, et dire à la voix ce qui est compris ou refusé, pour que le forestier, gants aux mains et téléphone en poche, dise la cause, la hauteur ou une correction sans regarder l'écran. Cette étape ne rend que le plan : `pilotage/missions/012d-plan.md`, sans code.
 
 ## Décisions de Pascal à respecter
 
