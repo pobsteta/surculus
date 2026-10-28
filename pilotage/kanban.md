@@ -9,8 +9,6 @@
 
 _Idées, à trier au prochain `/mission`._
 
-- **`terrain-style` v0.6.1** : à sa publication, remplacer la copie littérale du thème
-  (038) par la dépendance ; le test d'égalité doit rester vert.
 - **Choix Système / Clair / Sombre** (Marculus v0.65.0), proposé par la session `marculus`.
 
 - **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0010
@@ -67,6 +65,10 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **069** thème pris de `terrain-style` (tag v0.7.1), plus de copie (`dev`, appuyer), brief Marculus,
+  lancée au cycle 13 (2026-10-28).
+- **070** citation de Purfürst corrigée dans l'ADR 0003 (`archiviste`), brief Ramulus, lancée au
+  cycle 13 (2026-10-28).
 - **012-D2** le micro, tenir pour parler (`afficheur`, appuyer), lancée au cycle 13 (2026-10-28) ;
   fiche `pilotage/missions/012d2-micro.md`.
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
