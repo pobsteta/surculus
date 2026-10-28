@@ -90,7 +90,11 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Suite décidée de la 012 (2026-10-27) :** la 012-D2.
+**Suite décidée de la 012 (2026-10-27) :** la 012-D2 (au Validé), puis :
+
+- **068** message d'arrivée en français : « hors_15_m : Placette la plus proche à
+  9987.021413659639 m » montre un code et douze décimales (capture v0.7.77) ; après la D2, même
+  écran (Pascal, 2026-10-28).
 
 - **049** accueil retrouvé au retour (recherche, vue colonnes) ; ne pas réutiliser la clé
   `vue_kanban`.
