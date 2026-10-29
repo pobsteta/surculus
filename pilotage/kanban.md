@@ -9,6 +9,13 @@
 
 _Idées, à trier au prochain `/mission`._
 
+- **Mineurs de la 071** : lien de la FAQ de JNA dans `proguard-rules.pro`,
+  `-dontwarn com.sun.jna.platform.**` sans effet ; anciens tests UPDATE/DELETE du journal en
+  `assertFailsWith<Exception>` (relecture de la 073).
+- **Question pour Pascal (ADR 0011)** : jouer l'essai de fumée aussi sur les PR (`ci.yml`, environ
+  10 min d'émulateur), pour qu'un R8 cassé bloque la fusion et pas seulement la release.
+- **Mot à Ramulus** : sous Robolectric (SQLite 3.44.3), `BEFORE DELETE` refuse déjà le REPLACE,
+  contrairement à son brief (073) ; à envoyer si Pascal le veut.
 - **Choix Système / Clair / Sombre** (Marculus v0.65.0), proposé par la session `marculus`.
 
 - **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0010
@@ -65,6 +72,12 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **Orchestrateur puis Pascal, release v0.7.82** (depuis le cycle 14) : installer, capturer
+  l'icône du micro (072) ; tenir le micro, puis le volume bas en poche, ouvre l'écoute (071, ARM
+  jamais éprouvé) ; `adb logcat -b crash` sans `ecoute-vosk` ; puis les essais de la D2 (gants,
+  rotation en poche, retour des Paramètres, chargement du modèle). Téléphone non branché le
+  2026-10-29 au matin.
+
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
   `couchey-demo-avec-ortho.zip`, bandeau, cinq boutons, Paramètres (thème en liste,
@@ -86,11 +99,14 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Suite décidée de la 012 (2026-10-27) :** la 012-D2 (au Validé), puis :
+**Suite décidée de la 012 (2026-10-27) :** la 012-D2 (au Terminé), puis :
 
 - **068** message d'arrivée en français : « hors_15_m : Placette la plus proche à
   9987.021413659639 m » montre un code et douze décimales (capture v0.7.77) ; après la D2, même
-  écran (Pascal, 2026-10-28).
+  écran (Pascal, 2026-10-28). La D2, la 071 et la 072 sont fusionnées : ses moyens sont prêts.
+- **Bouton micro comme Marculus** (depuis le cycle 14) : place (le micro est sous le pli, sous
+  Pointer, Annuler, Terminer), bouton rond, rouge à l'écoute, `MicOff` quand micro ou modèle
+  manquent ; taille avec des gants jugée à la capture de la 072 (Pascal, 2026-10-29, PR #123).
 
 - **049** accueil retrouvé au retour (recherche, vue colonnes) ; ne pas réutiliser la clé
   `vue_kanban`.
@@ -122,6 +138,11 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- Cycle 14, 2026-10-29 : **071** la dictée ne ferme plus la release, règles R8 de JNA et de Vosk,
+  essai de fumée vu rouge puis vert (PR #125, 079919b, v0.7.82) ; **072** icône du micro hors
+  poche (PR #123, 0106da6) ; **073** le journal refuse `INSERT OR REPLACE`, brief de Ramulus
+  (PR #124, b73c493) — fusionnées sur la décision de Pascal.
 
 - **012-D2** le micro, tenir pour parler (PR #121, afcdbd1, cycle 13) : essais au téléphone à faire
   (bouton tenu avec des gants, rotation en poche, retour des Paramètres, chargement du modèle).
