@@ -80,3 +80,14 @@ Relecture de la #130 (2229a8d) : « à reprendre ».
    hors de la `Column` qui défile.
 5. PR : Réglages et Installer sont **dans** la zone qui défile, pas dessous ; couché, « J'ÉCOUTE » couvre
    aussi « Mode poche » (suite de Q2, à dire).
+
+## Reprise, aller-retour 2/3 (2026-10-29)
+
+Relecture de la reprise (3edcebd) : « à reprendre », en léger. Le reste est tenu.
+
+1. Le corps de la `Column` qui défile (`EcranControle.kt` l. 375 à 389, de `Text(stringResource(
+   R.string.controle_source…` à `if (stockageRefuse)`) est encore aligné sur son accolade fermante : +4
+   espaces, commit à part, `git diff -w` vide.
+2. Renforcer la garde de source : `BlocEcouteEncadre()` est **dans le corps du `Box` de `zone`, après la
+   `Column`, avec `Modifier.align(`** (la garde actuelle ne verrait pas un frère remis au-dessus, le défaut
+   d'origine). La voir rouge en remettant le bloc au-dessus de la `Column` (puis revenir).
