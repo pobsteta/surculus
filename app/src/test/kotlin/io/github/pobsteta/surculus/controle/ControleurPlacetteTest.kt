@@ -130,7 +130,7 @@ class ControleurPlacetteTest {
         c.plantPrecedent()
         val m = assertNotNull(c.cause(GroupeCause.ANIMAUX).message)
         assertTrue(m.erreur)
-        assertTrue(m.texte.startsWith("cause_sur_etat : "), m.texte)
+        assertTrue(!m.texte.contains("cause_sur_etat") && m.texte.isNotBlank(), m.texte) // mission 068 : le motif n'est plus affiché
     }
 
     @Test fun `un placette sans plant dit qu'il n'y a rien a contrôler, sans inventer de plant`() = with(BancControle(nbPlantsAnterieurs = 0)) {

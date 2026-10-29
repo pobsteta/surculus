@@ -79,7 +79,7 @@ class PointageControleTest {
         listOf("360" to UniteAzimut.DEGRES, "400" to UniteAzimut.GRADES, "-1" to UniteAzimut.DEGRES, "361,5" to UniteAzimut.DEGRES).forEach { (texte, unite) ->
             val m = assertNotNull(c.pointerAuClavier("3", texte, unite).message, "$texte ${unite.name}")
             assertTrue(m.erreur)
-            assertTrue(m.texte.startsWith("azimut_hors_plage : "), m.texte)
+            assertTrue(!m.texte.contains("azimut_hors_plage") && m.texte.isNotBlank(), m.texte) // mission 068 : le motif n'est plus affiché
         }
         assertTrue(pointages().isEmpty())
         assertEquals(0, journal.nombreDeLignes)
@@ -230,7 +230,7 @@ class PointageControleTest {
         c.dire(EtatDsf.MORT)
         c.regarni()
         val m = assertNotNull(c.pointerAvecBoussole("3", cap(45.0)).message)
-        assertTrue(m.texte.startsWith("hors_referentiel : "), m.texte)
+        assertTrue(!m.texte.contains("hors_referentiel") && m.texte.isNotBlank(), m.texte) // mission 068 : le motif n'est plus affiché
         assertTrue(pointages().isEmpty())
     }
 
@@ -268,7 +268,7 @@ class PointageControleTest {
             c.regarni()
             c.choisirEssence("ZZZ")
             val m = assertNotNull(c.pointerAvecBoussole("3", cap(45.0)).message)
-            assertTrue(m.texte.startsWith("hors_referentiel : "), m.texte)
+            assertTrue(!m.texte.contains("hors_referentiel") && m.texte.isNotBlank(), m.texte) // mission 068 : le motif n'est plus affiché
             assertTrue(pointages().isEmpty())
         }
 
