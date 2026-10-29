@@ -9,8 +9,6 @@
 
 _Idées, à trier au prochain `/mission`._
 
-- **Formats de distance** (relecture de la 068) : « 9980 m » (`guidage_refus_15m`, `%1$d`),
-  « 10,0 km » (`Libelles.distance`, tronqué par `toInt`), « 9 980 m » (contrôle, 068) : une seule forme, avec U+202F (Pascal, 2026-10-29).
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
   dans plusieurs messages de `RefusPlacette`.
 - **Mineurs de la 068** : libellé du bouton d'arrivée en Kotlin (`TextesControle.boutonArrivee`)
@@ -78,6 +76,11 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **Lancées au cycle 15** (2026-10-29, choix de Pascal) : **052** suites du récepteur et de la voix
+  (`dev`) ; **059** Ortho chantier sourcée et datée (`dev`) ; **074** une seule façon d'écrire une
+  distance, U+202F (`dev`) ; **075** bouton micro comme Marculus (`afficheur`, tenir : plan d'abord).
+  Fiches dans `pilotage/missions/`.
+
 - **Orchestrateur puis Pascal, release v0.7.82** (depuis le cycle 14) : installer, capturer
   l'icône du micro (072) ; tenir le micro, puis le volume bas en poche, ouvre l'écoute (071, ARM
   jamais éprouvé) ; `adb logcat -b crash` sans `ecoute-vosk` ; puis les essais de la D2 (gants,
@@ -107,17 +110,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 **Suite décidée de la 012 (2026-10-27) :** la 012-D2 (au Terminé), puis :
 
-- **Bouton micro comme Marculus** (depuis le cycle 14) : place (le micro est sous le pli, sous
-  Pointer, Annuler, Terminer), bouton rond, rouge à l'écoute, `MicOff` quand micro ou modèle
-  manquent ; taille avec des gants jugée à la capture de la 072 (Pascal, 2026-10-29, PR #123).
 
 - **049** accueil retrouvé au retour (recherche, vue colonnes) ; ne pas réutiliser la clé
   `vue_kanban`.
-- **052** suites du récepteur et de la voix : erreur du récepteur visible sur la carte,
-  `onTaskRemoved`, autorisations jamais demandées affichées « refusée », `Error` dans
-  `SuiviInstallationVosk`, test de `SuiviInstallationVosk`.
-- **059** source et date de l'Ortho chantier affichées (Licence Ouverte) ; message « ortho
-  illisible » si le fichier ne s'ouvre pas.
 - **Test de rendu des écrans** (Robolectric ou émulateur en CI) : le bandeau caché de la 055
   a échappé aux tests qui lisent les sources.
 - **Photos de placette et de plant** : spec et ADR 0007 amendées, validées par Pascal
