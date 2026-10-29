@@ -84,3 +84,17 @@ data class PlanPlants(
         }
     }
 }
+
+/** Hauteur réservée, en dp, autour du plan couché : barre d'application et marges. */
+const val RESERVE_HAUTEUR_PLAN_DP = 88f
+
+/**
+ * Côté du carré du plan, en dp (mission 067). Debout, il prend toute la largeur disponible ([largeurDp]).
+ * Couché (écran plus large que haut), il est limité à la hauteur de l'écran moins [RESERVE_HAUTEUR_PLAN_DP] : le plan tient
+ * dans une vue sans recouvrir de bouton. Le plan est posé dans le flux, sous les boutons.
+ */
+fun cotePlanDp(largeurDp: Float, hauteurEcranDp: Float): Float {
+    val couche = largeurDp > hauteurEcranDp
+    val cote = if (couche) minOf(largeurDp, hauteurEcranDp - RESERVE_HAUTEUR_PLAN_DP) else largeurDp
+    return cote.coerceAtLeast(0f)
+}

@@ -9,32 +9,47 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import fr.nemeton.terrain.style.Schema
+import fr.nemeton.terrain.style.StyleTerrain
 
-// Thème de Marculus v0.65.0, recopié tel quel (mission 038, ADR 0008 amendement du 2026-10-24 soir) :
-// marculus, tag v0.65.0, app/src/main/kotlin/io/github/pobsteta/marculus/ui/theme/Theme.kt l. 10-28.
-// Les autres rôles gardent les valeurs par défaut de Material 3 (BOM Compose 2026.02.01, la même des deux côtés).
-// À la publication de terrain-style v0.6.1, une mission remplacera cette copie par la dépendance.
-private val VertMarculus = Color(0xFF374742)
-private val VertVif = Color(0xFF3E7A40)
-private val Creme = Color(0xFFF5EBD8)
+// Le thème vient de terrain-style v0.7.1 (mission 069, ADR 0008) : plus de copie littérale (mission 038).
+// Les valeurs sont des ARGB 0xFFRRGGBB en Long ; les rôles absents de Marculus gardent les défauts de Material 3.
 
-/** Schéma clair (ADR 0008, valeurs sacrifiées : pas de couleur dynamique). */
-val SchemaClair: ColorScheme = lightColorScheme(
-    primary = VertVif,
-    onPrimary = Color.White,
-    primaryContainer = VertMarculus,
-    onPrimaryContainer = Creme,
-    secondary = VertMarculus,
-)
+private fun Schema.versColorScheme(sombre: Boolean): ColorScheme {
+    fun c(v: Long) = Color(v.toInt())
+    return (if (sombre) darkColorScheme() else lightColorScheme()).copy(
+        primary = c(primary), onPrimary = c(onPrimary),
+        primaryContainer = c(primaryContainer), onPrimaryContainer = c(onPrimaryContainer),
+        inversePrimary = c(inversePrimary),
+        secondary = c(secondary), onSecondary = c(onSecondary),
+        secondaryContainer = c(secondaryContainer), onSecondaryContainer = c(onSecondaryContainer),
+        tertiary = c(tertiary), onTertiary = c(onTertiary),
+        tertiaryContainer = c(tertiaryContainer), onTertiaryContainer = c(onTertiaryContainer),
+        background = c(background), onBackground = c(onBackground),
+        surface = c(surface), onSurface = c(onSurface),
+        surfaceVariant = c(surfaceVariant), onSurfaceVariant = c(onSurfaceVariant),
+        surfaceTint = c(surfaceTint),
+        inverseSurface = c(inverseSurface), inverseOnSurface = c(inverseOnSurface),
+        error = c(error), onError = c(onError), errorContainer = c(errorContainer), onErrorContainer = c(onErrorContainer),
+        outline = c(outline), outlineVariant = c(outlineVariant), scrim = c(scrim),
+        surfaceBright = c(surfaceBright), surfaceDim = c(surfaceDim),
+        surfaceContainer = c(surfaceContainer), surfaceContainerHigh = c(surfaceContainerHigh),
+        surfaceContainerHighest = c(surfaceContainerHighest), surfaceContainerLow = c(surfaceContainerLow),
+        surfaceContainerLowest = c(surfaceContainerLowest),
+        primaryFixed = c(primaryFixed), primaryFixedDim = c(primaryFixedDim),
+        onPrimaryFixed = c(onPrimaryFixed), onPrimaryFixedVariant = c(onPrimaryFixedVariant),
+        secondaryFixed = c(secondaryFixed), secondaryFixedDim = c(secondaryFixedDim),
+        onSecondaryFixed = c(onSecondaryFixed), onSecondaryFixedVariant = c(onSecondaryFixedVariant),
+        tertiaryFixed = c(tertiaryFixed), tertiaryFixedDim = c(tertiaryFixedDim),
+        onTertiaryFixed = c(onTertiaryFixed), onTertiaryFixedVariant = c(onTertiaryFixedVariant),
+    )
+}
 
-/** Schéma sombre, identique à celui de Marculus ; appliqué depuis la mission 051 (choix Sombre, ou Système avec le téléphone en sombre). */
-val SchemaSombre: ColorScheme = darkColorScheme(
-    primary = VertVif,
-    onPrimary = Color.White,
-    primaryContainer = VertMarculus,
-    onPrimaryContainer = Creme,
-    secondary = Creme,
-)
+/** Schéma clair, pris de [StyleTerrain.clair] (pas de couleur dynamique, ADR 0008). */
+val SchemaClair: ColorScheme = StyleTerrain.clair.versColorScheme(sombre = false)
+
+/** Schéma sombre, pris de [StyleTerrain.sombre] ; appliqué depuis la mission 051 (choix Sombre, ou Système avec le téléphone en sombre). */
+val SchemaSombre: ColorScheme = StyleTerrain.sombre.versColorScheme(sombre = true)
 
 /** Vrai quand le thème sombre est appliqué : les couleurs d'état (palette) se posent alors sur une plaque claire. */
 val LocalSombre = staticCompositionLocalOf { false }

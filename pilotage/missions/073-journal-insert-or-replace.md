@@ -13,7 +13,7 @@
 `INSERT OR REPLACE` ne puisse plus effacer une saisie du forestier sans passer par le déclencheur
 `BEFORE DELETE`.
 
-**Redite par l'agent :** (à remplir par l'agent avant d'agir)
+**Redite par l'agent :** Faire refuser par SQLite, à l'insertion, toute clé déjà présente dans `journal` (uuid) et `refus_journal` (id), pour que la garde « ajout seul » ne dépende plus du réglage `recursive_triggers`.
 
 ## Ce qui est constaté
 

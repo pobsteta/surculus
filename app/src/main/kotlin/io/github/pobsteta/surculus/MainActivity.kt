@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -29,9 +30,11 @@ import androidx.core.view.WindowInsetsControllerCompat
 import io.github.pobsteta.surculus.carte.EcranCarte
 import io.github.pobsteta.surculus.carte.EcranGuidage
 import io.github.pobsteta.surculus.controle.AnnoncesPoche
+import io.github.pobsteta.surculus.controle.EcouteApp
 import io.github.pobsteta.surculus.controle.EcranControle
 import io.github.pobsteta.surculus.controle.ModePoche
 import io.github.pobsteta.surculus.controle.PocheApp
+import io.github.pobsteta.surculus.controle.VerrouOrientation
 import io.github.pobsteta.surculus.core.session.Touche
 import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.essai.EcranEssaiGnss
@@ -55,11 +58,15 @@ class MainActivity : ComponentActivity() {
     private val horloge = Handler(Looper.getMainLooper())
     private val tic = Runnable { PocheApp.pont.avancer(SystemClock.uptimeMillis()); programmer() }
     private var desabonner: (() -> Unit)? = null
+    private var desabonnerOrientation: (() -> Unit)? = null
     private var pauseSansRotation = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PocheApp.installer(this)
+        // Mode poche : orientation verrouillée à celle de l'entrée, libre à la sortie (012-D2).
+        desabonnerOrientation = VerrouOrientation { requestedOrientation = it }.suivre(PocheApp.mode)
+        EcouteApp.installer(this)
         // Mode poche (mission 012-C1) : l'écran reste allumé tant qu'il dure ; le temps (3 s, 0,35 s, 15 min) passe par un Handler.
         desabonner = PocheApp.mode.abonner { actif, _ ->
             if (actif) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -121,7 +128,26 @@ class MainActivity : ComponentActivity() {
                         val controleId = nav.controleId
                         if (tourneeId != null && controleId != null) {
                             // Mission 012-B1 : le contrôle d'une placette, ouvert par la carte ou à l'arrivée du guidage.
-                            EcranControle(tourneeId, controleId, onRetour = { nav = nav.retour() ?: nav })
+                            // « Installer la dictée » ouvre les Paramètres PAR-DESSUS le contrôle (qui reste composé : la session et le
+                            // plant courant ne sont pas perdus) ; le retour referme les Paramètres.
+                            var parametresSurControle by rememberSaveable { mutableStateOf(false) }
+                            Box(Modifier.fillMaxSize()) {
+                                EcranControle(tourneeId, controleId, onRetour = { nav = nav.retour() ?: nav }, onParametres = { parametresSurControle = true })
+                                if (parametresSurControle) {
+                                    BackHandler { parametresSurControle = false }
+                                    Surface(Modifier.fillMaxSize()) {
+                                        EcranParametres(
+                                            pleinEcran = pleinEcran,
+                                            onPleinEcran = { pleinEcran = it; reglagesAffichage.pleinEcran = it },
+                                            choixTheme = choixTheme,
+                                            onChoixTheme = { choixTheme = it; reglagesAffichage.choixTheme = it },
+                                            onEssai = { parametresSurControle = false; nav = nav.ouvrirEssai() },
+                                            onRestauration = { parametresSurControle = false; nav = nav.ouvrirRestauration() },
+                                            onRetour = { parametresSurControle = false },
+                                        )
+                                    }
+                                }
+                            }
                         } else if (tourneeId != null && placetteId != null) {
                             EcranGuidage(tourneeId, placetteId,
                                 arriveeVue = nav.arriveeVue,
@@ -212,6 +238,8 @@ class MainActivity : ComponentActivity() {
     /** Appel, verrouillage, autre application : un relâchement peut se perdre, le classeur repart propre. */
     override fun onPause() {
         PocheApp.pont.remettreAZero()
+        // Le micro se ferme (appel, verrouillage, autre application) et ne se rouvre pas seul au retour (012-D2).
+        EcouteApp.arreter()
         // Une rotation n'est pas un appel : seule une vraie pause fait redire « mode poche actif » au retour.
         pauseSansRotation = !isChangingConfigurations
         super.onPause()
@@ -226,6 +254,7 @@ class MainActivity : ComponentActivity() {
 
     /** L'application quitte le premier plan : le mode poche se lève par prudence (agent « enfermé »). */
     override fun onStop() {
+        EcouteApp.arreter()
         PocheApp.mode.surArret(isChangingConfigurations)
         super.onStop()
     }
@@ -233,6 +262,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         horloge.removeCallbacks(tic)
         desabonner?.invoke()
+        desabonnerOrientation?.invoke()
         super.onDestroy()
     }
 }

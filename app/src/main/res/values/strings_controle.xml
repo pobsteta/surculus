@@ -7,7 +7,6 @@
     <string name="controle_moyenne">Position moyennée : %1$d / %2$d s</string>
     <string name="controle_moyenne_aide">Restez au piquet. La placette s\'ouvre toute seule.</string>
     <string name="controle_sans_position">Pas de position GNSS : approchez-vous du piquet et attendez un fix.</string>
-    <string name="controle_recommencer">Recommencer</string>
     <string name="controle_alerte_terminee">Placette déjà terminée : ce que vous dites s\'ajoute.</string>
     <string name="controle_stockage_refuse">La sauvegarde hors de l\'appareil attend la permission de stockage. La saisie continue.</string>
     <string name="controle_plant_precedent">Plant précédent</string>
@@ -18,6 +17,13 @@
     <string name="controle_poche">Mode poche</string>
     <string name="controle_poche_bande">MODE POCHE</string>
     <string name="controle_poche_aide">3 s sur volume haut pour sortir</string>
+    <!-- Dictée vocale, tenir pour parler (mission 012-D2) -->
+    <string name="controle_micro">Tenir pour parler</string>
+    <string name="controle_micro_ecoute">J\'écoute…</string>
+    <string name="controle_regarni_propose">Remplace le plant n° %1$d : pointez le regarni</string>
+    <string name="controle_dictee_reglages">Réglages</string>
+    <string name="controle_dictee_installer">Installer la dictée</string>
+    <string name="controle_regarni_pointer">Pointer</string>
     <string name="controle_annuler">Annuler</string>
     <string name="controle_terminer">Terminer</string>
     <string name="controle_terminer_titre">Terminer %1$s ?</string>

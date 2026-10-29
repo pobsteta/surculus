@@ -7,9 +7,12 @@
  */
 package io.github.pobsteta.surculus.controle
 
+import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.session.ActionGeste
+import io.github.pobsteta.surculus.core.session.DelaisEcoute
 import io.github.pobsteta.surculus.core.session.Geste
 import io.github.pobsteta.surculus.core.session.GestesPlacette
+import io.github.pobsteta.surculus.core.session.IssueDictee
 import io.github.pobsteta.surculus.core.session.SortieClasseur
 import io.github.pobsteta.surculus.core.session.SuiteSession
 import java.util.Locale
@@ -29,7 +32,13 @@ object MotifsVibration {
     val ENTREE = longArrayOf(0, 100, 100, 100)
     val DEJA_TERMINEE = longArrayOf(0, 400, 100, 60)
 
-    val tous: List<LongArray> = listOf(SAIN, ATTEINT, MORT, ANNULE, REFUS, TIC, BOURDON, ENTREE, DEJA_TERMINEE)
+    /** Le micro est ouvert (012-D2) : un coup, [DelaisEcoute.VIBRATION_OUVERTURE_MS]. */
+    val OUVERTE = longArrayOf(0, DelaisEcoute.VIBRATION_OUVERTURE_MS)
+
+    /** Le micro est fermé (012-D2) : deux coups de 200 ms. */
+    val FERMEE = longArrayOf(0, 200, 150, 200)
+
+    val tous: List<LongArray> = listOf(SAIN, ATTEINT, MORT, ANNULE, REFUS, TIC, BOURDON, ENTREE, DEJA_TERMINEE, OUVERTE, FERMEE)
 }
 
 /** Ce que le téléphone dit et fait sentir : le [texte] (voix, ou bande à défaut), le [motif] (`null` : pas de vibration). */
@@ -55,6 +64,28 @@ object AnnoncesPoche {
     fun rappel() = AnnoncePoche("mode poche actif, 3 secondes sur volume haut pour sortir", MotifsVibration.ENTREE)
 
     fun deuxTouches() = AnnoncePoche("une touche à la fois.", MotifsVibration.REFUS, erreur = true)
+
+    /**
+     * L'annonce d'une phrase dictée (012-D2) : le texte est celui de l'`IssueDictee` (TextesDictee), la vibration celle de
+     * l'état écrit ([etat], lu après l'écriture) ou du refus. Une confirmation sans écriture (redite, suivant, remplace) ne vibre pas. Après « Terminer », l'alerte passe d'abord, comme pour les gestes.
+     */
+    fun pourIssue(issue: IssueDictee, etat: EtatDsf?): AnnoncePoche = when (issue) {
+        is IssueDictee.Refusee -> AnnoncePoche(issue.annonce, MotifsVibration.REFUS, erreur = true)
+        is IssueDictee.Annulee -> AnnoncePoche(issue.annonce, MotifsVibration.ANNULE, erreur = issue.placetteTerminee)
+        is IssueDictee.Ecrite -> AnnoncePoche(
+            issue.annonce,
+            if (issue.placetteTerminee) MotifsVibration.DEJA_TERMINEE else when (etat) {
+                EtatDsf.SAIN -> MotifsVibration.SAIN
+                EtatDsf.MORT -> MotifsVibration.MORT
+                else -> MotifsVibration.ATTEINT
+            },
+            erreur = issue.placetteTerminee,
+        )
+        // Une phrase comprise qui n'écrit rien ne vibre pas : la voix suffit (décision de Pascal, 2026-10-28). Le tic de 30 ms
+        // garde son seul sens, « atteint armé » au volume haut.
+        is IssueDictee.Redite, is IssueDictee.Suivant, is IssueDictee.RemplaceEnAttente ->
+            AnnoncePoche(issue.annonce, null, erreur = issue.placetteTerminee)
+    }
 
     /**
      * L'annonce d'un geste. [numeroDit] : le plant courant avant le geste ; [numeroApres] : le plant courant après ;
@@ -104,6 +135,20 @@ interface MoteurVoix {
 
     /** Dit [texte] en coupant la précédente ; `false` si la voix n'a pas pu parler. */
     fun dire(texte: String): Boolean
+
+    /**
+     * Appelé (sur le fil principal) quand la **dernière** annonce demandée est finie : dite jusqu'au bout, ou en échec.
+     * Une annonce coupée par la suivante ou par [arreter] n'appelle rien. Mission 012-D2 : le micro se rouvre là (anti-larsen).
+     */
+    var surFin: (() -> Unit)?
+        get() = null
+        set(_) {}
+
+    /** La voix parle encore (le garde-fou de 5 s n'ouvre pas le micro sous une longue annonce). */
+    val parle: Boolean get() = false
+
+    /** Coupe net l'annonce en cours, sans appeler [surFin]. */
+    fun arreter() {}
 }
 
 /** Le vibreur du téléphone (adaptateur : `VoixAndroid`). */
@@ -119,6 +164,22 @@ class SortiesPoche(private val moteur: MoteurVoix, private val vibreur: Vibreur)
     /** Reçoit le texte des annonces qui n'ont pas pu être dites. */
     var surTexte: ((AnnoncePoche) -> Unit)? = null
 
+    /** Une annonce **dite** va parler : l'écoute coupe le micro avant (anti-larsen, 012-D2). Jamais appelé sans voix française. */
+    var surDebutAnnonce: (() -> Unit)? = null
+
+    /** Une annonce dite est finie (ou n'a pas pu l'être) : l'écoute rouvre le micro si la touche est tenue. */
+    var surFinAnnonce: (() -> Unit)? = null
+
+    init { moteur.surFin = { surFinAnnonce?.invoke() } }
+
+    val parle: Boolean get() = moteur.parle
+
+    /** Coupe la voix net (l'écoute s'ouvre : l'agent a décidé de parler). */
+    fun taire() { try { moteur.arreter() } catch (_: Exception) { /* voix indisponible : rien à couper */ } }
+
+    /** Une vibration seule (ouverture et fermeture du micro). */
+    fun vibrer(motif: LongArray) = vibrerSansErreur(motif)
+
     val sansVoixFrancaise: Boolean get() = !moteur.francaisDisponible
 
     /** Dernière annonce écrite faute de voix : tenue ici, hors de Compose, pour traverser la rotation comme le mode poche. */
@@ -127,22 +188,32 @@ class SortiesPoche(private val moteur: MoteurVoix, private val vibreur: Vibreur)
 
     fun effacer() { annonceEcrite = null }
 
-    fun annoncer(a: AnnoncePoche) {
-        a.motif?.let(::vibrer)
-        val dit = moteur.francaisDisponible && try { moteur.dire(a.texte) } catch (_: Exception) { false }
-        if (!dit) { annonceEcrite = a; surTexte?.invoke(a) }
+    /**
+     * Dit, vibre, ou écrit. [couperLeMicro] : avec une voix, l'écoute coupe le micro d'abord et le rouvre à la fin (une
+     * annonce qui ne coupe pas le micro, comme « un instant », se dit sans ces rappels).
+     */
+    fun annoncer(a: AnnoncePoche, couperLeMicro: Boolean = true) {
+        val voix = moteur.francaisDisponible
+        if (voix && couperLeMicro) surDebutAnnonce?.invoke()
+        a.motif?.let(::vibrerSansErreur)
+        val dit = voix && try { moteur.dire(a.texte) } catch (_: Exception) { false }
+        if (!dit) {
+            annonceEcrite = a
+            surTexte?.invoke(a)
+            if (voix && couperLeMicro) surFinAnnonce?.invoke() // la voix a échoué : pas de fin à attendre
+        }
     }
 
     /** Les signaux du classeur qui ne se disent pas : le tic (« atteint armé ») et le bourdon de sortie. */
     fun signal(sortie: SortieClasseur) {
         when (sortie) {
-            SortieClasseur.Tic -> vibrer(MotifsVibration.TIC)
-            SortieClasseur.Bourdon -> vibrer(MotifsVibration.BOURDON)
-            is SortieClasseur.Geste, SortieClasseur.DeuxTouches -> {}
+            SortieClasseur.Tic -> vibrerSansErreur(MotifsVibration.TIC)
+            SortieClasseur.Bourdon -> vibrerSansErreur(MotifsVibration.BOURDON)
+            is SortieClasseur.Geste, SortieClasseur.DeuxTouches, SortieClasseur.BasRelacheApresLong -> {}
         }
     }
 
-    private fun vibrer(motif: LongArray) {
+    private fun vibrerSansErreur(motif: LongArray) {
         try { vibreur.vibrer(motif) } catch (_: Exception) { /* appareil sans vibreur : la voix et l'écran restent */ }
     }
 }

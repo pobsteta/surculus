@@ -38,6 +38,12 @@ sealed interface SortieClasseur {
 
     /** Les deux touches ensemble : ignorées (raccourci d'accessibilité d'Android), rien n'est écrit. */
     data object DeuxTouches : SortieClasseur
+
+    /**
+     * Volume bas relâché après un long (mission 012-D2, « tenir pour parler ») : l'écoute se ferme. Signalé aussi si une
+     * autre touche a été pressée entre-temps (le micro ouvert ne doit jamais rester ouvert faute de relâchement vu).
+     */
+    data object BasRelacheApresLong : SortieClasseur
 }
 
 /**
@@ -94,6 +100,8 @@ class ClasseurGestes(private val seuils: SeuilsGestes = SeuilsGestes()) {
         if (touche !in enfoncees) return sorties
         enfoncees -= touche
         if (conflit) {
+            // Un micro ouvert par un long bas se ferme quand même : le relâchement du bas est signalé, conflit ou non.
+            if (touche == Touche.BAS && touche == tenue && longEmis) { sorties += SortieClasseur.BasRelacheApresLong; longEmis = false }
             if (enfoncees.isEmpty()) { conflit = false; tenue = null }
             return sorties
         }
@@ -106,7 +114,7 @@ class ClasseurGestes(private val seuils: SeuilsGestes = SeuilsGestes()) {
                 ticEmis -> sorties += SortieClasseur.Geste(Geste.VOLUME_HAUT_LONG)
                 else -> sorties += SortieClasseur.Geste(Geste.VOLUME_HAUT_COURT)
             }
-            Touche.BAS -> if (!longEmis) basEnAttenteMs = instantMs
+            Touche.BAS -> if (longEmis) sorties += SortieClasseur.BasRelacheApresLong else basEnAttenteMs = instantMs
         }
         return sorties
     }

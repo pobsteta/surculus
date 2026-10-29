@@ -3,6 +3,8 @@ package io.github.pobsteta.surculus.controle
 import io.github.pobsteta.surculus.core.geo.UniteAzimut
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.CodesRefus
+import io.github.pobsteta.surculus.core.placette.RefusPlacette
+import io.github.pobsteta.surculus.core.reperes.RefusRepere
 import io.github.pobsteta.surculus.core.session.FormatValeurs
 import io.github.pobsteta.surculus.core.session.ValeurPointage
 import kotlin.math.abs
@@ -76,10 +78,15 @@ class PointageControleTest {
 
     @Test fun `un azimut tape hors de 0 a 360 degres ou de 0 a 400 grades est refuse avec son code, rien n'est ecrit`() = with(BancControle()) {
         val c = controleur()
-        listOf("360" to UniteAzimut.DEGRES, "400" to UniteAzimut.GRADES, "-1" to UniteAzimut.DEGRES, "361,5" to UniteAzimut.DEGRES).forEach { (texte, unite) ->
+        listOf(
+            Triple("360", UniteAzimut.DEGRES, 360.0), Triple("400", UniteAzimut.GRADES, 400.0),
+            Triple("-1", UniteAzimut.DEGRES, -1.0), Triple("361,5", UniteAzimut.DEGRES, 361.5),
+        ).forEach { (texte, unite, valeur) ->
             val m = assertNotNull(c.pointerAuClavier("3", texte, unite).message, "$texte ${unite.name}")
             assertTrue(m.erreur)
-            assertTrue(m.texte.startsWith("azimut_hors_plage : "), m.texte)
+            // mission 068 : le message exact du refus (AzimutHorsPlage), sans son motif
+            assertEquals(RefusRepere.AzimutHorsPlage(valeur, unite).message, m.texte)
+            assertTrue(!m.texte.contains("azimut_hors_plage"), m.texte)
         }
         assertTrue(pointages().isEmpty())
         assertEquals(0, journal.nombreDeLignes)
@@ -230,7 +237,8 @@ class PointageControleTest {
         c.dire(EtatDsf.MORT)
         c.regarni()
         val m = assertNotNull(c.pointerAvecBoussole("3", cap(45.0)).message)
-        assertTrue(m.texte.startsWith("hors_referentiel : "), m.texte)
+        assertEquals(RefusPlacette.EssenceInconnue("ZZZ").message, m.texte) // mission 068 : le message exact, sans motif
+        assertTrue(!m.texte.contains("hors_referentiel"), m.texte)
         assertTrue(pointages().isEmpty())
     }
 
@@ -268,7 +276,8 @@ class PointageControleTest {
             c.regarni()
             c.choisirEssence("ZZZ")
             val m = assertNotNull(c.pointerAvecBoussole("3", cap(45.0)).message)
-            assertTrue(m.texte.startsWith("hors_referentiel : "), m.texte)
+            assertEquals(RefusPlacette.EssenceInconnue("ZZZ").message, m.texte) // mission 068 : le message exact, sans motif
+        assertTrue(!m.texte.contains("hors_referentiel"), m.texte)
             assertTrue(pointages().isEmpty())
         }
 
