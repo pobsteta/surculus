@@ -9,8 +9,17 @@
 
 _Idées, à trier au prochain `/mission`._
 
-- **`terrain-style` v0.6.1** : à sa publication, remplacer la copie littérale du thème
-  (038) par la dépendance ; le test d'égalité doit rester vert.
+- **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
+  dans plusieurs messages de `RefusPlacette`.
+- **Mineurs de la 068** : libellé du bouton d'arrivée en Kotlin (`TextesControle.boutonArrivee`)
+  et non en ressource ; indentation de `PointageControleTest` vers la l. 280.
+- **Mineurs de la 071** : lien de la FAQ de JNA dans `proguard-rules.pro`,
+  `-dontwarn com.sun.jna.platform.**` sans effet ; anciens tests UPDATE/DELETE du journal en
+  `assertFailsWith<Exception>` (relecture de la 073).
+- **Question pour Pascal (ADR 0011)** : jouer l'essai de fumée aussi sur les PR (`ci.yml`, environ
+  10 min d'émulateur), pour qu'un R8 cassé bloque la fusion et pas seulement la release.
+- **Mot à Ramulus** : sous Robolectric (SQLite 3.44.3), `BEFORE DELETE` refuse déjà le REPLACE,
+  contrairement à son brief (073) ; à envoyer si Pascal le veut.
 - **Choix Système / Clair / Sombre** (Marculus v0.65.0), proposé par la session `marculus`.
 
 - **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0010
@@ -67,8 +76,17 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **067** bande du mode poche toujours visible, plan couché sous les boutons (`afficheur`,
-  appuyer), lancée au cycle 13 (2026-10-28) ; fiche `pilotage/missions/067-bande-poche-plan-couche.md`.
+- **Lancées au cycle 15** (2026-10-29, choix de Pascal) : **052** suites du récepteur et de la voix
+  (`dev`) ; **059** Ortho chantier sourcée et datée (`dev`) ; **074** une seule façon d'écrire une
+  distance, U+202F (`dev`) ; **075** bouton micro comme Marculus (`afficheur`, tenir : plan d'abord).
+  Fiches dans `pilotage/missions/`.
+
+- **Orchestrateur puis Pascal, release v0.7.82** (depuis le cycle 14) : installer, capturer
+  l'icône du micro (072) ; tenir le micro, puis le volume bas en poche, ouvre l'écoute (071, ARM
+  jamais éprouvé) ; `adb logcat -b crash` sans `ecoute-vosk` ; puis les essais de la D2 (gants,
+  rotation en poche, retour des Paramètres, chargement du modèle). Téléphone non branché le
+  2026-10-29 au matin.
+
 - **Pascal, essai de la release v0.7.62** (2026-10-27) : accueil titré par la forêt, écran
   « Placettes » (P35-03 seule à faire), carte sur l'Ortho chantier de
   `couchey-demo-avec-ortho.zip`, bandeau, cinq boutons, Paramètres (thème en liste,
@@ -90,21 +108,11 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
-**Suite décidée de la 012 (2026-10-27) :** la 012-D2.
+**Suite décidée de la 012 (2026-10-27) :** la 012-D2 (au Terminé), puis :
 
-- **012-D2** écoute branchée dans `:app` (micro, permission, anti-larsen) ; #114 et D1 fusionnées.
-  Décidé (Pascal, 2026-10-28) : en poche, « tenir pour parler » sur volume bas, sans bouton ; hors
-  poche, bouton micro comme Marculus. Questions du plan toutes tranchées le 2026-10-28 ; part après la fusion de la 067 (même écran).
-
-**Ensuite, au signal de Pascal :**
 
 - **049** accueil retrouvé au retour (recherche, vue colonnes) ; ne pas réutiliser la clé
   `vue_kanban`.
-- **052** suites du récepteur et de la voix : erreur du récepteur visible sur la carte,
-  `onTaskRemoved`, autorisations jamais demandées affichées « refusée », `Error` dans
-  `SuiviInstallationVosk`, test de `SuiviInstallationVosk`.
-- **059** source et date de l'Ortho chantier affichées (Licence Ouverte) ; message « ortho
-  illisible » si le fichier ne s'ouvre pas.
 - **Test de rendu des écrans** (Robolectric ou émulateur en CI) : le bandeau caché de la 055
   a échappé aux tests qui lisent les sources.
 - **Photos de placette et de plant** : spec et ADR 0007 amendées, validées par Pascal
@@ -128,6 +136,23 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- Cycle 14, 2026-10-29 : **071** la dictée ne ferme plus la release, règles R8 de JNA et de Vosk,
+  essai de fumée vu rouge puis vert (PR #125, 079919b, v0.7.82) ; **072** icône du micro hors
+  poche (PR #123, 0106da6) ; **073** le journal refuse `INSERT OR REPLACE`, brief de Ramulus
+  (PR #124, b73c493) ; **068** message d'arrivée en français, sans motif ni décimales, bouton
+  « Rattacher » / « Recommencer » selon le champ (PR #126, 093edf3, deux relectures) — fusionnées
+  sur la décision de Pascal.
+
+- **012-D2** le micro, tenir pour parler (PR #121, afcdbd1, cycle 13) : essais au téléphone à faire
+  (bouton tenu avec des gants, rotation en poche, retour des Paramètres, chargement du modèle).
+
+- **069** thème pris de `terrain-style` (bb2b519, tag v0.7.1), plus de copie (PR #122, 07aba21) ;
+  **070** citation de Purfürst corrigée et vérifiée dans l'ADR 0003 (PR #120, dcaa1da) ; briefs
+  Marculus et Ramulus traités (cycle 13).
+
+- **067** bande du mode poche toujours visible, plan couché sous les boutons (PR #118, 8a7d379,
+  cycle 13) ; captures à faire sur la release.
 
 - **066** mineurs et maintenance (PR #117, 7b2c46d, cycle 13) : KDoc de `Navigation.kt`, renvoi
   terrain#23, doc d'`ExporterScenario`, test `dernier_controle` renommé ; release v0.7.58 déjà
@@ -263,3 +288,8 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   reste lisible quel que soit le défilement, et couché, le plan ne cache plus les boutons d'état ·
   pour le forestier en forêt · avant, la bande pouvait être coupée sous la barre sans moyen de
   remonter. *(Retenue par Pascal le 2026-10-28 ; livrée à la fusion et à la capture de la 067.)*
+- cycle 14 · la dictée qui marche sur la release : le forestier tient le micro (reconnu à son icône)
+  ou le volume bas en poche et dit l'état du plant · pour le forestier en forêt · avant, la v0.7.80
+  se fermait au premier appui. *(Retenue par Pascal le 2026-10-29 ; livrée à la capture au téléphone
+  de la release qui porte la 071, sinon le cycle livre sa mauvaise nouvelle. Livrée le 2026-10-29 :
+  v0.7.83, micro tenu et volume bas en poche, « compris : Numéro 7, sain. », sans plantage.)*
