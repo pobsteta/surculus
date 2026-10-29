@@ -288,3 +288,7 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   reste lisible quel que soit le défilement, et couché, le plan ne cache plus les boutons d'état ·
   pour le forestier en forêt · avant, la bande pouvait être coupée sous la barre sans moyen de
   remonter. *(Retenue par Pascal le 2026-10-28 ; livrée à la fusion et à la capture de la 067.)*
+- cycle 14 · la dictée qui marche sur la release : le forestier tient le micro (reconnu à son icône)
+  ou le volume bas en poche et dit l'état du plant · pour le forestier en forêt · avant, la v0.7.80
+  se fermait au premier appui. *(Retenue par Pascal le 2026-10-29 ; livrée à la capture au téléphone
+  de la release qui porte la 071, sinon le cycle livre sa mauvaise nouvelle.)*
