@@ -1,6 +1,7 @@
 package io.github.pobsteta.surculus.data.journal.db
 
 import android.content.Context
+import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteDatabase
 import androidx.room.Delete
 import androidx.room.Update
@@ -72,6 +73,101 @@ class JournalDurableTest {
         assertFailsWith<Exception> { sql.execSQL("UPDATE refus_journal SET valeur = 'x'") }
         assertFailsWith<Exception> { sql.execSQL("DELETE FROM refus_journal") }
         assertEquals(l, r.lignes().single())
+    }
+
+    @Test
+    fun `INSERT OR REPLACE ne peut pas effacer une ligne du journal ni un refus (recursive_triggers a 0)`() {
+        val base = ouvrir()
+        val r = depot(base)
+        val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
+        r.recevoir(l.copy(valeur = """{"etat":"mort"}""")) // crée une ligne dans refus_journal
+        val sql = base.openHelper.writableDatabase
+        sql.query("PRAGMA recursive_triggers").use { c ->
+            assertTrue(c.moveToFirst())
+            assertEquals(0, c.getInt(0), "le piège n'existe que si recursive_triggers est à 0")
+        }
+        val cols = "uuid, objet_uuid, type, valeur, remplace_uuid, operateur, appareil, sequence, saisi_le_utc, " +
+            "heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee"
+        fun compte(table: String) = sql.query("SELECT COUNT(*) FROM $table").use { it.moveToFirst(); it.getInt(0) }
+        val lignesAvant = compte("journal")
+        val refusAvant = compte("refus_journal")
+
+        refuse {
+            sql.execSQL(
+                "INSERT OR REPLACE INTO journal ($cols) SELECT uuid, objet_uuid, type, 'x', remplace_uuid, operateur, " +
+                    "appareil, sequence, saisi_le_utc, heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee " +
+                    "FROM journal WHERE uuid = '${l.uuid}'",
+            )
+        }
+        refuse {
+            sql.execSQL(
+                "INSERT OR REPLACE INTO refus_journal (id, $cols) SELECT id, uuid, objet_uuid, type, 'x', remplace_uuid, " +
+                    "operateur, appareil, sequence, saisi_le_utc, heure_gnss, monotone_ms, demarrage, age_fix_ms, " +
+                    "code_tournee FROM refus_journal",
+            )
+        }
+        assertEquals(l, r.lignes().single(), "la ligne d'origine est intacte")
+        assertEquals(lignesAvant, compte("journal"))
+        assertEquals(refusAvant, compte("refus_journal"))
+        sql.query("SELECT valeur FROM refus_journal").use { c ->
+            assertTrue(c.moveToFirst()); assertEquals("""{"etat":"mort"}""", c.getString(0))
+        }
+    }
+
+    /**
+     * Sur le SQLite de Robolectric (3.44.3), `BEFORE DELETE` se déclenche aussi sur un REPLACE ; sur d'autres builds
+     * (SQLite standard, `recursive_triggers` à 0) il ne se déclenche pas. On retire donc ici les déclencheurs de
+     * suppression pour éprouver le déclencheur d'insertion seul : c'est la garde qui tient partout.
+     */
+    @Test
+    fun `le declencheur d'insertion seul refuse INSERT OR REPLACE sur le journal, sans celui de suppression`() {
+        val base = ouvrir()
+        val r = depot(base)
+        val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
+        val sql = base.openHelper.writableDatabase
+        sql.execSQL("DROP TRIGGER journal_pas_de_suppression")
+        refuse { sql.execSQL("INSERT OR REPLACE INTO journal ($COLS) SELECT uuid, $AUTRES FROM journal") }
+        assertEquals(l, r.lignes().single())
+    }
+
+    @Test
+    fun `le declencheur d'insertion seul refuse INSERT OR REPLACE sur les refus, sans celui de suppression`() {
+        val base = ouvrir()
+        val r = depot(base)
+        val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
+        r.recevoir(l.copy(valeur = """{"etat":"mort"}"""))
+        val sql = base.openHelper.writableDatabase
+        sql.execSQL("DROP TRIGGER refus_journal_pas_de_suppression")
+        refuse { sql.execSQL("INSERT OR REPLACE INTO refus_journal (id, $COLS) SELECT id, uuid, $AUTRES FROM refus_journal") }
+        sql.query("SELECT valeur FROM refus_journal").use { c ->
+            assertTrue(c.moveToFirst()); assertEquals("""{"etat":"mort"}""", c.getString(0))
+        }
+    }
+
+    /** Exige un refus de contrainte du déclencheur (et non une faute de syntaxe SQL qui passerait pour un refus). */
+    private fun refuse(bloc: () -> Unit) {
+        val e = assertFailsWith<SQLiteConstraintException> { bloc() }
+        assertTrue(e.message.orEmpty().contains("journal en ajout seul"), "message inattendu : ${e.message}")
+    }
+
+    private companion object {
+        const val COLS = "uuid, objet_uuid, type, valeur, remplace_uuid, operateur, appareil, sequence, saisi_le_utc, " +
+            "heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee"
+        const val AUTRES = "objet_uuid, type, 'x', remplace_uuid, operateur, appareil, sequence, saisi_le_utc, " +
+            "heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee"
+    }
+
+    @Test
+    fun `un troisieme contenu pour un meme uuid reste accepte en refus (la cle de refus_journal est id)`() {
+        val base = ouvrir()
+        val r = depot(base)
+        val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
+        r.recevoir(l.copy(valeur = """{"etat":"mort"}"""))
+        r.recevoir(l.copy(valeur = """{"etat":"malade"}"""))
+        val sql = base.openHelper.writableDatabase
+        sql.query("SELECT COUNT(*) FROM refus_journal WHERE uuid = '${l.uuid}'").use {
+            it.moveToFirst(); assertEquals(2, it.getInt(0))
+        }
     }
 
     @Test

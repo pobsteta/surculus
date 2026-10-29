@@ -111,6 +111,18 @@ abstract class JournalDatabase : RoomDatabase() {
                 "BEGIN SELECT RAISE(ABORT, 'journal en ajout seul'); END",
             "CREATE TRIGGER IF NOT EXISTS refus_journal_pas_de_suppression BEFORE DELETE ON refus_journal " +
                 "BEGIN SELECT RAISE(ABORT, 'journal en ajout seul'); END",
+            // INSERT OR REPLACE n'appelle BEFORE DELETE que si recursive_triggers est actif (SQLite, « ON CONFLICT »,
+            // REPLACE) : on refuse donc l'insertion d'une clé déjà présente. Clé de journal : uuid ; clé de
+            // refus_journal : id (plusieurs refus d'un même uuid sont légitimes). Id non fourni : selon la doc
+            // SQLite, la valeur de NEW.rowid dans un BEFORE INSERT n'est alors pas définie. Sans effet ici : le DAO
+            // ne fournit jamais d'id, la garde ne vise que l'id explicite d'un REPLACE ; indéfini, il ne trouve
+            // aucune ligne et l'insertion reste permise (ce que veulent les refus successifs).
+            "CREATE TRIGGER IF NOT EXISTS journal_pas_de_remplacement BEFORE INSERT ON journal " +
+                "WHEN EXISTS (SELECT 1 FROM journal WHERE uuid = NEW.uuid) " +
+                "BEGIN SELECT RAISE(ABORT, 'journal en ajout seul'); END",
+            "CREATE TRIGGER IF NOT EXISTS refus_journal_pas_de_remplacement BEFORE INSERT ON refus_journal " +
+                "WHEN EXISTS (SELECT 1 FROM refus_journal WHERE id = NEW.id) " +
+                "BEGIN SELECT RAISE(ABORT, 'journal en ajout seul'); END",
         )
 
         /** À l'ouverture : durabilité maximale et déclencheurs (idempotent, donc aussi sur une base existante). */
