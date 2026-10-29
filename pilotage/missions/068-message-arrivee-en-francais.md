@@ -11,7 +11,7 @@
 code technique et avec une distance arrondie au mètre, pour que le forestier comprenne d'un coup
 d'œil, debout dans la parcelle, pourquoi le contrôle ne s'ouvre pas encore et quoi faire.
 
-**Redite par l'agent :** (à remplir par l'agent avant d'agir)
+**Redite par l'agent :** À l'arrivée au piquet, afficher un message en français, sans motif technique ni décimales (distance au mètre, « 9 980 m »), qui dit quoi faire avec le champ « Code lu sur le piquet » et le bouton dessous, pour que le forestier comprenne d'un coup d'œil pourquoi le contrôle ne s'ouvre pas. Reprise 1/3 : remettre dans les tests le refus exact attendu, faire suivre le libellé du bouton au champ (« Rattacher » / « Recommencer »), mettre les commentaires à jour.
 
 ## Ce qui est constaté
 

@@ -202,7 +202,7 @@ private fun Texte(texte: String, erreur: Boolean = false) {
     Text(texte, color = if (erreur) couleurErreur() else couleurNeutre(), modifier = Modifier.padding(24.dp))
 }
 
-/** Arrivée : le décompte de la moyenne, ou le refus avec son code et le champ « code du piquet ». */
+/** Arrivée : le décompte de la moyenne, ou le refus en clair (sans son motif) avec le champ « Code lu sur le piquet » et le bouton qui suit ce champ. */
 @Composable
 private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit, onRecommencer: (() -> Unit)?) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -223,7 +223,7 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
             modifier = Modifier.fillMaxWidth(),
         )
         onRecommencer?.let {
-            Button(onClick = it, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) { Text(stringResource(R.string.controle_recommencer)) }
+            Button(onClick = it, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) { Text(TextesControle.boutonArrivee(code)) }
         }
     }
 }

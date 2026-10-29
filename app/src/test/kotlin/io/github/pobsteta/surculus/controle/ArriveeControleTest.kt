@@ -75,7 +75,15 @@ class ArriveeControleTest {
         assertTrue(texte.contains("9\u202F980 m"), texte)
         assertTrue(!texte.contains("hors_15_m") && !texte.contains("_"), texte)
         assertTrue(!texte.contains("542") && !Regex("\\d[.,]\\d").containsMatchIn(texte), texte)
-        assertTrue(texte.contains("Code lu sur le piquet") && texte.contains("Recommencer"), texte)
+        assertTrue(texte.contains("Code lu sur le piquet") && texte.contains("« Rattacher »") && !texte.contains("Recommencer"), texte)
+    }
+
+    /** Mission 068, décision de Pascal : le bouton sous « Code lu sur le piquet » suit le champ. */
+    @Test fun `le libelle du bouton suit le champ du code lu`() {
+        assertEquals("Recommencer", TextesControle.boutonArrivee(""))
+        assertEquals("Recommencer", TextesControle.boutonArrivee("   "))
+        assertEquals("Rattacher", TextesControle.boutonArrivee("P35-03"))
+        assertEquals("Rattacher", TextesControle.boutonArrivee("  P35-03 "))
     }
 
     @Test fun `un refus de code inconnu ne montre pas son motif`() {

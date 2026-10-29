@@ -2,6 +2,7 @@ package io.github.pobsteta.surculus.controle
 
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.GroupeCause
+import io.github.pobsteta.surculus.core.placette.RefusPlacette
 import io.github.pobsteta.surculus.core.session.PlacettesControlees
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -130,7 +131,9 @@ class ControleurPlacetteTest {
         c.plantPrecedent()
         val m = assertNotNull(c.cause(GroupeCause.ANIMAUX).message)
         assertTrue(m.erreur)
-        assertTrue(!m.texte.contains("cause_sur_etat") && m.texte.isNotBlank(), m.texte) // mission 068 : le motif n'est plus affiché
+        // mission 068 : le message exact du refus (CauseSurEtat), sans son motif
+        assertEquals(RefusPlacette.CauseSurEtat(EtatDsf.SAIN).message, m.texte)
+        assertTrue(!m.texte.contains("cause_sur_etat"), m.texte)
     }
 
     @Test fun `un placette sans plant dit qu'il n'y a rien a contrôler, sans inventer de plant`() = with(BancControle(nbPlantsAnterieurs = 0)) {

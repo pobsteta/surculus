@@ -368,6 +368,9 @@ object TextesControle {
 
     fun compteur(dits: Int, total: Int) = "$dits sur $total"
 
+    /** Le bouton sous « Code lu sur le piquet » suit le champ (mission 068, décision de Pascal) : « Rattacher » dès qu'un code est lu (non vide après `trim`), « Recommencer » sinon. Même action dans les deux cas. */
+    fun boutonArrivee(code: String): String = if (code.isBlank()) "Recommencer" else "Rattacher"
+
     /** Le refus en clair, sans son motif (il reste dans les données, le journal et les tests : mission 068) ; les autres réponses aussi. */
     fun message(suite: SuiteSession): MessageControle? = when (suite) {
         is SuiteSession.Fait -> null
