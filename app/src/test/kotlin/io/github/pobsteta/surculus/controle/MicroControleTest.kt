@@ -27,9 +27,45 @@ class MicroControleTest {
         assertEquals(EmplacementMicro.PIED, DispositionMicro.emplacement(largeurDp = 500f, hauteurDp = 500f))
     }
 
-    @Test fun `la place du micro ne depend que de l'ecran, et le bloc J'ECOUTE est en surimpression`() {
+    @Test fun `la place du micro ne depend que de l'ecran, jamais de l'ecoute`() {
         // emplacement() n'a que la largeur et la hauteur : l'apparition du bloc ne peut pas déplacer le micro.
-        assertTrue(DispositionMicro.ECOUTE_EN_SURIMPRESSION, "le bloc J'ÉCOUTE couvre la zone qui défile, il ne la pousse pas")
+        assertEquals(EmplacementMicro.PIED, DispositionMicro.emplacement(360f, 800f))
+    }
+
+    // --- Gardes de source (sans Compose : la composition ne se teste qu'à la capture) ---
+
+    private val source = java.io.File("src/main/kotlin/io/github/pobsteta/surculus/controle/EcranControle.kt").readText()
+
+    /** Corps (entre accolades) de ce qui suit [debut] dans la source, accolades appariées. */
+    private fun corps(debut: String): String {
+        val i = source.indexOf(debut)
+        assertTrue(i >= 0, "introuvable : $debut")
+        val ouvre = source.indexOf('{', i + debut.length - 1)
+        var prof = 0
+        for (k in ouvre until source.length) {
+            if (source[k] == '{') prof++
+            if (source[k] == '}' && --prof == 0) return source.substring(ouvre, k + 1)
+        }
+        error("accolade non fermée : $debut")
+    }
+
+    @Test fun `l'etat du micro est calcule dans BoutonMicro, apres la lecture de EcouteApp version`() {
+        val bouton = corps("private fun BoutonMicro(")
+        val lecture = bouton.indexOf("EcouteApp.version")
+        val calcul = bouton.indexOf("AspectMicro.pour(EcouteApp.affichage")
+        assertTrue(lecture >= 0, "BoutonMicro doit lire EcouteApp.version (état Compose)")
+        assertTrue(calcul > lecture, "AspectMicro.pour(EcouteApp.affichage, …) doit venir APRÈS la lecture de EcouteApp.version")
+        assertEquals(1, Regex("AspectMicro\\.pour\\(").findAll(source).count(), "un seul calcul de l'aspect, dans BoutonMicro")
+    }
+
+    @Test fun `le bloc J'ECOUTE est pose hors de la colonne qui defile`() {
+        val defile = corps("Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp))")
+        assertFalse(defile.contains("BlocEcouteEncadre()"), "le bloc ne doit pas être dans la colonne qui défile")
+        assertTrue(source.contains("{ BlocEcouteEncadre() }"), "le bloc est posé par-dessus (surimpression)")
+    }
+
+    @Test fun `la zone qui defile ne change pas de place dans la composition entre Plant et Pointer`() {
+        assertFalse(source.contains("!avecMicro ->"), "zone() ne doit pas dépendre d'un when sur avecMicro (le contenu serait recréé)")
     }
 
     @Test fun `le micro fait 112 dp, son icone 48 dp, et la zone le contient`() {

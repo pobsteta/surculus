@@ -364,7 +364,7 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
             } else EcouteApp.tenir()
         }
         val micro: @Composable () -> Unit = {
-            BoutonMicro(AspectMicro.pour(EcouteApp.affichage, AspectMicro.pret(EcouteApp.etatPermission(ctx), EcouteApp.modeleInstalle(ctx))), onAppui = surMicro, onRelache = { EcouteApp.relacher() })
+            BoutonMicro(pret = AspectMicro.pret(EcouteApp.etatPermission(ctx), EcouteApp.modeleInstalle(ctx)), onAppui = surMicro, onRelache = { EcouteApp.relacher() })
         }
         val zone: @Composable (Modifier) -> Unit = { m ->
             Box(m) {
@@ -394,18 +394,24 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
                 }
             }
         }
-        when {
-            !avecMicro -> zone(Modifier.weight(1f).fillMaxWidth())
-            emplacement == EmplacementMicro.COLONNE -> Row(Modifier.weight(1f).fillMaxWidth()) {
+        // La disposition ne dépend que de l'écran (couché ou debout), jamais de la vue : la zone garde sa place dans la composition
+        // en passant de Plant à Pointer ou Terminer, et le micro n'est qu'un frère conditionnel à côté d'elle.
+        if (emplacement == EmplacementMicro.COLONNE) {
+            Row(Modifier.weight(1f).fillMaxWidth()) {
                 zone(Modifier.weight(1f).fillMaxHeight())
-                Column(Modifier.width(DimensionsMicro.ZONE).fillMaxHeight().padding(8.dp), verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally) { micro() }
+                if (avecMicro) {
+                    Column(Modifier.width(DimensionsMicro.ZONE).fillMaxHeight().padding(8.dp), verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally) { micro() }
+                }
             }
-            else -> Column(Modifier.weight(1f).fillMaxWidth()) {
+        } else {
+            Column(Modifier.weight(1f).fillMaxWidth()) {
                 zone(Modifier.weight(1f).fillMaxWidth())
-                Row(Modifier.fillMaxWidth().height(DimensionsMicro.ZONE).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    BoutonPoche(surPoche, Modifier.weight(1f))
-                    Spacer(Modifier.width(12.dp))
-                    micro()
+                if (avecMicro) {
+                    Row(Modifier.fillMaxWidth().height(DimensionsMicro.ZONE).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        BoutonPoche(surPoche, Modifier.weight(1f))
+                        Spacer(Modifier.width(12.dp))
+                        micro()
+                    }
                 }
             }
         }
@@ -577,8 +583,10 @@ private fun BoutonPoche(onPoche: () -> Unit, modifier: Modifier) {
  * disparaît aussi.
  */
 @Composable
-private fun BoutonMicro(etat: EtatMicro, onAppui: () -> Unit, onRelache: () -> Unit) {
+private fun BoutonMicro(pret: Boolean, onAppui: () -> Unit, onRelache: () -> Unit) {
     EcouteApp.version // lu pour changer d'aspect pendant l'écoute
+    // Calculé APRÈS cette lecture, dans ce composable : c'est lui qui se redessine quand l'écoute change (rouge à l'écoute).
+    val etat = AspectMicro.pour(EcouteApp.affichage, pret)
     val interactions = remember { MutableInteractionSource() }
     val appui by rememberUpdatedState(onAppui)
     val relache by rememberUpdatedState(onRelache)

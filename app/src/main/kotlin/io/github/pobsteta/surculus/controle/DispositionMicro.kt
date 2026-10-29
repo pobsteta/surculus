@@ -32,9 +32,6 @@ enum class EmplacementMicro {
 object DispositionMicro {
     fun emplacement(largeurDp: Float, hauteurDp: Float): EmplacementMicro =
         if (largeurDp > hauteurDp) EmplacementMicro.COLONNE else EmplacementMicro.PIED
-
-    /** Le bloc « J'ÉCOUTE » est posé par-dessus le haut de la zone qui défile : il ne pousse rien. */
-    const val ECOUTE_EN_SURIMPRESSION = true
 }
 
 /** Couleurs du micro : les rôles du thème, comme Marculus (`primaryContainer`, `error`, `surfaceVariant`). */
