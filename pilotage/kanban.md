@@ -13,6 +13,8 @@ _Idées, à trier au prochain `/mission`._
   « 10,0 km » (`Libelles.distance`, tronqué par `toInt`), « 9 980 m » (contrôle, 068) : une seule forme.
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
   dans plusieurs messages de `RefusPlacette`.
+- **Mineurs de la 068** : libellé du bouton d'arrivée en Kotlin (`TextesControle.boutonArrivee`)
+  et non en ressource ; indentation de `PointageControleTest` vers la l. 280.
 - **Mineurs de la 071** : lien de la FAQ de JNA dans `proguard-rules.pro`,
   `-dontwarn com.sun.jna.platform.**` sans effet ; anciens tests UPDATE/DELETE du journal en
   `assertFailsWith<Exception>` (relecture de la 073).
@@ -105,9 +107,6 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 **Suite décidée de la 012 (2026-10-27) :** la 012-D2 (au Terminé), puis :
 
-- **068** message d'arrivée en français : « hors_15_m : Placette la plus proche à
-  9987.021413659639 m » montre un code et douze décimales (capture v0.7.77) ; après la D2, même
-  écran (Pascal, 2026-10-28). La D2, la 071 et la 072 sont fusionnées : ses moyens sont prêts.
 - **Bouton micro comme Marculus** (depuis le cycle 14) : place (le micro est sous le pli, sous
   Pointer, Annuler, Terminer), bouton rond, rouge à l'écoute, `MicOff` quand micro ou modèle
   manquent ; taille avec des gants jugée à la capture de la 072 (Pascal, 2026-10-29, PR #123).
@@ -146,7 +145,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 - Cycle 14, 2026-10-29 : **071** la dictée ne ferme plus la release, règles R8 de JNA et de Vosk,
   essai de fumée vu rouge puis vert (PR #125, 079919b, v0.7.82) ; **072** icône du micro hors
   poche (PR #123, 0106da6) ; **073** le journal refuse `INSERT OR REPLACE`, brief de Ramulus
-  (PR #124, b73c493) — fusionnées sur la décision de Pascal.
+  (PR #124, b73c493) ; **068** message d'arrivée en français, sans motif ni décimales, bouton
+  « Rattacher » / « Recommencer » selon le champ (PR #126, 093edf3, deux relectures) — fusionnées
+  sur la décision de Pascal.
 
 - **012-D2** le micro, tenir pour parler (PR #121, afcdbd1, cycle 13) : essais au téléphone à faire
   (bouton tenu avec des gants, rotation en poche, retour des Paramètres, chargement du modèle).
