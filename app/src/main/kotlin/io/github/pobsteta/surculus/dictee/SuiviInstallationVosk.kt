@@ -11,6 +11,7 @@ package io.github.pobsteta.surculus.dictee
 
 import android.content.Context
 import android.net.Uri
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -81,6 +82,8 @@ class SuiviInstallation(private val portee: CoroutineScope) {
                     { _etat.update { it.copy(phase = PhaseInstallation.INSTALLATION) } },
                     { p -> _etat.update { it.copy(progression = p) } },
                 )
+            } catch (e: CancellationException) {
+                throw e // l'annulation de la portée n'est pas un échec d'installation
             } catch (e: Throwable) {
                 Result.failure(e)
             }

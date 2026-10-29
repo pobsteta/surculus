@@ -13,7 +13,7 @@ import io.github.pobsteta.surculus.gnss.TransportRtk
 enum class EtatAutorisation {
     ACCORDEE,
 
-    /** Jamais refusée : aucun refus vu (jamais demandée, ou fenêtre fermée sans réponse). */
+    /** Aucun refus vu : jamais demandée, ou fenêtre fermée sans réponse (ce n'est pas un refus, on ne le mémorise pas). */
     JAMAIS_DEMANDEE,
 
     /** Refusée, mais le système propose encore de la redemander. */
@@ -36,6 +36,14 @@ fun etatAutorisation(accordee: Boolean, dejaRefusee: Boolean, rationale: Boolean
     !dejaRefusee -> EtatAutorisation.JAMAIS_DEMANDEE
     else -> EtatAutorisation.REFUSEE_DEFINITIVEMENT
 }
+
+/**
+ * Faut-il mémoriser un refus après la réponse du système ? Le rappel de réponse dit « non accordée » aussi quand la
+ * fenêtre est fermée sans réponse (retour, toucher à côté) : ce n'est pas un refus. Un vrai refus laisse
+ * `shouldShowRequestPermissionRationale` vrai juste après ; sinon l'état reste « pas encore demandée ».
+ */
+fun refusAMemoriser(accordee: Boolean, rationaleApresReponse: Boolean): Boolean =
+    !accordee && rationaleApresReponse
 
 /** Ce que la section « Récepteur GNSS » signale à l'agent (missions 047 et 052) ; Kotlin pur, testé en JVM. */
 enum class AvertissementRecepteur {

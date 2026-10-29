@@ -58,6 +58,19 @@ class AutorisationsRecepteurTest {
         assertTrue(avertissementsRecepteur(false, TransportRtk.BLUETOOTH, n, n).isEmpty())
     }
 
+    @Test fun `fenetre fermee sans reponse - aucun refus memorise, l'etat reste pas encore demandee`() {
+        // Le systeme rapporte « non accordee » mais ne propose pas de redemander : ce n'est pas un refus.
+        val memorise = refusAMemoriser(accordee = false, rationaleApresReponse = false)
+        assertEquals(false, memorise)
+        assertEquals(EtatAutorisation.JAMAIS_DEMANDEE, etatAutorisation(accordee = false, dejaRefusee = memorise, rationale = false))
+    }
+
+    @Test fun `vrai refus - memorise quand le systeme propose encore de redemander, jamais si accordee`() {
+        assertEquals(true, refusAMemoriser(accordee = false, rationaleApresReponse = true))
+        assertEquals(false, refusAMemoriser(accordee = true, rationaleApresReponse = true))
+        assertEquals(false, refusAMemoriser(accordee = true, rationaleApresReponse = false))
+    }
+
     @Test fun `tout accorde, aucun avertissement`() {
         val a = EtatAutorisation.ACCORDEE
         assertTrue(avertissementsRecepteur(true, TransportRtk.BLUETOOTH, a, a).isEmpty())

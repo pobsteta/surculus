@@ -90,11 +90,12 @@ fun SectionRecepteur() {
     // Android 13+ : sans la notification, « Libérer le récepteur » reste caché ; Android 12+ : Bluetooth demande une autorisation.
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { reponses ->
         // Un refus est mémorisé : c'est lui qui distingue « refusée » de « pas encore demandée » (mission 052).
-        reponses.forEach { (permission, accordee) -> if (!accordee) memoriserRefus(ctx, permission) }
+        // Fenêtre fermée sans réponse : « non accordée » aussi, mais sans rationale : rien n'est mémorisé.
+        reponses.forEach { (permission, accordee) -> memoriserSiRefus(ctx, permission, accordee) }
         relecture++
     }
     val permissionBt = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
-        if (!ok) memoriserRefus(ctx, Manifest.permission.BLUETOOTH_CONNECT)
+        memoriserSiRefus(ctx, Manifest.permission.BLUETOOTH_CONNECT, ok)
         relecture++
         if (ok) choixAppareil = true
     }
@@ -268,10 +269,25 @@ private fun memoriserRefus(ctx: Context, permission: String) {
     ctx.getSharedPreferences(PREFS_AUTORISATIONS, Context.MODE_PRIVATE).edit().putBoolean(permission, true).apply()
 }
 
+/** Mémorise un refus seulement si le système propose encore de redemander juste après la réponse (sinon : fenêtre fermée). */
+private fun memoriserSiRefus(ctx: Context, permission: String, accordee: Boolean) {
+    if (refusAMemoriser(accordee, rationale(ctx, permission))) memoriserRefus(ctx, permission)
+}
+
+private fun rationale(ctx: Context, permission: String): Boolean =
+    activite(ctx)?.shouldShowRequestPermissionRationale(permission) == true
+
+/** L'activité sous les enveloppes de contexte (le contexte de la composition n'en est pas toujours une). */
+private tailrec fun activite(ctx: Context): android.app.Activity? = when (ctx) {
+    is android.app.Activity -> ctx
+    is android.content.ContextWrapper -> activite(ctx.baseContext)
+    else -> null
+}
+
 private fun etat(ctx: Context, permission: String, accordee: Boolean): EtatAutorisation = etatAutorisation(
     accordee = accordee,
     dejaRefusee = ctx.getSharedPreferences(PREFS_AUTORISATIONS, Context.MODE_PRIVATE).getBoolean(permission, false),
-    rationale = (ctx as? android.app.Activity)?.shouldShowRequestPermissionRationale(permission) == true,
+    rationale = rationale(ctx, permission),
 )
 
 private fun etatBluetooth(ctx: Context) = etat(ctx, Manifest.permission.BLUETOOTH_CONNECT, autorisationBluetooth(ctx))
