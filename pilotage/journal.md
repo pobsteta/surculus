@@ -738,3 +738,4 @@
 2026-10-29 · Pascal · mission 052 · Phrase « Corrections RTK indisponibles : la position est moins précise. » : « La garder ».
 2026-10-29 · Pascal · mission 074 · « km dès 1 000 m » : « 850 m », « 1,3 km », « 10,0 km » partout ; le « 9 980 m » de la 068 devient « 10,0 km » ; U+202F reste la règle pour les mètres à quatre chiffres s'il en apparaît.
 2026-10-29 · Claude (orchestrateur) · cycle 15 · Reprises 1/3 confiées : 059 (`dev`), 052 (`dev`), 075 (`afficheur`), fiches complétées sur leurs branches. 074 : aucune reprise, relecture quand une place se libère (PR #131 en brouillon).
+2026-10-29 · Claude (orchestrateur) · brief · Brief « métadonnées de l'ortho tuilée » envoyé à sommieR (décision de Pascal, 059 Q2) : https://github.com/pobsteta/sommieR/issues/68 et note `~/dev/briefs/vers-sommier/2026-10-29-ortho-metadonnees.md` ; clés `attribution` et `date_mise_a_jour` (convention proposée, hors norme MBTiles 1.3).
