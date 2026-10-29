@@ -12,7 +12,9 @@ quand elle est le fond choisi, et dire « ortho illisible » quand son fichier n
 la Licence Ouverte 2.0 et pour que le forestier sache de quand date l'image qu'il regarde et pourquoi elle
 manque.
 
-**Redite par l'agent :** (à remplir par l'agent avant d'agir)
+**Redite par l'agent :** Afficher sous la carte la source et la date lues dans le fichier de l'Ortho chantier (sans jamais les inventer),
+et dire « ortho illisible » avec repli sur le Plan IGN quand le fichier ne s'ouvre pas, pour respecter la
+Licence Ouverte 2.0 et informer le forestier.
 
 ## Ce qui est établi
 

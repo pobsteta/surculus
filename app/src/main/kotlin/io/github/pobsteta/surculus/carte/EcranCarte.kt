@@ -79,6 +79,7 @@ import io.github.pobsteta.surculus.core.carte.EmpriseCarte
 import io.github.pobsteta.surculus.core.carte.Fond
 import io.github.pobsteta.surculus.core.carte.FondsCarte
 import io.github.pobsteta.surculus.core.carte.MarqueurPosition
+import io.github.pobsteta.surculus.core.carte.OrthoChantier
 import io.github.pobsteta.surculus.core.carte.Recentrage
 import io.github.pobsteta.surculus.core.geo.EmpriseLambert93
 import io.github.pobsteta.surculus.core.geo.Projections
@@ -133,10 +134,10 @@ fun EcranCarte(id: String, centreId: String?, onRetour: () -> Unit, onGuider: (S
             // L'ortho chantier n'est proposée que si le dossier de la tournée porte un fichier tuilé exploitable. On attend
             // cette vérification avant de créer la carte : elle s'ouvre directement sur le bon fond, sans tuile en ligne
             // demandée pour rien.
-            val orthoChantier by produceState<Boolean?>(null, c.tournee) {
-                value = withContext(Dispatchers.IO) { FichierOrtho.nomPresent(c.tournee.dossier) != null }
+            val examenOrtho by produceState<ExamenOrtho?>(null, c.tournee) {
+                value = withContext(Dispatchers.IO) { FichierOrtho.examiner(c.tournee.dossier) }
             }
-            val ortho = orthoChantier
+            val ortho = examenOrtho
             if (ortho == null) {
                 Column {
                     BandeauCarte(stringResource(R.string.carte_titre), onRetour)
@@ -297,7 +298,8 @@ private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit) {
+private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit) {
+    val orthoChantier = examenOrtho.exploitable
     val ctx = LocalContext.current
     val (fix, refusee) = rememberFix()
     val carto = ouverte.cartographie
@@ -372,6 +374,10 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
             },
         )
         Column(Modifier.weight(1f).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
+        // Fichier d'ortho présent mais illisible (mission 059) : dit en clair, la carte est déjà repliée sur le Plan IGN.
+        if (examenOrtho.illisible) {
+            Text(OrthoChantier.ILLISIBLE, color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
+        }
         if (empriseHorsFrance) {
             Text(stringResource(R.string.carte_emprise_hors_france), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
         }
@@ -568,8 +574,9 @@ private fun CartePrete(ouverte: TourneeOuverte, orthoChantier: Boolean, centreId
             )
         }
 
-        // Attributions du fond (IGN ou OSM) et du cadastre, en petit ; l'ortho chantier n'en porte pas (comme Marculus).
-        FondsCarte.mentions(fondAffiche, voirCadastre).joinToString(" · ").takeIf { it.isNotEmpty() }
+        // Attributions du fond (IGN ou OSM) et du cadastre, en petit ; l'ortho chantier dit la source et la date de son
+        // fichier (mission 059, Licence Ouverte 2.0).
+        FondsCarte.mentions(fondAffiche, voirCadastre, examenOrtho.mention).joinToString(" · ").takeIf { it.isNotEmpty() }
             ?.let { Text(it, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)) }
         }
     }
