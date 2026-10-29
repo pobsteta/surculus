@@ -45,7 +45,7 @@ class ArriveeControleTest {
         val somalie = Position(latitude = 2.0469, longitude = 45.3182)
         val r = refus(ouvrir(positions = listOf(somalie)))
         assertEquals("hors_france", r.code)
-        assertEquals("hors_france : ${r.message}", TextesControle.message(r)!!.texte)
+        assertEquals(r.message, TextesControle.message(r)!!.texte)
         assertEquals(0, journal.nombreDeLignes)
         assertEquals(0, sauvegarde.saisies)
     }
@@ -60,10 +60,36 @@ class ArriveeControleTest {
         val loin = List(5) { BancControle.fixSur(PointLambert93(846_164.76 + 22.0, 6_686_123.26)) }
         val r = refus(ouvrir(positions = loin))
         assertEquals("hors_15_m", r.code)
-        assertTrue(TextesControle.message(r)!!.texte.startsWith("hors_15_m : "))
+        val texte = TextesControle.message(r)!!.texte
+        assertTrue(!texte.contains("hors_15_m") && !texte.contains("_"), texte)
         assertTrue(TextesControle.message(r)!!.erreur)
         assertIs<EtatArrivee.Ouverte>(ouvrir(positions = loin, codeLu = "P35-01"))
         Unit
+    }
+
+    /** Mission 068 : à 9 979,542810305791 m, le forestier lit « 9 980 m » (espace fine insécable), sans code ni décimale, avec la consigne de l'écran. */
+    @Test fun `a 9979 m le message dit 9 980 m, sans motif ni decimales`() {
+        val r = SuiteSession.Refus.de(RefusPlacette.HorsQuinzeMetres(9979.542810305791))
+        assertEquals("hors_15_m", r.code) // le motif reste dans les données
+        val texte = TextesControle.message(r)!!.texte
+        assertTrue(texte.contains("9\u202F980 m"), texte)
+        assertTrue(!texte.contains("hors_15_m") && !texte.contains("_"), texte)
+        assertTrue(!texte.contains("542") && !Regex("\\d[.,]\\d").containsMatchIn(texte), texte)
+        assertTrue(texte.contains("Code lu sur le piquet") && texte.contains("« Rattacher »") && !texte.contains("Recommencer"), texte)
+    }
+
+    /** Mission 068, décision de Pascal : le bouton sous « Code lu sur le piquet » suit le champ. */
+    @Test fun `le libelle du bouton suit le champ du code lu`() {
+        assertEquals("Recommencer", TextesControle.boutonArrivee(""))
+        assertEquals("Recommencer", TextesControle.boutonArrivee("   "))
+        assertEquals("Rattacher", TextesControle.boutonArrivee("P35-03"))
+        assertEquals("Rattacher", TextesControle.boutonArrivee("  P35-03 "))
+    }
+
+    @Test fun `un refus de code inconnu ne montre pas son motif`() {
+        val texte = TextesControle.message(SuiteSession.Refus.de(RefusPlacette.CodeInconnu("ZZZ")))!!.texte
+        assertTrue(!texte.contains("code_inconnu") && !texte.contains("_"), texte)
+        assertTrue(texte.contains("ZZZ"), texte)
     }
 
     @Test fun `un code de piquet inconnu est refuse code_inconnu`() = with(BancControle()) {
@@ -80,8 +106,8 @@ class ArriveeControleTest {
         assertEquals("point_hors_foret", refus(b.ouvrir()).code)
     }
 
-    /** Un refus par code : le texte montré commence toujours par le code de la spec § 6. */
-    @Test fun `chaque refus de la session est montre avec son code`() {
+    /** Un refus par code : le code reste dans les données, le texte montré est le message en clair (mission 068). */
+    @Test fun `chaque refus de la session est montre en clair, sans son code`() {
         val refus = listOf(
             RefusPlacette.HorsQuinzeMetres(22.0),
             RefusPlacette.CodeInconnu("X"),
@@ -93,7 +119,8 @@ class ArriveeControleTest {
         ).map { SuiteSession.Refus.de(it) }
         refus.forEach { r ->
             assertTrue(r.code.isNotBlank())
-            assertEquals("${r.code} : ${r.message}", TextesControle.message(r)!!.texte)
+            assertEquals(r.message, TextesControle.message(r)!!.texte)
+            assertTrue(!TextesControle.message(r)!!.texte.startsWith("${r.code} :"))
         }
         assertEquals("hors_referentiel", refus[3].code)
         assertEquals("hors_referentiel", refus[4].code)

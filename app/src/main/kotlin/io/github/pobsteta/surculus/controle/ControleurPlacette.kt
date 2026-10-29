@@ -368,10 +368,13 @@ object TextesControle {
 
     fun compteur(dits: Int, total: Int) = "$dits sur $total"
 
-    /** Le refus avec son code (spec § 6) d'abord, puis l'explication ; les réponses sans code, en clair. */
+    /** Le bouton sous « Code lu sur le piquet » suit le champ (mission 068, décision de Pascal) : « Rattacher » dès qu'un code est lu (non vide après `trim`), « Recommencer » sinon. Même action dans les deux cas. */
+    fun boutonArrivee(code: String): String = if (code.isBlank()) "Recommencer" else "Rattacher"
+
+    /** Le refus en clair, sans son motif (il reste dans les données, le journal et les tests : mission 068) ; les autres réponses aussi. */
     fun message(suite: SuiteSession): MessageControle? = when (suite) {
         is SuiteSession.Fait -> null
-        is SuiteSession.Refus -> MessageControle("${suite.code} : ${suite.message}", erreur = true)
+        is SuiteSession.Refus -> MessageControle(suite.message, erreur = true)
         is SuiteSession.AConfirmer -> MessageControle(suite.alerte.message, erreur = true)
         is SuiteSession.PasEncoreDisponible -> MessageControle("« ${suite.fonction} » : pas encore disponible.", erreur = false)
         SuiteSession.AucunPlantCourant -> MessageControle("Aucun plant à qui dire un état.", erreur = true)

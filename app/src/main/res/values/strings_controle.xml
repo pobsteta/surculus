@@ -7,7 +7,6 @@
     <string name="controle_moyenne">Position moyennée : %1$d / %2$d s</string>
     <string name="controle_moyenne_aide">Restez au piquet. La placette s\'ouvre toute seule.</string>
     <string name="controle_sans_position">Pas de position GNSS : approchez-vous du piquet et attendez un fix.</string>
-    <string name="controle_recommencer">Recommencer</string>
     <string name="controle_alerte_terminee">Placette déjà terminée : ce que vous dites s\'ajoute.</string>
     <string name="controle_stockage_refuse">La sauvegarde hors de l\'appareil attend la permission de stockage. La saisie continue.</string>
     <string name="controle_plant_precedent">Plant précédent</string>
