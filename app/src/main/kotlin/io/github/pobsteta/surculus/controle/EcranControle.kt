@@ -9,7 +9,10 @@ package io.github.pobsteta.surculus.controle
 
 import android.Manifest
 import android.os.SystemClock
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import kotlinx.coroutines.sync.Mutex
@@ -28,6 +31,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,9 +49,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,6 +72,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -336,10 +341,36 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
                     ligneDictee = ligneDictee,
                 )
             }
-        } else if (EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null) {
-            Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
         }
-        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        // Mission 075 : le micro est HORS de la zone qui défile (pied debout, colonne couché) ; le bloc J'ÉCOUTE est posé PAR-DESSUS
+        // le haut de cette zone. Rien ne pousse rien : le micro et les boutons ne bougent pas quand l'écoute commence.
+        val config = LocalConfiguration.current
+        val emplacement = DispositionMicro.emplacement(config.screenWidthDp.toFloat(), config.screenHeightDp.toFloat())
+        val avecMicro = e.vue == VueControle.PLANT && !poche
+        val surPoche: () -> Unit = {
+            val entrer: () -> Unit = {
+                mode.entrer(SystemClock.uptimeMillis())
+                sorties?.annoncer(AnnoncesPoche.entree(e.plant.numero))
+            }
+            if (EcouteApp.modeleInstalle(ctx) && PermissionMicro.aDemander(EcouteApp.etatPermission(ctx))) {
+                apresPermission = entrer
+                demanderMicro.launch(Manifest.permission.RECORD_AUDIO)
+            } else entrer()
+        }
+        val surMicro: () -> Unit = {
+            if (EcouteApp.modeleInstalle(ctx) && PermissionMicro.aDemander(EcouteApp.etatPermission(ctx))) {
+                apresPermission = null
+                demanderMicro.launch(Manifest.permission.RECORD_AUDIO)
+            } else EcouteApp.tenir()
+        }
+        val micro: @Composable () -> Unit = {
+            BoutonMicro(AspectMicro.pour(EcouteApp.affichage, AspectMicro.pret(EcouteApp.etatPermission(ctx), EcouteApp.modeleInstalle(ctx))), onAppui = surMicro, onRelache = { EcouteApp.relacher() })
+        }
+        val zone: @Composable (Modifier) -> Unit = { m ->
+            Box(m) {
+                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    // Couché, « Mode poche » est en tête de la zone qui défile : la colonne du micro n'a de place que pour le micro.
+                    if (avecMicro && emplacement == EmplacementMicro.COLONNE) BoutonPoche(surPoche, Modifier.fillMaxWidth())
             Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (e.plant.alerteTerminee) {
                 Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
@@ -350,27 +381,33 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
                         ActionDictee.REGLAGES -> ouvrirReglagesApplication(ctx)
                         ActionDictee.INSTALLER -> onParametres()
                     }
-                }, onPoche = {
-                    val entrer: () -> Unit = {
-                        mode.entrer(SystemClock.uptimeMillis())
-                        sorties?.annoncer(AnnoncesPoche.entree(e.plant.numero))
-                    }
-                    if (EcouteApp.modeleInstalle(ctx) && PermissionMicro.aDemander(EcouteApp.etatPermission(ctx))) {
-                        apresPermission = entrer
-                        demanderMicro.launch(Manifest.permission.RECORD_AUDIO)
-                    } else entrer()
-                }, onMicro = {
-                    if (EcouteApp.modeleInstalle(ctx) && PermissionMicro.aDemander(EcouteApp.etatPermission(ctx))) {
-                        apresPermission = null
-                        demanderMicro.launch(Manifest.permission.RECORD_AUDIO)
-                    } else EcouteApp.tenir()
-                }, onMicroRelache = { EcouteApp.relacher() })
+                })
                 VueControle.TERMINER -> VueTerminer(e, ::agir)
                 VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
                 VueControle.POINTER -> VuePointerEcran(e, tournee, reglages, ::agir)
             }
             e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
             if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (!poche && (EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null)) {
+                    Box(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
+                }
+            }
+        }
+        when {
+            !avecMicro -> zone(Modifier.weight(1f).fillMaxWidth())
+            emplacement == EmplacementMicro.COLONNE -> Row(Modifier.weight(1f).fillMaxWidth()) {
+                zone(Modifier.weight(1f).fillMaxHeight())
+                Column(Modifier.width(DimensionsMicro.ZONE).fillMaxHeight().padding(8.dp), verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally) { micro() }
+            }
+            else -> Column(Modifier.weight(1f).fillMaxWidth()) {
+                zone(Modifier.weight(1f).fillMaxWidth())
+                Row(Modifier.fillMaxWidth().height(DimensionsMicro.ZONE).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    BoutonPoche(surPoche, Modifier.weight(1f))
+                    Spacer(Modifier.width(12.dp))
+                    micro()
+                }
+            }
         }
     }
 }
@@ -378,7 +415,6 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
 @Composable
 private fun VuePlantEcran(
     e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit, poche: Boolean, ligneDictee: String?, actionsDictee: List<ActionDictee>, onActionDictee: (ActionDictee) -> Unit,
-    onPoche: () -> Unit, onMicro: () -> Unit, onMicroRelache: () -> Unit,
 ) {
     val p = e.plant
     // 1. La seule chose en grand : le numéro du plant ; 2. son état ; 3. l'état d'avant, en petit.
@@ -463,15 +499,8 @@ private fun VuePlantEcran(
             Text(stringResource(R.string.controle_terminer))
         }
     }
-    // 7. Le mode poche : le téléphone au fond de la poche, les états au volume (voix et vibration : mission 012-C2).
-    // 8. Hors du mode poche, le micro se tient pour parler, comme en poche le volume bas (012-D2).
+    // 7. Le mode poche et le micro sont hors de cette zone qui défile (mission 075) : pied fixe debout, colonne fixe couché.
     if (!poche) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = onPoche, modifier = Modifier.weight(1f).height(DimensionsControle.ACTION), contentPadding = PaddingValues(horizontal = 4.dp)) {
-                Text(stringResource(R.string.controle_poche), color = couleurNeutre())
-            }
-            BoutonMicro(Modifier.weight(1f), onAppui = onMicro, onRelache = onMicroRelache)
-        }
         ligneDictee?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         // Sous le message : le bouton qui mène où l'on répare (jamais en poche, le toucher y est ignoré).
         actionsDictee.forEach { a ->
@@ -523,21 +552,32 @@ private fun BlocEcoute() {
     }
 }
 
-/** Hors du mode poche, le même bloc dans son cadre. */
+/** Hors du mode poche, le même bloc dans son cadre, sur fond opaque : posé par-dessus le haut de la zone qui défile (075). */
 @Composable
 private fun BlocEcouteEncadre() {
     Column(
-        Modifier.fillMaxWidth().border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small).padding(12.dp),
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.small)
+            .border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) { BlocEcoute() }
 }
 
+/** « Mode poche », hors de la zone qui défile (debout : à gauche du micro, dans le pied ; couché : en tête de la zone). */
+@Composable
+private fun BoutonPoche(onPoche: () -> Unit, modifier: Modifier) {
+    OutlinedButton(onClick = onPoche, modifier = modifier.height(DimensionsControle.ACTION), contentPadding = PaddingValues(horizontal = 4.dp)) {
+        Text(stringResource(R.string.controle_poche), color = couleurNeutre())
+    }
+}
+
 /**
- * Le micro hors du mode poche : on le **tient** pour parler, on le lâche pour finir (comme Marculus). Piloté par les interactions
- * du bouton ; un doigt qui glisse hors du bouton (Cancel) ferme comme un relâchement, et le bouton qui disparaît aussi.
+ * Le micro hors du mode poche, comme celui de Marculus : rond de 112 dp, icône de 48 dp, rouge pendant l'écoute, barré quand le micro
+ * ou le modèle manquent (il reste actif : le toucher demande la permission). On le **tient** pour parler, on le lâche pour finir ;
+ * piloté par les interactions du bouton, un doigt qui glisse hors du bouton (Cancel) ferme comme un relâchement, et le bouton qui
+ * disparaît aussi.
  */
 @Composable
-private fun BoutonMicro(modifier: Modifier, onAppui: () -> Unit, onRelache: () -> Unit) {
+private fun BoutonMicro(etat: EtatMicro, onAppui: () -> Unit, onRelache: () -> Unit) {
     EcouteApp.version // lu pour changer d'aspect pendant l'écoute
     val interactions = remember { MutableInteractionSource() }
     val appui by rememberUpdatedState(onAppui)
@@ -552,21 +592,19 @@ private fun BoutonMicro(modifier: Modifier, onAppui: () -> Unit, onRelache: () -
         }
     }
     DisposableEffect(Unit) { onDispose { relache() } }
-    val ecoute = EcouteApp.affichage == AffichageEcoute.ECOUTE || EcouteApp.affichage == AffichageEcoute.OUVERTURE
-    val libelle = stringResource(if (ecoute) R.string.controle_micro_ecoute else R.string.controle_micro)
+    val libelle = stringResource(if (etat == EtatMicro.ECOUTE) R.string.controle_micro_ecoute else R.string.controle_micro)
     // UN SEUL bouton, jamais deux composables selon l'état : changer de composable sous le doigt enverrait un Cancel et
-    // fermerait l'écoute aussitôt. Seules les couleurs et la description (lue par TalkBack) changent ; l'icône est le Mic de Marculus.
-    val plein = AspectMicro.plein(EcouteApp.affichage)
-    OutlinedButton(
+    // fermerait l'écoute aussitôt. Seuls les couleurs, l'icône (Mic / MicOff) et la description (lue par TalkBack) changent.
+    val s = MaterialTheme.colorScheme
+    Button(
         onClick = {},
         interactionSource = interactions,
-        modifier = modifier.height(DimensionsControle.ACTION),
-        contentPadding = PaddingValues(horizontal = 4.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = if (plein) MaterialTheme.colorScheme.primary else Color.Transparent,
-            contentColor = if (plein) MaterialTheme.colorScheme.onPrimary else couleurNeutre(),
-        ),
-    ) { Icon(Icons.Filled.Mic, contentDescription = libelle, modifier = Modifier.size(32.dp)) }
+        modifier = Modifier.size(DimensionsMicro.BOUTON),
+        shape = CircleShape,
+        contentPadding = PaddingValues(0.dp),
+        border = BorderStroke(2.dp, CouleursMicro.filet(s)),
+        colors = ButtonDefaults.buttonColors(containerColor = CouleursMicro.fond(etat, s), contentColor = CouleursMicro.icone(etat, s)),
+    ) { Icon(if (etat == EtatMicro.BARRE) Icons.Filled.MicOff else Icons.Filled.Mic, contentDescription = libelle, modifier = Modifier.size(DimensionsMicro.ICONE)) }
 }
 
 @Composable
