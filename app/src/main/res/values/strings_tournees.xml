@@ -107,6 +107,9 @@
     <string name="carte_sans_position">Sans position</string>
     <string name="carte_permission">Position du téléphone refusée : la carte reste sans position.</string>
     <string name="carte_hors_france">Position hors de France : vérifier l\'ordre latitude / longitude</string>
+    <string name="carte_recepteur_non_demarre">Récepteur GNSS non démarré : voir Paramètres, Récepteur GNSS.</string>
+    <string name="carte_recepteur_liaison_perdue">Liaison avec le récepteur GNSS perdue : nouvelle tentative en cours.</string>
+    <string name="carte_recepteur_corrections">Corrections RTK indisponibles : la position est moins précise.</string>
 
     <!-- Écran Guidage (spec § 4.2 et 4.3) -->
     <string name="guidage_vers">Vers %1$s</string>

@@ -12,8 +12,12 @@
     <string name="recepteur_appareils">Appareils appairés</string>
     <string name="recepteur_aucun_appaire">Aucun appareil appairé : appairer le récepteur dans les réglages Bluetooth du téléphone.</string>
     <string name="recepteur_annuler">Annuler</string>
-    <string name="recepteur_bt_refuse">Autorisation Bluetooth refusée : le récepteur ne pourra pas se connecter. À accorder dans les réglages du téléphone (Applications, Surculus, Autorisations).</string>
-    <string name="recepteur_notif_refusee">Notifications refusées : « Libérer le récepteur » restera caché. À accorder dans les réglages du téléphone (Applications, Surculus, Notifications).</string>
+    <string name="recepteur_bt_a_demander">Autorisation Bluetooth pas encore demandée : elle sera demandée au choix du récepteur.</string>
+    <string name="recepteur_bt_refuse">Autorisation Bluetooth refusée : le récepteur ne pourra pas se connecter. « Choisir… » la redemandera.</string>
+    <string name="recepteur_bt_refuse_definitif">Autorisation Bluetooth refusée pour de bon : le récepteur ne pourra pas se connecter. À accorder dans les réglages du téléphone (Applications, Surculus, Autorisations).</string>
+    <string name="recepteur_notif_a_demander">Notifications pas encore demandées : sans elles, « Libérer le récepteur » restera caché. Désactiver puis réactiver le récepteur les demandera.</string>
+    <string name="recepteur_notif_refusee">Notifications refusées : « Libérer le récepteur » restera caché. Désactiver puis réactiver le récepteur les redemandera.</string>
+    <string name="recepteur_notif_refusee_definitif">Notifications refusées pour de bon : « Libérer le récepteur » restera caché. À accorder dans les réglages du téléphone (Applications, Surculus, Notifications).</string>
     <string name="recepteur_hote">Adresse</string>
     <string name="recepteur_port">Port</string>
     <string name="recepteur_ntrip">Corrections NTRIP par Surculus</string>

@@ -242,6 +242,12 @@ class ServiceGnssRtk : Service() {
         stopSelf()
     }
 
+    /** L'utilisateur retire la tâche (mission 052) : le récepteur est libéré, ni service orphelin ni notification restée. */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        arreterInterne()
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
         scope.cancel()
         fixBrut = null

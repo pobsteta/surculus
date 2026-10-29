@@ -88,10 +88,13 @@ fun SectionRecepteur() {
     }
 
     // Android 13+ : sans la notification, « Libérer le récepteur » reste caché ; Android 12+ : Bluetooth demande une autorisation.
-    val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+    val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { reponses ->
+        // Un refus est mémorisé : c'est lui qui distingue « refusée » de « pas encore demandée » (mission 052).
+        reponses.forEach { (permission, accordee) -> if (!accordee) memoriserRefus(ctx, permission) }
         relecture++
     }
     val permissionBt = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        if (!ok) memoriserRefus(ctx, Manifest.permission.BLUETOOTH_CONNECT)
         relecture++
         if (ok) choixAppareil = true
     }
@@ -105,14 +108,23 @@ fun SectionRecepteur() {
     if (!rtk.actif) return
     // `relecture` est lu ici pour recalculer après chaque réponse du système.
     val avertissements = if (relecture < 0) emptyList() else avertissementsRecepteur(
-        rtk.actif, rtk.transport, autorisationBluetooth(ctx), autorisationNotifications(ctx),
+        rtk.actif, rtk.transport, etatBluetooth(ctx), etatNotifications(ctx),
     )
     avertissements.forEach {
         val texte = when (it) {
+            AvertissementRecepteur.BLUETOOTH_A_DEMANDER -> R.string.recepteur_bt_a_demander
             AvertissementRecepteur.BLUETOOTH_REFUSE -> R.string.recepteur_bt_refuse
+            AvertissementRecepteur.BLUETOOTH_REFUSE_DEFINITIVEMENT -> R.string.recepteur_bt_refuse_definitif
+            AvertissementRecepteur.NOTIFICATIONS_A_DEMANDER -> R.string.recepteur_notif_a_demander
             AvertissementRecepteur.NOTIFICATIONS_REFUSEES -> R.string.recepteur_notif_refusee
+            AvertissementRecepteur.NOTIFICATIONS_REFUSEE_DEFINITIVEMENT -> R.string.recepteur_notif_refusee_definitif
         }
-        Text(stringResource(texte), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+        // « Pas encore demandée » n'est pas une erreur : texte normal ; un refus est en couleur d'erreur.
+        val pasDemandee = it == AvertissementRecepteur.BLUETOOTH_A_DEMANDER || it == AvertissementRecepteur.NOTIFICATIONS_A_DEMANDER
+        Text(
+            stringResource(texte), style = MaterialTheme.typography.bodyMedium,
+            color = if (pasDemandee) androidx.compose.ui.graphics.Color.Unspecified else MaterialTheme.colorScheme.error,
+        )
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -248,6 +260,23 @@ private fun autorisationBluetooth(ctx: Context): Boolean =
 private fun autorisationNotifications(ctx: Context): Boolean =
     Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
         ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+private const val PREFS_AUTORISATIONS = "autorisations"
+
+/** Mémorise qu'une autorisation a été refusée : le système ne distingue pas « jamais demandée » de « refusée pour de bon ». */
+private fun memoriserRefus(ctx: Context, permission: String) {
+    ctx.getSharedPreferences(PREFS_AUTORISATIONS, Context.MODE_PRIVATE).edit().putBoolean(permission, true).apply()
+}
+
+private fun etat(ctx: Context, permission: String, accordee: Boolean): EtatAutorisation = etatAutorisation(
+    accordee = accordee,
+    dejaRefusee = ctx.getSharedPreferences(PREFS_AUTORISATIONS, Context.MODE_PRIVATE).getBoolean(permission, false),
+    rationale = (ctx as? android.app.Activity)?.shouldShowRequestPermissionRationale(permission) == true,
+)
+
+private fun etatBluetooth(ctx: Context) = etat(ctx, Manifest.permission.BLUETOOTH_CONNECT, autorisationBluetooth(ctx))
+
+private fun etatNotifications(ctx: Context) = etat(ctx, Manifest.permission.POST_NOTIFICATIONS, autorisationNotifications(ctx))
 
 private fun permissionsAUtiliser(): List<String> = buildList {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) add(Manifest.permission.BLUETOOTH_CONNECT)

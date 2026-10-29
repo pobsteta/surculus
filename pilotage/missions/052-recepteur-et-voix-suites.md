@@ -12,7 +12,9 @@ l'installation de la voix (erreur du récepteur sur la carte, arrêt propre quan
 autorisation jamais demandée distinguée d'un refus, erreur d'installation qui ne laisse pas l'écran « en
 cours »), pour que le forestier sache en forêt pourquoi il n'a pas de position ou pas de dictée.
 
-**Redite par l'agent :** (à remplir par l'agent avant d'agir)
+**Redite par l'agent :** rendre visibles et justes les états du récepteur GNSS et de l'installation de la voix (erreur du récepteur sur la
+carte, arrêt propre à la tâche retirée, « pas encore demandée » distinct de « refusée », échec d'installation Vosk même
+sur une `Error`, test JVM), pour que le forestier sache pourquoi il n'a pas de position ou de dictée.
 
 ## Ce qui est à faire (cinq points, tous tirés du journal)
 
