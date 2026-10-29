@@ -1,6 +1,7 @@
 package io.github.pobsteta.surculus.data.journal.db
 
 import android.content.Context
+import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteDatabase
 import androidx.room.Delete
 import androidx.room.Update
@@ -91,14 +92,14 @@ class JournalDurableTest {
         val lignesAvant = compte("journal")
         val refusAvant = compte("refus_journal")
 
-        assertFailsWith<Exception> {
+        refuse {
             sql.execSQL(
                 "INSERT OR REPLACE INTO journal ($cols) SELECT uuid, objet_uuid, type, 'x', remplace_uuid, operateur, " +
                     "appareil, sequence, saisi_le_utc, heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee " +
                     "FROM journal WHERE uuid = '${l.uuid}'",
             )
         }
-        assertFailsWith<Exception> {
+        refuse {
             sql.execSQL(
                 "INSERT OR REPLACE INTO refus_journal (id, $cols) SELECT id, uuid, objet_uuid, type, 'x', remplace_uuid, " +
                     "operateur, appareil, sequence, saisi_le_utc, heure_gnss, monotone_ms, demarrage, age_fix_ms, " +
@@ -119,28 +120,41 @@ class JournalDurableTest {
      * suppression pour éprouver le déclencheur d'insertion seul : c'est la garde qui tient partout.
      */
     @Test
-    fun `le declencheur d'insertion seul refuse INSERT OR REPLACE, sans l'aide du declencheur de suppression`() {
+    fun `le declencheur d'insertion seul refuse INSERT OR REPLACE sur le journal, sans celui de suppression`() {
+        val base = ouvrir()
+        val r = depot(base)
+        val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
+        val sql = base.openHelper.writableDatabase
+        sql.execSQL("DROP TRIGGER journal_pas_de_suppression")
+        refuse { sql.execSQL("INSERT OR REPLACE INTO journal ($COLS) SELECT uuid, $AUTRES FROM journal") }
+        assertEquals(l, r.lignes().single())
+    }
+
+    @Test
+    fun `le declencheur d'insertion seul refuse INSERT OR REPLACE sur les refus, sans celui de suppression`() {
         val base = ouvrir()
         val r = depot(base)
         val l = r.saisir("P1", TypeLigne.ETAT, """{"etat":"sain"}""", "op1")
         r.recevoir(l.copy(valeur = """{"etat":"mort"}"""))
         val sql = base.openHelper.writableDatabase
-        sql.execSQL("DROP TRIGGER journal_pas_de_suppression")
         sql.execSQL("DROP TRIGGER refus_journal_pas_de_suppression")
-        val cols = "uuid, objet_uuid, type, valeur, remplace_uuid, operateur, appareil, sequence, saisi_le_utc, " +
-            "heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee"
-        val autres = "objet_uuid, type, 'x', remplace_uuid, operateur, appareil, sequence, saisi_le_utc, " +
-            "heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee"
-        assertFailsWith<Exception> {
-            sql.execSQL("INSERT OR REPLACE INTO journal ($cols) SELECT uuid, $autres FROM journal")
-        }
-        assertFailsWith<Exception> {
-            sql.execSQL("INSERT OR REPLACE INTO refus_journal (id, $cols) SELECT id, uuid, $autres FROM refus_journal")
-        }
-        assertEquals(l, r.lignes().single())
+        refuse { sql.execSQL("INSERT OR REPLACE INTO refus_journal (id, $COLS) SELECT id, uuid, $AUTRES FROM refus_journal") }
         sql.query("SELECT valeur FROM refus_journal").use { c ->
             assertTrue(c.moveToFirst()); assertEquals("""{"etat":"mort"}""", c.getString(0))
         }
+    }
+
+    /** Exige un refus de contrainte du déclencheur (et non une faute de syntaxe SQL qui passerait pour un refus). */
+    private fun refuse(bloc: () -> Unit) {
+        val e = assertFailsWith<SQLiteConstraintException> { bloc() }
+        assertTrue(e.message.orEmpty().contains("journal en ajout seul"), "message inattendu : ${e.message}")
+    }
+
+    private companion object {
+        const val COLS = "uuid, objet_uuid, type, valeur, remplace_uuid, operateur, appareil, sequence, saisi_le_utc, " +
+            "heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee"
+        const val AUTRES = "objet_uuid, type, 'x', remplace_uuid, operateur, appareil, sequence, saisi_le_utc, " +
+            "heure_gnss, monotone_ms, demarrage, age_fix_ms, code_tournee"
     }
 
     @Test
