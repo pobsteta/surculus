@@ -63,7 +63,6 @@ import io.github.pobsteta.surculus.core.placette.UuidPlacette
 import io.github.pobsteta.surculus.core.placette.Verdict
 import io.github.pobsteta.surculus.gpkg.PlacetteTournee
 import kotlinx.coroutines.delay
-import kotlin.math.roundToInt
 
 /**
  * Guidage vers une placette (spec § 4.2 et 4.3). Une question : à quelle distance, dans quelle direction ?
@@ -239,15 +238,15 @@ private fun Resultat(v: Verdict<Rattache>) {
         is Verdict.Accepte -> {
             val r = v.valeur
             if (r.parIdentite) {
-                TexteEtat(stringResource(R.string.guidage_rattache_identite, r.piquet.code, r.distanceM.roundToInt()), Palette.Orange, fontWeight = FontWeight.Bold)
+                TexteEtat(stringResource(R.string.guidage_rattache_identite, r.piquet.code, Libelles.distance(r.distanceM)), Palette.Orange, fontWeight = FontWeight.Bold)
             } else {
-                TexteEtat(stringResource(R.string.guidage_rattache, r.piquet.code, r.distanceM.roundToInt()), Palette.Vert, fontWeight = FontWeight.Bold)
+                TexteEtat(stringResource(R.string.guidage_rattache, r.piquet.code, Libelles.distance(r.distanceM)), Palette.Vert, fontWeight = FontWeight.Bold)
             }
         }
         is Verdict.Refuse -> {
             val refus = v.refus
             val texte = when (refus) {
-                is RefusPlacette.HorsQuinzeMetres -> stringResource(R.string.guidage_refus_15m, refus.distanceM.roundToInt())
+                is RefusPlacette.HorsQuinzeMetres -> stringResource(R.string.guidage_refus_15m, Libelles.distance(refus.distanceM))
                 is RefusPlacette.CodeInconnu -> stringResource(R.string.guidage_refus_code, refus.code)
                 else -> refus.message
             }

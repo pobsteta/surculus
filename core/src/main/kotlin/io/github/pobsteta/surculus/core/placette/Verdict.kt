@@ -7,6 +7,8 @@
  */
 package io.github.pobsteta.surculus.core.placette
 
+import io.github.pobsteta.surculus.core.guidage.Libelles
+
 /** Identifiant (UUID) d'un plant. Le format UUID v7 est garanti par `:data` (ADR 0005), pas ici. */
 @JvmInline
 value class UuidPlant(val valeur: String) {
@@ -183,7 +185,7 @@ sealed interface RefusPlacette {
 
     data class HorsQuinzeMetres(val distanceM: Double) : RefusPlacette {
         override val motif = "hors_15_m"
-        override val message = "À ${metresEnFrancais(distanceM)} m de la placette la plus proche (plus de 15 m). " +
+        override val message = "À ${Libelles.distance(distanceM)} de la placette la plus proche (plus de 15 m). " +
             "Lisez le code sur le piquet, saisissez-le dans le champ « Code lu sur le piquet », puis touchez « Rattacher »."
     }
 
@@ -223,11 +225,3 @@ object CodesRefus {
     fun code(refus: io.github.pobsteta.surculus.core.reperes.RefusRepere): String =
         if (refus is io.github.pobsteta.surculus.core.reperes.RefusRepere.PiquetHorsFrance) HORS_FRANCE else refus.motif
 }
-
-/**
- * Distance arrondie au mètre entier, milliers séparés par l'espace fine insécable U+202F : 9979,54 -> « 9 980 ». U+202F est le
- * séparateur de milliers du français dans le CLDR d'Unicode (et du JDK récent pour `fr-FR`) ; on l'écrit à la main, sans `Locale`,
- * pour que le texte soit le même sur tout appareil et dans le test du `core`, qui n'a pas Android.
- */
-internal fun metresEnFrancais(distanceM: Double): String =
-    Math.round(distanceM).toString().reversed().chunked(3).joinToString("\u202F").reversed()

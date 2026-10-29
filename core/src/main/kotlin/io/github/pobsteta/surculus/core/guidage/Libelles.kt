@@ -11,9 +11,16 @@ import java.util.Locale
 
 /** Libellés lus sur le terrain : des mètres, un cap en degrés avec son point cardinal. */
 object Libelles {
-    /** « 85 m » sous le kilomètre, « 1,3 km » au-delà (le forestier lit des mètres). */
+    /** Mètres entiers arrondis, milliers séparés par l'espace fine insécable U+202F : 9979,54 -> « 9 980 m ». */
+    fun metres(m: Double): String =
+        Math.round(m).toString().reversed().chunked(3).joinToString("\u202F").reversed() + " m"
+
+    /**
+     * L'unique écriture d'une distance de navigation : « 85 m » sous le kilomètre, « 1,3 km » (une décimale, virgule) au-delà.
+     * Le seuil se juge sur la valeur **arrondie** (999,5 m -> « 1,0 km », jamais « 1 000 m »), et l'on arrondit : plus de troncature.
+     */
     fun distance(m: Double): String =
-        if (m < 1000.0) "${m.toInt()} m" else String.format(Locale.FRANCE, "%.1f km", m / 1000.0)
+        if (Math.round(m) < 1000L) metres(m) else String.format(Locale.FRANCE, "%.1f km", m / 1000.0)
 
     /** Huit points cardinaux, en français : N, NE, E, SE, S, SO, O, NO. [azimutDeg] dans [0, 360[. */
     fun pointCardinal(azimutDeg: Double): String {
