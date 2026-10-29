@@ -65,3 +65,18 @@ L'orchestrateur soumet le plan à Pascal ; le code ne part qu'après ses répons
 
 Sur la release, capture debout et couchée : le micro visible sans défiler ; pendant l'appui, il ne bouge pas
 et passe au rouge ; essai de Pascal avec des gants.
+
+## Reprise, aller-retour 1/3 (2026-10-29)
+
+Relecture de la #130 (2229a8d) : « à reprendre ».
+
+1. **Majeur** : calculer l'état du micro (`AspectMicro.pour(EcouteApp.affichage, …)`) **dans `BoutonMicro`,
+   après la lecture de `EcouteApp.version`** (état Compose), comme avant la 075 ; sinon le rouge à l'écoute
+   risque de ne jamais s'afficher. Garde de source qui le vérifie.
+2. Réindenter le corps de la zone qui défile (`EcranControle.kt`), dans un commit à part.
+3. Poser `zone` une seule fois (micro en frère conditionnel) pour ne pas recréer le contenu en passant de
+   Plant à Pointer ou Terminer, si c'est simple ; sinon le dire.
+4. Remplacer le test tautologique `ECOUTE_EN_SURIMPRESSION` par une garde de source : `BlocEcouteEncadre`
+   hors de la `Column` qui défile.
+5. PR : Réglages et Installer sont **dans** la zone qui défile, pas dessous ; couché, « J'ÉCOUTE » couvre
+   aussi « Mode poche » (suite de Q2, à dire).
