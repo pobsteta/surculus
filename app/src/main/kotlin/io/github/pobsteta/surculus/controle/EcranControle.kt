@@ -44,6 +44,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.graphics.Color
@@ -554,7 +555,7 @@ private fun BoutonMicro(modifier: Modifier, onAppui: () -> Unit, onRelache: () -
     val ecoute = EcouteApp.affichage == AffichageEcoute.ECOUTE || EcouteApp.affichage == AffichageEcoute.OUVERTURE
     val libelle = stringResource(if (ecoute) R.string.controle_micro_ecoute else R.string.controle_micro)
     // UN SEUL bouton, jamais deux composables selon l'état : changer de composable sous le doigt enverrait un Cancel et
-    // fermerait l'écoute aussitôt. Seules les couleurs changent.
+    // fermerait l'écoute aussitôt. Seules les couleurs et la description (lue par TalkBack) changent ; l'icône est le Mic de Marculus.
     val plein = AspectMicro.plein(EcouteApp.affichage)
     OutlinedButton(
         onClick = {},
@@ -565,7 +566,7 @@ private fun BoutonMicro(modifier: Modifier, onAppui: () -> Unit, onRelache: () -
             containerColor = if (plein) MaterialTheme.colorScheme.primary else Color.Transparent,
             contentColor = if (plein) MaterialTheme.colorScheme.onPrimary else couleurNeutre(),
         ),
-    ) { Text(libelle) }
+    ) { Icon(Icons.Filled.Mic, contentDescription = libelle, modifier = Modifier.size(32.dp)) }
 }
 
 @Composable
