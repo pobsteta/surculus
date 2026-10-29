@@ -82,3 +82,24 @@ hors_15_m : Placette la plus proche à 9979.542810305791 m (plus de 15 m) : conf
 
 Sur la release suivante, à l'intérieur (loin de Couchey), ouvrir le contrôle de P35-03 : le message
 dit « À 9 980 m … » (ou la forme retenue), sans `hors_15_m` ni décimales ; capture de l'orchestrateur.
+
+## Reprise, aller-retour 1/3 (2026-10-29)
+
+Relecture de la #126 (1b954d1) : « à reprendre ». Décision de Pascal du 2026-10-29, qui lève ici
+l'interdiction de toucher au libellé du bouton : « Selon le champ ».
+
+1. **Bloquant (relecteur)** : dans `ControleurPlacetteTest` (l. 133) et `PointageControleTest` (l. 82,
+   233, 271), exiger de nouveau *quel* refus est renvoyé : le message exact attendu
+   (`assertEquals(RefusPlacette.CauseSurEtat(...).message, m.texte)` ou équivalent), pas seulement
+   l'absence du motif.
+2. **Pascal** : le bouton sous « Code lu sur le piquet » dit « Rattacher » dès que le champ contient un
+   code (non vide après `trim`), « Recommencer » quand il est vide (y compris après « Pas de position
+   GNSS ») ; même action qu'aujourd'hui. Le message du refus des 15 m dit « … puis touchez
+   « Rattacher » ». Test : le libellé suit le champ.
+3. Mineurs : commentaire de `VueArrivee` (`EcranControle.kt` l. 205, « le refus avec son code ») à
+   mettre à jour ; commentaire du formatage de la distance sans « comme `Locale.FRANCE` » (U+202F choisi,
+   dire pourquoi) ; remplir la redite de cette fiche.
+
+Hors reprise (bac à sable) : formats de distance différents dans l'app (« 9980 m » du guidage,
+« 10,0 km » de `Libelles.distance` tronqué, « 9 980 m » ici) ; messages de refus qui montrent encore
+`non_observe` ou des UUID.
