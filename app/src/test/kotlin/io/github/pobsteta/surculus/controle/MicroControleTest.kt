@@ -61,7 +61,24 @@ class MicroControleTest {
     @Test fun `le bloc J'ECOUTE est pose hors de la colonne qui defile`() {
         val defile = corps("Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp))")
         assertFalse(defile.contains("BlocEcouteEncadre()"), "le bloc ne doit pas être dans la colonne qui défile")
-        assertTrue(source.contains("{ BlocEcouteEncadre() }"), "le bloc est posé par-dessus (surimpression)")
+        // Surimpression : le bloc est un frère de la Column, dans le corps du Box de zone, APRÈS elle, posé avec Modifier.align(.
+        val zone = corps("Box(m) {")
+        val debutColonne = zone.indexOf("Column(Modifier.fillMaxSize().verticalScroll(")
+        assertTrue(debutColonne >= 0, "la Column qui défile doit être dans le Box de zone")
+        val ouvreColonne = zone.indexOf('{', zone.indexOf("verticalArrangement", debutColonne))
+        var prof = 0
+        var finColonne = -1
+        for (k in ouvreColonne until zone.length) {
+            if (zone[k] == '{') prof++
+            if (zone[k] == '}' && --prof == 0) { finColonne = k; break }
+        }
+        assertTrue(finColonne > 0, "accolade de la Column non fermée")
+        val bloc = zone.indexOf("BlocEcouteEncadre()")
+        assertTrue(bloc >= 0, "BlocEcouteEncadre() doit être dans le corps du Box de zone")
+        assertEquals(1, Regex("BlocEcouteEncadre\\(\\)").findAll(zone).count(), "un seul appel dans la zone")
+        assertTrue(bloc > finColonne, "le bloc doit venir APRÈS la Column (frère au-dessus), pas avant ni dedans")
+        val ligne = zone.substring(zone.lastIndexOf('\n', bloc) + 1, zone.indexOf('\n', bloc))
+        assertTrue(ligne.contains("Modifier.align("), "le bloc est posé avec Modifier.align( : $ligne")
     }
 
     @Test fun `la zone qui defile ne change pas de place dans la composition entre Plant et Pointer`() {
