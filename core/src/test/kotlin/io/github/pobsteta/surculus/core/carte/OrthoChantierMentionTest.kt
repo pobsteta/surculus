@@ -7,35 +7,35 @@ import kotlin.test.assertTrue
 
 /** Mission 059 : la mention de l'Ortho chantier dit sa source et sa date, ou dit qu'elles manquent ; elle n'invente rien. */
 class OrthoChantierMentionTest {
+    private val essai = "© IGN, BD ORTHO (ORTHOIMAGERY.ORTHOPHOTOS), Géoplateforme, téléchargée le 2026-10-27 pour un essai de Surculus"
+
     @Test
-    fun `source et date du fichier`() {
+    fun `attribution et date de mise a jour du fichier`() {
         assertEquals(
-            "Ortho chantier · © IGN, BD ORTHO® · Licence Ouverte 2.0 · prise de vue 2024",
-            OrthoChantier.mention(attribution = "© IGN, BD ORTHO® · Licence Ouverte 2.0", date = "2024"),
+            "Ortho chantier · © IGN, BD ORTHO® · Licence Ouverte 2.0 · mise à jour le 2024-06-15",
+            OrthoChantier.mention(attribution = "© IGN, BD ORTHO® · Licence Ouverte 2.0", dateMiseAJour = "2024-06-15"),
         )
     }
 
     @Test
-    fun `sans date dans le fichier, la mention le dit et n'en invente pas`() {
-        val m = OrthoChantier.mention(attribution = "© IGN, BD ORTHO®", date = null)
-        assertEquals("Ortho chantier · © IGN, BD ORTHO® · date de prise de vue non indiquée par le fichier", m)
-        assertFalse(Regex("20\\d\\d").containsMatchIn(m))
+    fun `sans date de mise a jour rien n'est ajoute, ni prise de vue ni non indiquee`() {
+        val m = OrthoChantier.mention(attribution = essai, dateMiseAJour = null)
+        assertEquals("Ortho chantier · $essai", m)
+        assertFalse("prise de vue" in m || "non indiqu" in m.substringAfter(essai))
     }
 
     @Test
-    fun `sans source dans le fichier, la mention le dit`() {
+    fun `sans attribution la mention dit source non indiquee`() {
+        assertEquals("Ortho chantier · source non indiquée par le fichier", OrthoChantier.mention(null, null))
         assertEquals(
-            "Ortho chantier · source non indiquée par le fichier · prise de vue 2024",
-            OrthoChantier.mention(attribution = null, date = "2024"),
+            "Ortho chantier · source non indiquée par le fichier · mise à jour le 2024-06-15",
+            OrthoChantier.mention(null, "2024-06-15"),
         )
     }
 
     @Test
-    fun `ni source ni date`() {
-        assertEquals(
-            "Ortho chantier · source non indiquée par le fichier · date de prise de vue non indiquée par le fichier",
-            OrthoChantier.mention(null, null),
-        )
+    fun `la licence n'est pas ajoutee par Surculus`() {
+        assertFalse("Licence" in OrthoChantier.mention("© IGN", null))
     }
 
     @Test
@@ -55,7 +55,7 @@ class OrthoChantierMentionTest {
     @Test
     fun `le message d'ortho illisible est en francais sans code technique`() {
         val t = OrthoChantier.ILLISIBLE
-        assertEquals("Ortho illisible : la carte montre le Plan IGN.", t)
+        assertEquals("Ortho illisible : le fichier d'ortho de la tournée ne s'ouvre pas.", t)
         assertFalse(t.contains("mbtiles", ignoreCase = true) || t.contains("sqlite", ignoreCase = true) || t.contains("exception", ignoreCase = true))
     }
 }

@@ -7,6 +7,7 @@
  */
 package io.github.pobsteta.surculus.gpkg
 
+import io.github.pobsteta.surculus.core.carte.OrthoChantier
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -43,31 +44,31 @@ object OrthoTuilee {
     }
 
     /** Ce que le fichier dit de lui-même ; `null` pour ce qu'il ne dit pas (rien n'est deviné ni pris ailleurs). */
-    data class Metadonnees(val attribution: String?, val description: String?, val date: String?)
+    data class Metadonnees(val attribution: String?, val dateMiseAJour: String?)
 
     /**
-     * Source et date lues dans le fichier. MBTiles : table `metadata`, clés `attribution`, `description` et `date`.
-     * GeoPackage : `description` de la table de tuiles de `gpkg_contents` ; sa `last_change` est la date de dernière
-     * modification du fichier, pas celle de la prise de vue : elle n'est pas lue comme date. Ne lève jamais.
+     * Source et date lues dans le fichier. MBTiles : table `metadata`, clés `attribution` et `date_mise_a_jour`
+     * (AAAA-MM-JJ). GeoPackage : rien (sa `description` n'est jamais prise pour une source, sa `last_change` n'est pas
+     * une date de mise à jour de l'image). Ne lève jamais.
      */
     fun metadonnees(fichier: Path): Metadonnees {
-        val vide = Metadonnees(null, null, null)
-        if (!Files.isRegularFile(fichier)) return vide
+        val vide = Metadonnees(null, null)
+        if (!Files.isRegularFile(fichier) || !fichier.fileName.toString().endsWith(".mbtiles")) return vide
         return try {
             Sqlite.ouvrir(fichier, lectureSeule = true).use { cnx ->
-                if (fichier.fileName.toString().endsWith(".mbtiles")) {
-                    if (!cnx.existeTable("metadata")) return vide
-                    val valeurs = cnx.lignes("SELECT name, value FROM metadata").associate { it.texte("name") to it.texte("value") }
-                    Metadonnees(valeurs["attribution"].nonVide(), valeurs["description"].nonVide(), valeurs["date"].nonVide())
-                } else {
-                    if (!cnx.existeTable("gpkg_contents")) return vide
-                    val d = cnx.lignes("SELECT description FROM gpkg_contents WHERE data_type = 'tiles' LIMIT 1").firstOrNull()?.texte("description")
-                    Metadonnees(null, d.nonVide(), null)
-                }
+                if (!cnx.existeTable("metadata")) return vide
+                val valeurs = cnx.lignes("SELECT name, value FROM metadata").associate { it.texte("name") to it.texte("value") }
+                Metadonnees(valeurs["attribution"].nonVide(), valeurs["date_mise_a_jour"].nonVide())
             }
         } catch (e: Exception) {
             vide
         }
+    }
+
+    /** Ligne affichée sur la carte : l'attribution du fichier ou « source non indiquée », plus « mise à jour le » si le fichier la porte. */
+    fun mention(fichier: Path): String {
+        val m = metadonnees(fichier)
+        return OrthoChantier.mention(m.attribution, m.dateMiseAJour)
     }
 
     /** Où en est l'ortho d'un dossier : pas de fichier, fichier exploitable, ou fichier présent mais inutilisable. */

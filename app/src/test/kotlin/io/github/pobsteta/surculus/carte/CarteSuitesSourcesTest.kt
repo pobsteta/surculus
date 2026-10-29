@@ -57,6 +57,11 @@ class CarteSuitesSourcesTest {
         assertTrue("FondsCarte.mentions(fondAffiche, voirCadastre, examenOrtho.mention)" in ecran)
         assertTrue("if (examenOrtho.illisible)" in ecran && "OrthoChantier.ILLISIBLE" in ecran)
         assertTrue("FichierOrtho.examiner(" in ecran)
+        // La mention vient de OrthoTuilee.mention (attribution ou rien) et de rien d'autre.
+        val ortho = java.io.File("src/main/kotlin/io/github/pobsteta/surculus/carte/Ortho.kt").readText()
+        val examiner = ortho.substringAfter("fun examiner(").substringBefore("fun nomPresent")
+        assertTrue("OrthoTuilee.mention(" in examiner)
+        assertFalse("metadonnees(" in examiner || "OrthoChantier.mention(" in examiner)
     }
 
     @Test

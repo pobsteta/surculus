@@ -94,8 +94,7 @@ class FichierOrtho private constructor(val fichier: File, private val bd: SQLite
                 if (!ouvrable) {
                     ExamenOrtho(exploitable = false, illisible = true, mention = null)
                 } else {
-                    val m = OrthoTuilee.metadonnees(File(dossierTournee, e.description.nom).toPath())
-                    ExamenOrtho(exploitable = true, illisible = false, mention = OrthoChantier.mention(m.attribution ?: m.description.takeIf { !e.description.tms }, m.date))
+                    ExamenOrtho(exploitable = true, illisible = false, mention = OrthoTuilee.mention(File(dossierTournee, e.description.nom).toPath()))
                 }
             }
         }

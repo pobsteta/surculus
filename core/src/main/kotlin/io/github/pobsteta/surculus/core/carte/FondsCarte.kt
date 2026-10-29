@@ -28,18 +28,17 @@ object Attributions {
 }
 
 /**
- * Mention de l'Ortho chantier (mission 059, Licence Ouverte 2.0 : la source et une date). Elle ne dit que ce que le
- * fichier de la tournée porte ; ce qui manque est écrit comme manquant, jamais deviné.
+ * Mention de l'Ortho chantier (mission 059, Licence Ouverte 2.0 : la source et la date de mise à jour). Elle ne dit que ce que le
+ * fichier de la tournée porte : sans attribution, « source non indiquée » ; sans date de mise à jour, rien n'est ajouté.
  */
 object OrthoChantier {
     const val SOURCE_ABSENTE = "source non indiquée par le fichier"
-    const val DATE_ABSENTE = "date de prise de vue non indiquée par le fichier"
 
     /** Affiché sur la carte quand le fichier d'ortho de la tournée est là mais ne s'ouvre pas : la carte retombe sur le Plan IGN. */
-    const val ILLISIBLE = "Ortho illisible : la carte montre le Plan IGN."
+    const val ILLISIBLE = "Ortho illisible : le fichier d'ortho de la tournée ne s'ouvre pas."
 
-    fun mention(attribution: String?, date: String?): String =
-        listOf("Ortho chantier", attribution ?: SOURCE_ABSENTE, date?.let { "prise de vue $it" } ?: DATE_ABSENTE).joinToString(" · ")
+    fun mention(attribution: String?, dateMiseAJour: String?): String =
+        listOfNotNull("Ortho chantier", attribution ?: SOURCE_ABSENTE, dateMiseAJour?.let { "mise à jour le $it" }).joinToString(" · ")
 }
 
 /**

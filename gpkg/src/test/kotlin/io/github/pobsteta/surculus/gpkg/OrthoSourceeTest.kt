@@ -13,7 +13,7 @@ class OrthoSourceeTest {
     @TempDir
     lateinit var dossier: Path
 
-    private val vide = OrthoTuilee.Metadonnees(null, null, null)
+    private val vide = OrthoTuilee.Metadonnees(null, null)
 
     private fun mbtiles(metadata: Map<String, String>, avecTable: Boolean = true): Path {
         val f = dossier.resolve("ortho.mbtiles")
@@ -47,18 +47,15 @@ class OrthoSourceeTest {
     }
 
     @Test
-    fun `un mbtiles donne son attribution, sa description et sa date`() {
-        val m = OrthoTuilee.metadonnees(mbtiles(mapOf("attribution" to "© IGN, BD ORTHO® · Licence Ouverte 2.0", "description" to "Couchey", "date" to "2024")))
-        assertEquals("© IGN, BD ORTHO® · Licence Ouverte 2.0", m.attribution)
-        assertEquals("2024", m.date)
-        assertEquals("Couchey", m.description)
+    fun `un mbtiles donne son attribution et sa date de mise a jour`() {
+        val m = OrthoTuilee.metadonnees(mbtiles(mapOf("attribution" to "© IGN, BD ORTHO® · Licence Ouverte 2.0", "description" to "Couchey", "date_mise_a_jour" to "2024-06-15")))
+        assertEquals(OrthoTuilee.Metadonnees("© IGN, BD ORTHO® · Licence Ouverte 2.0", "2024-06-15"), m)
     }
 
     @Test
-    fun `un mbtiles sans date ne donne pas de date, il ne la devine pas`() {
-        val m = OrthoTuilee.metadonnees(mbtiles(mapOf("attribution" to "© IGN", "name" to "ortho 2024", "version" to "1.2")))
-        assertEquals("© IGN", m.attribution)
-        assertNull(m.date)
+    fun `l'ancienne cle date n'est plus lue, la description non plus`() {
+        val m = OrthoTuilee.metadonnees(mbtiles(mapOf("attribution" to "© IGN", "name" to "ortho 2024", "date" to "2024", "description" to "Couchey")))
+        assertEquals(OrthoTuilee.Metadonnees("© IGN", null), m)
     }
 
     @Test
@@ -68,15 +65,33 @@ class OrthoSourceeTest {
 
     @Test
     fun `une valeur vide est une valeur absente`() {
-        assertEquals(vide, OrthoTuilee.metadonnees(mbtiles(mapOf("attribution" to "  ", "date" to ""))))
+        assertEquals(vide, OrthoTuilee.metadonnees(mbtiles(mapOf("attribution" to "  ", "date_mise_a_jour" to ""))))
     }
 
     @Test
-    fun `un geopackage donne la description de sa table de tuiles, sa date de modification n'est pas une prise de vue`() {
-        val m = OrthoTuilee.metadonnees(gpkg("© IGN, BD ORTHO®"))
-        assertEquals("© IGN, BD ORTHO®", m.description)
-        assertNull(m.attribution)
-        assertNull(m.date)
+    fun `un geopackage n'a pas d'attribution, sa description n'est jamais prise pour une source`() {
+        val f = gpkg("© IGN, BD ORTHO®")
+        assertEquals(vide, OrthoTuilee.metadonnees(f))
+        assertEquals("Ortho chantier · source non indiquée par le fichier", OrthoTuilee.mention(f))
+    }
+
+    @Test
+    fun `mention - attribution ou rien, sans date le fichier d'essai de Couchey`() {
+        val essai = "© IGN, BD ORTHO (ORTHOIMAGERY.ORTHOPHOTOS), Géoplateforme, téléchargée le 2026-10-27 pour un essai de Surculus"
+        assertEquals("Ortho chantier · $essai", OrthoTuilee.mention(mbtiles(mapOf("attribution" to essai, "description" to "Couchey", "name" to "ortho"))))
+    }
+
+    @Test
+    fun `mention - avec date de mise a jour`() {
+        assertEquals(
+            "Ortho chantier · © IGN · mise à jour le 2024-06-15",
+            OrthoTuilee.mention(mbtiles(mapOf("attribution" to "© IGN", "date_mise_a_jour" to "2024-06-15"))),
+        )
+    }
+
+    @Test
+    fun `mention - fichier sans metadata`() {
+        assertEquals("Ortho chantier · source non indiquée par le fichier", OrthoTuilee.mention(mbtiles(emptyMap(), avecTable = false)))
     }
 
     @Test
