@@ -371,23 +371,23 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     // Couché, « Mode poche » est en tête de la zone qui défile : la colonne du micro n'a de place que pour le micro.
                     if (avecMicro && emplacement == EmplacementMicro.COLONNE) BoutonPoche(surPoche, Modifier.fillMaxWidth())
-                Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (e.plant.alerteTerminee) {
-                    Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
-                }
-                when (e.vue) {
-                    VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, ligneDictee = ligneDictee, actionsDictee = ActionsDictee.pour(EcouteApp.etatPermission(ctx), EcouteApp.modeleInstalle(ctx)), onActionDictee = { a ->
-                        when (a) {
-                            ActionDictee.REGLAGES -> ouvrirReglagesApplication(ctx)
-                            ActionDictee.INSTALLER -> onParametres()
-                        }
-                    })
-                    VueControle.TERMINER -> VueTerminer(e, ::agir)
-                    VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
-                    VueControle.POINTER -> VuePointerEcran(e, tournee, reglages, ::agir)
-                }
-                e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
-                if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.controle_source, e.codePlacette, e.jour), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (e.plant.alerteTerminee) {
+                        Text(stringResource(R.string.controle_alerte_terminee), style = MaterialTheme.typography.titleSmall, color = couleurErreur())
+                    }
+                    when (e.vue) {
+                        VueControle.PLANT -> VuePlantEcran(e, ::agir, poche = poche, ligneDictee = ligneDictee, actionsDictee = ActionsDictee.pour(EcouteApp.etatPermission(ctx), EcouteApp.modeleInstalle(ctx)), onActionDictee = { a ->
+                            when (a) {
+                                ActionDictee.REGLAGES -> ouvrirReglagesApplication(ctx)
+                                ActionDictee.INSTALLER -> onParametres()
+                            }
+                        })
+                        VueControle.TERMINER -> VueTerminer(e, ::agir)
+                        VueControle.TERMINEE -> VueTerminee(e, ::agir, onRetour)
+                        VueControle.POINTER -> VuePointerEcran(e, tournee, reglages, ::agir)
+                    }
+                    e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
+                    if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (!poche && (EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null)) {
                     Box(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
