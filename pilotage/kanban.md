@@ -10,7 +10,7 @@
 _Idées, à trier au prochain `/mission`._
 
 - **Formats de distance** (relecture de la 068) : « 9980 m » (`guidage_refus_15m`, `%1$d`),
-  « 10,0 km » (`Libelles.distance`, tronqué par `toInt`), « 9 980 m » (contrôle, 068) : une seule forme.
+  « 10,0 km » (`Libelles.distance`, tronqué par `toInt`), « 9 980 m » (contrôle, 068) : une seule forme, avec U+202F (Pascal, 2026-10-29).
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
   dans plusieurs messages de `RefusPlacette`.
 - **Mineurs de la 068** : libellé du bouton d'arrivée en Kotlin (`TextesControle.boutonArrivee`)
