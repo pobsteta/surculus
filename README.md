@@ -16,7 +16,8 @@ l'autre, et relève les travaux faits, pour les rendre au sommier forestier (som
 
 > **État : en développement (tranche 1).** Le contrôle de placette (mission 012, A à D, dernière
 > PR fusionnée le 2026-10-28, journal du même jour) est livré : pointage, gestes de volume et
-> mode poche, dictée « tenir pour parler ». Les essais en forêt (essai ganté de Pascal, Couchey)
+> mode poche, dictée « tenir pour parler » (qui ne tient en version de production que depuis la
+> mission 071, PR #125, fusionnée le 2026-10-29). Les essais en forêt (essai ganté de Pascal, Couchey)
 > ne sont pas faits (journal, 2026-10-30). **Ce qui est livré, en cours ou planifié se lit dans
 > [`pilotage/kanban.md`](pilotage/kanban.md)**, seule source de l'avancement ; les écrans ne sont
 > pas listés ici. **La dernière version installable** est la dernière

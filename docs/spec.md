@@ -140,15 +140,15 @@ point à Brest et à Strasbourg.
   mission 059) ; « Couches affichées » : Cadastre IGN (en
   ligne) et couches de la tournée, à cocher ; boutons zoom avant, zoom arrière, recentrer
   (jamais sur un fix hors de France).
-  **Six boutons en une seule colonne** à droite, debout comme couché, sur toute la hauteur sous
+  **Les boutons en une seule colonne** (six avec une placette choisie, cinq sinon ; `EcranCarte.kt`) à droite, debout comme couché, sur toute la hauteur sous
   la barre de titre, comme Groma (amendé le 2026-10-30, mission 078, PR #137, décisions de Pascal
   du 2026-10-30, *remplace* « Oui, deux colonnes » du 2026-10-28, mission 064) : 48 dp quand
-  les six tiennent, sinon la plus grande taille qui tient, **jusqu'à 32 dp** au plus bas ;
+  ils tiennent, sinon la plus grande taille qui tient, **jusqu'à 32 dp** au plus bas ;
   écart de 8 dp et marge de 12 dp ; les textes du haut et du bas raccourcissent avant la
   colonne, aucun texte n'est caché. Sous 32 dp, les derniers boutons sont écrasés (fiche
   `pilotage/missions/078-boutons-carte-une-colonne.md`, reprise 1/3).
 * **Distances montrées** (amendé le 2026-10-30, mission 074, PR #131, fusionnée le 2026-10-30 ;
-  décisions de Pascal du 2026-10-29 « garde U+202F » et « km dès 1 000 m », puis du 2026-10-30
+  décisions de Pascal du 2026-10-29 (« garde U+202F », mission 068, puis la 074) et « km dès 1 000 m », puis du 2026-10-30
   « Reprise de la 074 ») : une seule façon d'écrire une distance de navigation, au guidage, sur
   la carte et au contrôle : **mètres entiers arrondis** (« 850 m »), **kilomètres à une
   décimale, virgule française, dès 1 000 m** (« 1,3 km », « 10,0 km » ; 999,5 m s'écrit
@@ -205,7 +205,7 @@ point à Brest et à Strasbourg.
   |---|---|
   | volume haut, appui court (moins de 0,5 s) | sain, puis plant suivant |
   | volume bas, appui court | mort, puis plant suivant (écrit après 0,35 s, le temps d'un double appui) |
-  | volume haut, appui long (de 0,5 s à moins de 3 s, au relâchement) | atteint, plant gardé, cause vide (ajoutée à l'écran ou à la dictée) |
+  | volume haut, appui long (de 0,5 s à moins de 3 s, au relâchement) | atteint, plant gardé, cause vide (ajoutée à l'écran ou à la dictée ; 012-C Q7, 2026-10-28) |
   | volume haut, appui de 3 s ou plus | sortie du mode poche, rien n'est écrit |
   | volume bas, appui long (0,5 s) **tenu** | le micro écoute tant que la touche est tenue (« tenir pour parler ») |
   | volume bas, double appui court | annule la dernière saisie |
@@ -223,10 +223,13 @@ point à Brest et à Strasbourg.
   **Mode poche** (décisions de Pascal du 2026-10-27, journal, mission 012, puis du 2026-10-28,
   012-C Q4) : entrée par un bouton à l'écran ; l'écran reste allumé, l'application au premier
   plan, le toucher et le retour système sont ignorés, l'orientation est verrouillée (012-D2,
-  PR #121, Q4 du 2026-10-28) ; sortie par un appui de 3 s sur volume haut ou à « Terminer »,
-  et d'office après 15 min sans geste, avec un rappel vocal « mode poche actif » à 5 min.
+  PR #121, Q4 du 2026-10-28) ; **cinq sorties** (`RaisonSortie`, `ModePoche.kt`) : appui de 3 s sur volume haut, « Terminer »,
+  15 min sans geste (012-C Q4, 2026-10-28), passage de l'application à l'arrière-plan (bouton
+  marche, appel, autre application ; comportement gardé par Pascal, journal du 2026-10-29,
+  ligne `012-D2 · écart`), et sortie de la vue Plant. Rappel vocal à 5 min : « mode poche actif,
+  3 secondes sur volume haut pour sortir ».
   Après « Terminer », la saisie reste permise avec l'alerte « placette déjà terminée » à chaque
-  geste (012-C Q6). Le mode poche est celui de l'ADR 0004 (amendé ici, 2026-10-30).
+  geste (012-C Q6). Cette section précise l'ADR 0004 sans l'amender (décision de Pascal, 2026-10-30).
 
   **Micro.** Hors du mode poche, un bouton micro **tenu pour parler**, comme Marculus (décision
   de Pascal du 2026-10-28, 012-D2 décision 2) : icône du micro de Marculus, texte en description
