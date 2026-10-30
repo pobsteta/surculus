@@ -80,3 +80,16 @@ Plafond : au plus **3 PR ouvertes** ; un cycle ne démarre que quand le précéd
 fusionné ou en revue sous le plafond. Seules les PR de pilotage sont « lâchées » (bilan du
 2026-10-21) ; aucune mission de code ne l'est. Le tableau ci-dessus date de la porte
 n° 2 : l'état à jour des missions est dans `kanban.md`.
+
+## Règles adoptées au bilan du 2026-10-30 (décision de Pascal)
+
+1. **Le `testeur` revient** sur chaque mission qui change un comportement : il écrit ses tests depuis la
+   fiche, sans lire le code (écart du journal l. 665 : absent depuis la 012-D2).
+2. **Le `relecteur` contrôle le texte** : chaque chiffre et chaque libellé du corps de PR est vérifié contre
+   le code avant le verdict (≈ 25 allers-retours sur ≈ 51 pour un texte faux depuis le 2026-10-21 ; la 078
+   en est l'exemple, « avec / sans plein écran » inversé).
+3. **Une fiche ne part que sur sa branche de mission**, jamais en double sur une branche de pilotage
+   (fiches en double du cycle 15, quatre conflits).
+4. **Rythme inchangé** (« On continue comme avant ») : plafonds tels quels ; le terrain attend une date fixée
+   par Pascal.
+

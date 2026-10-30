@@ -318,3 +318,9 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   porte 052, 059, 074 et 075, sinon le cycle livre sa mauvaise nouvelle. Livrée en partie le 2026-10-30 :
   v0.7.88, debout tenu ; couché, « ÉCOUTE FERMÉE » reste après une dictée et cache « Mode poche » :
   mauvaise nouvelle, reprise 076 fusionnée le 2026-10-30 (#132) ; livrée debout et couché sur v0.7.90, « Mode poche » visible après une dictée.)*
+- bilan du 2026-10-30 · le forestier contrôle une placette du piquet au dernier plant sans regarder l'écran (voix,
+  volume, micro, gants aux mains) et retrouve ses boutons de carte au même endroit (v0.7.95) · pour le forestier en
+  forêt · au bilan du 2026-10-21, la 012 n'existait pas : il ne pouvait pas contrôler une placette. Mauvaise nouvelle
+  jointe : rien n'est vérifié en forêt ; le signe concret du brief (10 placettes en moins de 10 min, tournée
+  réimportée dans sommieR) n'est pas mesuré ; ce qu'elle nous apprend : une livraison vue au téléphone n'est pas une
+  livraison vue au terrain. *(Retenue par Pascal le 2026-10-30 : « Oui, avec la mauvaise nouvelle ».)*
