@@ -99,9 +99,21 @@ object TextesEcoute {
         if (!modeleInstalle) MODELE_ABSENT_LIGNE else PermissionMicro.ligne(permission)
 }
 
-/** Le bouton plein (couleurs inversées) pendant l'écoute : c'est la **seule** chose qui change sur le bouton micro. */
+/** Les trois aspects du bouton micro (comme Marculus) : prêt, à l'écoute (rouge), barré (micro ou modèle manquent). */
+enum class EtatMicro { PRET, ECOUTE, BARRE }
+
 object AspectMicro {
     fun plein(a: AffichageEcoute): Boolean = a == AffichageEcoute.ECOUTE || a == AffichageEcoute.OUVERTURE
+
+    /** « Prêt » : le micro est accordé et le modèle installé. */
+    fun pret(permission: EtatPermissionMicro, modeleInstalle: Boolean): Boolean = modeleInstalle && permission == EtatPermissionMicro.ACCORDEE
+
+    /** Barré si la dictée ne peut pas servir ; sinon rouge pendant l'écoute (l'ouverture compte), sinon prêt. */
+    fun pour(a: AffichageEcoute, pret: Boolean): EtatMicro = when {
+        !pret -> EtatMicro.BARRE
+        plein(a) -> EtatMicro.ECOUTE
+        else -> EtatMicro.PRET
+    }
 }
 
 /** Les boutons de réparation sous le message de la dictée (hors du mode poche seulement). */

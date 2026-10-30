@@ -35,7 +35,8 @@ class BoutonMicroIconeTest {
         val corps = corpsBoutonMicro()
         assertTrue(Regex("""contentDescription\s*=\s*libelle""").containsMatchIn(corps))
         assertTrue("R.string.controle_micro_ecoute" in corps && "R.string.controle_micro)" in corps)
-        assertEquals(1, Regex("""OutlinedButton\(""").findAll(corps).count(), "un seul composable sous le doigt")
+        // Mission 075 : le bouton rond de Marculus est un Button plein (plus un OutlinedButton) ; toujours un seul composable.
+        assertEquals(1, Regex("""(?<![A-Za-z])(Outlined)?Button\(""").findAll(corps).count(), "un seul composable sous le doigt")
     }
 
     @Test fun `les descriptions sont celles de la fiche`() {
