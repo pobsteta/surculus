@@ -187,7 +187,7 @@ sealed interface RefusPlacette {
     data class HorsQuinzeMetres(val distanceM: Double) : RefusPlacette {
         override val motif = "hors_15_m"
         override val message = "À ${Libelles.distance(distanceM)} de la placette la plus proche (plus de 15 m). " +
-            "Lisez le code sur le piquet, saisissez-le dans le champ « Code lu sur le piquet », puis touchez « Rattacher »."
+            "Lisez le code sur le piquet, saisissez-le dans le champ « Code lu sur le piquet », puis cliquez sur le bouton « Rattacher »."
     }
 
     data class CodeInconnu(val code: String) : RefusPlacette {
