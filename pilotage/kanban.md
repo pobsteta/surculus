@@ -85,10 +85,10 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK branché)
-  et états des autorisations ; 074 « hors rayon » au décimètre (sur une placette) ; puis essai ganté de
+- **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
+  allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
-  075 debout.
+  075 debout ; sur v0.7.90 : 052 « pas encore demandées », 074 « hors rayon » au décimètre.
 
 - **Orchestrateur puis Pascal, release v0.7.82** (depuis le cycle 14) : installer, capturer
   l'icône du micro (072) ; tenir le micro, puis le volume bas en poche, ouvre l'écoute (071, ARM
