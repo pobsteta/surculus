@@ -91,7 +91,7 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **079** README et spec au niveau du livré (`archiviste`, appuyer), **080** test de rendu des écrans (`afficheur`,
+- **080** test de rendu des écrans (`afficheur`,
   tenir : plan d'abord), **081** aucun texte technique à l'écran (`testeur` puis `dev`, appuyer) : validées par
   Pascal le 2026-10-30 (porte n° 2, « Oui, les trois »), lancées le même jour ; fiches sur leurs seules branches.
 
@@ -155,6 +155,9 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **079** README et spec au niveau du livré (`archiviste`, PR #141, bce9fd2, deux allers-retours) : fusionnée le
+  2026-10-30 ; le test de la minute sera refait au prochain bilan.
 
 - **077** « cliquez sur le bouton « Rattacher » » (`dev`, PR #136, 9d01de8) et **078** six boutons de carte
   en une colonne, de 48 à 32 dp (`afficheur`, PR #137, f780287, deux allers-retours) : capturées sur v0.7.95
