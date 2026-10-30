@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 class DispositionBoutonsTest {
     private val dp = 450f / 160f
 
-    // Couché sans plein écran : 384 dp moins la barre de titre (~48 dp) = 336 dp. Avec barres (état, gestes) : ~292 dp.
+    // Couché en plein écran (barres masquées) : 384 dp moins la barre de titre (~48 dp) = 336 dp. Sans plein écran (barre d'état et barre de gestes) : ~292 dp.
     private val coucheSansBarres = 336f
     private val coucheAvecBarres = 292f
     private val debout = 2316f / dp - 48f

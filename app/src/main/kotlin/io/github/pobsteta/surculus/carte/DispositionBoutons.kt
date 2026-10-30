@@ -18,7 +18,6 @@ internal object DispositionBoutons {
     fun tailleDp(hauteurDp: Float, nombreBoutons: Int): Int =
         (CIBLE_DP downTo MIN_DP).firstOrNull { hauteurColonneDp(nombreBoutons, it) <= hauteurDp } ?: MIN_DP
 
-
     /** Largeur (dp) que les textes du haut et du bas laissent à la colonne : le bouton et ses deux marges. */
     fun largeurReserveeDp(tailleDp: Int): Int = tailleDp + 2 * MARGE_DP
 }
