@@ -83,3 +83,22 @@ Aucune. Les textes nouveaux sont proposés dans la PR ; Pascal les tranche à la
 ## Comment saura-t-on que ça marche ?
 
 Sur la release suivante, aucun écran capturé ne montre `_`, un UUID ou un décimal à point.
+
+## Reprise, aller-retour 1/3 (2026-10-30)
+
+Relecture de la #140 (9dba9ad) : « à reprendre ». Décisions de Pascal du 2026-10-30, posées une à une :
+
+1. **Vosk** : « Garder les causes en français » : les échecs connus gardent leur phrase qui dit quoi faire (mauvais
+   fichier, réseau coupé ou portail Wi-Fi, fichier illisible, téléchargement interrompu, remplacement impossible), sans
+   « 0.22 » ni nom technique (`dictee_refus_reseau`, `InstallateurModele.kt:111` récrits) ; la phrase générique pour les
+   seuls échecs inconnus ; le détail au `Log.w`.
+2. **Périmètre** : « Coordonnées ici, e.message après » : `PiquetHorsFrance` (`Resultat.kt:106`) et les refus
+   d'ouverture du contrôle (`SessionControle.kt:585`, `:594`, `:610`) entrent dans le harnais, par les `Libelles`,
+   ordre et unités explicites ; les `e.message` de `carte/Commun.kt`, `DepotTournees.kt`, `EcranTournees.kt`,
+   `MoteurDicteeVosk.kt`, `ServiceGnssRtk.kt` vont à une mission 082.
+3. **« Ce plant »** : « Assez pour l'instant » ; « le plant n° 7 » au bac à sable.
+4. **« non observé »** : gardé.
+
+Mineurs du relecteur : « infini » accordé au nom (« Azimut infini ») ; « 95,0 ° » et « 90° » écrits pareil dans la
+même phrase ; ordre des imports et `java.util.Locale` inutile dans `ControleurPlacette.kt` ; `journaliser` après le
+retour au repos (ou protégé). Tests d'abord pour 1 et 2, vus rouges.
