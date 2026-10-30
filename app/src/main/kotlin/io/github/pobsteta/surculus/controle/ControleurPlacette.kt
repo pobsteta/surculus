@@ -22,11 +22,11 @@ import io.github.pobsteta.surculus.core.session.PlantSession
 import io.github.pobsteta.surculus.core.placette.UuidPlant
 import io.github.pobsteta.surculus.core.reperes.AzimutSaisi
 import io.github.pobsteta.surculus.core.geo.UniteAzimut
+import io.github.pobsteta.surculus.core.guidage.Libelles
 import io.github.pobsteta.surculus.core.session.SessionControle
 import io.github.pobsteta.surculus.core.session.SourceAzimut
 import io.github.pobsteta.surculus.core.session.SuiteSession
 import io.github.pobsteta.surculus.core.session.TextesDictee
-import io.github.pobsteta.surculus.core.guidage.Libelles
 import java.util.Locale
 import kotlin.math.roundToInt
 

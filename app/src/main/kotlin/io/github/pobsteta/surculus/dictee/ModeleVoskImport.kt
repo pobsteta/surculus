@@ -16,7 +16,7 @@ import io.github.pobsteta.surculus.core.dictee.InstallateurModele
 import io.github.pobsteta.surculus.core.dictee.SourceArchive
 import io.github.pobsteta.surculus.core.dictee.VerificationModele
 import java.io.File
-import java.io.IOException
+import io.github.pobsteta.surculus.core.dictee.EchecInstallation
 
 /**
  * Cycle de vie du modèle `vosk-model-small-fr-0.22` (ADR 0004) : import par fichier, sans réseau (mission 013), et
@@ -45,7 +45,7 @@ object ModeleVoskImport {
         apresVerification: () -> Unit = {},
     ): Result<Unit> =
         installer(context, source.toString(), {}, continuer, null, apresVerification) {
-            FluxArchive(context.contentResolver.openInputStream(source) ?: throw IOException("Fichier du modèle illisible"))
+            FluxArchive(context.contentResolver.openInputStream(source) ?: throw EchecInstallation("Fichier du modèle illisible"))
         }
 
     /**

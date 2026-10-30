@@ -35,7 +35,7 @@ class RefusRepereLisiblesTest {
             RefusRepere.PenteHorsPlage(120.5, UnitePente.POURCENT).message,
         )
         assertEquals(
-            "Pente 95,0 ° refusée : l'angle doit être dans ]-90°, 90°[.",
+            "Pente 95,0° refusée : l'angle doit être dans ]-90°, 90°[.",
             RefusRepere.PenteHorsPlage(95.0, UnitePente.DEGRES).message,
         )
         listOf(Double.NaN, Double.NEGATIVE_INFINITY).forEach {

@@ -78,7 +78,7 @@ class InstallateurModele(
             val reste = listOf(ancien, nouveau).firstOrNull { it.exists() && complet(it) }
             if (reste != null) {
                 dossier.deleteRecursively()
-                check(reste.renameTo(dossier)) { "Réparation impossible : ${reste.name} non déplaçable" }
+                if (!reste.renameTo(dossier)) throw EchecInstallation("Réparation impossible : un dossier du modèle n'a pas pu être remis en place")
             }
         }
         ancien.deleteRecursively()
@@ -108,10 +108,10 @@ class InstallateurModele(
         origine: String,
         progression: (Float) -> Unit = {},
         continuer: () -> Boolean = { true },
-        messageRefus: String = "Ce fichier n'est pas ${VerificationModele.NOM_MODELE} (empreinte SHA-256 différente ou fichier vide)",
+        messageRefus: String = "Ce fichier n'est pas le modèle de voix attendu (empreinte différente ou fichier vide)",
         apresVerification: () -> Unit = {},
     ): Result<Unit> {
-        if (!VERROU.tryAcquire()) return Result.failure(IllegalStateException("Une installation est déjà en cours"))
+        if (!VERROU.tryAcquire()) return Result.failure(EchecInstallation("Une installation est déjà en cours"))
         try {
             return installerSousVerrou(source, origine, progression, continuer, messageRefus, apresVerification)
         } finally {
@@ -134,7 +134,7 @@ class InstallateurModele(
             nouveau.deleteRecursively()
             copier(source, progression, continuer)
             val accepte = partiel.inputStream().use { VerificationModele.verifier(VerificationModele.NOM_MODELE, it, sha256) }
-            check(accepte) { messageRefus }
+            if (!accepte) throw EchecInstallation(messageRefus)
             // Point de non-retour : archive complète et bonne, [continuer] n'est plus consulté ; l'appelant retire « Annuler ».
             apresVerification()
             InstallationModele(nouveau, cache, "", sha256).installer(partiel, origine).getOrThrow()
@@ -153,7 +153,7 @@ class InstallateurModele(
                 val tampon = ByteArray(64 * 1024)
                 var cumul = 0L
                 while (true) {
-                    check(continuer()) { "Téléchargement interrompu" }
+                    if (!continuer()) throw EchecInstallation("Téléchargement interrompu")
                     val lu = entree.read(tampon)
                     if (lu < 0) break
                     sortie.write(tampon, 0, lu)
@@ -161,8 +161,8 @@ class InstallateurModele(
                     // 90 % de la barre pour la réception, le reste pour le contrôle et la décompression.
                     progression(if (ouvert.taille > 0) (cumul.toFloat() / ouvert.taille).coerceAtMost(1f) * 0.9f else -1f)
                 }
-                check(ouvert.taille <= 0 || cumul == ouvert.taille) {
-                    "Téléchargement incomplet ($cumul octets reçus sur ${ouvert.taille})"
+                if (ouvert.taille > 0 && cumul != ouvert.taille) {
+                    throw EchecInstallation("Téléchargement incomplet ($cumul octets reçus sur ${ouvert.taille})")
                 }
             }
         }
@@ -172,10 +172,10 @@ class InstallateurModele(
     private fun remplacer() {
         ancien.deleteRecursively()
         val avaitUnAncien = dossier.exists()
-        if (avaitUnAncien) check(dossier.renameTo(ancien)) { "Remplacement impossible (ancien modèle non déplaçable)" }
+        if (avaitUnAncien && !dossier.renameTo(ancien)) throw EchecInstallation("Remplacement impossible (ancien modèle non déplaçable)")
         if (!nouveau.renameTo(dossier)) {
             val remis = !avaitUnAncien || ancien.renameTo(dossier)
-            error(
+            throw EchecInstallation(
                 if (remis) "Remplacement impossible (nouveau modèle non déplaçable)"
                 else "Remplacement impossible, l'ancien modèle sera remis en place au prochain démarrage",
             )

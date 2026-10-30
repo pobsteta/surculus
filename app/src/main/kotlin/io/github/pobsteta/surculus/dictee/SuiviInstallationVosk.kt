@@ -11,6 +11,7 @@ package io.github.pobsteta.surculus.dictee
 
 import android.content.Context
 import android.net.Uri
+import io.github.pobsteta.surculus.core.dictee.EchecInstallation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -98,8 +99,13 @@ class SuiviInstallation(
                 r.isSuccess -> IssueInstallation.Ok
                 annulation.get() -> IssueInstallation.Annule(modeleAvant)
                 else -> {
-                    r.exceptionOrNull()?.let { journaliser(it) }
-                    IssueInstallation.Echec(TEXTE_ECHEC, modeleAvant)
+                    val e = r.exceptionOrNull()
+                    // Un échec connu garde sa phrase française ; tout autre dit la phrase générique (mission 081).
+                    val cause = (e as? EchecInstallation)?.message ?: TEXTE_ECHEC
+                    _etat.value = EtatInstallation(PhaseInstallation.RIEN, null, IssueInstallation.Echec(cause, modeleAvant))
+                    // Le journal technique passe après le retour au repos : il ne peut pas bloquer l'écran.
+                    if (e != null) runCatching { journaliser(e) }
+                    return@launch
                 }
             }
             _etat.value = EtatInstallation(PhaseInstallation.RIEN, null, issue)

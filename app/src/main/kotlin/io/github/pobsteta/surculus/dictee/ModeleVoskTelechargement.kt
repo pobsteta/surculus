@@ -12,7 +12,7 @@ package io.github.pobsteta.surculus.dictee
 import io.github.pobsteta.surculus.core.dictee.FluxArchive
 import io.github.pobsteta.surculus.core.dictee.SourceArchive
 import java.io.FilterInputStream
-import java.io.IOException
+import io.github.pobsteta.surculus.core.dictee.EchecInstallation
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -32,7 +32,7 @@ object ModeleVoskTelechargement {
             instanceFollowRedirects = true
         }
         try {
-            if (connexion.responseCode != HttpURLConnection.HTTP_OK) throw IOException("serveur : code ${connexion.responseCode}")
+            if (connexion.responseCode != HttpURLConnection.HTTP_OK) throw EchecInstallation("Le serveur ne donne pas le modèle (réponse ${connexion.responseCode})")
             val flux = object : FilterInputStream(connexion.inputStream) {
                 override fun close() {
                     try {

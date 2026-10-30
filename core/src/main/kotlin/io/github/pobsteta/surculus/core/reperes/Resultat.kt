@@ -45,11 +45,14 @@ sealed interface RefusRepere {
 
     companion object {
         /** Un nombre montré au forestier : une décimale, virgule française ; jamais « NaN » ni « Infinity » (mission 081). */
-        internal fun dit(v: Double): String = when {
+        internal fun dit(v: Double, feminin: Boolean = false): String = when {
             v.isNaN() -> "non numérique"
-            v.isInfinite() -> if (v > 0) "infinie" else "infinie négative"
+            v.isInfinite() -> (if (feminin) "infinie" else "infini") + if (v > 0) "" else " négati" + if (feminin) "ve" else "f"
             else -> Libelles.decimetres(v)
         }
+
+        /** Des mètres Lambert-93 entiers, milliers séparés par l'espace fine : « 6 686 123 m » (mission 081). */
+        internal fun ditMetres(v: Double): String = if (v.isFinite()) Libelles.metres(v) else dit(v)
     }
 
     /** Azimut saisi hors de [0, 360[ (degrés) ou [0, 400[ (grades) : refusé **avant** normalisation, valeur gardée telle quelle. */
@@ -81,12 +84,12 @@ sealed interface RefusRepere {
     /** Pente dont l'angle n'est pas dans ]-90°, 90°[ (ou non finie). */
     data class PenteHorsPlage(val pente: Double, val unite: UnitePente) : RefusRepere {
         override val motif = "pente_hors_plage"
-        override val message = "Pente ${dit(pente)} ${if (unite == UnitePente.POURCENT) "%" else "°"} refusée : l'angle doit être dans ]-90°, 90°[."
+        override val message = "Pente ${dit(pente, feminin = true)}${if (!pente.isFinite()) "" else if (unite == UnitePente.POURCENT) " %" else "°"} refusée : l'angle doit être dans ]-90°, 90°[."
     }
 
     data class DistanceInvalide(val distanceM: Double) : RefusRepere {
         override val motif = "distance_invalide"
-        override val message = "Distance ${dit(distanceM)}${if (distanceM.isFinite()) " m" else ""} refusée : elle doit être un nombre positif ou nul."
+        override val message = "Distance ${dit(distanceM, feminin = true)}${if (distanceM.isFinite()) " m" else ""} refusée : elle doit être un nombre positif ou nul."
     }
 
     /** Date hors de la validité du modèle géomagnétique : aucune extrapolation. */
@@ -103,7 +106,7 @@ sealed interface RefusRepere {
     /** Piquet hors de l'emprise de la France métropolitaine : axes inversés ou point non reprojeté. */
     data class PiquetHorsFrance(val xMetres: Double, val yMetres: Double) : RefusRepere {
         override val motif = "piquet_hors_france"
-        override val message = "Piquet (x = $xMetres, y = $yMetres) hors de France en Lambert-93 : axes inversés ou point non reprojeté ?"
+        override val message = "Piquet (x = ${ditMetres(xMetres)}, y = ${ditMetres(yMetres)}, Lambert-93) hors de France : axes inversés ou point non reprojeté ?"
     }
 
     data class ReferentielsMeles(val codes: Set<Int>) : RefusRepere {
