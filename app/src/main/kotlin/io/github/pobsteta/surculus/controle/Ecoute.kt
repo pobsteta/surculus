@@ -190,7 +190,7 @@ class PilotageEcoute(
         if (affichage == AffichageEcoute.RIEN && compris == null) return false
         if (machine.etat != EtatEcoute.FERMEE) return true
         val fin = finBandeau ?: return true
-        return horloge() < fin
+        return true
     }
 
     private fun armerBandeau() { finBandeau = horloge() + DUREE_BANDEAU_MS }
