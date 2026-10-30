@@ -83,3 +83,15 @@ Aucune.
 
 Au prochain bilan, l'`archiviste` refait le test de la minute : le README ne contredit plus le kanban, et la spec décrit
 les gestes livrés.
+
+## Reprise, aller-retour 1/3 (2026-10-30)
+
+Relecture de la #141 (0fe2e5b) : « à reprendre », texte seulement. Décision de Pascal du 2026-10-30 : ADR 0004
+« Non, la spec suffit » : la spec précise l'ADR 0004 sans l'amender.
+
+À corriger : les cinq sorties du mode poche (`ModePoche.kt`, `RaisonSortie`, dont `ARRIERE_PLAN` : bouton marche ou
+appel, journal l. 681) ; « six boutons » → 6 avec une placette choisie, 5 sinon (`EcranCarte.kt:380`) ; « ADR 0004
+(amendé ici) » → « la spec précise l'ADR 0004 ». Mineurs : README daté de la 071 (PR #125, 2026-10-29) plutôt que du
+2026-10-28 ; Q7 (journal l. 568) citée pour « cause vide » ; phrase entière du rappel (`VoixPoche.kt:64`) ; U+202F
+attribué à la 068 (journal l. 716) ; questions de la PR : la table des gestes est tranchée par le journal, le
+cheminement et le micro de 96 dp attendent leur heure, l'ADR 0004 est tranchée ; le corps le dit.
