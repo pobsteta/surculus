@@ -121,9 +121,9 @@
     <string name="guidage_code">Code lu sur le piquet</string>
     <string name="guidage_rattacher">Rattacher la placette</string>
     <string name="guidage_moyenne">Moyenne de la position : %1$d / %2$d s</string>
-    <string name="guidage_rattache">Placette %1$s retrouvée, à %2$d m du piquet.</string>
-    <string name="guidage_rattache_identite">Placette %1$s rattachée par le code. Mesure à %2$d m : position du piquet retenue, mesure gardée à part.</string>
-    <string name="guidage_refus_15m">À %1$d m de la placette la plus proche (plus de 15 m). Lisez le code sur le piquet, saisissez-le, puis rattachez.</string>
+    <string name="guidage_rattache">Placette %1$s retrouvée, à %2$s du piquet.</string>
+    <string name="guidage_rattache_identite">Placette %1$s rattachée par le code. Mesure à %2$s : position du piquet retenue, mesure gardée à part.</string>
+    <string name="guidage_refus_15m">À %1$s de la placette la plus proche (plus de 15 m). Lisez le code sur le piquet, saisissez-le, puis rattachez.</string>
     <string name="guidage_refus_code">Code « %1$s » inconnu de la tournée.</string>
     <string name="guidage_rien_enregistre">Rien n\'est enregistré à ce stade.</string>
     <string name="guidage_nord">Nord en haut</string>

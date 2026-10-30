@@ -67,14 +67,14 @@ class ArriveeControleTest {
         Unit
     }
 
-    /** Mission 068 : à 9 979,542810305791 m, le forestier lit « 9 980 m » (espace fine insécable), sans code ni décimale, avec la consigne de l'écran. */
-    @Test fun `a 9979 m le message dit 9 980 m, sans motif ni decimales`() {
+    /** Missions 068 et 074 : à 9 979,542810305791 m, le forestier lit « 10,0 km » (même écriture que le guidage), sans code ni décimale, avec la consigne de l'écran. */
+    @Test fun `a 9979 m le message dit 10,0 km, sans motif ni decimales`() {
         val r = SuiteSession.Refus.de(RefusPlacette.HorsQuinzeMetres(9979.542810305791))
         assertEquals("hors_15_m", r.code) // le motif reste dans les données
         val texte = TextesControle.message(r)!!.texte
-        assertTrue(texte.contains("9\u202F980 m"), texte)
+        assertTrue(texte.contains("À 10,0 km de la placette") && !texte.contains("\u202F"), texte)
         assertTrue(!texte.contains("hors_15_m") && !texte.contains("_"), texte)
-        assertTrue(!texte.contains("542") && !Regex("\\d[.,]\\d").containsMatchIn(texte), texte)
+        assertTrue(!texte.contains("542") && !texte.contains("979"), texte)
         assertTrue(texte.contains("Code lu sur le piquet") && texte.contains("« Rattacher »") && !texte.contains("Recommencer"), texte)
     }
 
