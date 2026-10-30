@@ -7,7 +7,7 @@ package io.github.pobsteta.surculus.carte
  */
 internal object DispositionBoutons {
     const val CIBLE_DP = 48
-    const val MIN_DP = 32
+    const val MIN_DP = 48
     const val ECART_DP = 8
     const val MARGE_DP = 12
 
