@@ -28,6 +28,20 @@ object Attributions {
 }
 
 /**
+ * Mention de l'Ortho chantier (mission 059, Licence Ouverte 2.0 : la source et la date de mise à jour). Elle ne dit que ce que le
+ * fichier de la tournée porte : sans attribution, « source non indiquée » ; sans date de mise à jour, rien n'est ajouté.
+ */
+object OrthoChantier {
+    const val SOURCE_ABSENTE = "source non indiquée par le fichier"
+
+    /** Affiché sur la carte quand le fichier d'ortho de la tournée est là mais ne s'ouvre pas : la carte retombe sur le Plan IGN. */
+    const val ILLISIBLE = "Ortho illisible : le fichier d'ortho de la tournée ne s'ouvre pas."
+
+    fun mention(attribution: String?, dateMiseAJour: String?): String =
+        listOfNotNull("Ortho chantier", attribution ?: SOURCE_ABSENTE, dateMiseAJour?.let { "mise à jour le $it" }).joinToString(" · ")
+}
+
+/**
  * Fonds de carte, dans l'ordre du menu (celui de Marculus). [attribution] est la mention exigée par la licence de la
  * source ; l'ortho du chantier vient du fichier de la tournée, attribué par celui qui l'a produit.
  */
@@ -93,11 +107,12 @@ object FondsCarte {
 
     /**
      * Mentions affichées sous l'échelle (Marculus, l. 731-733) : celle du fond, plus celle du cadastre quand il est
-     * affiché sur un fond qui n'est pas déjà de l'IGN.
+     * affiché sur un fond qui n'est pas déjà de l'IGN. [orthoChantier] est la mention lue dans le fichier d'ortho
+     * ([OrthoChantier.mention]) ; elle tient lieu d'attribution au seul fond [Fond.ORTHO].
      */
-    fun mentions(fond: Fond, cadastre: Boolean): List<String> {
+    fun mentions(fond: Fond, cadastre: Boolean, orthoChantier: String? = null): List<String> {
         val mentionCadastre = cadastre && fond != Fond.PLAN_IGN && fond != Fond.IGN
-        return listOfNotNull(fond.attribution, if (mentionCadastre) Attributions.CADASTRE else null)
+        return listOfNotNull(fond.attribution ?: orthoChantier.takeIf { fond == Fond.ORTHO }, if (mentionCadastre) Attributions.CADASTRE else null)
     }
 
     /** Le fond que désigne un nom lu dans les préférences, `null` s'il est inconnu. */

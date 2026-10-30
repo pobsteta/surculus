@@ -12,7 +12,9 @@ quand elle est le fond choisi, et dire « ortho illisible » quand son fichier n
 la Licence Ouverte 2.0 et pour que le forestier sache de quand date l'image qu'il regarde et pourquoi elle
 manque.
 
-**Redite par l'agent :** (à remplir par l'agent avant d'agir)
+**Redite par l'agent :** Afficher sous la carte la source et la date lues dans le fichier de l'Ortho chantier (sans jamais les inventer),
+et dire « ortho illisible » avec repli sur le Plan IGN quand le fichier ne s'ouvre pas, pour respecter la
+Licence Ouverte 2.0 et informer le forestier.
 
 ## Ce qui est établi
 
@@ -65,3 +67,24 @@ manque.
 
 Sur la release, tournée `couchey-demo-avec-ortho` : la carte sur l'Ortho chantier montre source et date ;
 capture de l'orchestrateur.
+
+## Reprise, aller-retour 1/3 (2026-10-29)
+
+Relecture de la #128 (fe5da1a) : « à reprendre ». Décisions de Pascal du 2026-10-29 :
+
+1. **Conflit** : fusionner `main` dans la branche (la fiche existe aussi sur `main`, erreur de
+   l'orchestrateur) en gardant la redite et cette rubrique ; la CI doit tourner et être verte.
+2. **Q1 « Mise à jour »** : la date affichée est celle de la **mise à jour** (mot de la Licence Ouverte
+   2.0) : « mise à jour le AAAA-MM-JJ ». Si le fichier n'en porte pas, **rien n'est ajouté** (ni « prise de
+   vue », ni « non indiquée ») : l'attribution du fichier suffit.
+3. **Q2 « Oui, brief »** : la clé de date lue est `date_mise_a_jour` (AAAA-MM-JJ) dans `metadata` du
+   MBTiles ; elle sera demandée à sommieR par un brief de l'orchestrateur. Plus de clé `date`.
+4. **Q3 « Source non indiquée »** : la `description` d'un GeoPackage n'est jamais prise pour une source ;
+   sans attribution, « source non indiquée par le fichier ».
+5. **Q4 « Seulement si écrite »** : la licence n'est pas ajoutée par Surculus.
+6. **Q5** : message rouge « Ortho illisible : le fichier d'ortho de la tournée ne s'ouvre pas. » (repli sur
+   le fond par défaut inchangé).
+7. Description de la PR corrigée : le fichier d'essai réel porte `attribution` (« © IGN, BD ORTHO
+   (ORTHOIMAGERY.ORTHOPHOTOS), Géoplateforme, téléchargée le 2026-10-27 pour un essai de Surculus ») et
+   pas de date ; dire la ligne exacte qui s'affichera.
+8. Test de la règle « attribution ou rien » côté `FichierOrtho.examiner` (la lacune relevée).

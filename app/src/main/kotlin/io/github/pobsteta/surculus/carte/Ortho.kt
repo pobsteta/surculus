@@ -20,6 +20,7 @@ import android.graphics.drawable.Drawable
 import io.github.pobsteta.surculus.core.carte.CoucheWmts
 import io.github.pobsteta.surculus.core.carte.Fond
 import io.github.pobsteta.surculus.core.carte.Geoplateforme
+import io.github.pobsteta.surculus.core.carte.OrthoChantier
 import io.github.pobsteta.surculus.core.carte.Tuile
 import io.github.pobsteta.surculus.gpkg.OrthoTuilee
 import org.osmdroid.config.Configuration
@@ -62,6 +63,9 @@ private fun agentHttp(ctx: Context): String {
     return "Surculus/$version (+${ctx.packageName})"
 }
 
+/** Résultat de [FichierOrtho.examiner] : [mention] est la ligne source et date de l'Ortho chantier (nulle si elle n'est pas exploitable). */
+data class ExamenOrtho(val exploitable: Boolean, val illisible: Boolean, val mention: String?)
+
 /**
  * `ortho.mbtiles` ou `ortho.gpkg` du dossier de la tournée : l'« Ortho chantier » du menu des fonds (ADR 0009). Le
  * prédicat d'exploitabilité est celui de `:gpkg` ([OrthoTuilee]) : un fichier illisible ou tuilé hors EPSG:3857 n'est
@@ -78,6 +82,23 @@ class FichierOrtho private constructor(val fichier: File, private val bd: SQLite
     fun fermer() = bd.close()
 
     companion object {
+        /**
+         * Ce que la carte sait de l'ortho du dossier (mission 059) : exploitable ou non, la mention source et date lue dans
+         * le fichier, et si un fichier est là mais ne s'ouvre pas (corrompu, hors EPSG:3857, ou refusé par SQLite d'Android).
+         */
+        fun examiner(dossierTournee: File): ExamenOrtho = when (val e = OrthoTuilee.etat(dossierTournee.toPath())) {
+            OrthoTuilee.Etat.Absente -> ExamenOrtho(exploitable = false, illisible = false, mention = null)
+            is OrthoTuilee.Etat.Illisible -> ExamenOrtho(exploitable = false, illisible = true, mention = null)
+            is OrthoTuilee.Etat.Prete -> {
+                val ouvrable = ouvrir(dossierTournee)?.also { it.fermer() } != null
+                if (!ouvrable) {
+                    ExamenOrtho(exploitable = false, illisible = true, mention = null)
+                } else {
+                    ExamenOrtho(exploitable = true, illisible = false, mention = OrthoTuilee.mention(File(dossierTournee, e.description.nom).toPath()))
+                }
+            }
+        }
+
         /** Nom du fichier tuilé exploitable du dossier, `null` sinon (rien n'est ouvert côté Android). */
         fun nomPresent(dossierTournee: File): String? = OrthoTuilee.dans(dossierTournee.toPath())?.nom
 

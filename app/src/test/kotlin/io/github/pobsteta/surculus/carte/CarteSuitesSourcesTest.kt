@@ -45,11 +45,23 @@ class CarteSuitesSourcesTest {
 
     @Test
     fun `la carte n'est creee qu'une fois la presence de l'ortho verifiee`() {
-        assertTrue("produceState<Boolean?>(null" in ecran)
+        assertTrue("produceState<ExamenOrtho?>(null" in ecran)
         assertFalse(Regex("produceState\\(false").containsMatchIn(ecran))
         val debut = ecran.indexOf("fun EcranCarte(")
         val pret = ecran.indexOf("is Chargement.Pret", debut)
         assertTrue(pret > 0 && "R.string.carte_ouverture" in ecran.substring(pret, ecran.indexOf("private fun GeoPoint", pret)), "etat d'ouverture tant que l'ortho n'est pas verifiee")
+    }
+
+    @Test
+    fun `mission 059 - l'ecran affiche la source et la date de l'ortho et dit quand elle est illisible`() {
+        assertTrue("FondsCarte.mentions(fondAffiche, voirCadastre, examenOrtho.mention)" in ecran)
+        assertTrue("if (examenOrtho.illisible)" in ecran && "OrthoChantier.ILLISIBLE" in ecran)
+        assertTrue("FichierOrtho.examiner(" in ecran)
+        // La mention vient de OrthoTuilee.mention (attribution ou rien) et de rien d'autre.
+        val ortho = java.io.File("src/main/kotlin/io/github/pobsteta/surculus/carte/Ortho.kt").readText()
+        val examiner = ortho.substringAfter("fun examiner(").substringBefore("fun nomPresent")
+        assertTrue("OrthoTuilee.mention(" in examiner)
+        assertFalse("metadonnees(" in examiner || "OrthoChantier.mention(" in examiner)
     }
 
     @Test
