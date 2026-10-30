@@ -304,3 +304,8 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   se fermait au premier appui. *(Retenue par Pascal le 2026-10-29 ; livrée à la capture au téléphone
   de la release qui porte la 071, sinon le cycle livre sa mauvaise nouvelle. Livrée le 2026-10-29 :
   v0.7.83, micro tenu et volume bas en poche, « compris : Numéro 7, sain. », sans plantage.)*
+- cycle 15 · le contrôle d'une main gantée : micro rond toujours à portée, rouge à l'écoute, sans saut
+  d'écran ; distances écrites pareil partout (« 10,0 km », « 7,9 m ») ; l'ortho dit sa source, la carte dit
+  quand le récepteur lâche · pour le forestier en forêt · avant, il fallait défiler pour trouver le micro et
+  l'écran sautait sous le doigt. *(Retenue par Pascal le 2026-10-30 ; livrée à la capture de la release qui
+  porte 052, 059, 074 et 075, sinon le cycle livre sa mauvaise nouvelle.)*
