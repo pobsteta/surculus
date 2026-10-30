@@ -765,3 +765,4 @@
 2026-10-30 · relecteur · PR #131 (3d51e7f) · Reprise 1/3 tenue : l'alerte « hors rayon » passe par Libelles.decimetres (:core, Locale.FRANCE), « 7,9 m … (5,6 m + 1,0 m) », AlerteHorsRayonTest rouge contre 38f3680 ; redite remplie ; fusion de main neutre ; test-command vert, CI verte ; à reprendre sur le seul corps de PR (seuil m / km présenté comme ouvert) ; mineur : le pointage (ControleurPlacette l. 392) n'appelle pas Libelles.decimetres.
 2026-10-30 · Claude (orchestrateur) · PR #131 · Corps de la PR corrigé par l'orchestrateur (seuil tranché par Pascal le 2026-10-29, échantillon terrain complété du « hors rayon ») ; pas de code touché, pas d'aller-retour compté.
 2026-10-30 · Pascal · PR #131 · « Fusionner » ; mineur au bac à sable (le pointage n'appelle pas `Libelles.decimetres`).
+2026-10-30 · Claude (orchestrateur) · PR #131 · Fusionnée (395b4e8), CI verte. Les quatre missions du cycle 15 sont fusionnées ; aucune n'est encore capturée (téléphone débranché).
