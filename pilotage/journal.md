@@ -796,3 +796,4 @@
 2026-10-30 · afficheur · 078 · écart · attendu : ne toucher que les fichiers du harnais · vu : `BandeauCarteGuidageTest` (061) modifié, il comptait `sizeIn(48 dp)` · vérifié : rapport de l'agent · décision : au relecteur.
 2026-10-30 · afficheur · 078 · écart · attendu : six boutons tenant à 40 dp au moins · vu : sous 304 dp, la colonne reste à 40 dp et déborde en haut, sans repli · vérifié : calcul de l'agent · décision : question à Pascal (vise-t-on un plus petit téléphone couché ?).
 2026-10-30 · Claude (orchestrateur) · 077, 078 · Relectures lancées (`relecteur`, worktrees isolés).
+2026-10-30 · relecteur · PR #136 (mission 077, 7a846ae) · prête pour Pascal : texte exact « … puis cliquez sur le bouton « Rattacher ». », test d'égalité vu rouge (ceb6287) puis vert, harnais tenu (3 fichiers), CI verte, aucune autre copie dans le code ; mineur : le test de la l. 78 (`contains`) fait en partie double emploi.
