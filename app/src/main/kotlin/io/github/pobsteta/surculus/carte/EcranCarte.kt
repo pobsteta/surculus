@@ -529,12 +529,12 @@ private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centre
             ?.let { Text(it, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)) }
         }
         }
-        // Les boutons de Groma (`EcranCarte.kt` l. 323-389), de 40 à 48 dp : naviguer vers (la placette choisie, sinon la
+        // Les boutons de Groma (`EcranCarte.kt` l. 323-389), de 48 à 32 dp : naviguer vers (la placette choisie, sinon la
         // prochaine à faire ; inactif s'il n'y en a pas), zoom avant, zoom arrière, maison (cadrer la tournée), cible
         // (la position GNSS si elle tombe en France, zoom 17 au moins, sinon l'emprise de la tournée : `Recentrage.cible`).
         val cibleNaviguer = cibleNavigation(choisie, toutes, controlees, fix?.position?.let { Guidage.versLambert93(it) })
         // Mission 078 : une seule colonne, pleine hauteur, comme Groma (`DispositionBoutons`) ; 48 dp si elle tient, jamais
-        // sous 40 dp. Les textes du haut et du bas s'arrêtent avant elle.
+        // sous 32 dp. Les textes du haut et du bas s'arrêtent avant elle.
         Column(
             Modifier.align(Alignment.CenterEnd).fillMaxHeight().padding(DispositionBoutons.MARGE_DP.dp),
             verticalArrangement = Arrangement.spacedBy(DispositionBoutons.ECART_DP.dp, Alignment.Bottom),

@@ -7,58 +7,57 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Mission 078 : les boutons de la carte sont toujours en une seule colonne pleine hauteur, à 48 dp quand elle tient,
- * jamais sous 40 dp. Téléphone de Pascal : 2316 x 1080 px à 450 dpi, soit 2,8125 px par dp (823 x 384 dp).
+ * Mission 078 : les boutons de la carte sont toujours en une seule colonne pleine hauteur, de 48 dp (quand elle tient) à
+ * 32 dp (plancher absolu, décision de Pascal du 2026-10-30). Téléphone de Pascal : 2316 x 1080 px à 450 dpi, soit
+ * 2,8125 px par dp (823 x 384 dp).
  */
 class DispositionBoutonsTest {
     private val dp = 450f / 160f
 
-    // Couché : 1080 px = 384 dp, moins la barre de titre (~48 dp) : environ 336 dp.
-    private val ecranCouchePascal = 336f
-    // Debout : 2316 px = 823 dp, moins la barre de titre : environ 775 dp.
-    private val ecranDeboutPascal = 2316f / dp - 48f
-    private val ecranTropCourt = 250f
+    // Couché sans plein écran : 384 dp moins la barre de titre (~48 dp) = 336 dp. Avec barres (état, gestes) : ~292 dp.
+    private val coucheSansBarres = 336f
+    private val coucheAvecBarres = 292f
+    private val debout = 2316f / dp - 48f
 
     @Test
     fun `debout les six boutons font 48 dp`() {
-        assertEquals(48, DispositionBoutons.tailleDp(ecranDeboutPascal, 6))
-        assertEquals(48, DispositionBoutons.tailleDp(ecranDeboutPascal, 5))
+        assertEquals(48, DispositionBoutons.tailleDp(debout, 6))
+        assertEquals(48, DispositionBoutons.tailleDp(debout, 5))
     }
 
     @Test
-    fun `couche sur le telephone de Pascal, la colonne tient entre 40 et 48 dp`() {
-        val t = DispositionBoutons.tailleDp(ecranCouchePascal, 6)
-        assertTrue(t in 40..48, "t=$t")
-        assertTrue(DispositionBoutons.hauteurColonneDp(6, t) <= ecranCouchePascal)
-        // Juste ce qu'il faut : un dp de plus ne tiendrait plus.
-        if (t < 48) assertTrue(DispositionBoutons.hauteurColonneDp(6, t + 1) > ecranCouchePascal)
+    fun `couche a 336 dp les six boutons font 45 dp`() {
+        assertEquals(45, DispositionBoutons.tailleDp(coucheSansBarres, 6))
+        assertEquals(334, DispositionBoutons.hauteurColonneDp(6, 45))
     }
 
     @Test
-    fun `a 40 dp les six boutons tiennent dans 304 dp`() {
-        assertEquals(304, DispositionBoutons.hauteurColonneDp(6, 40))
-        assertEquals(40, DispositionBoutons.tailleDp(304f, 6))
+    fun `couche a 292 dp les six boutons descendent a 38 dp, sous 40`() {
+        assertEquals(38, DispositionBoutons.tailleDp(coucheAvecBarres, 6))
+        assertTrue(DispositionBoutons.hauteurColonneDp(6, 38) <= coucheAvecBarres)
+        assertTrue(DispositionBoutons.hauteurColonneDp(6, 39) > coucheAvecBarres)
     }
 
     @Test
-    fun `la taille ne descend jamais sous 40 dp, meme sur un ecran trop court`() {
-        assertEquals(40, DispositionBoutons.MIN_DP)
-        for (h in listOf(ecranTropCourt, 120f, 0f)) {
-            assertEquals(40, DispositionBoutons.tailleDp(h, 6), "h=$h")
-        }
-        assertFalse(DispositionBoutons.tient(ecranTropCourt, 6))
-        assertTrue(DispositionBoutons.tient(ecranCouchePascal, 6))
+    fun `a 260 dp la taille est le plancher de 32 dp`() {
+        assertEquals(32, DispositionBoutons.MIN_DP)
+        assertEquals(32, DispositionBoutons.tailleDp(260f, 6))
     }
 
     @Test
-    fun `avec cinq boutons la taille est au moins celle de six`() {
-        assertTrue(DispositionBoutons.tailleDp(ecranCouchePascal, 5) >= DispositionBoutons.tailleDp(ecranCouchePascal, 6))
+    fun `plus court que le plancher, la taille reste 32 dp`() {
+        for (h in listOf(255f, 200f, 120f, 0f)) assertEquals(32, DispositionBoutons.tailleDp(h, 6), "h=$h")
+    }
+
+    @Test
+    fun `la taille ne depasse jamais 48 dp`() {
+        assertEquals(48, DispositionBoutons.tailleDp(5000f, 6))
     }
 
     @Test
     fun `la place reservee aux textes est la largeur de la colonne`() {
         assertEquals(48 + 2 * DispositionBoutons.MARGE_DP, DispositionBoutons.largeurReserveeDp(48))
-        assertEquals(40 + 2 * DispositionBoutons.MARGE_DP, DispositionBoutons.largeurReserveeDp(40))
+        assertEquals(32 + 2 * DispositionBoutons.MARGE_DP, DispositionBoutons.largeurReserveeDp(32))
     }
 
     @Test
