@@ -313,4 +313,4 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   l'écran sautait sous le doigt. *(Retenue par Pascal le 2026-10-30 ; livrée à la capture de la release qui
   porte 052, 059, 074 et 075, sinon le cycle livre sa mauvaise nouvelle. Livrée en partie le 2026-10-30 :
   v0.7.88, debout tenu ; couché, « ÉCOUTE FERMÉE » reste après une dictée et cache « Mode poche » :
-  mauvaise nouvelle, reprise 076 fusionnée le 2026-10-30 (#132), à capturer.)*
+  mauvaise nouvelle, reprise 076 fusionnée le 2026-10-30 (#132) ; livrée debout et couché sur v0.7.90, « Mode poche » visible après une dictée.)*

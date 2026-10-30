@@ -782,3 +782,5 @@
 2026-10-30 · relecteur · PR #132 · reprise 1/3 relue (7133d9e) : prêt pour Pascal ; rouge vérifié à 4 s, retrait d'assertion légitime, CI verte ; mineur M2 : le choix de l'échéance la plus proche n'est plus testé à 6 s. Clone laissé dans /tmp/relecteur-076-r1 (suppression refusée).
 2026-10-30 · Pascal · PR #132 · « Fusionner » ; M2 au bac à sable.
 2026-10-30 · Claude (orchestrateur) · PR #132 · Fusionnée (f5b7e7a), CI verte. Capture debout et couchée sur la release qui suit, puis la livraison « Main gantée » sera dite entière ou non.
+2026-10-30 · Claude (orchestrateur) · 076 · Capture sur v0.7.90 (bâtie sur f5b7e7a) : micro tenu 4 s puis lâché ; debout, « ÉCOUTE FERMÉE » vu à +1 s, parti au relevé suivant, « Mode poche » visible ; couché, bandeau vu aux deux premiers relevés, parti à ~6 s, « Mode poche » visible et entier en tête. Téléphone rendu comme trouvé (récepteur externe coché, rotation automatique).
+2026-10-30 · Claude (orchestrateur) · cycle 15 · Livraison « Main gantée » désormais livrée debout et couché (v0.7.90). Restent hors livraison : 052 tâche retirée et autorisations, 074 « hors rayon » au décimètre, essai ganté de Pascal.
