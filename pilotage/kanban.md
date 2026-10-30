@@ -85,6 +85,10 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **079** README et spec au niveau du livré (`archiviste`, appuyer), **080** test de rendu des écrans (`afficheur`,
+  tenir : plan d'abord), **081** aucun texte technique à l'écran (`testeur` puis `dev`, appuyer) : validées par
+  Pascal le 2026-10-30 (porte n° 2, « Oui, les trois »), lancées le même jour ; fiches sur leurs seules branches.
+
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,

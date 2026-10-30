@@ -93,3 +93,14 @@ n° 2 : l'état à jour des missions est dans `kanban.md`.
 4. **Rythme inchangé** (« On continue comme avant ») : plafonds tels quels ; le terrain attend une date fixée
    par Pascal.
 
+## Missions validées au `/mission` du 2026-10-30 (porte n° 2, « Oui, les trois »)
+
+| Mission | Agent | Modèle | Temps de la main | Les 3 questions |
+|---|---|---|---|---|
+| [079](missions/079-readme-et-spec-au-niveau-du-livre.md) README et spec au niveau du livré | `archiviste` | sonnet | appuyer | 3 oui |
+| [080](missions/080-test-de-rendu-des-ecrans.md) Test de rendu des écrans | `afficheur` | sonnet | tenir (plan d'abord) | non à la 2e, partiel à la 3e (outil de test Compose absent de `app`) |
+| [081](missions/081-aucun-texte-technique-a-l-ecran.md) Aucun texte technique à l'écran | `testeur` puis `dev` | sonnet | appuyer | 3 oui |
+
+Hors équipe, au Planifié : ADR 0010 (attend la sauvegarde de la clé par Pascal), 049, photos (mesures sur appareil),
+tranche 3 (date de plantation), 010 et 014 (moyens).
+
