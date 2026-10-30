@@ -19,8 +19,6 @@ import android.graphics.drawable.shapes.OvalShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,9 +26,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -300,7 +299,6 @@ private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit) {
     val orthoChantier = examenOrtho.exploitable
@@ -377,7 +375,14 @@ private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centre
                 }
             },
         )
-        Column(Modifier.weight(1f).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
+        BoxWithConstraints(Modifier.weight(1f).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
+        // Mission 078 : la colonne de boutons prend toute la hauteur de cette zone ; la taille des boutons s'en déduit.
+        val nombreBoutons = if (choisie != null) 6 else 5
+        val tailleBouton = DispositionBoutons.tailleDp(maxHeight.value, nombreBoutons)
+        val reserveBoutons = DispositionBoutons.largeurReserveeDp(tailleBouton).dp
+        val couchesRef = remember(ouverte) { arrayOfNulls<Couches>(1) }
+        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.padding(end = reserveBoutons)) {
         // Fichier d'ortho présent mais illisible (mission 059) : dit en clair, la carte est déjà repliée sur le Plan IGN.
         if (examenOrtho.illisible) {
             Text(OrthoChantier.ILLISIBLE, color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
@@ -396,10 +401,11 @@ private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centre
         }
         if (refusee) Text(stringResource(R.string.carte_permission), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
 
+        }
+
         // Rogne la carte à ses bords (mission 060) : osmdroid et Compose ne le font pas, la carte recouvrait le bandeau.
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
             run {
-                val couchesRef = remember(ouverte) { arrayOfNulls<Couches>(1) }
                 AndroidView(
                     modifier = Modifier.fillMaxSize().clipToBounds(),
                     factory = { contexte ->
@@ -479,77 +485,10 @@ private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centre
                         carte.onDetach()
                     },
                 )
-                // Les boutons de Groma (`EcranCarte.kt` l. 323-389), au moins 48 dp : naviguer vers (la placette choisie, sinon la
-                // prochaine à faire ; inactif s'il n'y en a pas), zoom avant, zoom arrière, maison (cadrer la tournée), cible
-                // (la position GNSS si elle tombe en France, zoom 17 au moins, sinon l'emprise de la tournée : `Recentrage.cible`).
-                val cibleNaviguer = cibleNavigation(choisie, toutes, controlees, fix?.position?.let { Guidage.versLambert93(it) })
-                // Mission 064 : en paysage la hauteur visible ne suffit plus à une colonne ; les boutons passent en deux colonnes
-                // (`DispositionBoutons`). En portrait, une seule colonne, comme avant.
-                val nombreBoutons = if (choisie != null) 6 else 5
-                val parColonne = DispositionBoutons.boutonsParColonne(maxHeight.value, nombreBoutons)
-                FlowColumn(
-                    Modifier.align(Alignment.BottomEnd).padding(DispositionBoutons.MARGE_DP.dp),
-                    verticalArrangement = Arrangement.spacedBy(DispositionBoutons.ECART_DP.dp),
-                    horizontalArrangement = Arrangement.spacedBy(DispositionBoutons.ECART_DP.dp),
-                    maxItemsInEachColumn = parColonne,
-                ) {
-                    // Porte n° 1 du contrôle (mission 012-B1) : « Contrôler » seulement quand une placette est choisie.
-                    if (choisie != null) {
-                        SmallFloatingActionButton(
-                            onClick = { onControler(choisie.uuid) },
-                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        ) {
-                            Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.controle_controler))
-                        }
-                    }
-                    SmallFloatingActionButton(
-                        onClick = { cibleNaviguer?.let { onGuider(it.uuid) } },
-                        modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics { if (cibleNaviguer == null) disabled() },
-                        containerColor = if (cibleNaviguer != null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = if (cibleNaviguer != null) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    ) {
-                        Icon(Icons.Filled.Navigation, contentDescription = stringResource(R.string.carte_naviguer))
-                    }
-                    SmallFloatingActionButton(onClick = { couchesRef[0]?.carte?.controller?.zoomIn() }, modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) {
-                        Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.carte_zoom_avant))
-                    }
-                    SmallFloatingActionButton(onClick = { couchesRef[0]?.carte?.controller?.zoomOut() }, modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) {
-                        Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.carte_zoom_arriere))
-                    }
-                    SmallFloatingActionButton(
-                        onClick = {
-                            val carte = couchesRef[0]?.carte ?: return@SmallFloatingActionButton
-                            if (cadre != null) cadrerSur(carte, cadre, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
-                        },
-                        modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics { if (cadre == null) disabled() },
-                        containerColor = if (cadre != null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = if (cadre != null) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    ) {
-                        Icon(Icons.Filled.Home, contentDescription = stringResource(R.string.carte_cadrer_tournee))
-                    }
-                    SmallFloatingActionButton(
-                        onClick = {
-                            val carte = couchesRef[0]?.carte ?: return@SmallFloatingActionButton
-                            when (val c = Recentrage.cible(fix?.position, cadre)) {
-                                is Recentrage.Cible.Fix -> {
-                                    if (carte.zoomLevelDouble < ZOOM_RECENTRER) carte.controller.setZoom(ZOOM_RECENTRER)
-                                    carte.controller.animateTo(GeoPoint(c.position.latitude, c.position.longitude))
-                                }
-                                Recentrage.Cible.Emprise ->
-                                    cadrerSur(carte, cadre!!, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
-                                Recentrage.Cible.Rien -> {}
-                            }
-                        },
-                        modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
-                    ) {
-                        Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.carte_recentrer))
-                    }
-                }
             }
         }
 
+        Column(Modifier.padding(end = reserveBoutons)) {
         // Légende : un décompte par état, dans la couleur du disque ; « sans état » seulement s'il y en a.
         val nombres = remember(placettes) { decomptes(placettes) }
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -588,6 +527,73 @@ private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centre
         // fichier (mission 059, Licence Ouverte 2.0).
         FondsCarte.mentions(fondAffiche, voirCadastre, examenOrtho.mention).joinToString(" · ").takeIf { it.isNotEmpty() }
             ?.let { Text(it, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)) }
+        }
+        }
+        // Les boutons de Groma (`EcranCarte.kt` l. 323-389), de 48 à 32 dp : naviguer vers (la placette choisie, sinon la
+        // prochaine à faire ; inactif s'il n'y en a pas), zoom avant, zoom arrière, maison (cadrer la tournée), cible
+        // (la position GNSS si elle tombe en France, zoom 17 au moins, sinon l'emprise de la tournée : `Recentrage.cible`).
+        val cibleNaviguer = cibleNavigation(choisie, toutes, controlees, fix?.position?.let { Guidage.versLambert93(it) })
+        // Mission 078 : une seule colonne, pleine hauteur, comme Groma (`DispositionBoutons`) ; 48 dp si elle tient, jamais
+        // sous 32 dp. Les textes du haut et du bas s'arrêtent avant elle.
+        Column(
+            Modifier.align(Alignment.CenterEnd).fillMaxHeight().padding(DispositionBoutons.MARGE_DP.dp),
+            verticalArrangement = Arrangement.spacedBy(DispositionBoutons.ECART_DP.dp, Alignment.Bottom),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            // Porte n° 1 du contrôle (mission 012-B1) : « Contrôler » seulement quand une placette est choisie.
+            if (choisie != null) {
+                SmallFloatingActionButton(
+                    onClick = { onControler(choisie.uuid) },
+                    modifier = Modifier.size(tailleBouton.dp),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.controle_controler))
+                }
+            }
+            SmallFloatingActionButton(
+                onClick = { cibleNaviguer?.let { onGuider(it.uuid) } },
+                modifier = Modifier.size(tailleBouton.dp).semantics { if (cibleNaviguer == null) disabled() },
+                containerColor = if (cibleNaviguer != null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (cibleNaviguer != null) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            ) {
+                Icon(Icons.Filled.Navigation, contentDescription = stringResource(R.string.carte_naviguer))
+            }
+            SmallFloatingActionButton(onClick = { couchesRef[0]?.carte?.controller?.zoomIn() }, modifier = Modifier.size(tailleBouton.dp)) {
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.carte_zoom_avant))
+            }
+            SmallFloatingActionButton(onClick = { couchesRef[0]?.carte?.controller?.zoomOut() }, modifier = Modifier.size(tailleBouton.dp)) {
+                Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.carte_zoom_arriere))
+            }
+            SmallFloatingActionButton(
+                onClick = {
+                    val carte = couchesRef[0]?.carte ?: return@SmallFloatingActionButton
+                    if (cadre != null) cadrerSur(carte, cadre, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
+                },
+                modifier = Modifier.size(tailleBouton.dp).semantics { if (cadre == null) disabled() },
+                containerColor = if (cadre != null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (cadre != null) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            ) {
+                Icon(Icons.Filled.Home, contentDescription = stringResource(R.string.carte_cadrer_tournee))
+            }
+            SmallFloatingActionButton(
+                onClick = {
+                    val carte = couchesRef[0]?.carte ?: return@SmallFloatingActionButton
+                    when (val c = Recentrage.cible(fix?.position, cadre)) {
+                        is Recentrage.Cible.Fix -> {
+                            if (carte.zoomLevelDouble < ZOOM_RECENTRER) carte.controller.setZoom(ZOOM_RECENTRER)
+                            carte.controller.animateTo(GeoPoint(c.position.latitude, c.position.longitude))
+                        }
+                        Recentrage.Cible.Emprise ->
+                            cadrerSur(carte, cadre!!, (48 * carte.context.resources.displayMetrics.density).toInt(), animer = true)
+                        Recentrage.Cible.Rien -> {}
+                    }
+                },
+                modifier = Modifier.size(tailleBouton.dp),
+            ) {
+                Icon(Icons.Filled.MyLocation, contentDescription = stringResource(R.string.carte_recentrer))
+            }
+        }
         }
     }
 }

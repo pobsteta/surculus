@@ -74,11 +74,11 @@ class BandeauCarteGuidageTest {
     }
 
     @Test
-    fun `cinq boutons flottants comme Groma plus Controler, d'au moins 48 dp (missions 061 et 012-B1)`() {
+    fun `cinq boutons flottants comme Groma plus Controler, de 48 à 32 dp (missions 061, 012-B1 et 078)`() {
         assertEquals(6, Regex("SmallFloatingActionButton\\(").findAll(carte).count())
         for (icone in listOf("Icons.Filled.Check", "Icons.Filled.Navigation", "Icons.Filled.Add", "Icons.Filled.Remove", "Icons.Filled.Home", "Icons.Filled.MyLocation")) assertTrue(icone in carte, icone)
         for (libelle in listOf("controle_controler", "carte_naviguer", "carte_zoom_avant", "carte_zoom_arriere", "carte_cadrer_tournee", "carte_recentrer")) assertTrue("R.string.$libelle" in carte, libelle)
-        assertEquals(6, Regex("sizeIn\\(minWidth = 48.dp, minHeight = 48.dp\\)").findAll(carte).count())
+        assertEquals(6, Regex("Modifier.size\\(tailleBouton.dp\\)").findAll(carte).count())
     }
 
     @Test

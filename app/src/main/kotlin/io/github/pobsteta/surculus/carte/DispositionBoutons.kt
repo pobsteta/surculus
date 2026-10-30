@@ -1,26 +1,23 @@
 package io.github.pobsteta.surculus.carte
 
-/** Mission 064 : combien de boutons de carte par colonne, selon la hauteur visible de la carte. */
+/**
+ * Mission 078 (remplace la 064) : les boutons de la carte sont toujours en une seule colonne, comme dans Groma, sur toute
+ * la hauteur disponible. 48 dp quand elle tient ; sinon la taille baisse juste ce qu'il faut, jamais sous 32 dp (décisions de
+ * Pascal, 2026-10-30). Sous le plancher, les derniers boutons sont écrasés.
+ */
 internal object DispositionBoutons {
     const val CIBLE_DP = 48
+    const val MIN_DP = 32
     const val ECART_DP = 8
-    const val MARGE_DP = 8
+    const val MARGE_DP = 12
 
-    /** Hauteur (dp) d'une colonne de [n] boutons, marges haut et bas comprises. */
-    fun hauteurColonneDp(n: Int): Int = if (n <= 0) 0 else n * CIBLE_DP + (n - 1) * ECART_DP + 2 * MARGE_DP
+    /** Hauteur (dp) d'une colonne de [n] boutons de [tailleDp], marges haut et bas comprises. */
+    fun hauteurColonneDp(n: Int, tailleDp: Int): Int = if (n <= 0) 0 else n * tailleDp + (n - 1) * ECART_DP + 2 * MARGE_DP
 
-    /** Nombre maximal de boutons par colonne dans [hauteurDp] ; au moins un. En portrait, tous tiennent : une colonne. */
-    fun boutonsParColonne(hauteurDp: Float, nombreBoutons: Int): Int {
-        var n = nombreBoutons
-        while (n > 1 && hauteurColonneDp(n) > hauteurDp) n--
-        n = n.coerceAtLeast(1)
-        // Colonnes équilibrées : 3 + 3 plutôt que 4 + 2.
-        val colonnes = (nombreBoutons + n - 1) / n
-        return (nombreBoutons + colonnes - 1) / colonnes
-    }
+    /** La taille des boutons dans [hauteurDp] : la plus grande entre [MIN_DP] (32) et [CIBLE_DP] (48) qui tient, sinon [MIN_DP]. */
+    fun tailleDp(hauteurDp: Float, nombreBoutons: Int): Int =
+        (CIBLE_DP downTo MIN_DP).firstOrNull { hauteurColonneDp(nombreBoutons, it) <= hauteurDp } ?: MIN_DP
 
-    fun colonnes(hauteurDp: Float, nombreBoutons: Int): Int {
-        val par = boutonsParColonne(hauteurDp, nombreBoutons)
-        return (nombreBoutons + par - 1) / par
-    }
+    /** Largeur (dp) que les textes du haut et du bas laissent à la colonne : le bouton et ses deux marges. */
+    fun largeurReserveeDp(tailleDp: Int): Int = tailleDp + 2 * MARGE_DP
 }
