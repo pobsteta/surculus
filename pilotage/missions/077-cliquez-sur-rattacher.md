@@ -11,7 +11,7 @@
 bouton « Rattacher » » dans le message d'arrivée à plus de 15 m, pour que le forestier sache sans hésiter
 qu'il s'agit du bouton sous le champ.
 
-**Redite par l'agent :** _(à remplir par l'agent avant d'agir)_
+**Redite par l'agent :** Remplacer « puis touchez « Rattacher » » par « puis cliquez sur le bouton « Rattacher » » dans le message hors 15 m (`RefusPlacette.HorsQuinzeMetres`), pour que le forestier identifie sans hésiter le bouton sous le champ.
 
 ## Ce qui est constaté
 
