@@ -10,6 +10,12 @@
 - **Mineur M2 de la 076** (depuis le cycle 15) : plus aucun test ne vérifie que `echeance()` retient la plus
   proche des deux échéances (bandeau, résultat final) ; une ligne dans le premier test du bandeau.
 
+- **082** (décision de Pascal, 2026-10-30, relecture de la 081) : plus aucun `e.message` brut à l'écran
+  (`carte/Commun.kt:94`, `DepotTournees.kt:145`, `EcranTournees.kt:144`, `MoteurDicteeVosk.kt:45`, `:52`,
+  `ServiceGnssRtk.kt:84`, `:140`, `:170`) ; fiche à écrire.
+- **Le plant par son numéro dans les refus** (« le plant n° 7 » plutôt que « ce plant », 081) : le refus doit porter le
+  numéro ; « assez pour l'instant » (Pascal, 2026-10-30).
+
 _Idées, à trier au prochain `/mission`._
 
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
