@@ -51,8 +51,12 @@ object PermissionMicro {
     }
 }
 
-/** Combien de temps le bandeau reste après la fermeture de l'écoute (proposé, Pascal tranche) : le temps de lire « compris : Numéro 7, atteint. ». */
-const val DUREE_BANDEAU_MS = 4_000L
+/**
+ * Combien de temps le bandeau reste après la fermeture de l'écoute : 6 s, décision de Pascal (2026-10-30). Assez pour lire
+ * « compris : Numéro 7, atteint. » d'un coup d'œil. Doit rester **au-dessus** de [DelaisEcoute.RESULTAT_FINAL_MS] (5 s, l'attente
+ * maximale du résultat final de Vosk) : sinon un résultat tardif ferait revenir un bandeau déjà parti. Un test le garde.
+ */
+const val DUREE_BANDEAU_MS = 6_000L
 
 /** Ce que la bande montre de l'écoute : une seule chose en grand (plan § 2). */
 enum class AffichageEcoute {

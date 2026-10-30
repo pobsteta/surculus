@@ -207,7 +207,26 @@ class EcouteTest {
         assertEquals(10_000 + DUREE_BANDEAU_MS, pilote.echeance())
         t = 10_000 + DUREE_BANDEAU_MS; pilote.avancer()
         assertFalse(pilote.bandeauVisible(), "après l'échéance, il part")
-        assertEquals(10_000 + DelaisEcoute.RESULTAT_FINAL_MS, pilote.echeance(), "seule l'attente du résultat final reste")
+    }
+
+    @Test fun `le bandeau - un resultat final tardif (juste avant l'attente maximale) trouve le bandeau encore montre`() = with(Banc()) {
+        pilote.tenir(); t = 100; pret()
+        t = 10_000; pilote.relacher()
+        t = 10_000 + DelaisEcoute.RESULTAT_FINAL_MS - 1; pilote.avancer()
+        assertTrue(pilote.bandeauVisible(), "il n'a pas disparu entre le lâcher et le résultat final")
+        pilote.phrase("atteint")
+        pilote.resultat(AnnoncePoche("Numéro 7, atteint.", MotifsVibration.ATTEINT))
+        assertTrue(pilote.bandeauVisible())
+        assertEquals("Numéro 7, atteint.", pilote.compris)
+        t = 10_000 + DelaisEcoute.RESULTAT_FINAL_MS + 1; pilote.avancer()
+        assertTrue(pilote.bandeauVisible(), "le résultat tardif est lisible un moment")
+    }
+
+    @Test fun `le bandeau - la duree reste au-dessus de l'attente du resultat final, sinon il reviendrait apres etre parti`() {
+        assertTrue(
+            DUREE_BANDEAU_MS > DelaisEcoute.RESULTAT_FINAL_MS,
+            "DUREE_BANDEAU_MS ($DUREE_BANDEAU_MS) doit rester > RESULTAT_FINAL_MS (${DelaisEcoute.RESULTAT_FINAL_MS})",
+        )
     }
 
     @Test fun `le bandeau - l'ecoute longue ne l'efface pas`() = with(Banc()) {
