@@ -417,10 +417,10 @@ internal fun CartePrete(
         }
 
         // Rogne la carte à ses bords (mission 060) : osmdroid et Compose ne le font pas, la carte recouvrait le bandeau.
-        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
+        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             run {
                 AndroidView(
-                    modifier = Modifier.fillMaxSize().clipToBounds(),
+                    modifier = Modifier.fillMaxSize(),
                     factory = { contexte ->
                         configurerOsmdroid(contexte)
                         // Fond posé par `update` ; le réseau est utilisé par les fonds en ligne (cache d'osmdroid gardé).
