@@ -16,6 +16,11 @@
 - **Le plant par son numéro dans les refus** (« le plant n° 7 » plutôt que « ce plant », 081) : le refus doit porter le
   numéro ; « assez pour l'instant » (Pascal, 2026-10-30).
 
+- **Questions de la relecture de la 081** (Pascal, « au bac à sable », 2026-10-30) : `ConnectException` (serveur qui
+  refuse) dit « pas de réseau », coupure en plein téléchargement (`SocketException`, SSL) sur la phrase générique ;
+  signe moins « - » ou « − » (U+2212) ; tests manquants : appel de `refusServeur` dans `source`, priorité
+  d'`EchecInstallation` sur une enveloppe.
+
 _Idées, à trier au prochain `/mission`._
 
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
@@ -92,7 +97,7 @@ _Idées, à trier au prochain `/mission`._
 ## Validé
 
 - **080** test de rendu des écrans (`afficheur`,
-  tenir : plan d'abord), **081** aucun texte technique à l'écran (`testeur` puis `dev`, appuyer) : validées par
+  tenir : plan d'abord ; plan validé par Pascal, code en cours) : validée par
   Pascal le 2026-10-30 (porte n° 2, « Oui, les trois »), lancées le même jour ; fiches sur leurs seules branches.
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
@@ -155,6 +160,9 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **081** aucun texte technique à l'écran (`testeur` puis `dev`, PR #140, deux allers-retours) : fusionnée le
+  2026-10-30 ; capture d'un refus au contrôle et de l'échec de Vosk en mode avion à faire sur la release.
 
 - **079** README et spec au niveau du livré (`archiviste`, PR #141, bce9fd2, deux allers-retours) : fusionnée le
   2026-10-30 ; le test de la minute sera refait au prochain bilan.
