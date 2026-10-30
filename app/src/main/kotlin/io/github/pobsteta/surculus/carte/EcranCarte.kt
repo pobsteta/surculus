@@ -59,7 +59,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import io.github.pobsteta.surculus.gnss.ConfigRtk
+import io.github.pobsteta.surculus.gnss.ErreurRecepteurCarte
+import io.github.pobsteta.surculus.gnss.ServiceGnssRtk
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -383,6 +387,12 @@ private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centre
         }
         if (fix != null && Guidage.versLambert93(fix.position) == null) {
             Text(stringResource(R.string.carte_hors_france), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
+        }
+        // Récepteur externe en erreur (mission 052) : la carte le dit, sans le message technique (il reste dans l'Essai GNSS).
+        val etatRecepteur by ServiceGnssRtk.etat.collectAsState()
+        val reglageRecepteur = remember { ConfigRtk.lire(ctx).actif }
+        ErreurRecepteurCarte.pour(reglageRecepteur, etatRecepteur.enMarche, etatRecepteur.erreur, etatRecepteur.ntripErreur)?.let {
+            Text(stringResource(it.texte), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
         }
         if (refusee) Text(stringResource(R.string.carte_permission), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
 

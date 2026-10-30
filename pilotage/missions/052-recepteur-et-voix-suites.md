@@ -12,7 +12,9 @@ l'installation de la voix (erreur du récepteur sur la carte, arrêt propre quan
 autorisation jamais demandée distinguée d'un refus, erreur d'installation qui ne laisse pas l'écran « en
 cours »), pour que le forestier sache en forêt pourquoi il n'a pas de position ou pas de dictée.
 
-**Redite par l'agent :** (à remplir par l'agent avant d'agir)
+**Redite par l'agent :** rendre visibles et justes les états du récepteur GNSS et de l'installation de la voix (erreur du récepteur sur la
+carte, arrêt propre à la tâche retirée, « pas encore demandée » distinct de « refusée », échec d'installation Vosk même
+sur une `Error`, test JVM), pour que le forestier sache pourquoi il n'a pas de position ou de dictée.
 
 ## Ce qui est à faire (cinq points, tous tirés du journal)
 
@@ -58,3 +60,31 @@ dire. Chaque texte nouveau, proposé en français, sans code technique.
 
 Sur la release : Paramètres d'un téléphone neuf montre « pas encore demandée » ; récepteur externe débranché,
 la carte le dit ; tâche retirée, plus de notification du récepteur. Captures de l'orchestrateur.
+
+## Reprise, aller-retour 1/3 (2026-10-29)
+
+Relecture de la #129 (ac464f1) : « à reprendre ». Décision de Pascal du 2026-10-29 : phrase « Corrections
+RTK indisponibles : la position est moins précise. » **gardée**.
+
+1. **Conflit** : fusionner `main` dans la branche (la fiche existe aussi sur `main`, erreur de
+   l'orchestrateur) en gardant la redite et cette rubrique ; la CI doit tourner et être verte.
+2. **Fenêtre d'autorisation fermée sans réponse** (`SectionRecepteur.kt` l. 103-111,
+   `AvertissementsRecepteur.kt`) : ne mémoriser un refus que si `shouldShowRequestPermissionRationale` est
+   vrai juste après la réponse ; sinon l'état reste « pas encore demandée ». Test du cas, vu rouge. KDoc de
+   `JAMAIS_DEMANDEE` d'accord avec le code.
+3. Corriger le compte des tests annoncé (9 et non 10) ; relancer `CancellationException` dans
+   `SuiviInstallation` (hygiène) ; dire dans la PR que le test de `onTaskRemoved` n'est qu'un garde-fou.
+Hors reprise (bac à sable) : `IssueInstallation.Echec` affiche `e.message` brut (texte technique).
+
+## Reprise, aller-retour 2/3 (2026-10-30)
+
+Relecture de la reprise (6844de9) : « prêt », avec une question de sens tranchée par Pascal le 2026-10-29 :
+« Renvoyer aux réglages ».
+
+1. Si le système répond « non » **sans rationale ni avant ni après** la demande (refus définitif déjà acquis,
+   par exemple sous une version antérieure à la 052), l'état devient « refusée définitivement » et le texte
+   renvoie aux réglages du téléphone ; une fenêtre fermée sans réponse (rationale fausse avant, fausse
+   après, mais fenêtre montrée) reste distinguée si Android le permet — sinon dire dans la PR quel cas
+   l'emporte et pourquoi. Tests des deux cas, vus rouges.
+2. Mineur : KDoc du paramètre `dejaRefusee` d'`etatAutorisation` (`AvertissementsRecepteur.kt` l. 29) à
+   aligner sur le code ; ne pas surévaluer `activite(ctx)` dans la PR (protection, pas correction).

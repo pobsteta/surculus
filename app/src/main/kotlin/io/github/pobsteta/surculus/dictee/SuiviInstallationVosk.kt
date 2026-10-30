@@ -11,6 +11,7 @@ package io.github.pobsteta.surculus.dictee
 
 import android.content.Context
 import android.net.Uri
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -42,9 +43,12 @@ data class EtatInstallation(
  * du processus, pas dans celle de l'écran ; en quittant puis en revenant dans Paramètres, l'écran retrouve la phase
  * et la progression au lieu de proposer une seconde installation. Le verrou du processus, lui, est dans
  * [io.github.pobsteta.surculus.core.dictee.InstallateurModele].
+ *
+ * Mission 052 : la mécanique est ici, sans Android, pour être testée en JVM ; [SuiviInstallationVosk] la branche sur
+ * le contexte. Toute fin du travail, **Error comprise** (une bibliothèque native absente lève une Error), rend l'écran
+ * au repos avec une issue : jamais « en cours » pour toujours.
  */
-object SuiviInstallationVosk {
-    private val portee = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+class SuiviInstallation(private val portee: CoroutineScope) {
     private val _etat = MutableStateFlow(EtatInstallation())
     private val annulation = AtomicBoolean(false)
 
@@ -56,51 +60,70 @@ object SuiviInstallationVosk {
     /** Demande l'arrêt de la réception ; sans effet une fois l'empreinte vérifiée. */
     fun annuler() = annulation.set(true)
 
-    /** Télécharge puis installe. Faux (rien lancé) si une installation tourne déjà. [messageRefus] : empreinte mauvaise. */
-    fun telecharger(context: Context, messageRefus: String): Boolean =
-        demarrer(context, PhaseInstallation.RESEAU) { ctx, continuer, nonRetour, progression ->
-            ModeleVoskImport.installer(
-                ctx, ModeleVoskTelechargement.URL_MODELE, progression, continuer, messageRefus, nonRetour,
-                ModeleVoskTelechargement.source,
-            )
-        }
-
-    /** Installe depuis le fichier choisi. Faux (rien lancé) si une installation tourne déjà. */
-    fun importer(context: Context, fichier: Uri): Boolean =
-        demarrer(context, PhaseInstallation.FICHIER) { ctx, continuer, nonRetour, _ ->
-            ModeleVoskImport.importer(ctx, fichier, continuer, nonRetour)
-        }
-
-    private fun demarrer(
-        context: Context,
+    /**
+     * Lance [travail] (reçoit : « continuer ? », « point de non-retour passé », « progression »). Faux (rien lancé) si une
+     * installation tourne déjà. [avait] : un modèle est-il déjà installé (lu avant le travail).
+     */
+    fun demarrer(
         debut: PhaseInstallation,
-        travail: (Context, () -> Boolean, () -> Unit, (Float) -> Unit) -> Result<Unit>,
+        avait: () -> Boolean,
+        travail: (() -> Boolean, () -> Unit, (Float) -> Unit) -> Result<Unit>,
     ): Boolean {
-        val ctx = context.applicationContext
         synchronized(this) {
             if (_etat.value.phase != PhaseInstallation.RIEN) return false
             annulation.set(false)
             _etat.value = EtatInstallation(phase = debut)
         }
         portee.launch {
-            val avait = ModeleVoskImport.estInstalle(ctx)
+            val modeleAvant = try { avait() } catch (e: Throwable) { false }
             val r = try {
                 travail(
-                    ctx,
                     { !annulation.get() },
                     { _etat.update { it.copy(phase = PhaseInstallation.INSTALLATION) } },
                     { p -> _etat.update { it.copy(progression = p) } },
                 )
-            } catch (e: Exception) {
+            } catch (e: CancellationException) {
+                throw e // l'annulation de la portée n'est pas un échec d'installation
+            } catch (e: Throwable) {
                 Result.failure(e)
             }
             val issue = when {
                 r.isSuccess -> IssueInstallation.Ok
-                annulation.get() -> IssueInstallation.Annule(avait)
-                else -> IssueInstallation.Echec(r.exceptionOrNull()?.message ?: "erreur inconnue", avait)
+                annulation.get() -> IssueInstallation.Annule(modeleAvant)
+                else -> IssueInstallation.Echec(r.exceptionOrNull()?.message ?: "erreur inconnue", modeleAvant)
             }
             _etat.value = EtatInstallation(PhaseInstallation.RIEN, null, issue)
         }
         return true
+    }
+}
+
+/** Le suivi du processus : portée du processus, entrées et sorties d'Android. */
+object SuiviInstallationVosk {
+    private val suivi = SuiviInstallation(CoroutineScope(SupervisorJob() + Dispatchers.IO))
+
+    val etat: StateFlow<EtatInstallation> get() = suivi.etat
+
+    fun effacerIssue() = suivi.effacerIssue()
+
+    fun annuler() = suivi.annuler()
+
+    /** Télécharge puis installe. Faux (rien lancé) si une installation tourne déjà. [messageRefus] : empreinte mauvaise. */
+    fun telecharger(context: Context, messageRefus: String): Boolean {
+        val ctx = context.applicationContext
+        return suivi.demarrer(PhaseInstallation.RESEAU, { ModeleVoskImport.estInstalle(ctx) }) { continuer, nonRetour, progression ->
+            ModeleVoskImport.installer(
+                ctx, ModeleVoskTelechargement.URL_MODELE, progression, continuer, messageRefus, nonRetour,
+                ModeleVoskTelechargement.source,
+            )
+        }
+    }
+
+    /** Installe depuis le fichier choisi. Faux (rien lancé) si une installation tourne déjà. */
+    fun importer(context: Context, fichier: Uri): Boolean {
+        val ctx = context.applicationContext
+        return suivi.demarrer(PhaseInstallation.FICHIER, { ModeleVoskImport.estInstalle(ctx) }) { continuer, nonRetour, _ ->
+            ModeleVoskImport.importer(ctx, fichier, continuer, nonRetour)
+        }
     }
 }
