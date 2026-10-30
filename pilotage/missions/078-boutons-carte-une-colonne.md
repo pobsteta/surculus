@@ -12,7 +12,7 @@
 droite, comme dans Groma, sur toute la hauteur de l'écran sous la barre de titre, à 48 dp quand elle tient
 et jamais sous 40 dp, pour que le forestier trouve chaque bouton à la même place debout comme couché.
 
-**Redite par l'agent :** _(à remplir par l'agent avant d'agir)_
+**Redite par l'agent :** Je range les six boutons de la carte en une seule colonne pleine hauteur à droite (48 dp si elle tient, jamais moins de 40 dp, textes du haut et du bas raccourcis avant elle), pour que le forestier retrouve chaque bouton au même endroit debout comme couché.
 
 ## Ce qui est constaté
 
