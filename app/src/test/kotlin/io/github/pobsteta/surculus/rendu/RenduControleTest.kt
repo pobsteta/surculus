@@ -1,7 +1,6 @@
 package io.github.pobsteta.surculus.rendu
 
 import androidx.compose.ui.test.hasScrollAction
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import io.github.pobsteta.surculus.controle.AffichageEcoute
@@ -40,8 +39,10 @@ import kotlin.test.assertTrue
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [36])
 class RenduControleTest {
-    @get:Rule val regle = createEmptyComposeRule()
-    @get:Rule val surveille = BancRendu.surveillant()
+    val regle = BancRendu.nouvelleRegle()
+
+    /** Le garde-fou entoure la règle Compose : ses piles couvrent aussi l'installation et le démontage de celle-ci. */
+    @get:Rule val chaine: org.junit.rules.RuleChain = org.junit.rules.RuleChain.outerRule(BancRendu.surveillant()).around(regle)
 
     private class MicroFaux : PortMicro {
         override fun ouvrir(generation: Int) {}
@@ -61,6 +62,7 @@ class RenduControleTest {
     }
 
     @After fun remettre() {
+        BancRendu.fermer()
         PocheApp.mode.sortir(RaisonSortie.VUE_QUITTEE)
         EcouteApp.poserPilotePourTest(null)
     }
@@ -92,6 +94,7 @@ class RenduControleTest {
         val defauts = verifier(cas, r, modePocheAttendu = true)
         assertTrue(defauts.isEmpty(), "Rendu « $cas » :\n" + defauts.joinToString("\n"))
     }
+
 
     @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `controle couche en plein ecran`() = normal("controle-couche-plein")
     @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `controle couche sans plein ecran`() = normal("controle-couche-sans-plein")

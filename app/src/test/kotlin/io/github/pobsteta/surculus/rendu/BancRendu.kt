@@ -33,9 +33,29 @@ object BancRendu {
     const val DEBOUT_PLEIN = "w384dp-h823dp-port-450dpi"
     const val DEBOUT_SANS_PLEIN = "w384dp-h745dp-port-450dpi"
 
+    /**
+     * La règle Compose du banc. `createEmptyComposeRule()` seul compose avec un dispatcher « unconfined » : un `LaunchedEffect` qui
+     * revient d'un `withContext(Dispatchers.IO)` reprend alors sur le fil d'entrées-sorties, et la recomposition qui suit s'y fait
+     * (les `BackHandler` ajoutent un observateur de cycle de vie hors du fil principal : `IllegalStateException`). En production
+     * `AndroidUiDispatcher` ramène sur le fil principal ; un dispatcher standard fait de même ici (les effets repartent à
+     * `waitForIdle`).
+     */
+    fun nouvelleRegle(): ComposeTestRule = androidx.compose.ui.test.junit4.createEmptyComposeRule(effectContext = kotlinx.coroutines.test.StandardTestDispatcher())
+
     /** La dernière activité lancée par [rendre] (pour en tirer une image). */
     var activite: ComponentActivity? = null
         private set
+    private var controleur: org.robolectric.android.controller.ActivityController<ComponentActivity>? = null
+
+    /**
+     * Ferme l'activité rendue (à jouer en `@After`) : les `onDispose` tournent, `PocheApp` et `EcouteApp` ne gardent pas
+     * d'abonnés morts d'un cas à l'autre.
+     */
+    fun fermer() {
+        controleur?.let { runCatching { it.pause().stop().destroy() } }
+        controleur = null
+        activite = null
+    }
 
     /** Un nœud de l'arbre, en dp, avec ce qui le nomme. */
     class Noeud(val nom: String, val rect: Rect, val cliquable: Boolean, val texte: Boolean, val descendance: Set<Int>, val id: Int)
@@ -49,7 +69,9 @@ object BancRendu {
      * l'horloge, défiler…) ; l'arbre est alors relu.
      */
     fun rendre(contenu: @Composable () -> Unit, apres: (ComposeTestRule.() -> Unit)? = null, regle: ComposeTestRule): Resultat {
-        val activite = Robolectric.buildActivity(ComponentActivity::class.java).setup().get()
+        val c = Robolectric.buildActivity(ComponentActivity::class.java)
+        controleur = c
+        val activite = c.setup().get()
         this.activite = activite
         activite.setContent { SurculusTheme { contenu() } }
         attendreUnEcran(regle)
