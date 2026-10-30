@@ -30,7 +30,7 @@ import kotlin.test.assertTrue
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35])
+@Config(sdk = [36])
 class RenduCarteTest {
     @get:Rule val regle = createEmptyComposeRule()
 
