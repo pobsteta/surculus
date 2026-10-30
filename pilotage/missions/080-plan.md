@@ -52,20 +52,21 @@ Source des tailles : capture de l'orchestrateur du 2026-10-30 (v0.7.95), journal
 
 | Écran rendu | Cas |
 |---|---|
-| Carte (`CartePrete`) | couché 823 × 384 dp en plein écran ; couché **sans** plein écran, hauteur utile ≈ 306 dp ; debout 384 × 823 dp en plein écran **et debout sans plein écran** (hauteur utile à mesurer, la barre de navigation étant alors en bas : valeur provisoire, écrite dans la sortie). Chacun avec la bande « Récepteur GNSS non démarré » (`carte_recepteur_non_demarre`) et avec une placette choisie (6 boutons) puis sans (5 boutons). |
+| Carte (`CartePrete`) | couché 823 × 384 dp en plein écran ; couché **sans** plein écran, hauteur utile ≈ 306 dp ; debout 384 × 823 dp en plein écran **et debout sans plein écran** (hauteur utile à mesurer, la barre de navigation étant alors en bas : valeur provisoire, voir § 6). Chacun avec la bande « Récepteur GNSS non démarré » (`carte_recepteur_non_demarre`) et avec une placette choisie (6 boutons) puis sans (5 boutons). |
 | Contrôle (`VueSession`) | les mêmes quatre tailles (debout et couché, **avec et sans plein écran**) en mode normal ; debout et couché en mode poche (bande « MODE POCHE / 3 s sur volume haut… ») ; avec le bloc d'écoute affiché (« J'ÉCOUTE », « ÉCOUTE FERMÉE ») puis après son effacement. |
 
-Densité 450 dpi partout. **Jeu de données de la carte :** le modèle `gpkg/src/test/resources/modele/travaux-sommier-0.31.1.gpkg`
-(seul `.gpkg` du dépôt, déjà employé par les tests de `:gpkg`), lu par le chargeur existant pour construire la `TourneeOuverte` ;
-`fixtures/` ne porte pas de tournée. Le contrôleur du contrôle vient de `BancControle` (déjà dans `app/src/test`).
+Densité 450 dpi partout. **Jeu de données de la carte :** une `TourneeOuverte(dossier, tournee, cartographie)` **construite en mémoire dans
+`app/src/test`**, avec les trois placettes de Couchey (P35-01, P35-02, P35-03, positions en France ; un test vérifie qu'elles
+tombent en France). Écartés : le modèle `travaux-sommier-0.31.1.gpkg` (toutes ses tables sont vides) et `TourneeDeTest`
+(dans les tests de `:gpkg`, invisibles de `:app`) ; pas de `testFixtures`, donc le harnais ne bouge pas. Le contrôleur du contrôle vient de `BancControle` (déjà dans `app/src/test`).
 
 **Ce qu'il faudra toucher en production (rendu inchangé, permis par la fiche) :** `CartePrete` et `VueSession` sont `private` et
 lisent le disque, le GNSS et les services : les rendre `internal` et leur passer l'état (tournée ouverte, fix, état du
 récepteur, mode poche) en paramètres avec la valeur d'aujourd'hui par défaut ; poser des `testTag` sur les boutons de la carte,
 le bandeau, les lignes de texte, le bouton « Mode poche », la bande, le bloc d'écoute. **Risque nommé :** si la `MapView`
 d'osmdroid ne se construit pas sous Robolectric, un paramètre `fondDeCarte` remplace **la fabrique de la `View`** à l'intérieur du
-même `AndroidView(… .clipToBounds())` et vaut le vrai par défaut : le `clipToBounds()` reste donc dans le rendu testé, et le rendu
-de production ne change pas. `CarteClipTest`, `BandeauCarteGuidageTest` et `DispositionControleTest` restent intacts.
+même `AndroidView(… .clipToBounds())` et vaut le vrai par défaut. L'`AndroidView` passe alors en `View` avec un **cast vers
+`MapView` dans `update`** (gardé par un `as?`), sans changer le rendu : le `clipToBounds()` reste dans le rendu testé. `CarteClipTest`, `BandeauCarteGuidageTest` et `DispositionControleTest` restent intacts.
 
 ## 3. Les assertions
 
@@ -100,8 +101,8 @@ patch retiré ; le relecteur peut rejouer le patch. **Au moins deux défauts pas
 
 | Défaut passé | Correction à défaire | État cassé de référence | Rouge attendu |
 |---|---|---|---|
-| 075/076, « ÉCOUTE FERMÉE » reste affiché et cache « Mode poche » | **`69b60af` + `7133d9e`** (l'écart complet `62ac182..f5b7e7a`, pas `7133d9e` seul : minuterie, horloge injectée, `DUREE_BANDEAU_MS` et la reprise à 6 s) | `62ac182` (`main` avant la #132) | assertion 4 : recouvrement toujours là après l'échéance |
-| 012-C1/067, bande du mode poche coupée quand l'écran est défilé | PR #118 (`ba5b13f`) | `b0db019` (`main` avant la #118) | assertion 4 : bande hors de la racine |
+| 075/076, « ÉCOUTE FERMÉE » reste affiché et cache « Mode poche » | **Patch qui garde l'API et ne casse que le comportement** (défaire `69b60af` + `7133d9e` tels quels casserait la compilation du test : horloge injectée, `DUREE_BANDEAU_MS`). Par exemple : `bandeauVisible()` (`EcouteApp`, qui relaie `PilotageEcoute`) reste vrai après la fermeture, la minuterie ne l'éteint plus. Signatures, constante et horloge inchangées. | l'état cassé de référence reste `62ac182` (`main` avant la #132), et `69b60af` + `7133d9e` (écart `62ac182..f5b7e7a`) restent la référence de ce qu'on défait en comportement | assertion 4 : recouvrement toujours là après l'échéance |
+| 012-C1/067, bande du mode poche coupée quand l'écran est défilé | même règle : patch qui remet la bande dans la zone qui défile **sans changer de signature** (ex. la bande redevient un enfant de la `Column` défilante), PR #118 (`ba5b13f`) comme référence | `b0db019` (`main` avant la #118) | assertion 4 : bande hors de la racine |
 | 078, boutons écrasés | **remonter** `DispositionBoutons.MIN_DP` à 47 ou 48 (au lieu de 32), de sorte que la colonne de 6 boutons ne tienne plus à ≈ 306 dp et que les derniers soient écrasés ou coupés | état actuel de `main` | assertions 1 et 2 |
 | 055, bandeau recouvert | `clipToBounds()` de `25153e3` (PR #102, mission 060) | `75e8cfd` | assertion 5, **seulement si le pixel marche** |
 
@@ -126,9 +127,12 @@ Les six questions du premier plan sont tranchées (fiche, « Reprise du plan »)
 preuve par défaut défait sur le code actuel, CI : coût accepté et étape d'artefact dans `.github/workflows/ci.yml` (seule étape
 ajoutée au harnais, qui publie `app/build/reports/rendu/`), 055 dite si le pixel échoue, plancher 32 dp.
 
-**À poser avant le code, une seule question nouvelle :** SDK 36 ne démarre pas sous Robolectric 4.17 avec la JDK 21 du dépôt
-(§ 1). Tenter l'ajout de `--add-exports` dans les `jvmArgs` de la tâche de test (un réglage de plus dans
-`app/build.gradle.kts`), et sinon rester sur SDK 35, la différence dite dans la PR : d'accord ?
+**Aucune question nouvelle pour Pascal.** SDK 36 ne démarre pas sous Robolectric 4.17 avec la JDK 21 du dépôt (§ 1) : choix
+technique, pas de sens ni de périmètre. Au premier pas du code, essayer `--add-exports` dans les `jvmArgs` de la tâche de test ;
+sinon rester sur SDK 35, la différence dite dans la PR.
+
+**Valeur provisoire à inscrire dans la PR :** la hauteur utile « debout sans plein écran » (non mesurée à ce jour), notée
+dans la rubrique « Valeur provisoire » de la fiche avec sa source (la sortie du test, puis la capture du téléphone).
 
 ## 7. Après le « oui »
 
