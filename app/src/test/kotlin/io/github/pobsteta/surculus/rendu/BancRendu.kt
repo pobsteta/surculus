@@ -23,12 +23,14 @@ import java.io.File
  */
 object BancRendu {
     /**
-     * Les tailles rendues, en dp, à 450 dpi (2316 × 1080 px). La hauteur « sans plein écran » est mesurée sur le téléphone
-     * couché (≈ 306 dp, capture v0.7.95 du 2026-10-30). **Valeur provisoire** debout : 745 dp, même perte (78 dp) que couché,
-     * à remplacer par la capture.
+     * Les tailles rendues, en dp, à 450 dpi (2316 × 1080 px). La hauteur de la **zone sous le bandeau** (48 dp) est celle que la
+     * capture du 2026-10-30 (v0.7.95) a mesurée : 336 dp couché en plein écran, ≈ 306 dp couché sans plein écran, d'où un écran de
+     * 384 dp puis 354 dp (30 dp de barre d'état). **Valeur provisoire** debout sans plein écran : 745 dp (823 dp moins la barre
+     * d'état, 30 dp, et la barre de navigation à trois boutons, 48 dp, qui est en bas debout) ; largeur couché sans plein écran
+     * gardée à 823 dp (la barre de navigation, sur le côté, n'est pas mesurée). À remplacer par la capture.
      */
     const val COUCHE_PLEIN = "w823dp-h384dp-land-450dpi"
-    const val COUCHE_SANS_PLEIN = "w823dp-h306dp-land-450dpi"
+    const val COUCHE_SANS_PLEIN = "w823dp-h354dp-land-450dpi"
     const val DEBOUT_PLEIN = "w384dp-h823dp-port-450dpi"
     const val DEBOUT_SANS_PLEIN = "w384dp-h745dp-port-450dpi"
 
