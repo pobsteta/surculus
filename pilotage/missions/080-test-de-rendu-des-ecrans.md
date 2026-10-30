@@ -10,7 +10,7 @@
 et échoue si un bandeau ou un texte cache un bouton, pour attraper avant la capture du téléphone ce que seul le téléphone
 montrait jusqu'ici.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Je rends d'abord un plan (outil, écrans, assertions, preuve par un défaut passé, limites, questions), sans code, pour qu'un test de rendu de la carte et du contrôle, debout et couché, échoue quand un bandeau ou un texte cache un bouton, avant que le téléphone ne le montre.
 
 ## Les trois questions (règle de staffing)
 
