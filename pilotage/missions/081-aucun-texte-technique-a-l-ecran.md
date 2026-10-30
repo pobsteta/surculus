@@ -10,7 +10,7 @@
 comme `non_observe`, UUID de plant, nombre décimal brut, message d'exception), pour qu'il lise du français partout où
 Surculus lui parle.
 
-**Redite par l'agent :** Testeur : écrire, depuis la fiche et la spec, les tests qui échouent tant qu un texte montré au forestier (refus de placette, distance refusée, pointage, échec d installation de Vosk) contient un `_`, un UUID, un décimal à point ou un nom d exception ; le dev suivra (dev : à compléter).
+**Redite par l'agent :** Testeur : écrire, depuis la fiche et la spec, les tests qui échouent tant qu un texte montré au forestier (refus de placette, distance refusée, pointage, échec d installation de Vosk) contient un `_`, un UUID, un décimal à point ou un nom d exception ; le dev suivra. Dev : rendre ces tests verts en ne changeant que les textes affichés (jamais le motif ni les identifiants stables), pour que le forestier lise du français partout où Surculus lui parle.
 
 ## Les trois questions (règle de staffing)
 
