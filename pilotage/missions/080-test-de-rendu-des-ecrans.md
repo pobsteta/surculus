@@ -87,3 +87,27 @@ Aucune. Le rouge des défauts passés se montre sur un commit ancien, pas dans l
 ## Comment saura-t-on que ça marche ?
 
 À la prochaine mission d'écran, un recouvrement est vu rouge en CI avant la capture du téléphone.
+
+## Reprise du plan, aller-retour 1/3 (2026-10-30)
+
+Relecture du plan (60632c6) : « à reprendre », légère. Décisions de Pascal du 2026-10-30, posées une à une :
+
+1. **Manifeste** : « Tests seulement » : aucune dépendance hors `testImplementation` ; chercher une voie sans
+   `ui-test-manifest` dans les APK debug et fumée (par exemple `Robolectric.buildActivity(ComponentActivity)` et
+   `createEmptyComposeRule()`). Si elle n'existe pas, revenir vers l'orchestrateur avant d'aller plus loin.
+2. **Bandeau d'écoute** : « Oui, permis pendant ces 6 s » : le recouvrement de « Mode poche » par le bloc d'écoute
+   est permis pendant l'écoute et jusqu'à `DUREE_BANDEAU_MS` après, interdit ensuite.
+3. **Preuve de rouge** : « Oui, défaire sur le code actuel » : patch écrit dans la PR, commit nommé sur une branche
+   de preuve à part, CI rouge puis verte, rejouable par le relecteur ; au moins deux défauts passés.
+4. **CI** : « Coût accepté, artefact aussi » : `.github/workflows/ci.yml` entre dans le harnais pour la seule étape
+   qui publie `app/build/reports/rendu/` ; coût mesuré dans la PR.
+5. **Défaut 055** : « Le dire, sans autre outil » si `captureToImage` échoue.
+6. **Plancher** : 32 dp (décision du 2026-10-30, reprise de la 078 ; `MIN_DP = 32`) ; la mention « 40 dp » plus haut
+   est antérieure.
+
+À corriger dans le plan (relecteur) : preuve de la 076 = `69b60af` + `7133d9e` (écart `62ac182..f5b7e7a`), pas
+`7133d9e` seul ; preuve de la 078 en **remontant** `MIN_DP` (47 ou 48), pas en l'abaissant ; `fondDeCarte` remplace la
+fabrique de la `View` dans le même `AndroidView(... .clipToBounds())` ; `CarteClipTest`, `BandeauCarteGuidageTest`,
+`DispositionControleTest` restent intacts ; recouvrement sur tous les nœuds cliquables et tous les textes, pas
+seulement les étiquetés ; ajouter le contrôle et la carte debout sans plein écran ; nommer le jeu de données exact
+(par exemple `gpkg/src/test/resources/modele/travaux-sommier-0.31.1.gpkg`) ; SDK 36 essayé d'abord.
