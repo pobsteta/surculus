@@ -15,6 +15,8 @@ _Idées, à trier au prochain `/mission`._
   `IssueInstallation.Echec` affiche `e.message` brut (texte technique).
 - **Mineurs de la 059** : KDoc d'`ExamenOrtho` et d'`OrthoChantierMentionTest` périmées ; `FichierOrtho.examiner`
   testé par garde de source seulement.
+- **Mineurs de la 074** : le pointage (`ControleurPlacette` l. 392) n'appelle pas `Libelles.decimetres` ;
+  `Resultat.kt` l. 79 écrit un `Double` brut (« Distance … m refusée »), affichage non vérifié.
 - **Mineurs de la 068** : libellé du bouton d'arrivée en Kotlin (`TextesControle.boutonArrivee`)
   et non en ressource ; indentation de `PointageControleTest` vers la l. 280.
 - **Mineurs de la 071** : lien de la FAQ de JNA dans `proguard-rules.pro`,
@@ -80,10 +82,10 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **Lancées au cycle 15** (2026-10-29, choix de Pascal) : **052** suites du récepteur et de la voix
-  (`dev`) ; **059** Ortho chantier sourcée et datée (`dev`) ; **074** une seule façon d'écrire une
-  distance, U+202F (`dev`) ; **075** bouton micro comme Marculus (`afficheur`, tenir : plan d'abord).
-  Fiches dans `pilotage/missions/`.
+- **Captures du cycle 15 sur la release** (depuis le cycle 15) : 059 (ligne de l'Ortho chantier sur
+  `couchey-demo-avec-ortho`), 075 (micro debout et couché, tenu : rouge, rien ne bouge), 052 (erreur du
+  récepteur sur la carte, tâche retirée, autorisations), 074 (« 10,0 km », « hors rayon » au décimètre) ;
+  puis essai ganté de Pascal (112 ou 96 dp).
 
 - **Orchestrateur puis Pascal, release v0.7.82** (depuis le cycle 14) : installer, capturer
   l'icône du micro (072) ; tenir le micro, puis le volume bas en poche, ouvre l'écoute (071, ARM
@@ -140,6 +142,11 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- Cycle 15, 2026-10-29 et 30 : **059** Ortho chantier sourcée et datée (PR #128, 9e5e6d4) ; **075** bouton
+  micro comme Marculus (PR #130, 7ca1bf8, trois relectures) ; **052** suites du récepteur et de la voix
+  (PR #129, ba6f497, trois relectures) ; **074** une seule façon d'écrire une distance (PR #131) ; brief
+  vers sommieR (pobsteta/sommieR#68) — fusionnées sur la décision de Pascal ; captures à faire.
 
 - Cycle 14, 2026-10-29 : **071** la dictée ne ferme plus la release, règles R8 de JNA et de Vosk,
   essai de fumée vu rouge puis vert (PR #125, 079919b, v0.7.82) ; **072** icône du micro hors
