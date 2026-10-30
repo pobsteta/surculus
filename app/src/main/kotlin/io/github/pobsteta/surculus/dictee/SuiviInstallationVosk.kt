@@ -22,6 +22,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
+/** Ce que l'écran dit d'un échec d'installation : une phrase en français, jamais le message de l'exception (mission 081). */
+const val TEXTE_ECHEC = "le téléchargement ou l'installation du modèle de voix n'a pas abouti"
+
 /** Ce que l'écran montre pendant une installation. */
 enum class PhaseInstallation { RIEN, RESEAU, FICHIER, INSTALLATION }
 
@@ -48,7 +51,11 @@ data class EtatInstallation(
  * le contexte. Toute fin du travail, **Error comprise** (une bibliothèque native absente lève une Error), rend l'écran
  * au repos avec une issue : jamais « en cours » pour toujours.
  */
-class SuiviInstallation(private val portee: CoroutineScope) {
+class SuiviInstallation(
+    private val portee: CoroutineScope,
+    /** Journal technique : reçoit l'exception d'un échec. L'écran, lui, n'en montre jamais le message (mission 081). */
+    private val journaliser: (Throwable) -> Unit = {},
+) {
     private val _etat = MutableStateFlow(EtatInstallation())
     private val annulation = AtomicBoolean(false)
 
@@ -90,7 +97,10 @@ class SuiviInstallation(private val portee: CoroutineScope) {
             val issue = when {
                 r.isSuccess -> IssueInstallation.Ok
                 annulation.get() -> IssueInstallation.Annule(modeleAvant)
-                else -> IssueInstallation.Echec(r.exceptionOrNull()?.message ?: "erreur inconnue", modeleAvant)
+                else -> {
+                    r.exceptionOrNull()?.let { journaliser(it) }
+                    IssueInstallation.Echec(TEXTE_ECHEC, modeleAvant)
+                }
             }
             _etat.value = EtatInstallation(PhaseInstallation.RIEN, null, issue)
         }
@@ -100,7 +110,7 @@ class SuiviInstallation(private val portee: CoroutineScope) {
 
 /** Le suivi du processus : portée du processus, entrées et sorties d'Android. */
 object SuiviInstallationVosk {
-    private val suivi = SuiviInstallation(CoroutineScope(SupervisorJob() + Dispatchers.IO))
+    private val suivi = SuiviInstallation(CoroutineScope(SupervisorJob() + Dispatchers.IO)) { android.util.Log.w("SuiviInstallation", "échec de l'installation de Vosk", it) }
 
     val etat: StateFlow<EtatInstallation> get() = suivi.etat
 

@@ -28,10 +28,18 @@ class SuiviInstallationTest {
         assertEquals(EtatInstallation(PhaseInstallation.RIEN, null, IssueInstallation.Ok), s.etat.value)
     }
 
-    @Test fun `une exception rend l'ecran au repos avec l'issue Echec et son message`() {
+    @Test fun `une exception rend l'ecran au repos avec l'issue Echec, dite en francais`() {
         val s = suivi()
         s.demarrer(PhaseInstallation.FICHIER, { true }) { _, _, _ -> throw IllegalStateException("zip abime") }
-        assertEquals(EtatInstallation(PhaseInstallation.RIEN, null, IssueInstallation.Echec("zip abime", true)), s.etat.value)
+        assertEquals(EtatInstallation(PhaseInstallation.RIEN, null, IssueInstallation.Echec(TEXTE_ECHEC, true)), s.etat.value)
+    }
+
+    @Test fun `le detail de l'exception va au journal technique, pas a l'ecran`() {
+        val vus = mutableListOf<Throwable>()
+        val s = SuiviInstallation(CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)) { vus += it }
+        s.demarrer(PhaseInstallation.RESEAU, { false }) { _, _, _ -> throw IllegalStateException("zip_abime") }
+        assertEquals(listOf("zip_abime"), vus.map { it.message })
+        assertEquals(IssueInstallation.Echec(TEXTE_ECHEC, false), s.etat.value.issue)
     }
 
     @Test fun `une Error rend aussi l'ecran au repos avec l'issue Echec, jamais en cours`() {
@@ -39,7 +47,7 @@ class SuiviInstallationTest {
         val s = suivi()
         s.demarrer(PhaseInstallation.RESEAU, { false }) { _, _, _ -> throw UnsatisfiedLinkError("libvosk.so") }
         assertEquals(PhaseInstallation.RIEN, s.etat.value.phase)
-        assertEquals(IssueInstallation.Echec("libvosk.so", false), s.etat.value.issue)
+        assertEquals(IssueInstallation.Echec(TEXTE_ECHEC, false), s.etat.value.issue)
     }
 
     @Test fun `apres une Error une nouvelle installation peut etre lancee`() {
@@ -49,10 +57,10 @@ class SuiviInstallationTest {
         assertEquals(IssueInstallation.Ok, s.etat.value.issue)
     }
 
-    @Test fun `une erreur sans message dit erreur inconnue`() {
+    @Test fun `une erreur sans message dit la meme phrase francaise`() {
         val s = suivi()
         s.demarrer(PhaseInstallation.RESEAU, { false }) { _, _, _ -> throw IllegalStateException() }
-        assertEquals(IssueInstallation.Echec("erreur inconnue", false), s.etat.value.issue)
+        assertEquals(IssueInstallation.Echec(TEXTE_ECHEC, false), s.etat.value.issue)
     }
 
     @Test fun `une annulation demandee donne l'issue Annule, meme si le travail finit en echec`() {

@@ -26,6 +26,7 @@ import io.github.pobsteta.surculus.core.session.SessionControle
 import io.github.pobsteta.surculus.core.session.SourceAzimut
 import io.github.pobsteta.surculus.core.session.SuiteSession
 import io.github.pobsteta.surculus.core.session.TextesDictee
+import io.github.pobsteta.surculus.core.guidage.Libelles
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -389,8 +390,7 @@ object TextesControle {
 
     /** « Plant n° 7 pointé : 143°, 6,2 m » (virgule décimale française). */
     fun pointe(numero: Int?, azimutDeg: Double, distanceM: Double): String {
-        val d = String.format(Locale.FRANCE, "%.1f", distanceM)
-        return "Plant n° ${numero ?: "?"} pointé : ${azimutDeg.roundToInt()}°, $d m"
+        return "Plant n° ${numero ?: "?"} pointé : ${azimutDeg.roundToInt()}°, ${Libelles.decimetres(distanceM)} m"
     }
 
     fun ecran(
