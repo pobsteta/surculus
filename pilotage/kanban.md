@@ -21,6 +21,9 @@
   signe moins « - » ou « − » (U+2212) ; tests manquants : appel de `refusServeur` dans `source`, priorité
   d'`EchecInstallation` sur une enveloppe.
 
+- **Message d'échec de la voix hors de vue** (capture v0.7.99, 2026-10-30) : au premier appui sur « Retélécharger »,
+  rien de visible ; le message s'écrit en bas de Paramètres. À vérifier, puis le faire voir sans défiler.
+
 _Idées, à trier au prochain `/mission`._
 
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
@@ -166,7 +169,7 @@ _En attente sous le plafond humain (3 PR en revue)._
 ## Terminé
 
 - **081** aucun texte technique à l'écran (`testeur` puis `dev`, PR #140, deux allers-retours) : fusionnée le
-  2026-10-30 ; capture d'un refus au contrôle et de l'échec de Vosk en mode avion à faire sur la release.
+  2026-10-30 ; capturées sur v0.7.99 le 2026-10-30 (code inconnu, « pas de réseau » en mode avion).
 
 - **079** README et spec au niveau du livré (`archiviste`, PR #141, bce9fd2, deux allers-retours) : fusionnée le
   2026-10-30 ; le test de la minute sera refait au prochain bilan.
