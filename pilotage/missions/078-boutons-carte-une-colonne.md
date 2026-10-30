@@ -78,3 +78,25 @@ et jamais sous 40 dp, pour que le forestier trouve chaque bouton à la même pla
 Sur la release suivante, carte de `couchey-essai-plants`, debout puis couché, avec le bandeau « Récepteur
 GNSS non démarré » affiché : six boutons en une colonne, aucun coupé, aucun texte caché ; captures de
 l'orchestrateur. Puis l'essai ganté de Pascal.
+
+## Reprise, aller-retour 1/3 (2026-10-30)
+
+Relecture de la #137 (6953d02) : code conforme, « à reprendre » pour le corps de la PR. Décisions de Pascal du
+2026-10-30, posées une à une après la relecture :
+
+1. **Repli** : quand les six boutons ne tiennent pas à 40 dp, « Descendre sous 40 dp » : la taille continue de
+   baisser jusqu'à ce que les six tiennent.
+2. **Plancher absolu** : « 32 dp ». En dessous seulement, le dernier bouton peut être écrasé (le dire dans la PR).
+3. **Taille quand ça tient** : « La plus grande qui tient » (48 dp au plus), lecture de la fiche confirmée.
+
+À faire :
+
+- `DispositionBoutons` : taille de 48 à **32 dp** ; écart (8 dp) et marge (12 dp) inchangés. Tests d'abord, vus
+  rouges par une assertion (pas seulement à la compilation) : 336 dp → 45 dp ; ≈ 292 dp (couché sans plein écran)
+  → la plus grande taille qui tient, sous 40 dp ; 260 dp → 32 dp ; plus court → 32 dp. Le test couché fixe la
+  valeur attendue (mineur du relecteur).
+- Corps de la PR à corriger : le cas trop court **écrase les derniers boutons** (Maison, Recentrer), il ne déborde
+  pas en haut ; le calcul couché donné **avec et sans plein écran** (barre d'état, barre de gestes) ; le cas
+  « 243 dp de carte » de la fiche devenu sans objet avec la colonne pleine hauteur, le dire ; `tient()` : l'utiliser
+  ou le retirer, le dire.
+- Capture de l'orchestrateur après fusion : couché, avec et sans plein écran.
