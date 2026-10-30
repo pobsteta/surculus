@@ -41,6 +41,7 @@ import kotlin.test.assertTrue
 @Config(sdk = [36])
 class RenduControleTest {
     @get:Rule val regle = createEmptyComposeRule()
+    @get:Rule val surveille = BancRendu.surveillant()
 
     private class MicroFaux : PortMicro {
         override fun ouvrir(generation: Int) {}

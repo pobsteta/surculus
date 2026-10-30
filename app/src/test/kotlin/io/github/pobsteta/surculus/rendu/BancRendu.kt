@@ -167,4 +167,13 @@ object BancRendu {
         return sb.toString()
     }
 
+    /** Garde la pile complète d'un échec dans build/reports/rendu/ (publiée avec le reste) : la CI n'en montre que la première ligne. */
+    fun surveillant(): org.junit.rules.TestRule = object : org.junit.rules.TestWatcher() {
+        override fun failed(e: Throwable, description: org.junit.runner.Description) {
+            val dossier = File("build/reports/rendu").also { it.mkdirs() }
+            File(dossier, "_echec-" + description.methodName.replace(Regex("[^A-Za-z0-9_-]"), "_") + ".txt")
+                .writeText("fil : " + Thread.currentThread().name + "\n" + e.stackTraceToString())
+        }
+    }
+
 }

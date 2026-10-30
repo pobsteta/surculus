@@ -33,6 +33,7 @@ import kotlin.test.assertTrue
 @Config(sdk = [36])
 class RenduCarteTest {
     @get:Rule val regle = createEmptyComposeRule()
+    @get:Rule val surveille = BancRendu.surveillant()
 
     companion object {
         /** Les trois placettes de Couchey (P35-01 à 03), en Lambert-93, comme `BancControle` ; toutes en France. */
