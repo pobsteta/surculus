@@ -582,7 +582,7 @@ class SessionControle private constructor(
                     val c = EmpriseEtFrance.controler(arrivee.position)
                     if (!c.enFrance) {
                         return OuvertureControle.Refusee(
-                            horsFrance("latitude ${arrivee.position.latitudeDeg}, longitude ${arrivee.position.longitudeDeg} (degrés)", c.inversionDetectee),
+                            horsFrance("latitude ${RefusRepere.dit(arrivee.position.latitudeDeg)}, longitude ${RefusRepere.dit(arrivee.position.longitudeDeg)} (degrés)", c.inversionDetectee),
                         )
                     }
                     EmpriseEtFrance.versLambert93(arrivee.position)
@@ -591,7 +591,7 @@ class SessionControle private constructor(
                     val c = EmpriseEtFrance.controler(arrivee.position)
                     if (!c.enFrance) {
                         return OuvertureControle.Refusee(
-                            horsFrance("x = ${arrivee.position.xMetres}, y = ${arrivee.position.yMetres} (Lambert-93, mètres)", c.inversionDetectee),
+                            horsFrance("x = ${RefusRepere.ditMetres(arrivee.position.xMetres)}, y = ${RefusRepere.ditMetres(arrivee.position.yMetres)} (Lambert-93)", c.inversionDetectee),
                         )
                     }
                     arrivee.position
@@ -607,7 +607,7 @@ class SessionControle private constructor(
                 return OuvertureControle.Refusee(
                     SuiteSession.Refus(
                         CodesRefus.POINT_HORS_FORET, CodesRefus.POINT_HORS_FORET,
-                        "Position du contrôle (x = ${rattache.positionControle.xMetres}, y = ${rattache.positionControle.yMetres}, Lambert-93) hors de l'emprise de la forêt.",
+                        "Position du contrôle (x = ${RefusRepere.ditMetres(rattache.positionControle.xMetres)}, y = ${RefusRepere.ditMetres(rattache.positionControle.yMetres)}, Lambert-93) hors de l'emprise de la forêt.",
                     ),
                 )
             }

@@ -12,8 +12,11 @@ import java.util.Locale
 /** Libellés lus sur le terrain : des mètres, un cap en degrés avec son point cardinal. */
 object Libelles {
     /** Mètres entiers arrondis, milliers séparés par l'espace fine insécable U+202F : 9979,54 -> « 9 980 m ». */
-    fun metres(m: Double): String =
-        Math.round(m).toString().reversed().chunked(3).joinToString("\u202F").reversed() + " m"
+    fun metres(m: Double): String {
+        val r = Math.round(m)
+        val signe = if (r < 0) "-" else ""
+        return signe + Math.abs(r).toString().reversed().chunked(3).joinToString("\u202F").reversed() + " m"
+    }
 
     /**
      * L'unique écriture d'une distance de navigation : « 85 m » sous le kilomètre, « 1,3 km » (une décimale, virgule) au-delà.

@@ -28,6 +28,13 @@ class LibellesTest {
     }
 
     @Test
+    fun `un negatif de six chiffres garde son signe collé, sans espace perdu`() {
+        assertEquals("-846\u202F165 m", Libelles.metres(-846_164.76))
+        assertEquals("-12 m", Libelles.metres(-12.0))
+        assertEquals("-1\u202F000 m", Libelles.metres(-1000.0))
+    }
+
+    @Test
     fun `metres entiers avec espace fine insecable aux milliers`() {
         assertEquals("0 m", Libelles.metres(0.0))
         assertEquals("999 m", Libelles.metres(999.4))

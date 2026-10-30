@@ -8,6 +8,7 @@
 package io.github.pobsteta.surculus.core.reperes
 
 import io.github.pobsteta.surculus.core.geo.UniteAzimut
+import io.github.pobsteta.surculus.core.guidage.Libelles
 import java.time.LocalDate
 
 /**
@@ -42,10 +43,22 @@ sealed interface RefusRepere {
     val motif: String
     val message: String
 
+    companion object {
+        /** Un nombre montré au forestier : une décimale, virgule française ; jamais « NaN » ni « Infinity » (mission 081). */
+        internal fun dit(v: Double, feminin: Boolean = false): String = when {
+            v.isNaN() -> "non numérique"
+            v.isInfinite() -> (if (feminin) "infinie" else "infini") + if (v > 0) "" else " négati" + if (feminin) "ve" else "f"
+            else -> Libelles.decimetres(v)
+        }
+
+        /** Des mètres Lambert-93 entiers, milliers séparés par l'espace fine : « 6 686 123 m » (mission 081). */
+        internal fun ditMetres(v: Double): String = if (v.isFinite()) Libelles.metres(v) else dit(v)
+    }
+
     /** Azimut saisi hors de [0, 360[ (degrés) ou [0, 400[ (grades) : refusé **avant** normalisation, valeur gardée telle quelle. */
     data class AzimutHorsPlage(val valeurSaisie: Double, val unite: UniteAzimut) : RefusRepere {
         override val motif = "azimut_hors_plage"
-        override val message = "Azimut $valeurSaisie hors de [0, ${unite.tourComplet}[ en ${unite.name.lowercase()} : ressaisir la lecture."
+        override val message = "Azimut ${dit(valeurSaisie)} hors de [0, ${unite.tourComplet.toInt()}[ en ${if (unite == UniteAzimut.GRADES) "grades" else "degrés"} : ressaisir la lecture."
     }
 
     data object UniteAzimutNonDeclaree : RefusRepere {
@@ -71,12 +84,12 @@ sealed interface RefusRepere {
     /** Pente dont l'angle n'est pas dans ]-90°, 90°[ (ou non finie). */
     data class PenteHorsPlage(val pente: Double, val unite: UnitePente) : RefusRepere {
         override val motif = "pente_hors_plage"
-        override val message = "Pente $pente ${unite.code} refusée : l'angle doit être dans ]-90°, 90°[."
+        override val message = "Pente ${dit(pente, feminin = true)}${if (!pente.isFinite()) "" else if (unite == UnitePente.POURCENT) " %" else "°"} refusée : l'angle doit être dans ]-90°, 90°[."
     }
 
     data class DistanceInvalide(val distanceM: Double) : RefusRepere {
         override val motif = "distance_invalide"
-        override val message = "Distance $distanceM m refusée : elle doit être finie et positive ou nulle."
+        override val message = "Distance ${dit(distanceM, feminin = true)}${if (distanceM.isFinite()) " m" else ""} refusée : elle doit être un nombre positif ou nul."
     }
 
     /** Date hors de la validité du modèle géomagnétique : aucune extrapolation. */
@@ -87,13 +100,13 @@ sealed interface RefusRepere {
 
     data class PointHorsLimites(val latitudeDeg: Double, val longitudeDeg: Double) : RefusRepere {
         override val motif = "point_hors_limites"
-        override val message = "Point (latitude $latitudeDeg, longitude $longitudeDeg) hors des limites géographiques."
+        override val message = "Point : latitude ${dit(latitudeDeg)}, longitude ${dit(longitudeDeg)} (degrés), hors des limites géographiques."
     }
 
     /** Piquet hors de l'emprise de la France métropolitaine : axes inversés ou point non reprojeté. */
     data class PiquetHorsFrance(val xMetres: Double, val yMetres: Double) : RefusRepere {
         override val motif = "piquet_hors_france"
-        override val message = "Piquet (x = $xMetres, y = $yMetres) hors de France en Lambert-93 : axes inversés ou point non reprojeté ?"
+        override val message = "Piquet (x = ${ditMetres(xMetres)}, y = ${ditMetres(yMetres)}, Lambert-93) hors de France : axes inversés ou point non reprojeté ?"
     }
 
     data class ReferentielsMeles(val codes: Set<Int>) : RefusRepere {

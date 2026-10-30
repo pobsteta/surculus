@@ -81,7 +81,7 @@ sealed interface RefusPlacette {
 
     data class EtatInconnu(val code: String) : RefusPlacette {
         override val motif = "etat_inconnu"
-        override val message = "État « $code » hors de la nomenclature du DSF (sain, atteint, mort, absent) ni « non_observe »."
+        override val message = "État « $code » hors de la nomenclature du DSF (sain, atteint, mort, absent) ni « non observé »."
     }
 
     data class GroupeCauseInconnu(val code: String) : RefusPlacette {
@@ -106,7 +106,7 @@ sealed interface RefusPlacette {
 
     data class PlantEnDoubleDansControle(val uuid: UuidPlant) : RefusPlacette {
         override val motif = "plant_en_double_dans_controle"
-        override val message = "Le plant $uuid a deux états dans le même contrôle."
+        override val message = "Ce plant a deux états dans le même contrôle."
     }
 
     data class HauteurInvalide(val hauteurCm: Int) : RefusPlacette {
@@ -126,27 +126,27 @@ sealed interface RefusPlacette {
 
     data class UuidEnDouble(val uuid: UuidPlant) : RefusPlacette {
         override val motif = "uuid_en_double"
-        override val message = "UUID de plant $uuid en double."
+        override val message = "Un même plant est donné deux fois."
     }
 
     data class PlantDansDeuxPlacettes(val uuid: UuidPlant) : RefusPlacette {
         override val motif = "plant_dans_deux_placettes"
-        override val message = "Le plant $uuid appartient à deux placettes."
+        override val message = "Ce plant appartient à deux placettes."
     }
 
     data class NumeroEnDouble(val placette: UuidPlacette, val numero: Int) : RefusPlacette {
         override val motif = "numero_en_double"
-        override val message = "Numéro $numero déjà pris dans la placette $placette."
+        override val message = "Numéro $numero déjà pris dans cette placette."
     }
 
     data class NumeroChange(val uuid: UuidPlant, val avant: Int, val apres: Int) : RefusPlacette {
         override val motif = "numero_change"
-        override val message = "Le plant $uuid avait le numéro $avant, il ne peut pas prendre le numéro $apres."
+        override val message = "Ce plant avait le numéro $avant, il ne peut pas prendre le numéro $apres."
     }
 
     data class PlacetteChangee(val uuid: UuidPlant) : RefusPlacette {
         override val motif = "placette_changee"
-        override val message = "Le plant $uuid ne peut pas changer de placette."
+        override val message = "Ce plant ne peut pas changer de placette."
     }
 
     data object NumerosDejaFiges : RefusPlacette {
@@ -161,22 +161,22 @@ sealed interface RefusPlacette {
 
     data class PlantRemplaceInconnu(val uuid: UuidPlant) : RefusPlacette {
         override val motif = "plant_remplace_inconnu"
-        override val message = "Le plant remplacé $uuid est inconnu."
+        override val message = "Le plant remplacé est inconnu."
     }
 
     data class PlantRemplaceAutrePlacette(val uuid: UuidPlant) : RefusPlacette {
         override val motif = "plant_remplace_autre_placette"
-        override val message = "Le plant remplacé $uuid est dans une autre placette."
+        override val message = "Le plant remplacé est dans une autre placette."
     }
 
     data class PlantRemplaceNiMortNiAbsent(val uuid: UuidPlant, val dernierEtat: EtatDsf?) : RefusPlacette {
         override val motif = "plant_remplace_ni_mort_ni_absent"
-        override val message = "Le plant $uuid n'a pas été vu mort ou absent (dernier état observé : ${dernierEtat?.code ?: "aucun"})."
+        override val message = "Le plant remplacé n'a pas été vu mort ou absent (dernier état observé : ${dernierEtat?.code ?: "aucun"})."
     }
 
     data class PlantDejaRemplace(val uuid: UuidPlant, val par: UuidPlant) : RefusPlacette {
         override val motif = "plant_deja_remplace"
-        override val message = "Le plant $uuid est déjà remplacé par le regarni $par."
+        override val message = "Ce plant est déjà remplacé par un autre regarni."
     }
 
     data object AucunePlacette : RefusPlacette {
