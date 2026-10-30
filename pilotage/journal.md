@@ -805,3 +805,5 @@
 2026-10-30 · Claude (orchestrateur) · PR #137 · Reprise 2/3 confiée à l'`afficheur` (libellé, commentaire de test, ligne vide).
 2026-10-30 · afficheur · PR #137 · reprise 2/3 (afe141b) : libellé « avec / sans plein écran » remis dans le bon sens dans le corps de la PR et le commentaire de `DispositionBoutonsTest`, ligne vide retirée ; rien d'autre.
 2026-10-30 · Claude (orchestrateur) · PR #137 · Reprise 2/3 vérifiée par l'orchestrateur (diff de deux lignes, sans code exécuté changé, corps relu) ; pas de nouvelle relecture lancée.
+2026-10-30 · Pascal · PR #136, #137 · « oui » (fusionner les deux).
+2026-10-30 · Claude (orchestrateur) · PR #136, #137 · Fusionnées (9d01de8, f780287), CI verte. Captures à faire sur la release bâtie sur f780287 : message « cliquez sur le bouton « Rattacher » » ; carte debout, couchée avec et sans plein écran (hauteur réelle relevée), 6 puis 5 boutons.
