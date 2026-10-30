@@ -78,7 +78,7 @@ class InstallateurModele(
             val reste = listOf(ancien, nouveau).firstOrNull { it.exists() && complet(it) }
             if (reste != null) {
                 dossier.deleteRecursively()
-                if (!reste.renameTo(dossier)) throw EchecInstallation("Réparation impossible : un dossier du modèle n'a pas pu être remis en place")
+                if (!reste.renameTo(dossier)) throw EchecInstallation("réparation impossible : un dossier du modèle n'a pas pu être remis en place")
             }
         }
         ancien.deleteRecursively()
@@ -108,10 +108,10 @@ class InstallateurModele(
         origine: String,
         progression: (Float) -> Unit = {},
         continuer: () -> Boolean = { true },
-        messageRefus: String = "Ce fichier n'est pas le modèle de voix attendu (empreinte différente ou fichier vide)",
+        messageRefus: String = "ce fichier n'est pas le modèle de voix attendu (empreinte différente ou fichier vide)",
         apresVerification: () -> Unit = {},
     ): Result<Unit> {
-        if (!VERROU.tryAcquire()) return Result.failure(EchecInstallation("Une installation est déjà en cours"))
+        if (!VERROU.tryAcquire()) return Result.failure(EchecInstallation("une installation est déjà en cours"))
         try {
             return installerSousVerrou(source, origine, progression, continuer, messageRefus, apresVerification)
         } finally {
@@ -153,7 +153,7 @@ class InstallateurModele(
                 val tampon = ByteArray(64 * 1024)
                 var cumul = 0L
                 while (true) {
-                    if (!continuer()) throw EchecInstallation("Téléchargement interrompu")
+                    if (!continuer()) throw EchecInstallation("téléchargement interrompu")
                     val lu = entree.read(tampon)
                     if (lu < 0) break
                     sortie.write(tampon, 0, lu)
@@ -162,7 +162,7 @@ class InstallateurModele(
                     progression(if (ouvert.taille > 0) (cumul.toFloat() / ouvert.taille).coerceAtMost(1f) * 0.9f else -1f)
                 }
                 if (ouvert.taille > 0 && cumul != ouvert.taille) {
-                    throw EchecInstallation("Téléchargement incomplet ($cumul octets reçus sur ${ouvert.taille})")
+                    throw EchecInstallation("téléchargement incomplet ($cumul octets reçus sur ${ouvert.taille})")
                 }
             }
         }
@@ -172,12 +172,12 @@ class InstallateurModele(
     private fun remplacer() {
         ancien.deleteRecursively()
         val avaitUnAncien = dossier.exists()
-        if (avaitUnAncien && !dossier.renameTo(ancien)) throw EchecInstallation("Remplacement impossible (ancien modèle non déplaçable)")
+        if (avaitUnAncien && !dossier.renameTo(ancien)) throw EchecInstallation("remplacement impossible (ancien modèle non déplaçable)")
         if (!nouveau.renameTo(dossier)) {
             val remis = !avaitUnAncien || ancien.renameTo(dossier)
             throw EchecInstallation(
-                if (remis) "Remplacement impossible (nouveau modèle non déplaçable)"
-                else "Remplacement impossible, l'ancien modèle sera remis en place au prochain démarrage",
+                if (remis) "remplacement impossible (nouveau modèle non déplaçable)"
+                else "remplacement impossible, l'ancien modèle sera remis en place au prochain démarrage",
             )
         }
         ancien.deleteRecursively()

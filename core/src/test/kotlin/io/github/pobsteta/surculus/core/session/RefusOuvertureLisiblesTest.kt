@@ -38,7 +38,7 @@ class RefusOuvertureLisiblesTest {
     @Test fun `un point Lambert-93 hors de France dit x puis y en metres entiers`() = with(BancSession()) {
         val r = assertIs<OuvertureControle.Refusee>(ouvrir(PointLambert93(6_686_123.26, 846_164.76)))
         propre(r.refus.message)
-        assertTrue("x = 6${fin}686${fin}123 m, y = 846${fin}165 m (Lambert-93, mètres)" in r.refus.message, r.refus.message)
+        assertTrue("x = 6${fin}686${fin}123 m, y = 846${fin}165 m (Lambert-93)" in r.refus.message, r.refus.message)
     }
 
     @Test fun `un point hors de l'emprise de la foret dit x puis y en metres entiers`() = with(BancSession()) {

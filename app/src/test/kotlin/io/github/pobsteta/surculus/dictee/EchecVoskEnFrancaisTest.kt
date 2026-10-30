@@ -19,7 +19,31 @@ class EchecVoskEnFrancaisTest {
     }
 
     @Test fun `un echec connu garde sa phrase francaise`() {
-        assertEquals("Téléchargement interrompu", cause(EchecInstallation("Téléchargement interrompu")))
+        assertEquals("téléchargement interrompu", cause(EchecInstallation("téléchargement interrompu")))
+    }
+
+    @Test fun `pas de reseau ou delai depasse, une phrase dediee`() {
+        listOf(
+            java.net.UnknownHostException("alphacephei.com"),
+            java.net.SocketTimeoutException("timeout"),
+            java.net.ConnectException("Connection refused"),
+            java.io.IOException("enveloppe", java.net.UnknownHostException("alphacephei.com")),
+        ).forEach { assertEquals(TEXTE_PAS_DE_RESEAU, cause(it), it.toString()) }
+        assertEquals("pas de réseau : réessayer au bureau, ou importer le fichier du modèle", TEXTE_PAS_DE_RESEAU)
+    }
+
+    @Test fun `disque plein, une phrase dediee`() {
+        listOf(
+            java.io.IOException("write failed: ENOSPC (No space left on device)"),
+            java.io.IOException("No space left on device"),
+            RuntimeException("enveloppe", java.io.IOException("No space left on device")),
+        ).forEach { assertEquals(TEXTE_DISQUE_PLEIN, cause(it), it.toString()) }
+        assertEquals("plus de place sur le téléphone : libérer de la place puis réessayer", TEXTE_DISQUE_PLEIN)
+    }
+
+    @Test fun `la reponse 404 dit quoi faire`() {
+        val m = ModeleVoskTelechargement.refusServeur(404).message!!
+        assertEquals("le serveur ne donne pas le modèle (réponse 404) : réessayer plus tard, ou importer le fichier", m)
     }
 
     @Test fun `un echec inconnu tombe sur la phrase generique`() {

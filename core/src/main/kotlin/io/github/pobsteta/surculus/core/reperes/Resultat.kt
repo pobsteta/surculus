@@ -100,7 +100,7 @@ sealed interface RefusRepere {
 
     data class PointHorsLimites(val latitudeDeg: Double, val longitudeDeg: Double) : RefusRepere {
         override val motif = "point_hors_limites"
-        override val message = "Point (latitude ${dit(latitudeDeg)}, longitude ${dit(longitudeDeg)}) hors des limites géographiques."
+        override val message = "Point : latitude ${dit(latitudeDeg)}, longitude ${dit(longitudeDeg)} (degrés), hors des limites géographiques."
     }
 
     /** Piquet hors de l'emprise de la France métropolitaine : axes inversés ou point non reprojeté. */

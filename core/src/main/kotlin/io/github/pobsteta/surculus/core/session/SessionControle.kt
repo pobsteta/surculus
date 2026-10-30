@@ -591,7 +591,7 @@ class SessionControle private constructor(
                     val c = EmpriseEtFrance.controler(arrivee.position)
                     if (!c.enFrance) {
                         return OuvertureControle.Refusee(
-                            horsFrance("x = ${RefusRepere.ditMetres(arrivee.position.xMetres)}, y = ${RefusRepere.ditMetres(arrivee.position.yMetres)} (Lambert-93, mètres)", c.inversionDetectee),
+                            horsFrance("x = ${RefusRepere.ditMetres(arrivee.position.xMetres)}, y = ${RefusRepere.ditMetres(arrivee.position.yMetres)} (Lambert-93)", c.inversionDetectee),
                         )
                     }
                     arrivee.position

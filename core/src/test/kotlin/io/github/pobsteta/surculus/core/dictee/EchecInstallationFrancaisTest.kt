@@ -11,6 +11,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 /**
  * Mission 081, reprise 1/3 : un échec d'installation connu garde sa phrase française (portée par `EchecInstallation`,
@@ -40,6 +41,7 @@ class EchecInstallationFrancaisTest {
         val e = assertIs<EchecInstallation>(t, "l'échec doit porter un message français montrable : $t")
         val m = e.message!!
         assertFalse("0.22" in m || "vosk" in m.lowercase() || '_' in m || "SHA" in m, "« $m » reste technique")
+        assertTrue(m.first().isLowerCase(), "« $m » : même casse après « Échec : » (minuscule)")
         assertFalse(Regex("\\d\\.\\d").containsMatchIn(m), "« $m » contient un décimal à point")
     }
 

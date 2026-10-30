@@ -46,7 +46,7 @@ class RefusRepereLisiblesTest {
     @Test fun `un point hors limites est dit avec virgule francaise`() {
         // Ordre explicite : (latitude, longitude), en degrés.
         assertEquals(
-            "Point (latitude 91,5, longitude 2,3) hors des limites géographiques.",
+            "Point : latitude 91,5, longitude 2,3 (degrés), hors des limites géographiques.",
             RefusRepere.PointHorsLimites(latitudeDeg = 91.5, longitudeDeg = 2.3).message,
         )
         sansTechnique(RefusRepere.PointHorsLimites(Double.NaN, Double.POSITIVE_INFINITY).message)

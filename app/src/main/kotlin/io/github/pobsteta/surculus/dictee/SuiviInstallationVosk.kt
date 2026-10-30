@@ -24,7 +24,28 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** Ce que l'écran dit d'un échec d'installation : une phrase en français, jamais le message de l'exception (mission 081). */
+const val TEXTE_PAS_DE_RESEAU = "pas de réseau : réessayer au bureau, ou importer le fichier du modèle"
+const val TEXTE_DISQUE_PLEIN = "plus de place sur le téléphone : libérer de la place puis réessayer"
 const val TEXTE_ECHEC = "le téléchargement ou l'installation du modèle de voix n'a pas abouti"
+
+/**
+ * La phrase que l'écran montre après « Échec : » (toujours en minuscule) : celle d'un échec connu ([EchecInstallation]),
+ * « pas de réseau » (hôte introuvable, délai dépassé, connexion refusée), « plus de place » (disque plein), sinon la
+ * phrase générique. Jamais le message brut de l'exception (mission 081).
+ */
+internal fun causeAffichee(e: Throwable?): String {
+    var t: Throwable? = e
+    var profondeur = 0
+    while (t != null && profondeur++ < 8) {
+        when {
+            t is EchecInstallation -> return t.message ?: TEXTE_ECHEC
+            t is java.net.UnknownHostException || t is java.net.SocketTimeoutException || t is java.net.ConnectException -> return TEXTE_PAS_DE_RESEAU
+            t.message?.let { "ENOSPC" in it || "No space left on device" in it } == true -> return TEXTE_DISQUE_PLEIN
+        }
+        t = t.cause
+    }
+    return TEXTE_ECHEC
+}
 
 /** Ce que l'écran montre pendant une installation. */
 enum class PhaseInstallation { RIEN, RESEAU, FICHIER, INSTALLATION }
@@ -101,7 +122,7 @@ class SuiviInstallation(
                 else -> {
                     val e = r.exceptionOrNull()
                     // Un échec connu garde sa phrase française ; tout autre dit la phrase générique (mission 081).
-                    val cause = (e as? EchecInstallation)?.message ?: TEXTE_ECHEC
+                    val cause = causeAffichee(e)
                     _etat.value = EtatInstallation(PhaseInstallation.RIEN, null, IssueInstallation.Echec(cause, modeleAvant))
                     // Le journal technique passe après le retour au repos : il ne peut pas bloquer l'écran.
                     if (e != null) runCatching { journaliser(e) }

@@ -45,7 +45,7 @@ object ModeleVoskImport {
         apresVerification: () -> Unit = {},
     ): Result<Unit> =
         installer(context, source.toString(), {}, continuer, null, apresVerification) {
-            FluxArchive(context.contentResolver.openInputStream(source) ?: throw EchecInstallation("Fichier du modèle illisible"))
+            FluxArchive(context.contentResolver.openInputStream(source) ?: throw EchecInstallation("fichier du modèle illisible"))
         }
 
     /**
