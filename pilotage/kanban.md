@@ -7,6 +7,9 @@
 
 ## Bac à sable
 
+- **Mineur M2 de la 076** (depuis le cycle 15) : plus aucun test ne vérifie que `echeance()` retient la plus
+  proche des deux échéances (bandeau, résultat final) ; une ligne dans le premier test du bandeau.
+
 _Idées, à trier au prochain `/mission`._
 
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
@@ -310,4 +313,4 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   l'écran sautait sous le doigt. *(Retenue par Pascal le 2026-10-30 ; livrée à la capture de la release qui
   porte 052, 059, 074 et 075, sinon le cycle livre sa mauvaise nouvelle. Livrée en partie le 2026-10-30 :
   v0.7.88, debout tenu ; couché, « ÉCOUTE FERMÉE » reste après une dictée et cache « Mode poche » :
-  mauvaise nouvelle, reprise 076.)*
+  mauvaise nouvelle, reprise 076 fusionnée le 2026-10-30 (#132), à capturer.)*
