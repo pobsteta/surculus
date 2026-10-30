@@ -82,10 +82,10 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **Captures du cycle 15 sur la release** (depuis le cycle 15) : 059 (ligne de l'Ortho chantier sur
-  `couchey-demo-avec-ortho`), 075 (micro debout et couché, tenu : rouge, rien ne bouge), 052 (erreur du
-  récepteur sur la carte, tâche retirée, autorisations), 074 (« 10,0 km », « hors rayon » au décimètre) ;
-  puis essai ganté de Pascal (112 ou 96 dp).
+- **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK branché)
+  et états des autorisations ; 074 « hors rayon » au décimètre (sur une placette) ; puis essai ganté de
+  Pascal (112 ou 96 dp). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
+  075 debout.
 
 - **Orchestrateur puis Pascal, release v0.7.82** (depuis le cycle 14) : installer, capturer
   l'icône du micro (072) ; tenir le micro, puis le volume bas en poche, ouvre l'écoute (071, ARM
@@ -308,4 +308,6 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   d'écran ; distances écrites pareil partout (« 10,0 km », « 7,9 m ») ; l'ortho dit sa source, la carte dit
   quand le récepteur lâche · pour le forestier en forêt · avant, il fallait défiler pour trouver le micro et
   l'écran sautait sous le doigt. *(Retenue par Pascal le 2026-10-30 ; livrée à la capture de la release qui
-  porte 052, 059, 074 et 075, sinon le cycle livre sa mauvaise nouvelle.)*
+  porte 052, 059, 074 et 075, sinon le cycle livre sa mauvaise nouvelle. Livrée en partie le 2026-10-30 :
+  v0.7.88, debout tenu ; couché, « ÉCOUTE FERMÉE » reste après une dictée et cache « Mode poche » :
+  mauvaise nouvelle, reprise 076.)*
