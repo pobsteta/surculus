@@ -11,6 +11,12 @@ _Idées, à trier au prochain `/mission`._
 
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
   dans plusieurs messages de `RefusPlacette`.
+- **Mineurs de la 052** : paramètres de rationale inutilisés dans `refusAMemoriser` (`noterRationales`) ;
+  `IssueInstallation.Echec` affiche `e.message` brut (texte technique).
+- **Mineurs de la 059** : KDoc d'`ExamenOrtho` et d'`OrthoChantierMentionTest` périmées ; `FichierOrtho.examiner`
+  testé par garde de source seulement.
+- **Mineurs de la 074** : le pointage (`ControleurPlacette` l. 392) n'appelle pas `Libelles.decimetres` ;
+  `Resultat.kt` l. 79 écrit un `Double` brut (« Distance … m refusée »), affichage non vérifié.
 - **Mineurs de la 068** : libellé du bouton d'arrivée en Kotlin (`TextesControle.boutonArrivee`)
   et non en ressource ; indentation de `PointageControleTest` vers la l. 280.
 - **Mineurs de la 071** : lien de la FAQ de JNA dans `proguard-rules.pro`,
@@ -76,10 +82,10 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **Lancées au cycle 15** (2026-10-29, choix de Pascal) : **052** suites du récepteur et de la voix
-  (`dev`) ; **059** Ortho chantier sourcée et datée (`dev`) ; **074** une seule façon d'écrire une
-  distance, U+202F (`dev`) ; **075** bouton micro comme Marculus (`afficheur`, tenir : plan d'abord).
-  Fiches dans `pilotage/missions/`.
+- **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK branché)
+  et états des autorisations ; 074 « hors rayon » au décimètre (sur une placette) ; puis essai ganté de
+  Pascal (112 ou 96 dp). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
+  075 debout.
 
 - **Orchestrateur puis Pascal, release v0.7.82** (depuis le cycle 14) : installer, capturer
   l'icône du micro (072) ; tenir le micro, puis le volume bas en poche, ouvre l'écoute (071, ARM
@@ -136,6 +142,11 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- Cycle 15, 2026-10-29 et 30 : **059** Ortho chantier sourcée et datée (PR #128, 9e5e6d4) ; **075** bouton
+  micro comme Marculus (PR #130, 7ca1bf8, trois relectures) ; **052** suites du récepteur et de la voix
+  (PR #129, ba6f497, trois relectures) ; **074** une seule façon d'écrire une distance (PR #131) ; brief
+  vers sommieR (pobsteta/sommieR#68) — fusionnées sur la décision de Pascal ; captures à faire.
 
 - Cycle 14, 2026-10-29 : **071** la dictée ne ferme plus la release, règles R8 de JNA et de Vosk,
   essai de fumée vu rouge puis vert (PR #125, 079919b, v0.7.82) ; **072** icône du micro hors
@@ -293,3 +304,10 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   se fermait au premier appui. *(Retenue par Pascal le 2026-10-29 ; livrée à la capture au téléphone
   de la release qui porte la 071, sinon le cycle livre sa mauvaise nouvelle. Livrée le 2026-10-29 :
   v0.7.83, micro tenu et volume bas en poche, « compris : Numéro 7, sain. », sans plantage.)*
+- cycle 15 · le contrôle d'une main gantée : micro rond toujours à portée, rouge à l'écoute, sans saut
+  d'écran ; distances écrites pareil partout (« 10,0 km », « 7,9 m ») ; l'ortho dit sa source, la carte dit
+  quand le récepteur lâche · pour le forestier en forêt · avant, il fallait défiler pour trouver le micro et
+  l'écran sautait sous le doigt. *(Retenue par Pascal le 2026-10-30 ; livrée à la capture de la release qui
+  porte 052, 059, 074 et 075, sinon le cycle livre sa mauvaise nouvelle. Livrée en partie le 2026-10-30 :
+  v0.7.88, debout tenu ; couché, « ÉCOUTE FERMÉE » reste après une dictée et cache « Mode poche » :
+  mauvaise nouvelle, reprise 076.)*
