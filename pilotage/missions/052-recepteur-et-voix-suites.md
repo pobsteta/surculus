@@ -75,3 +75,16 @@ RTK indisponibles : la position est moins précise. » **gardée**.
 3. Corriger le compte des tests annoncé (9 et non 10) ; relancer `CancellationException` dans
    `SuiviInstallation` (hygiène) ; dire dans la PR que le test de `onTaskRemoved` n'est qu'un garde-fou.
 Hors reprise (bac à sable) : `IssueInstallation.Echec` affiche `e.message` brut (texte technique).
+
+## Reprise, aller-retour 2/3 (2026-10-30)
+
+Relecture de la reprise (6844de9) : « prêt », avec une question de sens tranchée par Pascal le 2026-10-29 :
+« Renvoyer aux réglages ».
+
+1. Si le système répond « non » **sans rationale ni avant ni après** la demande (refus définitif déjà acquis,
+   par exemple sous une version antérieure à la 052), l'état devient « refusée définitivement » et le texte
+   renvoie aux réglages du téléphone ; une fenêtre fermée sans réponse (rationale fausse avant, fausse
+   après, mais fenêtre montrée) reste distinguée si Android le permet — sinon dire dans la PR quel cas
+   l'emporte et pourquoi. Tests des deux cas, vus rouges.
+2. Mineur : KDoc du paramètre `dejaRefusee` d'`etatAutorisation` (`AvertissementsRecepteur.kt` l. 29) à
+   aligner sur le code ; ne pas surévaluer `activite(ctx)` dans la PR (protection, pas correction).
