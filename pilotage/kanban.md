@@ -11,6 +11,8 @@ _Idées, à trier au prochain `/mission`._
 
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
   dans plusieurs messages de `RefusPlacette`.
+- **Mineurs de la 052** : paramètres de rationale inutilisés dans `refusAMemoriser` (`noterRationales`) ;
+  `IssueInstallation.Echec` affiche `e.message` brut (texte technique).
 - **Mineurs de la 059** : KDoc d'`ExamenOrtho` et d'`OrthoChantierMentionTest` périmées ; `FichierOrtho.examiner`
   testé par garde de source seulement.
 - **Mineurs de la 068** : libellé du bouton d'arrivée en Kotlin (`TextesControle.boutonArrivee`)
