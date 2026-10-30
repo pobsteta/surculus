@@ -98,6 +98,9 @@ object EcouteApp {
     val compris: String? get() = pilote?.compris
     val comprisErreur: Boolean get() = pilote?.comprisErreur ?: false
 
+    /** Le bandeau est-il montré ? Pendant l'écoute, puis quelques secondes ([DUREE_BANDEAU_MS]) ; lit [version] pour se redessiner. */
+    fun bandeauVisible(): Boolean { version; return pilote?.bandeauVisible() ?: false }
+
     /** L'écran du contrôle prend (ou rend) les phrases. Sans écran, `tenir` ne fait rien. */
     fun brancher(surPhrase: ((String) -> Unit)?) { pilote?.surPhrase = surPhrase }
 

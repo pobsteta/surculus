@@ -11,7 +11,7 @@
 fin de l'écoute, pour que « Mode poche » et le haut de l'écran redeviennent visibles, debout comme
 couché, sans que le forestier ait à faire quoi que ce soit.
 
-**Redite par l'agent :** _(à remplir par l'agent avant d'agir)_
+**Redite par l'agent :** Le bandeau d'écoute reste pendant l'écoute puis quelques secondes après sa fermeture (compris ou refusé), puis s'efface seul, pour que « Mode poche » et le haut de l'écran redeviennent visibles, debout comme couché.
 
 ## Ce qui est constaté
 

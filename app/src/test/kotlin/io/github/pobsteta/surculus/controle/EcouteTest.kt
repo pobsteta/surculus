@@ -1,6 +1,7 @@
 package io.github.pobsteta.surculus.controle
 
 import io.github.pobsteta.surculus.core.gnss.Position
+import io.github.pobsteta.surculus.core.session.DelaisEcoute
 import io.github.pobsteta.surculus.core.session.EtatEcoute
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -191,6 +192,83 @@ class EcouteTest {
         assertTrue(voix.dits.single().startsWith("Dictée impossible"))
         t = 60_000; pilote.avancer()
         assertEquals(listOf("ouvrir#1", "fermer"), micro.journal)
+    }
+
+    // --- mission 076 : le bandeau s'efface
+
+    @Test fun `le bandeau - montre pendant l'ecoute, puis quelques secondes apres la fermeture, puis efface`() = with(Banc()) {
+        assertFalse(pilote.bandeauVisible())
+        pilote.tenir(); t = 100; pret()
+        assertTrue(pilote.bandeauVisible())
+        t = 10_000; pilote.relacher()
+        assertEquals(AffichageEcoute.FERMEE, pilote.affichage)
+        t = 10_000 + DUREE_BANDEAU_MS - 1; pilote.avancer()
+        assertTrue(pilote.bandeauVisible(), "avant l'échéance, le bandeau est montré")
+        assertEquals(10_000 + DUREE_BANDEAU_MS, pilote.echeance())
+        t = 10_000 + DUREE_BANDEAU_MS; pilote.avancer()
+        assertFalse(pilote.bandeauVisible(), "après l'échéance, il part")
+        assertEquals(10_000 + DelaisEcoute.RESULTAT_FINAL_MS, pilote.echeance(), "seule l'attente du résultat final reste")
+    }
+
+    @Test fun `le bandeau - l'ecoute longue ne l'efface pas`() = with(Banc()) {
+        pilote.tenir(); t = 100; pret()
+        t = 60_000; pilote.avancer()
+        assertTrue(pilote.bandeauVisible())
+    }
+
+    @Test fun `le bandeau - apres un compris, il part a l'echeance`() = with(Banc()) {
+        pilote.tenir(); t = 100; pret()
+        t = 1_500; pilote.phrase("atteint")
+        pilote.resultat(AnnoncePoche("Numéro 7, atteint.", MotifsVibration.ATTEINT))
+        t = 2_000; pilote.relacher()
+        assertEquals(EtatEcoute.FERMEE, pilote.etat)
+        assertEquals("Numéro 7, atteint.", pilote.compris)
+        t = 2_000 + DUREE_BANDEAU_MS - 1; pilote.avancer()
+        assertTrue(pilote.bandeauVisible())
+        t = 2_000 + DUREE_BANDEAU_MS; pilote.avancer()
+        assertFalse(pilote.bandeauVisible())
+    }
+
+    @Test fun `le bandeau - apres un refus, meme chose`() = with(Banc()) {
+        pilote.tenir(); t = 100; pret()
+        t = 1_500; pilote.phrase("hauteur")
+        pilote.resultat(AnnoncePoche("Hauteur de 1 à 400 centimètres.", MotifsVibration.REFUS, erreur = true))
+        t = 2_000; pilote.relacher()
+        t = 2_000 + DUREE_BANDEAU_MS - 1; pilote.avancer()
+        assertTrue(pilote.bandeauVisible())
+        assertTrue(pilote.comprisErreur)
+        t = 2_000 + DUREE_BANDEAU_MS; pilote.avancer()
+        assertFalse(pilote.bandeauVisible())
+    }
+
+    @Test fun `le bandeau - un refus de depart (modele absent) s'efface aussi`() = with(Banc(modele = false)) {
+        t = 1_000; assertFalse(pilote.tenir())
+        assertTrue(pilote.bandeauVisible())
+        t = 1_000 + DUREE_BANDEAU_MS; pilote.avancer()
+        assertFalse(pilote.bandeauVisible())
+    }
+
+    @Test fun `le bandeau - une nouvelle ecoute pendant l'affichage le relance, un nouvel affichage remet le compte a zero`() = with(Banc()) {
+        pilote.tenir(); t = 100; pret()
+        t = 1_000; pilote.relacher()
+        t = 1_000 + DUREE_BANDEAU_MS - 500; pilote.tenir()
+        assertTrue(pilote.bandeauVisible())
+        t += 100; pret(2)
+        t += 3 * DUREE_BANDEAU_MS; pilote.avancer()
+        assertTrue(pilote.bandeauVisible(), "l'ancienne échéance ne l'efface pas pendant l'écoute")
+        val fermeture = t + 10; t = fermeture; pilote.relacher()
+        t = fermeture + DUREE_BANDEAU_MS - 1; pilote.avancer()
+        assertTrue(pilote.bandeauVisible(), "le compte repart de la nouvelle fermeture")
+        t = fermeture + DUREE_BANDEAU_MS; pilote.avancer()
+        assertFalse(pilote.bandeauVisible())
+    }
+
+    @Test fun `le bandeau - l'erreur du moteur s'efface aussi`() = with(Banc()) {
+        pilote.tenir(); t = 100; pret()
+        t = 500; pilote.erreur()
+        assertTrue(pilote.bandeauVisible())
+        t = 500 + DUREE_BANDEAU_MS; pilote.avancer()
+        assertFalse(pilote.bandeauVisible())
     }
 
     // --- anti-larsen : une annonce de geste pendant l'écoute
@@ -513,6 +591,14 @@ class EcouteTest {
         assertTrue("EcouteApp.installer(this)" in a)
         assertTrue(a.substringAfter("override fun onPause").substringBefore("override fun onResume").contains("EcouteApp.arreter()"))
         assertTrue(a.substringAfter("override fun onStop").substringBefore("override fun onDestroy").contains("EcouteApp.arreter()"))
+    }
+
+    @Test fun `le cablage - le bandeau hors poche suit bandeauVisible, la duree est une constante, aucun delay`() {
+        assertTrue(DUREE_BANDEAU_MS in 2_000L..8_000L)
+        val e = source("controle/EcranControle.kt")
+        assertTrue("!poche && blocEcouteVisible()" in e)
+        assertTrue("fun blocEcouteVisible(): Boolean = EcouteApp.bandeauVisible()" in e)
+        assertFalse("delay(" in e, "le temps passe par l'horloge de la machine d'écoute")
     }
 
     @Test fun `le cablage - le bouton micro se tient, il ne bascule pas`() {

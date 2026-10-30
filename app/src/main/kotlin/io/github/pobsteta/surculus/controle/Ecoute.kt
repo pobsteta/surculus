@@ -51,6 +51,9 @@ object PermissionMicro {
     }
 }
 
+/** Combien de temps le bandeau reste après la fermeture de l'écoute (proposé, Pascal tranche) : le temps de lire « compris : Numéro 7, atteint. ». */
+const val DUREE_BANDEAU_MS = 4_000L
+
 /** Ce que la bande montre de l'écoute : une seule chose en grand (plan § 2). */
 enum class AffichageEcoute {
     /** Rien n'a été écouté depuis l'entrée dans l'écran : la bande ne dit rien du micro. */
@@ -171,6 +174,23 @@ class PilotageEcoute(
 
     val etat: EtatEcoute get() = machine.etat
 
+    /** Instant où le bandeau part (mission 076), compté depuis la fermeture de l'écoute ou le dernier affichage ; `null` : pas de compte. */
+    private var finBandeau: Long? = null
+    private var etatVu: EtatEcoute = EtatEcoute.FERMEE
+
+    /**
+     * Le bandeau est-il montré ? Pendant l'écoute toujours ; une fois l'écoute fermée, [DUREE_BANDEAU_MS] puis il s'efface. Le temps
+     * vient de l'horloge injectée ([avancer], [echeance]) : le test le pilote sans attendre.
+     */
+    fun bandeauVisible(): Boolean {
+        if (affichage == AffichageEcoute.RIEN && compris == null) return false
+        if (machine.etat != EtatEcoute.FERMEE) return true
+        val fin = finBandeau ?: return true
+        return horloge() < fin
+    }
+
+    private fun armerBandeau() { finBandeau = horloge() + DUREE_BANDEAU_MS }
+
     init {
         sorties.surDebutAnnonce = { executer(machine.annonceDebut(horloge())) }
         sorties.surFinAnnonce = { executer(machine.annonceTerminee(horloge())) }
@@ -184,6 +204,7 @@ class PilotageEcoute(
             entendu = null
             compris = TextesEcoute.ligneEtat(permission(), modeleInstalle()) ?: refus
             comprisErreur = true
+            armerBandeau()
             sorties.annoncer(AnnoncePoche(refus, MotifsVibration.REFUS, erreur = true), couperLeMicro = false)
             surChangement?.invoke()
             return false
@@ -208,6 +229,7 @@ class PilotageEcoute(
         entendu = null
         compris = TextesEcoute.DICTEE_MODELE_ILLISIBLE_ECRAN
         comprisErreur = true
+        armerBandeau()
         sorties.annoncer(AnnoncePoche(TextesEcoute.ERREUR_VOIX, MotifsVibration.REFUS, erreur = true), couperLeMicro = false)
         surChangement?.invoke()
     }
@@ -216,6 +238,7 @@ class PilotageEcoute(
     fun resultat(annonce: AnnoncePoche) {
         compris = annonce.texte
         comprisErreur = annonce.erreur
+        armerBandeau()
         surChangement?.invoke()
         sorties.annoncer(annonce)
     }
@@ -234,6 +257,7 @@ class PilotageEcoute(
     fun arreterEtOublier() {
         arreter()
         affichage = AffichageEcoute.RIEN
+        finBandeau = null
         entendu = null; compris = null; comprisErreur = false
         surChangement?.invoke()
     }
@@ -242,9 +266,14 @@ class PilotageEcoute(
     fun avancer() = executer(machine.avancer(horloge(), sorties.parle))
 
     /** Prochain instant où [avancer] aura quelque chose à faire ; `null` : rien n'attend. */
-    fun echeance(): Long? = machine.echeance()
+    fun echeance(): Long? {
+        val bandeau = finBandeau?.takeIf { machine.etat == EtatEcoute.FERMEE && horloge() < it }
+        val deMachine = machine.echeance()
+        return if (bandeau == null) deMachine else if (deMachine == null) bandeau else minOf(bandeau, deMachine)
+    }
 
     private fun executer(effets: List<EffetEcoute>) {
+        val etatAvant = etatVu
         for (e in effets) when (e) {
             is EffetEcoute.Ouvrir -> { sorties.taire(); micro.ouvrir(e.generation) }
             EffetEcoute.Fermer -> micro.fermer()
@@ -257,6 +286,9 @@ class PilotageEcoute(
                 surPhrase?.invoke(e.phrase)
             }
         }
+        // Le compte part à la fermeture ; un nouvel affichage (résultat, refus, erreur) le remet à zéro (voir armerBandeau).
+        if (machine.etat == EtatEcoute.FERMEE && etatAvant != EtatEcoute.FERMEE) armerBandeau()
+        etatVu = machine.etat
         affichage = when (machine.etat) {
             EtatEcoute.OUVERTURE -> AffichageEcoute.OUVERTURE
             EtatEcoute.OUVERTE -> AffichageEcoute.ECOUTE

@@ -389,7 +389,7 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
                     e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
                     if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                if (!poche && (EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null)) {
+                if (!poche && blocEcouteVisible()) {
                     Box(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
                 }
             }
@@ -529,7 +529,7 @@ private fun BandePoche(ligneVoix: String? = null, annonce: AnnoncePoche? = null,
     ) {
         Text(stringResource(R.string.controle_poche_bande), style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
         // Une seule idée à la fois : pendant l'écoute, le bloc J'ÉCOUTE prend la place de l'aide de sortie.
-        if (!blocEcouteVisible()) Text(stringResource(R.string.controle_poche_aide), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
+        if (!blocEcouteEnPoche()) Text(stringResource(R.string.controle_poche_aide), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
         BlocEcoute()
         ligneDictee?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurErreur()) }
         ligneVoix?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre()) }
@@ -538,7 +538,10 @@ private fun BandePoche(ligneVoix: String? = null, annonce: AnnoncePoche? = null,
     }
 }
 
-private fun blocEcouteVisible(): Boolean = EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null
+private fun blocEcouteVisible(): Boolean = EcouteApp.bandeauVisible()
+
+/** En mode poche, la bande est à part : elle ne s'efface pas (mission 076). */
+private fun blocEcouteEnPoche(): Boolean = EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null
 
 /**
  * L'écoute, en deux lignes : en grand « J'ÉCOUTE » / « ÉCOUTE FERMÉE », puis la comparaison entendu / compris (ou refusé, en
