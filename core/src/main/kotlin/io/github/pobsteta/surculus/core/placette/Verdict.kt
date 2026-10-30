@@ -66,7 +66,8 @@ sealed interface AlertePlacette {
     data class HorsRayon(val distanceHorizontaleM: Double, val rayonM: Double, val toleranceM: Double) : AlertePlacette {
         override val motif = "plant_hors_rayon"
         override val message =
-            "Plant à $distanceHorizontaleM m du piquet, au-delà du rayon de la placette ($rayonM m + $toleranceM m) : confirmer le pointage."
+            "Plant à ${Libelles.decimetres(distanceHorizontaleM)} m du piquet, au-delà du rayon de la placette " +
+                "(${Libelles.decimetres(rayonM)} m + ${Libelles.decimetres(toleranceM)} m) : confirmer le pointage."
     }
 }
 

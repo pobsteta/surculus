@@ -11,7 +11,7 @@
 française (mètres entiers arrondis, milliers séparés par U+202F, kilomètres à une décimale avec virgule
 au-delà d'un seuil), pour qu'il lise la même chose au guidage, sur la carte et au contrôle.
 
-**Redite par l'agent :** (à remplir par l'agent avant d'agir)
+**Redite par l'agent :** Écrire chaque distance montrée au forestier d'une seule façon française (mètres entiers arrondis, U+202F aux milliers, km à une décimale au-delà de 1 000 m ; décimètre seulement pour le pointage et l'alerte « hors rayon »), pour qu'il lise la même chose partout.
 
 ## Ce qui est constaté (relecture de la #126)
 

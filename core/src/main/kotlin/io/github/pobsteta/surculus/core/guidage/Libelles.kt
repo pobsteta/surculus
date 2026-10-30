@@ -22,6 +22,9 @@ object Libelles {
     fun distance(m: Double): String =
         if (Math.round(m) < 1000L) metres(m) else String.format(Locale.FRANCE, "%.1f km", m / 1000.0)
 
+    /** Distance au décimètre, virgule française, sans unité : 7,912 -> « 7,9 » (pointage et alerte « hors rayon »). */
+    fun decimetres(m: Double): String = String.format(Locale.FRANCE, "%.1f", m)
+
     /** Huit points cardinaux, en français : N, NE, E, SE, S, SO, O, NO. [azimutDeg] dans [0, 360[. */
     fun pointCardinal(azimutDeg: Double): String {
         val noms = listOf("N", "NE", "E", "SE", "S", "SO", "O", "NO")
