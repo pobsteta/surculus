@@ -87,7 +87,7 @@ _Idées, à trier au prochain `/mission`._
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
-  Pascal (112 ou 96 dp). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
+  Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
   075 debout ; sur v0.7.90 : 052 « pas encore demandées », 074 « hors rayon » au décimètre.
 
 - **Orchestrateur puis Pascal, release v0.7.82** (depuis le cycle 14) : installer, capturer
@@ -145,6 +145,10 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **077** « cliquez sur le bouton « Rattacher » » (`dev`, PR #136, 9d01de8) et **078** six boutons de carte
+  en une colonne, de 48 à 32 dp (`afficheur`, PR #137, f780287, deux allers-retours) : capturées sur v0.7.95
+  le 2026-10-30.
 
 - Cycle 15, 2026-10-29 et 30 : **059** Ortho chantier sourcée et datée (PR #128, 9e5e6d4) ; **075** bouton
   micro comme Marculus (PR #130, 7ca1bf8, trois relectures) ; **052** suites du récepteur et de la voix
