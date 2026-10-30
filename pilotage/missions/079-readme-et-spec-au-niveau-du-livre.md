@@ -10,7 +10,7 @@
 placette 012, mode poche, volume bas tenu, micro, bandeau d'écoute, formats de distance, colonne de six boutons de carte),
 pour qu'un successeur sache en une minute ce qu'est Surculus et où il en est.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Je mets `README.md` et `docs/spec.md` (et la seule mention de `terrain-voix` dans `docs/architecture.md`) au niveau de ce qui est livré, chaque ajout daté et renvoyé à sa décision du journal ou à sa fiche, sans rien inventer, pour qu'un successeur sache en une minute ce qu'est Surculus et où il en est.
 
 ## Les trois questions (règle de staffing)
 
