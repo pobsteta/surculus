@@ -44,7 +44,7 @@ avant, par `:app:testFumeeUnitTest` ; `app/build.gradle.kts` n'a gagné que des 
 **SDK 36 essayé d'abord (relecteur) : échec.** Robolectric 4.17 avec la JDK 21 du dépôt s'arrête sur
 `Failed to interact with raw FileDescriptor internals` (`jdk.internal.access` non exporté hors de `java.base`) ; **SDK 35 : vert**.
 Piste pour 36, à tenter au premier pas du code : `--add-exports java.base/jdk.internal.access=ALL-UNNAMED` dans les `jvmArgs`
-de la tâche de test ; sinon SDK 35, dit dans la PR (question du § 6).
+de la tâche de test ; sinon SDK 35, dit dans la PR (décision de la relecture, § 6).
 
 ## 2. Les écrans et les tailles
 
