@@ -753,3 +753,4 @@
 2026-10-30 · Claude (orchestrateur) · PR #128 · Fusionnée (9e5e6d4), CI verte. Capture sur `couchey-demo-avec-ortho` à faire sur la release. Place libérée : #131 (074) sortie du brouillon, relecture lancée.
 2026-10-30 · relecteur · PR #130 · reprise 2/3 (a7b3f81) prête pour Pascal : corps de la Column réaligné (git diff -w vide), garde « BlocEcouteEncadre() après la Column, dans le Box de zone, avec Modifier.align( » en place, rien d'autre depuis 3edcebd, CI et test-command verts (MicroControleTest 12/12) ; reste à prouver à la capture (bloc par-dessus, micro immobile, couvre « Mode poche » couché).
 2026-10-30 · Pascal · PR #130 · « Fusionner, juger à la capture » (« J'ÉCOUTE » qui couvre « Mode poche » couché jugé à la capture ; essai ganté 112 ou 96 dp ensuite).
+2026-10-30 · Claude (orchestrateur) · PR #130 · Fusionnée (7ca1bf8), CI verte. Captures de la 075 (debout, couché, micro tenu) et de la 059 (ligne de l'Ortho chantier) sur la release qui suit.
