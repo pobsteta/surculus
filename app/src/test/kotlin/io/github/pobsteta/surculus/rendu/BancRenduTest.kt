@@ -1,16 +1,15 @@
 package io.github.pobsteta.surculus.rendu
 
 import android.os.Looper
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
@@ -27,7 +26,10 @@ import kotlin.test.assertTrue
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [36])
 class BancRenduTest {
-    @get:Rule val regle = BancRendu.nouvelleRegle()
+    val regle = BancRendu.nouvelleRegle()
+
+    /** Le garde-fou entoure la règle Compose, comme dans les autres classes du banc. */
+    @get:Rule val chaine: RuleChain = RuleChain.outerRule(BancRendu.surveillant()).around(regle)
 
     @After fun fermer() = BancRendu.fermer()
 
@@ -35,16 +37,23 @@ class BancRenduTest {
         val fils = ArrayList<Thread>()
         BancRendu.rendre(
             contenu = {
-                androidx.compose.material3.Text("banc")
+                Text("banc")
                 LaunchedEffect(Unit) {
                     withContext(Dispatchers.IO) { Thread.sleep(20) }
-                    fils += Thread.currentThread()
+                    synchronized(fils) { fils += Thread.currentThread() }
                 }
             },
-            apres = { Thread.sleep(200) },
+            // Attente bornée, comme celle du banc : jusqu'à 20 s que l'effet ait repris, sinon on le dit.
+            apres = {
+                val limite = System.nanoTime() + 20_000_000_000L
+                while (synchronized(fils) { fils.isEmpty() } && System.nanoTime() < limite) {
+                    waitForIdle()
+                    Thread.sleep(20)
+                }
+            },
             regle = regle,
         )
-        assertTrue(fils.isNotEmpty(), "l'effet n'a pas repris")
+        assertTrue(fils.isNotEmpty(), "l'effet n'a pas repris en 20 s")
         assertEquals(Looper.getMainLooper().thread, fils.single(), "l'effet a repris sur ${fils.single().name}, pas sur le fil principal")
     }
 }

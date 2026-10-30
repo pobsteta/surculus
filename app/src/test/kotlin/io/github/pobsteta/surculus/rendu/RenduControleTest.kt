@@ -95,7 +95,6 @@ class RenduControleTest {
         assertTrue(defauts.isEmpty(), "Rendu « $cas » :\n" + defauts.joinToString("\n"))
     }
 
-
     @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `controle couche en plein ecran`() = normal("controle-couche-plein")
     @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `controle couche sans plein ecran`() = normal("controle-couche-sans-plein")
     @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `controle debout en plein ecran`() = normal("controle-debout-plein")
