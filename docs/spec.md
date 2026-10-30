@@ -148,12 +148,12 @@ point à Brest et à Strasbourg.
   colonne, aucun texte n'est caché. Sous 32 dp, les derniers boutons sont écrasés (fiche
   `pilotage/missions/078-boutons-carte-une-colonne.md`, reprise 1/3).
 * **Distances montrées** (amendé le 2026-10-30, mission 074, PR #131, fusionnée le 2026-10-30 ;
-  décisions de Pascal du 2026-10-29 (« garde U+202F », mission 068, puis la 074) et « km dès 1 000 m », puis du 2026-10-30
-  « Reprise de la 074 ») : une seule façon d'écrire une distance de navigation, au guidage, sur
+  décisions de Pascal du 2026-10-29, « garde U+202F » (068) et « km dès 1 000 m », puis du
+  2026-10-30, « Reprise de la 074 ») : une seule façon d'écrire une distance de navigation, au guidage, sur
   la carte et au contrôle : **mètres entiers arrondis** (« 850 m »), **kilomètres à une
   décimale, virgule française, dès 1 000 m** (« 1,3 km », « 10,0 km » ; 999,5 m s'écrit
-  « 1,0 km »). Si un nombre de mètres à quatre chiffres apparaissait, le séparateur des milliers
-  serait l'espace fine insécable U+202F (CLDR, français). Exception voulue : le **pointage d'un
+  « 1,0 km »). Un nombre de mètres à quatre chiffres, s'il en apparaissait,
+  séparerait les milliers par U+202F. Exception voulue : le **pointage d'un
   plant** et l'alerte « hors rayon » s'écrivent **au décimètre**, virgule française (« Plant à
   7,9 m du piquet, au-delà du rayon de la placette (5,6 m + 1,0 m) : confirmer le pointage. »).
 * Placettes colorées selon `etat_suivi` ; travaux tracés selon leur code ; vides relevés.
@@ -224,9 +224,10 @@ point à Brest et à Strasbourg.
   012-C Q4) : entrée par un bouton à l'écran ; l'écran reste allumé, l'application au premier
   plan, le toucher et le retour système sont ignorés, l'orientation est verrouillée (012-D2,
   PR #121, Q4 du 2026-10-28) ; **cinq sorties** (`RaisonSortie`, `ModePoche.kt`) : appui de 3 s sur volume haut, « Terminer »,
-  15 min sans geste (012-C Q4, 2026-10-28), passage de l'application à l'arrière-plan (bouton
-  marche, appel, autre application ; comportement gardé par Pascal, journal du 2026-10-29,
-  ligne `012-D2 · écart`), et sortie de la vue Plant. Rappel vocal à 5 min : « mode poche actif,
+  15 min sans geste (012-C Q4, 2026-10-28), sortie quand l'application quitte l'écran
+  (bouton marche, autre application ; un appel seulement s'il la fait quitter l'écran : seul
+  `onStop` fait sortir, `MainActivity.kt` l. 255-258) ; gardée par Pascal le 2026-10-30, après
+  l'explication de l'orchestrateur du 2026-10-29 (journal l. 681) ; et sortie de la vue Plant. Rappel vocal à 5 min : « mode poche actif,
   3 secondes sur volume haut pour sortir ».
   Après « Terminer », la saisie reste permise avec l'alerte « placette déjà terminée » à chaque
   geste (012-C Q6). Cette section précise l'ADR 0004 sans l'amender (décision de Pascal, 2026-10-30).
