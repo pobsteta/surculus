@@ -62,3 +62,15 @@ au-delà d'un seuil), pour qu'il lise la même chose au guidage, sur la carte et
 
 Sur la release, à ~10 km de Couchey : guidage et arrivée du contrôle disent la même distance, sous la même
 forme ; capture de l'orchestrateur.
+
+## Reprise, aller-retour 1/3 (2026-10-30)
+
+Relecture de la #131 (38f3680) : « prêt », avec un oubli. Décision de Pascal du 2026-10-30 : « Reprise de
+la 074 ». Le harnais s'étend à `Verdict.kt` (l'alerte « hors rayon »).
+
+1. L'alerte « hors rayon » (`core/.../placette/Verdict.kt` l. 69) écrit des `Double` bruts (« Plant à
+   7.912345678901 m du piquet, au-delà du rayon de la placette (5.64 m + 1.0 m) ») : l'écrire au décimètre,
+   virgule française, comme le pointage (« Plant à 7,9 m du piquet, au-delà du rayon de la placette (5,6 m +
+   1,0 m) : confirmer le pointage. »), par une fonction de `:core` (pas de `Locale` d'Android). Test vu
+   rouge.
+2. Remplir la redite de cette fiche.
