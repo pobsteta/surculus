@@ -233,3 +233,6 @@ tasks.matching { it.name == "connectedFumeeAndroidTest" }.configureEach {
     dependsOn(effacerRapportFumee)
     finalizedBy(verifierFumee)
 }
+
+// Robolectric 4.17 sur SDK 36 (Android 16, comme le téléphone) avec la JDK 21 : il lui faut ce paquet interne (mission 080).
+tasks.withType<Test>().configureEach { jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED") }
