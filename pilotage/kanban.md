@@ -132,6 +132,10 @@ _Idées, à trier au prochain `/mission`._
 
 _En attente sous le plafond humain (3 PR en revue)._
 
+- **083** (décision de Pascal, 2026-10-30, relecture de la 080) : debout, le bandeau d'écoute ne couvre plus la
+  flèche « Plant précédent » ni le numéro du plant ; le test de rendu le marque « défaut connu » jusque-là. Fiche à
+  écrire (`afficheur`).
+
 **Suite décidée de la 012 (2026-10-27) :** la 012-D2 (au Terminé), puis :
 
 
