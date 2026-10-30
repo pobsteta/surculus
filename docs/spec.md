@@ -140,6 +140,22 @@ point à Brest et à Strasbourg.
   mission 059) ; « Couches affichées » : Cadastre IGN (en
   ligne) et couches de la tournée, à cocher ; boutons zoom avant, zoom arrière, recentrer
   (jamais sur un fix hors de France).
+  **Six boutons en une seule colonne** à droite, debout comme couché, sur toute la hauteur sous
+  la barre de titre, comme Groma (amendé le 2026-10-30, mission 078, PR #137, décisions de Pascal
+  du 2026-10-30, *remplace* « Oui, deux colonnes » du 2026-10-28, mission 064) : 48 dp quand
+  les six tiennent, sinon la plus grande taille qui tient, **jusqu'à 32 dp** au plus bas ;
+  écart de 8 dp et marge de 12 dp ; les textes du haut et du bas raccourcissent avant la
+  colonne, aucun texte n'est caché. Sous 32 dp, les derniers boutons sont écrasés (fiche
+  `pilotage/missions/078-boutons-carte-une-colonne.md`, reprise 1/3).
+* **Distances montrées** (amendé le 2026-10-30, mission 074, PR #131, fusionnée le 2026-10-30 ;
+  décisions de Pascal du 2026-10-29 « garde U+202F » et « km dès 1 000 m », puis du 2026-10-30
+  « Reprise de la 074 ») : une seule façon d'écrire une distance de navigation, au guidage, sur
+  la carte et au contrôle : **mètres entiers arrondis** (« 850 m »), **kilomètres à une
+  décimale, virgule française, dès 1 000 m** (« 1,3 km », « 10,0 km » ; 999,5 m s'écrit
+  « 1,0 km »). Si un nombre de mètres à quatre chiffres apparaissait, le séparateur des milliers
+  serait l'espace fine insécable U+202F (CLDR, français). Exception voulue : le **pointage d'un
+  plant** et l'alerte « hors rayon » s'écrivent **au décimètre**, virgule française (« Plant à
+  7,9 m du piquet, au-delà du rayon de la placette (5,6 m + 1,0 m) : confirmer le pointage. »).
 * Placettes colorées selon `etat_suivi` ; travaux tracés selon leur code ; vides relevés.
 * **Guidage** : distance et azimut jusqu'à une placette, signal sonore qui s'accélère à
   l'approche, puis le cercle de la placette à moins de 30 m. Dans la placette, guidage
@@ -153,6 +169,10 @@ point à Brest et à Strasbourg.
   des 15 m mais que l'agent **confirme l'identité** par le code lu sur le piquet, le
   contrôle prend la **position stockée du piquet** et la position mesurée est gardée à
   part, avec le drapeau « rattaché par identité » (ADR 0003).
+  Au-delà de 15 m, le message demande de lire le code sur le piquet, de le saisir dans le champ
+  « Code lu sur le piquet », « puis cliquez sur le bouton « Rattacher » » (décision de Pascal du
+  2026-10-30, mission 077, PR #136, fusionnée le 2026-10-30 ; le bouton « Recommencer » et le
+  message sans motif technique sont ceux de la mission 068, décision du 2026-10-29).
 * **Premier passage** : chaque plant est pointé **relativement au piquet** : distance
   horizontale et azimut magnétique bruts, observation primaire ; ses coordonnées sont
   dérivées (§ 3, ADR 0003). Le RTK sert au piquet, pas aux plants. Il reçoit un UUID et un numéro, donné par
@@ -173,19 +193,54 @@ point à Brest et à Strasbourg.
   l'abroutissement ; un plant mort d'abroutissement n'est pas compté dans `nb_abroutis`. Hauteur facultative en cm. L'agent **ne dit jamais** « hors
   entreprise » : c'est sommieR qui le décide au bureau.
 * **Saisie sans regarder l'écran** : vibration et synthèse vocale annoncent le numéro du
-  plant et l'état enregistré. Boutons de volume **[proposé]** :
+  plant et l'état enregistré (« numéro 7, sain. Suivant, 8. » ; sans voix française, bandeau
+  « Pas de voix française : regardez l'écran » et annonce écrite ; décisions de Pascal du
+  2026-10-28, mission 012-C, fiche `pilotage/missions/012c-volume-poche.md`, Q2 et Q8).
+  **Boutons de volume, livrés** (mission 012-C1, fusionnée le 2026-10-28, PR #113 ; amendé le
+  2026-10-30 par la mission 079, qui *remplace* la table « [proposé] » du 2026-10-15 : l'appui
+  long sur volume bas « ouvre la dictée » devient « écoute tant que la touche est tenue »,
+  voir plus bas) :
 
-  | Geste | En placette | En cheminement |
-  |---|---|---|
-  | volume haut, appui court | sain, puis plant suivant | sain |
-  | volume bas, appui court | mort, puis plant suivant | mort |
-  | volume haut, appui long | atteint (la cause se dicte ensuite) | atteint |
-  | volume bas, appui long | ouvre la dictée | absent |
-  | volume bas, double appui court | annule la dernière saisie | annule la dernière saisie |
+  | Geste (mode poche seulement) | En placette |
+  |---|---|
+  | volume haut, appui court (moins de 0,5 s) | sain, puis plant suivant |
+  | volume bas, appui court | mort, puis plant suivant (écrit après 0,35 s, le temps d'un double appui) |
+  | volume haut, appui long (de 0,5 s à moins de 3 s, au relâchement) | atteint, plant gardé, cause vide (ajoutée à l'écran ou à la dictée) |
+  | volume haut, appui de 3 s ou plus | sortie du mode poche, rien n'est écrit |
+  | volume bas, appui long (0,5 s) **tenu** | le micro écoute tant que la touche est tenue (« tenir pour parler ») |
+  | volume bas, double appui court | annule la dernière saisie |
 
-  Les deux touches ensemble sont évitées (raccourci d'accessibilité d'Android). En
-  tranche 1, l'écran reste allumé, application au premier plan, en « mode poche » qui
-  ignore l'écran tactile (ADR 0004).
+  Sources : plan `pilotage/missions/012c-plan.md` § 3 (6c46a8e) et réponses de Pascal du
+  2026-10-28 (Q1 gestes **en mode poche seulement**, hors du mode le volume règle le son ; Q3
+  0,35 s ; Q5 seuils « tels quels, à essayer » : long 0,5 s, sortie 3 s, double 0,35 s, rebond
+  40 ms) ; « volume bas tenu seulement » (décision de Pascal du 2026-10-28, journal, ligne
+  `012-D2 · cap`, fiche `pilotage/missions/012d2-micro.md`, décision 1). **En cheminement**, la
+  table d'origine reste **[proposé]** et non livrée (hors de la 012, journal du 2026-10-27) :
+  volume haut court = sain, volume bas court = mort, volume haut long = atteint, volume bas
+  long = absent, double appui bas = annule. Les deux touches ensemble sont évitées (raccourci
+  d'accessibilité d'Android).
+
+  **Mode poche** (décisions de Pascal du 2026-10-27, journal, mission 012, puis du 2026-10-28,
+  012-C Q4) : entrée par un bouton à l'écran ; l'écran reste allumé, l'application au premier
+  plan, le toucher et le retour système sont ignorés, l'orientation est verrouillée (012-D2,
+  PR #121, Q4 du 2026-10-28) ; sortie par un appui de 3 s sur volume haut ou à « Terminer »,
+  et d'office après 15 min sans geste, avec un rappel vocal « mode poche actif » à 5 min.
+  Après « Terminer », la saisie reste permise avec l'alerte « placette déjà terminée » à chaque
+  geste (012-C Q6). Le mode poche est celui de l'ADR 0004 (amendé ici, 2026-10-30).
+
+  **Micro.** Hors du mode poche, un bouton micro **tenu pour parler**, comme Marculus (décision
+  de Pascal du 2026-10-28, 012-D2 décision 2) : icône du micro de Marculus, texte en description
+  d'accessibilité (mission 072, PR #123, fusionnée le 2026-10-29) ; rond de 112 dp, rouge à
+  l'écoute, barré mais actif si le micro ou le modèle manquent, hors de la zone qui défile
+  (pied fixe debout, colonne de 128 dp à droite couché) (mission 075, réponses de Pascal Q1 à Q5
+  du 2026-10-29, PR #130 fusionnée le 2026-10-30 ; 96 dp à décider après l'essai ganté). En
+  mode poche il n'y a pas de bouton. La permission `RECORD_AUDIO` est demandée à l'appui sur
+  « Mode poche » ou sur le micro, l'écran sous les yeux, jamais en poche (012-D2 Q6).
+  **Bandeau d'écoute** « J'ÉCOUTE » : il couvre le haut de la zone qui défile pendant
+  l'écoute, puis reste **6 s** avec ce qui a été entendu et compris ou refusé, et **s'efface**
+  seul, pour que « Mode poche » réapparaisse (décision de Pascal du 2026-10-30, mission 076,
+  PR #132, fusionnée le 2026-10-30 ; 6 s est plus long que l'attente du résultat final de Vosk,
+  5 s, pour que le bandeau ne revienne jamais).
 
   Dictée hors ligne à **grammaire fermée** : « sain », « atteint », « mort », « absent »,
   « non observé », « insectes », « champignon », « animaux », « climat »,

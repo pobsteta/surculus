@@ -12,7 +12,9 @@ sommieR ── sommier_projet_qfield_travaux() ──► <tournée>/travaux.gpkg
    │          :gpkg  JVM : lecture/écriture du travaux.gpkg (sqlite-jdbc, ADR 0011)
    │          :core  Kotlin pur : règles du registre 6, plants, totaux,
    │                 numérotation, fusion par UUID, grammaire de dictée
-   │          ── tranche 1 : groma-core provisoire ; ensuite bibliothèques
+   │          ── tranche 1 : groma-core provisoire, et terrain-voix (grammaire
+   │             fermée, nombres en lettres, import du modèle ; adopté le 2026-10-24,
+   │             mission 013, docs/dependances.md) ; ensuite bibliothèques
    │             communes (GNSS/NTRIP, géodésie, GeoPackage,
    │             carte, dictée, journal) partagées avec Marculus et Groma
    │                                                   │

@@ -14,12 +14,13 @@ Application Android de **suivi des travaux de plantation en forêt**, hors ligne
 elle suit **plant par plant**, sur des placettes fixes, ce qui a repris d'un passage à
 l'autre, et relève les travaux faits, pour les rendre au sommier forestier (sommieR).
 
-> **État : en développement (tranche 1).** Le domaine (contrôle de placette, repères,
-> journal des saisies), l'export GeoPackage et les écrans de l'accueil de l'APK sont
-> faits et testés : **Tournées** (avec Carte et Guidage, mission 011), **Restaurer une
-> tournée** (mission 009) et **Essai GNSS** (mission 018). L'écran du contrôle de placette
-> (mission 012) n'est pas encore livré. **Ce qui est livré, en cours ou planifié se lit dans
-> [`pilotage/kanban.md`](pilotage/kanban.md)**, seule source de l'avancement.
+> **État : en développement (tranche 1).** Le contrôle de placette (mission 012, A à D, dernière
+> PR fusionnée le 2026-10-28, journal du même jour) est livré : pointage, gestes de volume et
+> mode poche, dictée « tenir pour parler ». Les essais en forêt (essai ganté de Pascal, Couchey)
+> ne sont pas faits (journal, 2026-10-30). **Ce qui est livré, en cours ou planifié se lit dans
+> [`pilotage/kanban.md`](pilotage/kanban.md)**, seule source de l'avancement ; les écrans ne sont
+> pas listés ici. **La dernière version installable** est la dernière
+> [release](https://github.com/pobsteta/surculus/releases) (badge « version » ci-dessus).
 
 ## Pour qui, pour quoi
 
