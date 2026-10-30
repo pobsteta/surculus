@@ -169,6 +169,26 @@ object BancRendu {
 
     /** Garde la pile complète d'un échec dans build/reports/rendu/ (publiée avec le reste) : la CI n'en montre que la première ligne. */
     fun surveillant(): org.junit.rules.TestRule = object : org.junit.rules.TestWatcher() {
+        private var garde: Thread? = null
+
+        /**
+         * Garde-fou : un cas qui dure plus de 100 s est bloqué (il dure ≈ 1 s). On écrit la pile de tous les fils dans le rapport
+         * publié, puis on interrompt le fil du test pour qu'il échoue au lieu de tenir la CI en attente.
+         */
+        override fun starting(description: org.junit.runner.Description) {
+            val test = Thread.currentThread()
+            garde = Thread {
+                try { Thread.sleep(100_000) } catch (_: InterruptedException) { return@Thread }
+                val dossier = File("build/reports/rendu").also { it.mkdirs() }
+                File(dossier, "_blocage-" + description.methodName.replace(Regex("[^A-Za-z0-9_-]"), "_") + ".txt").writeText(
+                    Thread.getAllStackTraces().entries.joinToString("\n\n") { (t, pile) -> "== ${t.name}\n" + pile.joinToString("\n") { "    at $it" } },
+                )
+                test.interrupt()
+            }.also { it.isDaemon = true; it.start() }
+        }
+
+        override fun finished(description: org.junit.runner.Description) { garde?.interrupt() }
+
         override fun failed(e: Throwable, description: org.junit.runner.Description) {
             val dossier = File("build/reports/rendu").also { it.mkdirs() }
             File(dossier, "_echec-" + description.methodName.replace(Regex("[^A-Za-z0-9_-]"), "_") + ".txt")
