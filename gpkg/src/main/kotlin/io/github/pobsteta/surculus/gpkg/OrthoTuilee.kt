@@ -7,6 +7,7 @@
  */
 package io.github.pobsteta.surculus.gpkg
 
+import io.github.pobsteta.surculus.core.carte.OrthoChantier
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -42,9 +43,52 @@ object OrthoTuilee {
         }
     }
 
+    /** Ce que le fichier dit de lui-même ; `null` pour ce qu'il ne dit pas (rien n'est deviné ni pris ailleurs). */
+    data class Metadonnees(val attribution: String?, val dateMiseAJour: String?)
+
+    /**
+     * Source et date lues dans le fichier. MBTiles : table `metadata`, clés `attribution` et `date_mise_a_jour`
+     * (AAAA-MM-JJ). GeoPackage : rien (sa `description` n'est jamais prise pour une source, sa `last_change` n'est pas
+     * une date de mise à jour de l'image). Ne lève jamais.
+     */
+    fun metadonnees(fichier: Path): Metadonnees {
+        val vide = Metadonnees(null, null)
+        if (!Files.isRegularFile(fichier) || !fichier.fileName.toString().endsWith(".mbtiles")) return vide
+        return try {
+            Sqlite.ouvrir(fichier, lectureSeule = true).use { cnx ->
+                if (!cnx.existeTable("metadata")) return vide
+                val valeurs = cnx.lignes("SELECT name, value FROM metadata").associate { it.texte("name") to it.texte("value") }
+                Metadonnees(valeurs["attribution"].nonVide(), valeurs["date_mise_a_jour"].nonVide())
+            }
+        } catch (e: Exception) {
+            vide
+        }
+    }
+
+    /** Ligne affichée sur la carte : l'attribution du fichier ou « source non indiquée », plus « mise à jour le » si le fichier la porte. */
+    fun mention(fichier: Path): String {
+        val m = metadonnees(fichier)
+        return OrthoChantier.mention(m.attribution, m.dateMiseAJour)
+    }
+
+    /** Où en est l'ortho d'un dossier : pas de fichier, fichier exploitable, ou fichier présent mais inutilisable. */
+    sealed interface Etat {
+        data object Absente : Etat
+        data class Prete(val description: Description) : Etat
+        data class Illisible(val nom: String) : Etat
+    }
+
+    fun etat(dossier: Path): Etat {
+        dans(dossier)?.let { return Etat.Prete(it) }
+        val present = NOMS.firstOrNull { Files.exists(dossier.resolve(it)) } ?: return Etat.Absente
+        return Etat.Illisible(present)
+    }
+
     /** Premier fichier exploitable du [dossier] (`ortho.mbtiles` d'abord), `null` si aucun. */
     fun dans(dossier: Path): Description? = NOMS.firstNotNullOfOrNull { lire(dossier.resolve(it)) }
 }
 
 /** Vrai si la table de tuiles porte au moins une tuile : un fichier vide n'est pas une ortho. */
 private fun java.sql.Connection.aDesTuiles(table: String): Boolean = lignes("SELECT 1 AS x FROM ${table.ident()} LIMIT 1").isNotEmpty()
+
+private fun String?.nonVide(): String? = this?.trim()?.takeIf { it.isNotEmpty() }
