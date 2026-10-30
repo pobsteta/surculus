@@ -84,6 +84,16 @@ object EcouteApp {
         }
     }
 
+    /**
+     * Pose un pilote construit par un test de rendu (mission 080), horloge à lui ; `null` l'ôte. Câblé comme [installer] : un
+     * changement redessine la bande. Aucun effet en production, personne ne l'appelle.
+     */
+    internal fun poserPilotePourTest(p: PilotageEcoute?) {
+        pilote = p
+        p?.surChangement = { version++ }
+        version++
+    }
+
     /** Lu à chaque appel : l'agent peut accorder le micro dans les réglages entre deux appuis. */
     fun etatPermission(ctx: Context): EtatPermissionMicro {
         if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) return EtatPermissionMicro.ACCORDEE

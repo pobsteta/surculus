@@ -300,7 +300,22 @@ private fun LigneFond(libelle: String, choisi: Boolean, onChoisir: () -> Unit) {
 }
 
 @Composable
-private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit) {
+private fun erreurRecepteurReelle(): ErreurRecepteurCarte? {
+    val ctx = LocalContext.current
+    val etatRecepteur by ServiceGnssRtk.etat.collectAsState()
+    val reglageRecepteur = remember { ConfigRtk.lire(ctx).actif }
+    return ErreurRecepteurCarte.pour(reglageRecepteur, etatRecepteur.enMarche, etatRecepteur.erreur, etatRecepteur.ntripErreur)
+}
+
+/**
+ * [erreurRecepteur] : ce que la carte dit du récepteur externe (mission 052) ; par défaut l'état réel, un test de rendu
+ * (mission 080) y pose l'état qu'il veut voir.
+ */
+@Composable
+internal fun CartePrete(
+    ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centreId: String?, onRetour: () -> Unit, onGuider: (String) -> Unit, onControler: (String) -> Unit,
+    erreurRecepteur: ErreurRecepteurCarte? = erreurRecepteurReelle(),
+) {
     val orthoChantier = examenOrtho.exploitable
     val ctx = LocalContext.current
     val (fix, refusee) = rememberFix()
@@ -394,9 +409,7 @@ private fun CartePrete(ouverte: TourneeOuverte, examenOrtho: ExamenOrtho, centre
             Text(stringResource(R.string.carte_hors_france), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
         }
         // Récepteur externe en erreur (mission 052) : la carte le dit, sans le message technique (il reste dans l'Essai GNSS).
-        val etatRecepteur by ServiceGnssRtk.etat.collectAsState()
-        val reglageRecepteur = remember { ConfigRtk.lire(ctx).actif }
-        ErreurRecepteurCarte.pour(reglageRecepteur, etatRecepteur.enMarche, etatRecepteur.erreur, etatRecepteur.ntripErreur)?.let {
+        erreurRecepteur?.let {
             Text(stringResource(it.texte), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))
         }
         if (refusee) Text(stringResource(R.string.carte_permission), color = couleurErreur(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 8.dp))

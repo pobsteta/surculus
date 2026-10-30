@@ -235,7 +235,7 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
 
 /** La session ouverte : la vue Plant, la confirmation de fin, ou « Contrôlée ». */
 @Composable
-private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages: ReglagesControle, stockageRefuse: Boolean, onRetour: () -> Unit, onParametres: () -> Unit) {
+internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglages: ReglagesControle, stockageRefuse: Boolean, onRetour: () -> Unit, onParametres: () -> Unit) {
     var ecran by remember(controleur) { mutableStateOf<EcranControle?>(null) }
     val scope = rememberCoroutineScope()
     LaunchedEffect(controleur) { ecran = withContext(Dispatchers.IO) { controleur.instantane() } }
