@@ -58,17 +58,29 @@ class AutorisationsRecepteurTest {
         assertTrue(avertissementsRecepteur(false, TransportRtk.BLUETOOTH, n, n).isEmpty())
     }
 
-    @Test fun `fenetre fermee sans reponse - aucun refus memorise, l'etat reste pas encore demandee`() {
-        // Le systeme rapporte « non accordee » mais ne propose pas de redemander : ce n'est pas un refus.
-        val memorise = refusAMemoriser(accordee = false, rationaleApresReponse = false)
-        assertEquals(false, memorise)
-        assertEquals(EtatAutorisation.JAMAIS_DEMANDEE, etatAutorisation(accordee = false, dejaRefusee = memorise, rationale = false))
+    @Test fun `refus definitif deja acquis - ni rationale avant ni apres, memorise, renvoie aux reglages`() {
+        // Refus « ne plus demander » fait sous une version anterieure a la 052 : la fenetre ne s'ouvre plus, la reponse
+        // arrive aussitot, sans rationale. Android ne distingue pas ce cas d'une fenetre fermee sans reponse.
+        val memorise = refusAMemoriser(accordee = false, rationaleAvant = false, rationaleApres = false)
+        assertEquals(true, memorise)
+        assertEquals(EtatAutorisation.REFUSEE_DEFINITIVEMENT, etatAutorisation(accordee = false, dejaRefusee = memorise, rationale = false))
     }
 
-    @Test fun `vrai refus - memorise quand le systeme propose encore de redemander, jamais si accordee`() {
-        assertEquals(true, refusAMemoriser(accordee = false, rationaleApresReponse = true))
-        assertEquals(false, refusAMemoriser(accordee = true, rationaleApresReponse = true))
-        assertEquals(false, refusAMemoriser(accordee = true, rationaleApresReponse = false))
+    @Test fun `second refus avec ne plus demander - rationale avant, plus apres, devient definitif`() {
+        val memorise = refusAMemoriser(accordee = false, rationaleAvant = true, rationaleApres = false)
+        assertEquals(true, memorise)
+        assertEquals(EtatAutorisation.REFUSEE_DEFINITIVEMENT, etatAutorisation(accordee = false, dejaRefusee = memorise, rationale = false))
+    }
+
+    @Test fun `premier refus - rationale apres seulement, refusee et redemandable`() {
+        val memorise = refusAMemoriser(accordee = false, rationaleAvant = false, rationaleApres = true)
+        assertEquals(true, memorise)
+        assertEquals(EtatAutorisation.REFUSEE, etatAutorisation(accordee = false, dejaRefusee = memorise, rationale = true))
+    }
+
+    @Test fun `autorisation accordee - jamais de refus memorise`() {
+        assertEquals(false, refusAMemoriser(accordee = true, rationaleAvant = true, rationaleApres = true))
+        assertEquals(false, refusAMemoriser(accordee = true, rationaleAvant = false, rationaleApres = false))
     }
 
     @Test fun `tout accorde, aucun avertissement`() {

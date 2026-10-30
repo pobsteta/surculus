@@ -87,15 +87,18 @@ fun SectionRecepteur() {
         onPauseOrDispose {}
     }
 
+    // Rationale lue juste avant chaque demande : avec celle d'après, elle dit si le refus est définitif (mission 052).
+    val rationalesAvant = remember { mutableMapOf<String, Boolean>() }
+
     // Android 13+ : sans la notification, « Libérer le récepteur » reste caché ; Android 12+ : Bluetooth demande une autorisation.
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { reponses ->
         // Un refus est mémorisé : c'est lui qui distingue « refusée » de « pas encore demandée » (mission 052).
-        // Fenêtre fermée sans réponse : « non accordée » aussi, mais sans rationale : rien n'est mémorisé.
-        reponses.forEach { (permission, accordee) -> memoriserSiRefus(ctx, permission, accordee) }
+        // Android ne dit pas une fenêtre fermée sans réponse d'un refus définitif déjà acquis : dans le doute, réglages du téléphone.
+        reponses.forEach { (permission, accordee) -> memoriserSiRefus(ctx, permission, accordee, rationalesAvant[permission] == true) }
         relecture++
     }
     val permissionBt = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
-        memoriserSiRefus(ctx, Manifest.permission.BLUETOOTH_CONNECT, ok)
+        memoriserSiRefus(ctx, Manifest.permission.BLUETOOTH_CONNECT, ok, rationalesAvant[Manifest.permission.BLUETOOTH_CONNECT] == true)
         relecture++
         if (ok) choixAppareil = true
     }
@@ -104,7 +107,7 @@ fun SectionRecepteur() {
     Text(stringResource(R.string.recepteur_section_desc), style = MaterialTheme.typography.bodySmall)
     Interrupteur(stringResource(R.string.recepteur_actif), stringResource(R.string.recepteur_actif_desc), rtk.actif) { actif ->
         maj(rtk.copy(actif = actif))
-        if (actif) permissions.launch(permissionsAUtiliser().toTypedArray())
+        if (actif) { val demandes = permissionsAUtiliser(); noterRationales(ctx, demandes, rationalesAvant); permissions.launch(demandes.toTypedArray()) }
     }
     if (!rtk.actif) return
     // `relecture` est lu ici pour recalculer après chaque réponse du système.
@@ -139,7 +142,7 @@ fun SectionRecepteur() {
                 style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f),
             )
             OutlinedButton(modifier = Modifier.heightIn(min = 48.dp), onClick = {
-                if (autorisationBluetooth(ctx)) choixAppareil = true else permissionBt.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                if (autorisationBluetooth(ctx)) choixAppareil = true else { noterRationales(ctx, listOf(Manifest.permission.BLUETOOTH_CONNECT), rationalesAvant); permissionBt.launch(Manifest.permission.BLUETOOTH_CONNECT) }
             }) { Text(stringResource(R.string.recepteur_choisir)) }
         }
         TransportRtk.TCP -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -269,9 +272,14 @@ private fun memoriserRefus(ctx: Context, permission: String) {
     ctx.getSharedPreferences(PREFS_AUTORISATIONS, Context.MODE_PRIVATE).edit().putBoolean(permission, true).apply()
 }
 
-/** Mémorise un refus seulement si le système propose encore de redemander juste après la réponse (sinon : fenêtre fermée). */
-private fun memoriserSiRefus(ctx: Context, permission: String, accordee: Boolean) {
-    if (refusAMemoriser(accordee, rationale(ctx, permission))) memoriserRefus(ctx, permission)
+/** Mémorise un refus d'après la réponse du système et la rationale lue avant la demande. */
+private fun memoriserSiRefus(ctx: Context, permission: String, accordee: Boolean, rationaleAvant: Boolean) {
+    if (refusAMemoriser(accordee, rationaleAvant, rationale(ctx, permission))) memoriserRefus(ctx, permission)
+}
+
+/** Relève `shouldShowRequestPermissionRationale` juste avant une demande. */
+private fun noterRationales(ctx: Context, permissions: List<String>, vers: MutableMap<String, Boolean>) {
+    permissions.forEach { vers[it] = rationale(ctx, it) }
 }
 
 private fun rationale(ctx: Context, permission: String): Boolean =

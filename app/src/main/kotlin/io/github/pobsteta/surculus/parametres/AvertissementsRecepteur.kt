@@ -13,7 +13,7 @@ import io.github.pobsteta.surculus.gnss.TransportRtk
 enum class EtatAutorisation {
     ACCORDEE,
 
-    /** Aucun refus vu : jamais demandée, ou fenêtre fermée sans réponse (ce n'est pas un refus, on ne le mémorise pas). */
+    /** Aucune réponse « non accordée » vue : l'autorisation n'a jamais été demandée. */
     JAMAIS_DEMANDEE,
 
     /** Refusée, mais le système propose encore de la redemander. */
@@ -26,7 +26,8 @@ enum class EtatAutorisation {
 /**
  * L'état d'une autorisation à partir de ce que le système sait dire (il ne distingue pas « jamais demandée » de
  * « refusée pour de bon » : `shouldShowRequestPermissionRationale` est faux dans les deux cas).
- * @param dejaRefusee Surculus a vu un refus (mémorisé à chaque réponse négative du système).
+ * @param dejaRefusee Surculus a vu une réponse « non accordée » du système (mémorisée à chaque réponse négative, y
+ *                    compris un refus définitif déjà acquis ou une fenêtre fermée sans réponse : Android ne les distingue pas).
  * @param rationale `shouldShowRequestPermissionRationale` : vrai quand le système propose encore de redemander,
  *                  donc après un premier refus, même d'une version précédente de l'application.
  */
@@ -38,12 +39,17 @@ fun etatAutorisation(accordee: Boolean, dejaRefusee: Boolean, rationale: Boolean
 }
 
 /**
- * Faut-il mémoriser un refus après la réponse du système ? Le rappel de réponse dit « non accordée » aussi quand la
- * fenêtre est fermée sans réponse (retour, toucher à côté) : ce n'est pas un refus. Un vrai refus laisse
- * `shouldShowRequestPermissionRationale` vrai juste après ; sinon l'état reste « pas encore demandée ».
+ * Faut-il mémoriser un refus après la réponse du système ? Toute réponse « non accordée » est un refus, mais Android ne
+ * dit pas tout : [rationaleAvant] et [rationaleApres] sont `shouldShowRequestPermissionRationale` lu juste avant la demande
+ * et juste après la réponse.
+ *  - faux puis vrai : premier refus, redemandable ;
+ *  - vrai puis faux : « ne plus demander », définitif ;
+ *  - faux puis faux : refus définitif déjà acquis (fenêtre non ouverte, par exemple sous une version antérieure à la 052)
+ *    **ou** fenêtre fermée sans réponse. Android ne les distingue pas ; le premier l'emporte (voir [etatAutorisation]).
+ * Les paramètres documentent ces cas ; seul « accordée » change le résultat.
  */
-fun refusAMemoriser(accordee: Boolean, rationaleApresReponse: Boolean): Boolean =
-    !accordee && rationaleApresReponse
+@Suppress("UNUSED_PARAMETER")
+fun refusAMemoriser(accordee: Boolean, rationaleAvant: Boolean, rationaleApres: Boolean): Boolean = !accordee
 
 /** Ce que la section « Récepteur GNSS » signale à l'agent (missions 047 et 052) ; Kotlin pur, testé en JVM. */
 enum class AvertissementRecepteur {
