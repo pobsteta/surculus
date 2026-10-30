@@ -10,6 +10,12 @@
 - **Mineur M2 de la 076** (depuis le cycle 15) : plus aucun test ne vérifie que `echeance()` retient la plus
   proche des deux échéances (bandeau, résultat final) ; une ligne dans le premier test du bandeau.
 
+- **082** (décision de Pascal, 2026-10-30, relecture de la 081) : plus aucun `e.message` brut à l'écran
+  (`carte/Commun.kt:94`, `DepotTournees.kt:145`, `EcranTournees.kt:144`, `MoteurDicteeVosk.kt:45`, `:52`,
+  `ServiceGnssRtk.kt:84`, `:140`, `:170`) ; fiche à écrire.
+- **Le plant par son numéro dans les refus** (« le plant n° 7 » plutôt que « ce plant », 081) : le refus doit porter le
+  numéro ; « assez pour l'instant » (Pascal, 2026-10-30).
+
 _Idées, à trier au prochain `/mission`._
 
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
@@ -84,6 +90,10 @@ _Idées, à trier au prochain `/mission`._
   correspondance des codes, `montant_eur` facultatif).
 
 ## Validé
+
+- **079** README et spec au niveau du livré (`archiviste`, appuyer), **080** test de rendu des écrans (`afficheur`,
+  tenir : plan d'abord), **081** aucun texte technique à l'écran (`testeur` puis `dev`, appuyer) : validées par
+  Pascal le 2026-10-30 (porte n° 2, « Oui, les trois »), lancées le même jour ; fiches sur leurs seules branches.
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
@@ -318,3 +328,9 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   porte 052, 059, 074 et 075, sinon le cycle livre sa mauvaise nouvelle. Livrée en partie le 2026-10-30 :
   v0.7.88, debout tenu ; couché, « ÉCOUTE FERMÉE » reste après une dictée et cache « Mode poche » :
   mauvaise nouvelle, reprise 076 fusionnée le 2026-10-30 (#132) ; livrée debout et couché sur v0.7.90, « Mode poche » visible après une dictée.)*
+- bilan du 2026-10-30 · le forestier contrôle une placette du piquet au dernier plant sans regarder l'écran (voix,
+  volume, micro, gants aux mains) et retrouve ses boutons de carte au même endroit (v0.7.95) · pour le forestier en
+  forêt · au bilan du 2026-10-21, la 012 n'existait pas : il ne pouvait pas contrôler une placette. Mauvaise nouvelle
+  jointe : rien n'est vérifié en forêt ; le signe concret du brief (10 placettes en moins de 10 min, tournée
+  réimportée dans sommieR) n'est pas mesuré ; ce qu'elle nous apprend : une livraison vue au téléphone n'est pas une
+  livraison vue au terrain. *(Retenue par Pascal le 2026-10-30 : « Oui, avec la mauvaise nouvelle ».)*
