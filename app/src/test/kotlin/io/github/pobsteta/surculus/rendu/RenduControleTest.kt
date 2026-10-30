@@ -73,10 +73,10 @@ class RenduControleTest {
     private val MODE_POCHE = "Mode poche"
 
     /** Les contrôles communs : cliquables entiers, rien ne recouvre un cliquable, « Mode poche » là et entier (mode normal). */
-    private fun verifier(cas: String, r: BancRendu.Resultat, modePocheAttendu: Boolean, permises: (BancRendu.Noeud, BancRendu.Noeud) -> Boolean = { _, _ -> false }): List<String> {
+    private fun verifier(cas: String, r: BancRendu.Resultat, modePocheAttendu: Boolean): List<String> {
         val defauts = ArrayList<String>()
         r.cliquables.filterNot { BancRendu.entier(r, it) }.forEach { defauts += "cliquable « ${it.nom} » ${BancRendu.fmt(it.rect)} déborde de la racine ${BancRendu.fmt(r.racine)}" }
-        defauts += BancRendu.recouvrements(r, permises)
+        defauts += BancRendu.recouvrements(r)
         if (modePocheAttendu) {
             val b = BancRendu.cliquable(r, MODE_POCHE)
             if (b == null) defauts += "bouton « $MODE_POCHE » absent"
@@ -119,7 +119,7 @@ class RenduControleTest {
     @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `mode poche couche sans plein ecran, apres defilement`() = poche("poche-couche-sans-plein")
     @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `mode poche debout en plein ecran, apres defilement`() = poche("poche-debout-plein")
 
-    // --- le bloc d'écoute : peut recouvrir « Mode poche » pendant l'écoute et DUREE_BANDEAU_MS après, plus ensuite (mission 076)
+    // --- le bloc d'écoute : ne peut recouvrir que « Mode poche », pendant l'écoute et DUREE_BANDEAU_MS après, plus ensuite (mission 076)
 
     private class Ecoute {
         var t = 0L
@@ -127,35 +127,73 @@ class RenduControleTest {
             .also { it.surPhrase = {} }
     }
 
-    private fun ecoute(cas: String) {
+    /**
+     * DÉFAUT CONNU (2026-10-30, décision de Pascal « corriger l'écran, test strict ») : debout, le bloc d'écoute, posé par-dessus le
+     * haut de la zone, recouvre la flèche « Plant précédent » pendant l'écoute et les 6 s qui suivent. La mission 083 corrige l'écran.
+     * Le test ne l'ignore pas : il l'écrit en tête du rapport et **casse s'il ne le voit plus** (levée de la marque à la fusion de la 083).
+     */
+    private val CLIQUABLES_DU_DEFAUT_083 = setOf("Plant précédent")
+    private fun estDuBloc(nom: String) = nom.startsWith("ÉCOUTE") || nom.startsWith("J'ÉCOUTE")
+
+    /** Seul « Mode poche » peut être recouvert par le bloc d'écoute, et seulement dans le délai (décision 2 de Pascal) ; le reste est un défaut. */
+    private fun permises(defautConnu: Boolean): (BancRendu.Noeud, BancRendu.Noeud) -> String? = { c, n ->
+        when {
+            !estDuBloc(n.nom) -> null
+            c.nom == MODE_POCHE -> "permis : le bloc d'écoute sur « Mode poche », pendant l'écoute et jusqu'à ${DUREE_BANDEAU_MS} ms après"
+            defautConnu && c.nom in CLIQUABLES_DU_DEFAUT_083 -> "DÉFAUT CONNU 2026-10-30, mission 083 : le bloc d'écoute recouvre « ${c.nom} »"
+            else -> null
+        }
+    }
+
+    private fun enteteConnu(defautConnu: Boolean) =
+        if (defautConnu) listOf("DÉFAUT CONNU (2026-10-30, mission 083 la corrige) : debout, le bloc d'écoute recouvre « Plant précédent » ; le test casse s'il ne le voit plus.") else emptyList()
+
+    /** Une phase dans le délai : rend, juge, écrit le rapport ; ajoute les défauts à [defauts]. */
+    private fun phaseDansLeDelai(cas: String, r: BancRendu.Resultat, grand: String, defautConnu: Boolean, defauts: MutableList<String>) {
+        val toleres = ArrayList<String>()
+        if (r.noeuds.none { it.nom == grand }) defauts += "« $grand » n'est pas affiché dans la phase « $cas »"
+        defauts += BancRendu.recouvrements(r, permises(defautConnu), toleres)
+        if (defautConnu && toleres.none { it.contains("DÉFAUT CONNU") }) {
+            defauts += "le défaut connu de la mission 083 n'est plus vu dans « $cas » : lever la marque (CLIQUABLES_DU_DEFAUT_083) à la fusion de la 083"
+        }
+        BancRendu.rapport(cas, r, defauts, toleres, enteteConnu(defautConnu))
+    }
+
+    private fun ecoute(cas: String, defautConnu: Boolean) {
         val e = Ecoute()
         EcouteApp.poserPilotePourTest(e.pilote)
-        // L'écoute est tenue 2 s puis lâchée : « ÉCOUTE FERMÉE » est affiché, l'échéance part de la fermeture.
-        e.pilote.tenir(); e.t = 300; e.pilote.moteurPret(1); e.t = 2_000; e.pilote.relacher()
-        val fermeeA = e.t
-        assertEquals(AffichageEcoute.FERMEE, e.pilote.affichage)
         val defauts = ArrayList<String>()
 
-        // Dans le délai : le bloc est là et peut recouvrir « Mode poche » ; le reste ne recouvre rien.
-        e.t = fermeeA + DUREE_BANDEAU_MS - 1
-        val dedans = BancRendu.rendre(session(), apres = { runOnIdle { e.pilote.avancer() } }, regle = regle)
-        if (dedans.noeuds.none { it.nom == "ÉCOUTE FERMÉE" }) defauts += "« ÉCOUTE FERMÉE » n'est plus affiché ${DUREE_BANDEAU_MS - 1} ms après la fermeture (il doit l'être jusqu'à ${DUREE_BANDEAU_MS} ms)"
-        defauts += BancRendu.recouvrements(dedans) { _, n -> n.nom.startsWith("ÉCOUTE") || n.nom.startsWith("J'ÉCOUTE") }
-        BancRendu.rapport("$cas-dans-le-delai", dedans, defauts)
+        // Un seul écran pour les quatre instants : l'écoute change, l'écran se redessine (comme sur le téléphone), l'arbre est relu.
+        // Fermer et rouvrir l'écran ferait oublier l'écoute (`arreterEtOublier`), ce n'est pas la situation à juger.
+        e.pilote.tenir(); e.t = 300; e.pilote.moteurPret(1)
+        assertEquals(AffichageEcoute.ECOUTE, e.pilote.affichage)
+        val pendant = BancRendu.rendre(session(), regle = regle)
+        phaseDansLeDelai("$cas-pendant-l-ecoute", pendant, "J'ÉCOUTE", defautConnu, defauts)
 
-        // Après le délai : plus de bloc, et plus rien sur « Mode poche ».
-        e.t = fermeeA + DUREE_BANDEAU_MS
-        regle.runOnIdle { e.pilote.avancer() }
+        // L'écoute est lâchée à 2 s : « ÉCOUTE FERMÉE » est affiché, l'échéance part de la fermeture.
+        regle.runOnIdle { e.t = 2_000; e.pilote.relacher() }
         regle.waitForIdle()
-        val apres = BancRendu.lire(regle, dedans.densite)
-        val restant = apres.noeuds.filter { it.nom == "ÉCOUTE FERMÉE" }
-        if (restant.isNotEmpty()) defauts += "« ÉCOUTE FERMÉE » est encore affiché ${DUREE_BANDEAU_MS} ms après la fermeture : il cache « Mode poche »"
+        val fermeeA = e.t
+        assertEquals(AffichageEcoute.FERMEE, e.pilote.affichage)
+
+        // Dans le délai : le bloc est là et ne peut recouvrir que « Mode poche ».
+        regle.runOnIdle { e.t = fermeeA + DUREE_BANDEAU_MS - 1; e.pilote.avancer() }
+        regle.waitForIdle()
+        val dedans = BancRendu.lire(regle, pendant.densite)
+        phaseDansLeDelai("$cas-dans-le-delai", dedans, "ÉCOUTE FERMÉE", defautConnu, defauts)
+
+        // Après le délai : plus de bloc, et plus aucun recouvrement, connu ou non.
+        regle.runOnIdle { e.t = fermeeA + DUREE_BANDEAU_MS; e.pilote.avancer() }
+        regle.waitForIdle()
+        val apres = BancRendu.lire(regle, pendant.densite)
+        if (apres.noeuds.any { it.nom == "ÉCOUTE FERMÉE" }) defauts += "« ÉCOUTE FERMÉE » est encore affiché ${DUREE_BANDEAU_MS} ms après la fermeture : il cache « Mode poche »"
         defauts += BancRendu.recouvrements(apres)
         assertNotNull(BancRendu.cliquable(apres, MODE_POCHE), "« Mode poche » absent après le délai")
         BancRendu.rapport("$cas-apres-le-delai", apres, defauts)
         assertTrue(defauts.isEmpty(), "Rendu « $cas » :\n" + defauts.joinToString("\n"))
     }
 
-    @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `bloc d'ecoute couche, il s'efface apres DUREE_BANDEAU_MS`() = ecoute("ecoute-couche-plein")
-    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `bloc d'ecoute debout, il s'efface apres DUREE_BANDEAU_MS`() = ecoute("ecoute-debout-plein")
+    @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `bloc d'ecoute couche, il s'efface apres DUREE_BANDEAU_MS`() = ecoute("ecoute-couche-plein", defautConnu = false)
+    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `bloc d'ecoute debout, il s'efface apres DUREE_BANDEAU_MS`() = ecoute("ecoute-debout-plein", defautConnu = true)
 }

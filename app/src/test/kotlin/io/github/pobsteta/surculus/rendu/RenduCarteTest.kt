@@ -115,7 +115,7 @@ class RenduCarteTest {
         val vue = BancRendu.activite!!.window.decorView
         val image = android.graphics.Bitmap.createBitmap(vue.width, vue.height, android.graphics.Bitmap.Config.ARGB_8888)
         vue.draw(android.graphics.Canvas(image))
-        val d = 2.8125f
+        val d = BancRendu.activite!!.resources.displayMetrics.density
         val pixels = IntArray(image.width * image.height).also { image.getPixels(it, 0, image.width, 0, 0, image.width, image.height) }
         fun px(xDp: Float, yDp: Float) = pixels[(yDp * d).toInt() * image.width + (xDp * d).toInt()]
         // Le bandeau fait 48 dp ; entre ses éléments (titre à 12-36 dp, boutons à 8-48 et 775-815 dp), le haut du bandeau (1-3 dp) est vide.
