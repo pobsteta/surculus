@@ -1,6 +1,5 @@
 package io.github.pobsteta.surculus.rendu
 
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import io.github.pobsteta.surculus.carte.CartePrete
 import io.github.pobsteta.surculus.carte.DispositionBoutons
 import io.github.pobsteta.surculus.carte.ExamenOrtho
@@ -13,6 +12,7 @@ import io.github.pobsteta.surculus.gpkg.Cartographie
 import io.github.pobsteta.surculus.gpkg.PlacetteTournee
 import io.github.pobsteta.surculus.gpkg.Tournee
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,7 +32,10 @@ import kotlin.test.assertTrue
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [36])
 class RenduCarteTest {
-    @get:Rule val regle = createEmptyComposeRule()
+    val regle = BancRendu.nouvelleRegle()
+
+    /** Le garde-fou entoure la règle Compose : ses piles couvrent aussi l'installation et le démontage de celle-ci. */
+    @get:Rule val chaine: org.junit.rules.RuleChain = org.junit.rules.RuleChain.outerRule(BancRendu.surveillant()).around(regle)
 
     companion object {
         /** Les trois placettes de Couchey (P35-01 à 03), en Lambert-93, comme `BancControle` ; toutes en France. */
@@ -52,6 +55,8 @@ class RenduCarteTest {
         )
     }
 
+
+    @After fun fermer() = BancRendu.fermer()
 
     private fun rendre(cas: String, choisie: Boolean) {
         val resultat = BancRendu.rendre(
@@ -115,7 +120,7 @@ class RenduCarteTest {
         val vue = BancRendu.activite!!.window.decorView
         val image = android.graphics.Bitmap.createBitmap(vue.width, vue.height, android.graphics.Bitmap.Config.ARGB_8888)
         vue.draw(android.graphics.Canvas(image))
-        val d = 2.8125f
+        val d = BancRendu.activite!!.resources.displayMetrics.density
         val pixels = IntArray(image.width * image.height).also { image.getPixels(it, 0, image.width, 0, 0, image.width, image.height) }
         fun px(xDp: Float, yDp: Float) = pixels[(yDp * d).toInt() * image.width + (xDp * d).toInt()]
         // Le bandeau fait 48 dp ; entre ses éléments (titre à 12-36 dp, boutons à 8-48 et 775-815 dp), le haut du bandeau (1-3 dp) est vide.

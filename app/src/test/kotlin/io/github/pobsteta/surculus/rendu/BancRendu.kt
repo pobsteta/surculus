@@ -10,7 +10,6 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.unit.Density
 import io.github.pobsteta.surculus.ui.theme.SurculusTheme
 import org.robolectric.Robolectric
@@ -34,9 +33,29 @@ object BancRendu {
     const val DEBOUT_PLEIN = "w384dp-h823dp-port-450dpi"
     const val DEBOUT_SANS_PLEIN = "w384dp-h745dp-port-450dpi"
 
+    /**
+     * La règle Compose du banc. `createEmptyComposeRule()` seul compose avec un dispatcher « unconfined » : un `LaunchedEffect` qui
+     * revient d'un `withContext(Dispatchers.IO)` reprend alors sur le fil d'entrées-sorties, et la recomposition qui suit s'y fait
+     * (les `BackHandler` ajoutent un observateur de cycle de vie hors du fil principal : `IllegalStateException`). En production
+     * `AndroidUiDispatcher` ramène sur le fil principal ; un dispatcher standard fait de même ici (les effets repartent à
+     * `waitForIdle`).
+     */
+    fun nouvelleRegle(): ComposeTestRule = androidx.compose.ui.test.junit4.createEmptyComposeRule(effectContext = kotlinx.coroutines.test.StandardTestDispatcher())
+
     /** La dernière activité lancée par [rendre] (pour en tirer une image). */
     var activite: ComponentActivity? = null
         private set
+    private var controleur: org.robolectric.android.controller.ActivityController<ComponentActivity>? = null
+
+    /**
+     * Ferme l'activité rendue (à jouer en `@After`) : les `onDispose` tournent, `PocheApp` et `EcouteApp` ne gardent pas
+     * d'abonnés morts d'un cas à l'autre.
+     */
+    fun fermer() {
+        controleur?.let { runCatching { it.pause().stop().destroy() } }
+        controleur = null
+        activite = null
+    }
 
     /** Un nœud de l'arbre, en dp, avec ce qui le nomme. */
     class Noeud(val nom: String, val rect: Rect, val cliquable: Boolean, val texte: Boolean, val descendance: Set<Int>, val id: Int)
@@ -50,7 +69,9 @@ object BancRendu {
      * l'horloge, défiler…) ; l'arbre est alors relu.
      */
     fun rendre(contenu: @Composable () -> Unit, apres: (ComposeTestRule.() -> Unit)? = null, regle: ComposeTestRule): Resultat {
-        val activite = Robolectric.buildActivity(ComponentActivity::class.java).setup().get()
+        val c = Robolectric.buildActivity(ComponentActivity::class.java)
+        controleur = c
+        val activite = c.setup().get()
         this.activite = activite
         activite.setContent { SurculusTheme { contenu() } }
         attendreUnEcran(regle)
@@ -120,17 +141,24 @@ object BancRendu {
 
     /**
      * La règle de recouvrement (assertion 3) : sur **tous** les cliquables et **tous** les textes de l'arbre, aucun nœud ne coupe un
-     * cliquable, sauf ses descendants, ses ancêtres, et les paires listées dans [permises]. Rend les violations, une phrase chacune.
+     * cliquable, sauf ses descendants, ses ancêtres, et les paires que [permises] nomme (elle rend la raison, `null` : défaut). Rend les
+     * violations, une phrase chacune ; les paires permises ou connues sont ajoutées à [toleres], pour que le rapport les dise.
      */
-    fun recouvrements(r: Resultat, permises: (cliquable: Noeud, autre: Noeud) -> Boolean = { _, _ -> false }): List<String> {
+    fun recouvrements(
+        r: Resultat,
+        permises: (cliquable: Noeud, autre: Noeud) -> String? = { _, _ -> null },
+        toleres: MutableList<String>? = null,
+    ): List<String> {
         val out = ArrayList<String>()
         for (c in r.cliquables) for (n in r.noeuds) {
             if (n.id == c.id || !(n.texte || n.cliquable)) continue
             if (n.id in c.descendance || c.id in n.descendance) continue
             if (n.cliquable && c.id > n.id) continue // la paire de deux cliquables n'est dite qu'une fois
             if (aire(n.rect) <= 0f || aire(c.rect) <= 0f) continue
-            if (intersection(c.rect, n.rect) > 1f && !permises(c, n)) {
-                out += "« ${n.nom} » ${fmt(n.rect)} recouvre le cliquable « ${c.nom} » ${fmt(c.rect)}"
+            if (intersection(c.rect, n.rect) > 1f) {
+                val phrase = "« ${n.nom} » ${fmt(n.rect)} recouvre le cliquable « ${c.nom} » ${fmt(c.rect)}"
+                val raison = permises(c, n)
+                if (raison == null) out += phrase else toleres?.add("$phrase  [$raison]")
             }
         }
         return out
@@ -139,8 +167,9 @@ object BancRendu {
     fun fmt(r: Rect) = "[%.0f,%.0f → %.0f,%.0f]".format(r.left, r.top, r.right, r.bottom)
 
     /** Écrit la sortie lisible du cas dans `build/reports/rendu/` (l'artefact de la CI) et la rend. */
-    fun rapport(cas: String, r: Resultat, verdicts: List<String>): String {
+    fun rapport(cas: String, r: Resultat, verdicts: List<String>, toleres: List<String> = emptyList(), entete: List<String> = emptyList()): String {
         val sb = StringBuilder()
+        entete.forEach { sb.appendLine(it) }
         sb.appendLine("Cas : $cas")
         sb.appendLine("Racine : ${fmt(r.racine)} dp (densité ${r.densite})")
         sb.appendLine("Cliquables : ${r.cliquables.size}")
@@ -148,12 +177,45 @@ object BancRendu {
             val genre = (if (n.cliquable) "cliquable" else "texte   ") + if (entier(r, n)) "" else "  HORS DE LA RACINE"
             sb.appendLine("  $genre  ${fmt(n.rect)}  %.0f × %.0f dp  « %s »".format(n.rect.width, n.rect.height, n.nom))
         }
-        sb.appendLine("Verdict : " + if (verdicts.isEmpty()) "aucun recouvrement, tout est dans la racine" else "${verdicts.size} défaut(s)")
+        if (toleres.isEmpty()) sb.appendLine("Recouvrements permis ou connus : aucun")
+        else {
+            sb.appendLine("Recouvrements permis ou connus : ${toleres.size}")
+            toleres.forEach { sb.appendLine("  ~ $it") }
+        }
+        sb.appendLine("Verdict : " + if (verdicts.isEmpty()) "aucun défaut, tout est dans la racine" else "${verdicts.size} défaut(s)")
         verdicts.forEach { sb.appendLine("  - $it") }
         val dossier = File("build/reports/rendu").also { it.mkdirs() }
         File(dossier, cas.replace(Regex("[^A-Za-z0-9_-]"), "_") + ".txt").writeText(sb.toString())
         return sb.toString()
     }
 
-    fun nouvelleRegle(): ComposeTestRule = createEmptyComposeRule()
+    /** Garde la pile complète d'un échec dans build/reports/rendu/ (publiée avec le reste) : la CI n'en montre que la première ligne. */
+    fun surveillant(): org.junit.rules.TestRule = object : org.junit.rules.TestWatcher() {
+        private var garde: Thread? = null
+
+        /**
+         * Garde-fou : un cas qui dure plus de 100 s est bloqué (il dure ≈ 1 s). On écrit la pile de tous les fils dans le rapport
+         * publié, puis on interrompt le fil du test pour qu'il échoue au lieu de tenir la CI en attente.
+         */
+        override fun starting(description: org.junit.runner.Description) {
+            val test = Thread.currentThread()
+            garde = Thread {
+                try { Thread.sleep(100_000) } catch (_: InterruptedException) { return@Thread }
+                val dossier = File("build/reports/rendu").also { it.mkdirs() }
+                File(dossier, "_blocage-" + description.methodName.replace(Regex("[^A-Za-z0-9_-]"), "_") + ".txt").writeText(
+                    Thread.getAllStackTraces().entries.joinToString("\n\n") { (t, pile) -> "== ${t.name}\n" + pile.joinToString("\n") { "    at $it" } },
+                )
+                test.interrupt()
+            }.also { it.isDaemon = true; it.start() }
+        }
+
+        override fun finished(description: org.junit.runner.Description) { garde?.interrupt() }
+
+        override fun failed(e: Throwable, description: org.junit.runner.Description) {
+            val dossier = File("build/reports/rendu").also { it.mkdirs() }
+            File(dossier, "_echec-" + description.methodName.replace(Regex("[^A-Za-z0-9_-]"), "_") + ".txt")
+                .writeText("fil : " + Thread.currentThread().name + "\n" + e.stackTraceToString())
+        }
+    }
+
 }
