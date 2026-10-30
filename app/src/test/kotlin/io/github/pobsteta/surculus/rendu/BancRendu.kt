@@ -51,10 +51,24 @@ object BancRendu {
         val activite = Robolectric.buildActivity(ComponentActivity::class.java).setup().get()
         this.activite = activite
         activite.setContent { SurculusTheme { contenu() } }
-        regle.waitForIdle()
+        attendreUnEcran(regle)
         apres?.invoke(regle)
         regle.waitForIdle()
         return lire(regle, activite.resources.displayMetrics.density)
+    }
+
+    /**
+     * Le contrôle charge son écran sur un fil d'entrées-sorties (`Dispatchers.IO`) : sur une machine lente (la CI), l'arbre est
+     * vide un instant. On attend jusqu'à 20 s qu'il porte au moins un nœud, sinon on le dit au lieu de juger un écran vide.
+     */
+    private fun attendreUnEcran(regle: ComposeTestRule) {
+        val limite = System.nanoTime() + 20_000_000_000L
+        while (true) {
+            regle.waitForIdle()
+            if (regle.onRoot().fetchSemanticsNode().children.isNotEmpty()) return
+            check(System.nanoTime() < limite) { "l'écran n'a rien rendu en 20 s : le test n'a rien à juger" }
+            Thread.sleep(50)
+        }
     }
 
     fun lire(regle: ComposeTestRule, densite: Float): Resultat {
