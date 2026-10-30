@@ -78,6 +78,17 @@ class ArriveeControleTest {
         assertTrue(texte.contains("Code lu sur le piquet") && texte.contains("« Rattacher »") && !texte.contains("Recommencer"), texte)
     }
 
+    /** Mission 077, décision de Pascal : le forestier doit « cliquer sur le bouton « Rattacher » ». Égalité exacte du message. */
+    @Test fun `le message des 15 m dit cliquez sur le bouton Rattacher, mot pour mot`() {
+        val r = SuiteSession.Refus.de(RefusPlacette.HorsQuinzeMetres(9979.542810305791))
+        assertEquals(
+            "À 10,0 km de la placette la plus proche (plus de 15 m). " +
+                "Lisez le code sur le piquet, saisissez-le dans le champ « Code lu sur le piquet », " +
+                "puis cliquez sur le bouton « Rattacher ».",
+            TextesControle.message(r)!!.texte,
+        )
+    }
+
     /** Mission 068, décision de Pascal : le bouton sous « Code lu sur le piquet » suit le champ. */
     @Test fun `le libelle du bouton suit le champ du code lu`() {
         assertEquals("Recommencer", TextesControle.boutonArrivee(""))
