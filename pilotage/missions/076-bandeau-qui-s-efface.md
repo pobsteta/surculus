@@ -77,3 +77,17 @@ Capture de l'orchestrateur, v0.7.88, 2026-10-30, contrôle de P35-03 :
 
 Sur la release suivante, contrôle d'une placette, couché : tenir le micro, lâcher ; le bandeau part après
 la durée retenue et « Mode poche » est visible ; capture de l'orchestrateur, debout et couché.
+
+## Reprise, aller-retour 1/3 (2026-10-30)
+
+Relecture de la #132 (69b60af) : « prêt pour Pascal », sans bloquant. Décision de Pascal du 2026-10-30 :
+« 6 s ».
+
+1. **Pascal** : `DUREE_BANDEAU_MS` passe à **6 s**, plus long que l'attente du résultat final de Vosk
+   (`RESULTAT_FINAL_MS`, 5 s) : une fois parti, le bandeau ne revient jamais pour un résultat tardif. Dire
+   dans la PR et dans le commentaire de la constante pourquoi elle doit rester au-dessus de
+   `RESULTAT_FINAL_MS`.
+2. **Test (mineur M1 du relecteur)** : un résultat final arrivé juste avant l'attente maximale (≈ 5 s après
+   le lâcher) trouve le bandeau encore montré, sans qu'il ait disparu entre le lâcher et ce résultat ; et
+   une garde qui casse si `DUREE_BANDEAU_MS <= RESULTAT_FINAL_MS`.
+3. Mettre à jour le corps de la PR (durée tranchée, retour du bandeau supprimé par la durée).
