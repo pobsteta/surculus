@@ -99,10 +99,6 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **080** test de rendu des écrans (`afficheur`,
-  tenir : plan d'abord ; plan validé par Pascal, code en cours) : validée par
-  Pascal le 2026-10-30 (porte n° 2, « Oui, les trois »), lancées le même jour ; fiches sur leurs seules branches.
-
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
@@ -167,6 +163,10 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **080** test de rendu des écrans (`afficheur`, tenir, PR #142, 76731ab, trois allers-retours) : fusionnée le
+  2026-10-30 ; rouge vérifié sur 076, 078 et 060 (PR de preuve #143 à #145 fermées sans fusion) ; aucun
+  changement de rendu, donc pas de capture ; défaut connu 083 marqué dans le test.
 
 - **081** aucun texte technique à l'écran (`testeur` puis `dev`, PR #140, deux allers-retours) : fusionnée le
   2026-10-30 ; capturées sur v0.7.99 le 2026-10-30 (code inconnu, « pas de réseau » en mode avion).
