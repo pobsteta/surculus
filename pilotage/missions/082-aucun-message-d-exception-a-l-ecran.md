@@ -137,3 +137,23 @@ le service est arrêté (`ServiceGnssRtk.kt:141`, non vérifié sur appareil).
 Complément du 2026-11-02 : tests du `testeur` (c4f02a9, 10 de plus, 7 rouges sur 8d1d52e). Décision de Pascal sur
 `recepteur_aucun_point` (« Aucun point de montage (caster injoignable ?) », `strings_recepteur.xml:28`) : « Le
 réécrire » : phrase française qui dit quoi faire, sans « caster » ni « injoignable » ; le `dev` propose la phrase exacte.
+
+## Reprise, aller-retour 2/3 (2026-11-02)
+
+Relecture de la #146 (698556c) : « prête pour Pascal », trois questions de sens. Décisions de Pascal du 2026-11-02 :
+
+1. **Refus « pas un GeoPackage »** : « Réécrire » : plus de redite, de double « : » ni de majuscule après le préfixe.
+   Proposition du relecteur : « ce n'est pas une tournée de sommieR : l'exporter de nouveau depuis sommieR » ; le `dev`
+   propose la phrase exacte, composée avec chaque préfixe (« Illisible : », « Carte impossible : », « Tournée refusée : »).
+2. **Carte, service du récepteur interrompu** : « Dans la 082 » : la carte ne promet plus « nouvelle tentative » quand
+   rien ne retente (`ErreurRecepteurCarte.pour`, `enMarche` resté vrai après le gestionnaire d'exceptions) ; elle dit la
+   phrase de l'Essai GNSS (« Le service du récepteur GNSS s'est interrompu : … »).
+3. **« travaux.gpkg » à l'écran** : « Admis, phrase corrigée » : le nom du fichier reste ; la phrase d'`ImportTournee.kt:77`
+   devient juste (« dossier », pas « fichier ») et dit quoi faire, par exemple « aucun fichier travaux.gpkg dans ce
+   dossier : choisir le dossier de la tournée exportée par sommieR ». Elle entre au tableau de la PR.
+
+Mineurs : ponctuation finale homogène ; imports en ordre ; alias `DETAIL_OUVERTURE` / `DETAIL_LECTURE` retirés.
+Hors 082 : le libellé « Caster » de Paramètres (bac à sable).
+
+Ordre : `testeur` d'abord (phrase composée sans double « : » ni majuscule après le préfixe ; carte après interruption du
+service ; refus « aucun travaux.gpkg » qui dit quoi faire), puis `dev`.
