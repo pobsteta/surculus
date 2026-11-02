@@ -67,7 +67,7 @@ object Rattachement {
                 when {
                     choisie.size == 1 -> choisie.single()
                     proches.size == 1 -> proches.single()
-                    else -> return Verdict.AChoisirUg(homonymes)
+                    else -> return Verdict.AChoisirUg(homonymes.sortedWith(OrdreUg))
                 }
             }
             val d = distanceM(p.position, mesuree)

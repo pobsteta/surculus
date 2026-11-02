@@ -120,13 +120,28 @@ object ControleursOuverts {
 }
 
 /**
+ * Choix de l'UG en attente, par tournée et placette (mission 086, reprise 1/3) : survit à la rotation avec les positions de
+ * la moyenne, pour que tourner l'écran pendant le choix ne relance pas la moyenne de 5 s. Libéré en quittant vraiment l'écran,
+ * au choix et à « Refaire la mesure ».
+ */
+object ChoixUgEnAttente {
+    private val attente = HashMap<String, Pair<EtatArrivee.UgAChoisir, List<Position>>>()
+
+    @Synchronized fun get(cle: String): Pair<EtatArrivee.UgAChoisir, List<Position>>? = attente[cle]
+
+    @Synchronized fun poser(cle: String, etat: EtatArrivee.UgAChoisir, positions: List<Position>) { attente[cle] = etat to positions }
+
+    @Synchronized fun liberer(cle: String) { attente.remove(cle) }
+}
+
+/**
  * Écran du contrôle d'une placette (mission 012-B1, spec § 4.3). Une question : « sur quel plant suis-je, dans quel état,
  * combien en reste-t-il ? » En grand : « Plant n° 7 » et son état. Une comparaison : « 7 sur 12 », l'état d'avant en petit.
  * Source et jour dans le bandeau. Tout ce que l'agent dit est écrit au journal de la tournée tout de suite : sortir sans
  * « Terminer » ne perd rien, la placette reste « à faire ».
  */
 @Composable
-fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onParametres: () -> Unit = {}) {
+fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", onRetour: () -> Unit, onParametres: () -> Unit = {}) {
     val ctx = LocalContext.current
     val chargement = chargerTournee(id)
     val (fix, _) = rememberFix()
@@ -149,14 +164,14 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onPara
     }
     // On libère le contrôleur en quittant vraiment l'écran, pas à la rotation.
     val activite = ctx as? android.app.Activity
-    DisposableEffect(cle) { onDispose { if (activite?.isChangingConfigurations != true) ControleursOuverts.liberer(cle) } }
+    DisposableEffect(cle) { onDispose { if (activite?.isChangingConfigurations != true) { ControleursOuverts.liberer(cle); ChoixUgEnAttente.liberer(cle) } } }
 
-    var arrivee by remember(cle) { mutableStateOf<EtatArrivee>(ControleursOuverts.get(cle)?.let { EtatArrivee.Ouverte(it) } ?: EtatArrivee.Moyenne(0)) }
+    var arrivee by remember(cle) { mutableStateOf<EtatArrivee>(ControleursOuverts.get(cle)?.let { EtatArrivee.Ouverte(it) } ?: ChoixUgEnAttente.get(cle)?.first ?: EtatArrivee.Moyenne(0)) }
     var essai by rememberSaveable(cle) { mutableIntStateOf(0) }
-    var code by rememberSaveable(cle) { mutableStateOf("") }
+    var code by rememberSaveable(cle) { mutableStateOf(codeInitial) }
     val fixActuel = rememberUpdatedState(fix)
     // Les fix de l'arrivée sont gardés : le choix de l'UG rouvre avec la même position, sans refaire la moyenne.
-    var positionsArrivee by remember(cle) { mutableStateOf<List<Position>>(emptyList()) }
+    var positionsArrivee by remember(cle) { mutableStateOf(ChoixUgEnAttente.get(cle)?.second ?: emptyList()) }
     val scope = rememberCoroutineScope()
     suspend fun ouvrirArrivee(ouverte: TourneeOuverte, positions: List<Position>, ugChoisie: String?): EtatArrivee {
         val resultat = withContext(Dispatchers.IO) {
@@ -175,12 +190,13 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onPara
         }
         val v = resultat.getOrNull()
         if (v is EtatArrivee.Ouverte) ControleursOuverts.poser(cle, v.controleur)
+        if (v is EtatArrivee.UgAChoisir) ChoixUgEnAttente.poser(cle, v, positions) else ChoixUgEnAttente.liberer(cle)
         return v ?: EtatArrivee.SansPosition
     }
 
     // L'arrivée (décisions de Pascal du 2026-10-27) : la moyenne de 5 s part toute seule, avec son décompte, puis la règle des 15 m.
     LaunchedEffect(cle, essai, ouverte) {
-        if (ouverte == null || ControleursOuverts.get(cle) != null) return@LaunchedEffect
+        if (ouverte == null || ControleursOuverts.get(cle) != null || ChoixUgEnAttente.get(cle) != null) return@LaunchedEffect
         // La moyenne de 5 s est celle du guidage : écrite une seule fois (`collecterPositionsArrivee`).
         val positions = collecterPositionsArrivee(position = { fixActuel.value?.position }, surSeconde = { n -> arrivee = EtatArrivee.Moyenne(n) })
         positionsArrivee = positions
@@ -206,7 +222,7 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onPara
                     is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)
                     is EtatArrivee.Refus -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
                     EtatArrivee.SansPosition -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
-                    is EtatArrivee.UgAChoisir -> VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, positionsArrivee, ug) } }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
+                    is EtatArrivee.UgAChoisir -> VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, positionsArrivee, ug) } }, onRecommencer = { ChoixUgEnAttente.liberer(cle); arrivee = EtatArrivee.Moyenne(0); essai++ })
                     is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour, onParametres)
                 }
             }
@@ -254,7 +270,7 @@ private fun VueChoixUg(etat: EtatArrivee.UgAChoisir, onChoix: (String) -> Unit, 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.controle_ug_question, etat.code), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
         Text(stringResource(R.string.controle_ug_aide), style = MaterialTheme.typography.bodyLarge, color = couleurNeutre())
-        for (c in etat.candidats.sortedWith(compareBy({ it.ug.orEmpty() }, { it.placette.valeur }))) {
+        for (c in etat.candidats) {
             val ug = c.ug
             Button(
                 onClick = { onChoix(ug.orEmpty()) },

@@ -7,7 +7,7 @@
     <string name="controle_moyenne">Position moyennée : %1$d / %2$d s</string>
     <string name="controle_moyenne_aide">Restez au piquet. La placette s\'ouvre toute seule.</string>
     <string name="controle_ug_question">%1$s : quelle UG ?</string>
-    <string name="controle_ug_aide">Ce code existe dans plusieurs UG et la position ne suffit pas à choisir. Touchez celle où vous êtes.</string>
+    <string name="controle_ug_aide">Cliquez sur le bouton de l\'UG où vous êtes.</string>
     <string name="controle_ug_choix">%1$s · UG %2$s</string>
     <string name="controle_ug_recommencer">Refaire la mesure</string>
     <string name="controle_sans_position">Pas de position GNSS : approchez-vous du piquet et attendez un fix.</string>
