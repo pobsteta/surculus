@@ -120,8 +120,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **086** code de piquet en double entre UG (`testeur` puis `dev`, appuyer) : validée par Pascal le 2026-11-02, lancée
-  le même jour. Suivront **087** ouvrir un contrôle sans position et **088** `.sursync` v2 (fiches à écrire).
+- **087** ouvrir un contrôle sans position (`testeur` puis `dev`, tenir : plan d'abord) : fiche écrite le 2026-11-02,
+  à valider par Pascal ; **088** `.sursync` v2 ensuite (la 087 ne part sur les téléphones qu'avec la 088).
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
@@ -183,6 +183,9 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **086** code de piquet en double entre UG (`testeur` puis `dev`, PR #151, 709c7bd, un aller-retour) : fusionnée le
+  2026-11-02 ; **capture à faire** (écran « P01 : quelle UG ? », tournée à deux « P01 »).
 
 - **082** plus aucun message d'exception brut à l'écran (`testeur` puis `dev`, PR #146, a04eb64, deux allers-retours) :
   fusionnée le 2026-11-02 ; **captures à faire** (import d'un fichier vide refusé, récepteur coupé).
