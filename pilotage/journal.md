@@ -921,3 +921,5 @@
 2026-11-02 · Pascal · PR #151 · « Fusionner » : PR #151 (086) fusionnée par l'orchestrateur (709c7bd). P35-02 de Couchey « en faire le cas sans position » (ligne à géométrie NULL, F4 la vérifie ; ADR 0007 et `ci/sommier/README.md` à amender hors `dev`). Fiche 087 écrite (`testeur` puis `dev`, tenir, plan d'abord, opus), présentée à Pascal.
 
 2026-11-02 · Pascal · mission 087 · « oui, lance la 087 ». `testeur` lancé (worktree, opus), sur la fiche seule, sans lire le code ; le `dev` suivra, plan d'abord.
+
+2026-11-02 · testeur · mission 087 · tests d'acceptation écrits sans lire le code (core, app, gpkg, fixtures Couchey, F4 et deux sabotages F5), rouges (ne compilent pas) jusqu'au `dev` ; PR #152 en brouillon (edd6c8c). Huit questions remontées : visite_le (spec § 5), phrase hors de France (ADR 0003, point 6) et « une ligne par contrôle » (spec § 5) ont déjà leur réponse écrite ; récepteur inactif, motif du refus sans code, placette sans UG : au plan du `dev`, présenté à Pascal ; trace au journal technique et fix simulé : limites des tests JVM, notées.
