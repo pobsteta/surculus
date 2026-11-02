@@ -11,7 +11,11 @@
 dit quoi faire, le détail technique allant au journal Android, pour que le forestier lise du français partout où
 Surculus lui parle.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** 
+- *Testeur (2026-11-02) :* ma mission est d'écrire les tests qui échouent tant qu'un des huit textes montrés au forestier
+  (carte, liste et import des tournées, dictée, récepteur GNSS, NTRIP) laisse passer un nom d'exception, un texte
+  anglais brut, un `_`, un chemin ou un UUID, pour que le `dev` ait un critère net et que le travail ne s'auto-évalue pas.
+- *Dev :* _à compléter par le `dev` avant d'agir._
 
 ## Les trois questions (règle de staffing)
 
