@@ -120,8 +120,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **087** ouvrir un contrôle sans position (`testeur` puis `dev`, tenir : plan d'abord) : fiche écrite le 2026-11-02,
-  à valider par Pascal ; **088** `.sursync` v2 ensuite (la 087 ne part sur les téléphones qu'avec la 088).
+- **087** ouvrir un contrôle sans position (`testeur` puis `dev`, tenir : plan d'abord) : fiche écrite et validée par Pascal le 2026-11-02 ;
+  `testeur` lancé le 2026-11-02 ; **088** `.sursync` v2 ensuite (la 087 ne part sur les téléphones qu'avec la 088).
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
