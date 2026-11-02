@@ -919,3 +919,5 @@
 2026-11-02 · Pascal · 086 · Texte du guidage « impératif court » : « P01 existe dans plusieurs UG (12, 14). Cliquez sur le bouton « Contrôler » : si la position ne suffit pas, l'écran suivant vous demandera l'UG. » ; confié au `dev` avec les deux mineurs du corps de PR.
 2026-11-02 · dev · PR #151 · 086 (2da555f) : texte du guidage de Pascal en place, corps corrigé (rouge du testeur, CI arrêtée à `:core:test`) ; vérifié par l'orchestrateur : seul `strings_tournees.xml` change depuis 89b54c8 (une ligne), CI verte (41483205115). Présentée à Pascal.
 2026-11-02 · Pascal · PR #151 · « Fusionner » : PR #151 (086) fusionnée par l'orchestrateur (709c7bd). P35-02 de Couchey « en faire le cas sans position » (ligne à géométrie NULL, F4 la vérifie ; ADR 0007 et `ci/sommier/README.md` à amender hors `dev`). Fiche 087 écrite (`testeur` puis `dev`, tenir, plan d'abord, opus), présentée à Pascal.
+
+2026-11-02 · Pascal · mission 087 · « oui, lance la 087 ». `testeur` lancé (worktree, opus), sur la fiche seule, sans lire le code ; le `dev` suivra, plan d'abord.
