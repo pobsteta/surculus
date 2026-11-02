@@ -7,6 +7,9 @@
 
 ## Bac à sable
 
+- **Libellé « Caster » dans Paramètres** (`recepteur_caster`, `recepteur_ntrip_desc`, relecture de la 082) : mot
+  technique, hors de la 082.
+
 - **Contrôles d'intégrité de l'export** (`ExportTravaux:487-494`, clés étrangères, rtree, `gpkg_contents`) : textes
   techniques, invisibles tant qu'aucun écran n'appelle l'export ; à traduire ce jour-là (« les laisser, noter », Pascal,
   2026-11-02, relecture de la 082).
