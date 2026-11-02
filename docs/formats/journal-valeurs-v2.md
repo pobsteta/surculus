@@ -14,7 +14,10 @@ donc perdu au relu (relevé du `contradicteur` du 2026-11-02).
 * `"v":1` : la valeur se lit selon la v1, à l'identique ; `sans_position_mesuree` y vaut **faux** (la clé n'existe
   pas en v1).
 * `"v":2` : la valeur se lit selon ce document.
-* Toute autre valeur de `v` : valeur illisible, ignorée (règle commune de la v1).
+* Toute autre valeur de `v` (absente, `0`, `3`...) : valeur illisible, ignorée. C'est une **règle nouvelle de la v2** :
+  la v1 ne la donne pas, et le lecteur v1 (`ValeurControle.lire`) ne regarde pas `v`.
+* **Choix de format** (proposé par le `relecteur` de la PR #150, non tranché par Pascal) : chaque valeur ignorée à la
+  lecture est tracée au **journal technique** (`JournalTechnique`), jamais en silence.
 
 Comme pour `.sursync` (`docs/formats/sursync-v1.md`), le lecteur de la version N lit la version N-1.
 
@@ -55,15 +58,23 @@ rejouent chaque exemple de ce document (mission 086).
 * Les types de ligne, `pointage`, `etat`, `annulation` et les codes de refus : v1.
 * La position portée par le contrôle reste en Lambert-93, dans le repère de la tournée (`repere_epsg`).
 
-## Points à trancher (question ouverte de la mission 085, non décidés)
+## Une seule version du format
 
-1. **Version des autres valeurs** : `pointage` et `etat` ne changent pas. Surculus les écrit-il en `"v":2` (une seule
-   version pour tout le format, plus simple à relire) ou garde-t-il `"v":1` (seul `controle` change) ?
-2. **Refus « hors de France » écrit au journal** (ADR 0003, amendement, point 6) : la liste des types de ligne est
-   fermée (`controle`, `pointage`, `etat`, `annulation`, `saut_horloge`, et `photo` en `.sursync` v2). Quel type porte
-   ce refus, et avec quelle valeur ?
-3. **Ancien Surculus** : le lecteur v1 (`ValeurControle.lire`, `core/.../core/session/Valeurs.kt`) ne regarde pas `v`.
-   Il lit un contrôle v2 **avec** position (la clé en plus est ignorée), mais **ignore sans le dire** un contrôle v2
-   sans position (`position_mesuree_x` à `null`). Une sauvegarde `.sursync` restaurée sur un téléphone resté à une
-   ancienne version perdrait ces contrôles. Faut-il une nouvelle version de `.sursync`, pour qu'un ancien Surculus
-   refuse le fichier au lieu de perdre des lignes ?
+**Choix de format** (proposé par le `relecteur` de la PR #150, non tranché par Pascal) : une seule version pour tout le
+format. `FormatValeurs.VERSION` passe à `2` : Surculus écrit `"v":2` dans **toutes** ses valeurs (`controle`,
+`pointage`, `etat`), même si `pointage` et `etat` ne changent pas ; le lecteur accepte `1` et `2`.
+
+## Ce qui sort du journal des saisies
+
+Le refus d'un fix hors de France (ADR 0003, amendement du 2026-11-02, point 6) est écrit au **journal technique**
+(`JournalTechnique`, diagnostic), pas au journal des saisies : la liste des types de ligne ne change pas (décision de
+Pascal du 2026-11-02).
+
+## Sauvegarde `.sursync`
+
+Un Surculus ancien ne lit pas `v` : il lirait un contrôle v2 **avec** position (la clé en plus est ignorée) et
+**ignorerait sans le dire** un contrôle v2 sans position (`position_mesuree_x` à `null`). Décision de Pascal du
+2026-11-02 (« nouvelle version ») : dès que le journal écrit des valeurs v2, la sauvegarde passe à la **version
+suivante** de son format ; un Surculus ancien la refuse (`version_future`, « mettre l'application à jour »,
+[`sursync-v1.md`](sursync-v1.md), « Version ») ; un Surculus à jour lit toujours la version précédente. Le numéro de
+cette version n'est pas tranché (spec § 4.8).

@@ -175,22 +175,31 @@ point à Brest et à Strasbourg.
   2026-10-30, mission 077, PR #136, fusionnée le 2026-10-30 ; le bouton « Recommencer » et le
   message sans motif technique sont ceux de la mission 068, décision du 2026-10-29).
 * **Arrivée sans position** (décisions de Pascal du 2026-11-02, ADR 0003, « Amendement du 2026-11-02 », dont le texte
-  fait foi ; mission 085, codé par la 086) :
+  fait foi, même numérotation de 1 à 10 ; points 3, 6 et 10 précisés le 2026-11-02 après la relecture de la PR #150 ;
+  mission 085, codé par la 086) :
   1. **Sans aucun fix** reçu pendant **30 s** (**provisoire**, mesurée à l'essai en forêt), récepteur actif,
      localisation et permission accordées, Surculus propose « Ouvrir sans position ». Localisation coupée ou
      permission refusée : il demande de l'activer, pas d'ouverture sans position.
   2. Le contrôle s'ouvre seulement avec un **code lu** sur le piquet qui existe dans la tournée ; **sans code, rien
      ne s'ouvre**.
-  3. **Code présent dans plusieurs UG** : l'agent **choisit l'UG** (« P01 : UG 12 ou UG 14 ? »), avec ou sans
-     position (le code n'est unique que dans une UG, § 6 ; aujourd'hui `firstOrNull`, `Controle.kt` l. 55).
+  3. **Code présent dans plusieurs UG** (le code n'est unique que dans une UG, § 6) : **la position tranche** : si une
+     seule des placettes de ce code est à 15 m au plus de la position mesurée, c'est elle ; sinon (sans position,
+     aucune à 15 m au plus, ou plus d'une : ce dernier cas est une lecture de l'`archiviste`, à confirmer), l'agent
+     **choisit l'UG** (« P01 : UG 12 ou UG 14 ? »). Jamais le premier trouvé (aujourd'hui `firstOrNull`, `Controle.kt`
+     l. 55).
   4. Avant d'ouvrir sans position, Surculus **affiche la placette à confirmer** (« P35-01 · UG 12 · parcelle 4 ·
      25 plants pointés : ouvrir sans position ? »).
   5. Le contrôle **garde la position de la placette créée par sommieR** ; pas de position mesurée.
   6. Un fix reçu, **même unique, médiocre ou simulé**, reste une position et suit la règle ci-dessus (15 m, ou code
      lu qui l'emporte). **Hors de France : refusé**, avec une phrase qui dit quoi faire (« position aberrante :
-     couper puis rallumer la localisation »), le refus écrit au journal.
-  7. Export : § 5, `positions_controles`. Journal : format v2 (`docs/formats/journal-valeurs-v2.md`).
-  8. L'**installation d'une placette** exige toujours une position (§ 4.7, inchangé).
+     couper puis rallumer la localisation »), le refus écrit au **journal technique** (`JournalTechnique`), pas au
+     journal des saisies (liste des types de ligne inchangée).
+  7. Export : § 5, `positions_controles`.
+  8. Journal des saisies : format v2 (`docs/formats/journal-valeurs-v2.md`), qui relit le v1 ; sauvegarde `.sursync`
+     dans la version suivante de son format, refusée avec un message par un Surculus ancien (§ 4.8).
+  9. L'**installation d'une placette** exige toujours une position (§ 4.7, inchangé).
+  10. **Fix reçu après une ouverture sans position** : la position est fixée à l'arrivée ; le contrôle reste « sans
+      position mesurée » jusqu'à la fin, et « Terminer » le reprend tel quel.
 
   Le jour civil d'un contrôle sans fix se calcule sur l'heure du téléphone (§ 5, « Journal des saisies », règle
   inchangée).
@@ -437,6 +446,12 @@ Règles du brief (arbitrages de Pascal ; sources dans `docs/referentiels/seuils-
   l'export et signalée, sans bloquer. Le document `docs/formats/sursync-v2.md`, son schéma et ses
   fixtures sont à écrire par la mission de code ; le critère F3 de la CI compte sept couches
   ajoutées dès que l'export écrit `photos_terrain` (ADR 0007, même règle).
+* **Version suivante du `.sursync` pour les contrôles sans position** (décision de Pascal du 2026-11-02, mission 085,
+  « nouvelle version ») : dès que le journal écrit des valeurs v2 (`docs/formats/journal-valeurs-v2.md`), la
+  sauvegarde passe à la version suivante de son format ; un Surculus ancien la refuse (`version_future`, « mettre
+  l'application à jour ») au lieu de perdre sans le dire un contrôle sans position ; un Surculus à jour lit toujours
+  la version précédente. Le numéro (v2 partagée avec le type `photo` ci-dessus, ou v3) n'est pas tranché ; voir la fiche
+  `pilotage/missions/085-ouvrir-sans-position-adr-et-spec.md`, « Reprise, aller-retour 1/3 ».
 * Export `<tournée>.zip` : `travaux.gpkg` complété, `DCIM/`. La tournée passe *rendue*
   et reste consultable. ([format d'échange](formats/sursync-v1.md) ; la fusion relève de l'ADR 0006, réservée et non écrite, voir [l'index](adr/README.md))
 
@@ -461,7 +476,7 @@ rien.
 | Couche | Géométrie | Champs |
 |---|---|---|
 | `plants` | POINT (dérivé) | `uuid`, `placette_uuid`, `numero`, `essence` (code ONF, `essences.csv`), `regarni` (bool), `remplace_uuid`, `pointe_le`, `distance_m` (horizontale), `azimut_mag` et `unite_azimut` (deg, gr) bruts, `declinaison_deg`, `convergence_deg`, `azimut_geo_deg`, `modele_geomagnetique` |
-| `positions_controles` | POINT, ou **NULL** pour un contrôle sans position mesurée (jamais un POINT EMPTY) | **une ligne par contrôle** ; `controle_uuid`, position GNSS **mesurée** (moyennée), `precision_m` (**NULL** sans position mesurée, jamais 0), `source_gnss`, `referentiel_source`, `simulee` (bool), `rattache_par_identite` (bool : le code lu a désigné la placette, la position mesurée ne l'a pas fait ; vrai au-delà de 15 m et vrai sans position mesurée), `sans_position_mesuree` (bool, ajouté le 2026-11-02 : vrai quand aucun fix n'a été reçu et que le contrôle a été ouvert sur le code lu ; la ligne de `controles` porte alors la position du piquet ; `source_gnss`, `referentiel_source` et `simulee` d'une ligne sans position mesurée : **à trancher**, question ouverte de la mission 085). Décisions de Pascal du 2026-11-02, sources (Darwin Core, QField, GeoPackage 1.3) : ADR 0003, amendement du 2026-11-02 |
+| `positions_controles` | POINT, ou **NULL** pour un contrôle sans position mesurée (jamais un POINT EMPTY) | **une ligne par contrôle** ; `controle_uuid`, position GNSS **mesurée** (moyennée), `precision_m` (**NULL** sans position mesurée, jamais 0), `source_gnss`, `referentiel_source`, `simulee` (bool), `rattache_par_identite` (bool : le code lu a désigné la placette, la position mesurée ne l'a pas fait ; vrai au-delà de 15 m et vrai sans position mesurée), `sans_position_mesuree` (bool, ajouté le 2026-11-02 : vrai quand aucun fix n'a été reçu et que le contrôle a été ouvert sur le code lu ; la ligne de `controles` porte alors la position du piquet ; `source_gnss`, `referentiel_source` et `simulee` d'une ligne sans position mesurée : **NULL**, `sans_position_mesuree` porte seul l'information : choix de format du `relecteur` de la PR #150, non tranché par Pascal). Écart : le scénario Couchey de la CI d'import n'écrit aujourd'hui aucune ligne pour P35-02 « sans mesure » (ADR 0003, amendement du 2026-11-02, à reprendre par la 086). Décisions de Pascal du 2026-11-02, sources (Darwin Core, QField, GeoPackage 1.3) : ADR 0003, amendement du 2026-11-02 |
 | `etats_plants` | — | `uuid`, `controle_uuid`, `plant_uuid`, `etat` (sain, atteint, mort, absent, ou `non_observe` : absence de mesure, hors totaux), `cause_groupe` (entomologique, pathologique, animaux, abiotique_complexe_indetermine), `cause_detail`, `hauteur_cm` |
 | `constats_reprise` | POLYGON (surface constatée) | `uuid`, `methode` (plein, cemagref, grappes), `pas_lignes`, `departs` (les deux départs tirés), `essence`, `nb_plants_chantier`, `nb_sains`, `nb_atteints`, `nb_morts`, `nb_absents`, `taux_brut_pct`, `ic_bas_pct`, `ic_haut_pct`, `seuil_pct`, `seuil_source`, `alerte` (bool), `visite_le`, `operateur` |
 | `vides` | POLYGON | `uuid`, `constat_uuid` ou `placette_uuid`, `surface_are`, `origine` (trace, propose), `visite_le`, `operateur` |
@@ -624,9 +639,9 @@ dans Surculus.
 | Un plant « non observé » ne porte aucune mesure (hauteur, cause, détail) ; hauteur refusée sur un plant absent ; un seul état par plant dans un contrôle ; numéro déjà pris dans la placette refusé (comme `sommier_pointer_plant`) | Surculus | 1 |
 | Plant pointé au-delà du rayon de sa placette (+ 0,10 m) : alerte et confirmation de l'agent, non refusé | Surculus | 1 |
 | Numéros provisoires pendant le premier contrôle, figés à sa clôture ; « un contrôle par jour » = (placette, jour civil Europe/Paris) dans une tournée ; le code lu l'emporte sur le GNSS, « rattaché par identité » seulement au-delà de 15 m, ou sans position mesurée (2026-11-02) | Surculus | 1 |
-| **Ouvrir sans position** (décisions de Pascal du 2026-11-02, ADR 0003, amendement du 2026-11-02, § 4.3) : proposé seulement après **30 s** sans aucun fix (**provisoire**), récepteur actif, localisation et permission accordées ; localisation coupée ou permission refusée : demande de l'activer, pas d'ouverture ; **code lu connu de la tournée exigé**, sans code rien ne s'ouvre ; placette affichée à confirmer avant d'ouvrir ; position du contrôle = position du piquet créée par sommieR, aucune position mesurée ; un fix reçu, même unique, médiocre ou simulé, suit la règle des 15 m ; fix hors de France refusé (« position aberrante : couper puis rallumer la localisation »), refus écrit au journal ; installation d'une placette sans position refusée | Surculus | 1 |
-| **Code présent dans plusieurs UG** : l'agent choisit l'UG, avec ou sans position ; jamais le premier trouvé (décision de Pascal du 2026-11-02) | Surculus | 1 |
-| Export d'un contrôle sans position mesurée : une ligne de `positions_controles`, géométrie **NULL** (pas un POINT EMPTY), `precision_m` NULL, `sans_position_mesuree` vrai, `rattache_par_identite` vrai ; `controles` à la position du piquet ; journal v2 relu après redémarrage, v1 toujours relu (décisions de Pascal du 2026-11-02) | Surculus | 1 |
+| **Ouvrir sans position** (décisions de Pascal du 2026-11-02, ADR 0003, amendement du 2026-11-02, § 4.3) : proposé seulement après **30 s** sans aucun fix (**provisoire**), récepteur actif, localisation et permission accordées ; localisation coupée ou permission refusée : demande de l'activer, pas d'ouverture ; **code lu connu de la tournée exigé**, sans code rien ne s'ouvre ; placette affichée à confirmer avant d'ouvrir ; position du contrôle = position du piquet créée par sommieR, aucune position mesurée ; un fix reçu, même unique, médiocre ou simulé, suit la règle des 15 m ; fix hors de France refusé (« position aberrante : couper puis rallumer la localisation »), refus écrit au journal technique, pas au journal des saisies ; fix reçu après l'ouverture sans position : ignoré, le contrôle reste sans position mesurée jusqu'à « Terminer » ; installation d'une placette sans position refusée | Surculus | 1 |
+| **Code présent dans plusieurs UG** : la position tranche (une seule placette de ce code à 15 m au plus : c'est elle) ; sinon, ou sans position, l'agent choisit l'UG ; jamais le premier trouvé (décisions de Pascal du 2026-11-02) | Surculus | 1 |
+| Export d'un contrôle sans position mesurée : une ligne de `positions_controles`, géométrie **NULL** (pas un POINT EMPTY), `precision_m` NULL, `sans_position_mesuree` vrai, `rattache_par_identite` vrai ; `controles` à la position du piquet ; `source_gnss`, `referentiel_source`, `simulee` NULL (choix de format) ; journal v2 relu après redémarrage, v1 toujours relu ; `.sursync` de la version suivante refusé par un lecteur ancien, version précédente toujours lue (décisions de Pascal du 2026-11-02) | Surculus | 1 |
 | Pente acceptée dans ]−90°, 90°[ ; pas de correction du facteur d'échelle Lambert-93 (erreur < 3 cm à 30 m) | Surculus | 1 |
 | Unités de la boussole (degrés ou grades) et de la pente (% ou degrés) déclarées à l'ouverture de la tournée ; azimut saisi refusé hors [0, 360[ ou [0, 400[ avant normalisation | ADR 0003 | 1 |
 | Tout point écrit tombe dans l'emprise de la forêt et en France ; azimut dans [0, 360[ ; déclinaison et convergence enregistrées. Exception (amendé le 2026-10-28) : un point de `photos_terrain` hors de l'emprise de la forêt est gardé et signalé (le fix du téléphone peut errer de plusieurs dizaines de mètres sous couvert, ADR 0003) ; hors de France, aucun point n'est écrit et la photo est signalée | `CLAUDE.md` | 1 |

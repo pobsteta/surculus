@@ -160,8 +160,63 @@ Relevé par lecture seule, à confirmer par le `dev` ; numéros de ligne à la t
    vrais, `controles` à la position du piquet, import 0.31.1 vert (F4) ;
 10. installation d'une placette sans position : toujours refusée.
 
-**Questions ouvertes avant la 086** (rapport de l'`archiviste`, non tranchées) : voir la PR de la 085 et
-`docs/formats/journal-valeurs-v2.md`, « Points à trancher ».
+**Questions ouvertes avant la 086** (rapport de l'`archiviste`) : posées dans la PR #150 ; réponses de Pascal et
+questions restantes dans « Reprise, aller-retour 1/3 (2026-11-02) » ci-dessous.
+
+## Reprise, aller-retour 1/3 (2026-11-02)
+
+Après la relecture de la PR #150 (« prête pour Pascal ») et les décisions de Pascal du 2026-11-02. Documentation
+seulement.
+
+**Décisions de Pascal** (écrites dans l'ADR 0003, amendement du 2026-11-02, la spec § 4.3, § 4.8, § 5, § 6, et
+`docs/formats/journal-valeurs-v2.md`) :
+
+1. **Code en double entre UG** : « la position tranche » : si une seule homonyme est à 15 m au plus, c'est elle ; le
+   choix de l'UG n'est demandé que si rien ne tranche (sans position, ou position loin de toutes). Point 3 réécrit.
+   Lecture de l'`archiviste`, à confirmer : deux homonymes à 15 m au plus, rien ne tranche, l'agent choisit.
+2. **`.sursync`** : « nouvelle version » : la sauvegarde passe à la version suivante ; un Surculus ancien la refuse
+   avec un message (`version_future`) ; un Surculus à jour lit toujours l'ancienne. **Choix de l'`archiviste`** : je
+   n'écris pas le document de la version suivante, je la note pour la 086 (ci-dessous), parce que son numéro n'est pas
+   tranché : la v2 est déjà promise au type `photo` (spec § 4.8, décision du 2026-10-28, document « à écrire par la
+   mission de code », `FormatSursync.VERSION_COURANTE` = 1 sur `main`). Renvoi ajouté en tête de
+   `docs/formats/sursync-v1.md`.
+3. **Fix reçu après une ouverture sans position** : « non, fixé à l'arrivée » : le contrôle reste sans position
+   mesurée jusqu'à la fin ; « Terminer » le reprend tel quel. Point 10 ajouté.
+4. **Refus hors de France** : au journal technique (`JournalTechnique`, `app/.../messages/TextesEchec.kt` l. 23 :
+   journal Android), pas au journal des saisies ; la liste des types de ligne ne change pas. Point 6 précisé.
+
+**Mineurs du relecteur, corrigés :** (a) « identique au tag `v0.37.1`, `f0229b9` » (et non 0.38.0) ; (b) format v2 :
+« toute autre valeur de `v` est illisible » présenté comme règle nouvelle de la v2 ; (c) même numérotation de 1 à 10
+dans l'ADR et la spec ; (d) écart « une ligne par contrôle » contre le scénario Couchey (P35-02 sans ligne) écrit dans
+l'ADR 0003 et la spec § 5. Le texte de l'amendement, non encore fusionné, a été corrigé dans la PR même.
+
+**Choix de format du relecteur, non tranchés par Pascal, écrits comme tels :** une seule version du format du
+journal (`FormatValeurs.VERSION` = 2, lecteur qui accepte 1 et 2) ; `source_gnss`, `referentiel_source` et `simulee`
+NULL sans position mesurée ; `null` explicite et ordre des clés de la v2 ; chaque valeur ignorée à la lecture tracée
+au journal technique.
+
+**Ajouts à la liste de la 086**
+
+- Couchey et F4 : `ci/sommier/README.md` l. 54-66 ; `fixtures/export/registre-attendu-couchey.json` (P35-02 et
+  « decision ») ; le texte F4 de l'ADR 0007 (`docs/adr/0007-couches-ajoutees-au-contrat-sommier.md` l. 52, « sans mesure (P35-02), c'est le piquet ») :
+  la 086 fait de P35-02 un contrôle `sans_position_mesuree`, ou dit pourquoi non ; si cela change ce que F4 prouve,
+  la question remonte à Pascal.
+- Sauvegarde : `data/src/main/kotlin/io/github/pobsteta/surculus/data/sauvegarde/FormatSursync.kt` l. 22
+  (`VERSION_COURANTE`) et l. 130 (`lire`) ; `data/.../sauvegarde/Sauvegarde.kt` l. 42 ;
+  `app/.../sauvegarde/EcranRestauration.kt` l. 104 (message `version_future`) ; `fixtures/sursync/` (exemple de la
+  version suivante, lecture de la v1) ; `fixtures/sauvegarde/` ; `docs/formats/sursync-v1.schema.json` et le document
+  de la version suivante. **Avant de coder**, faire trancher par Pascal le numéro : v2 partagée avec le type `photo`
+  (mission des photos non faite), ou v3.
+- Journal technique : `app/src/main/kotlin/io/github/pobsteta/surculus/messages/TextesEchec.kt` (`JournalTechnique`)
+  pour le refus hors de France et les valeurs ignorées à la lecture.
+- Tests d'acceptation en plus : code en double avec une seule homonyme à 15 m au plus (pas de question) ; fix reçu
+  après ouverture sans position (ignoré, « Terminer » inchangé) ; refus hors de France absent du journal des saisies ;
+  `.sursync` de la version suivante refusé par un lecteur de la version d'avant, version d'avant lue par le lecteur à
+  jour ; valeur `"v":3` ignorée et tracée.
+
+**Questions restantes pour Pascal :** numéro de la version suivante du `.sursync` (v2 avec `photo`, ou v3) ; deux
+homonymes à 15 m au plus (lecture proposée : l'agent choisit) ; P35-02 de Couchey (en faire un contrôle sans position
+mesurée, avec une ligne à géométrie NULL, change ce que F4 vérifie).
 
 ## Terrain
 

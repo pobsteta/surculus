@@ -57,7 +57,7 @@ contrôles sans `placette_uuid`** : `rattacher_controles`, `R/travaux_qfield.R` 
 proche (`st_nearest_feature`, `distances <= RAYON_RATTACHEMENT_M`, `RAYON_RATTACHEMENT_M <- 15` l. 288) que pour les
 lignes où `is.na(controles$placette_uuid)` et dont la géométrie n'est pas vide, puis **jette la géométrie**
 (`st_drop_geometry`, l. 305). Vérifié par l'`archiviste` le 2026-11-02 dans `~/dev/sommieR`, au tag `v0.31.1` (texte
-identique à la 0.38.0, `f0229b9`). Surculus écrit toujours `placette_uuid` : l'import ne lui applique donc **pas** les
+identique au tag `v0.37.1`, `f0229b9`). Surculus écrit toujours `placette_uuid` : l'import ne lui applique donc **pas** les
 15 m, et ne lit pas la position du contrôle. Les 15 m de Surculus (`Controle.DISTANCE_MAX_M`) sont une **règle de
 Surculus**, reprise de la valeur de sommieR pour rester cohérente avec une saisie faite dans QField ; ce n'est pas une
 condition de l'import. Ce qui change : rien dans la règle des 15 m ; un contrôle ouvert sans position (amendement
@@ -142,28 +142,37 @@ La ligne « Règle des 15 m » du tableau ci-dessus suppose une position mesuré
 ## Amendement du 2026-11-02 : ouvrir un contrôle sans position
 
 - **Décidé par :** Pascal, le 2026-11-02 (journal de pilotage, branche `pilotage/cycle-17`, lignes « cap », « 085 » et
-  « ADR 0003 » du 2026-11-02), après la critique du `contradicteur`. Écrit par l'`archiviste` (mission 085) ; codé
+  « ADR 0003 » du 2026-11-02), après la critique du `contradicteur` ; points 3 et 6 précisés et point 10 ajouté le même
+  jour, après la relecture de la PR #150 (reprise 1/3 de la mission 085, fiche, « Reprise, aller-retour 1/3 »). Écrit par l'`archiviste` (mission 085) ; codé
   par la mission 086.
 - **Ce qui change :** la règle « toujours une position mesurée à l'arrivée » tombe. Sous couvert dense, le téléphone
   peut ne donner aucune position au pied du piquet, et le forestier ne pouvait plus travailler (`ArriveeControle.arrivee`
   rendait `EtatArrivee.SansPosition` et ignorait le code lu).
 
-### La règle (texte de Pascal, repris tel quel de la fiche 085)
+### La règle (texte de Pascal, repris de la fiche 085 ; points 3, 6 et 10 : reprise 1/3 du 2026-11-02)
+
+La spec § 4.3 reprend la même numérotation, de 1 à 10.
 
 1. **Sans aucun fix** reçu pendant **30 s** (valeur **provisoire**, mesurée à l'essai en forêt), récepteur actif,
    localisation et permission accordées, Surculus propose « Ouvrir sans position ». Localisation coupée ou permission
    refusée : il demande de l'activer, pas d'ouverture sans position.
 2. Le contrôle s'ouvre seulement avec un **code lu** sur le piquet qui existe dans la tournée ; **sans code, rien ne
    s'ouvre**.
-3. **Code présent dans plusieurs UG** : l'agent **choisit l'UG** (« P01 : UG 12 ou UG 14 ? »), avec ou sans position
-   (corrige aussi le cas avec position, aujourd'hui `firstOrNull` dans `core/.../placette/Controle.kt` l. 55).
+3. **Code présent dans plusieurs UG** : **la position tranche** : si une seule des placettes de ce code est à 15 m au
+   plus de la position mesurée, c'est elle. Le **choix de l'UG** (« P01 : UG 12 ou UG 14 ? ») n'est demandé que si rien
+   ne tranche : sans position, ou position loin de toutes (aucune à 15 m au plus). Deux placettes de ce code à 15 m au
+   plus : rien ne tranche non plus, l'agent choisit (lecture de l'`archiviste`, cas que Pascal n'a pas dit, à
+   confirmer). Borne de 15 m incluse, comme la règle des 15 m. Corrige aussi le cas
+   avec position, aujourd'hui `firstOrNull` dans `core/.../placette/Controle.kt` l. 55. (Texte du 2026-11-02 matin :
+   « l'agent choisit l'UG, avec ou sans position » ; précisé par Pascal le 2026-11-02, « la position tranche ».)
 4. Avant d'ouvrir sans position, Surculus **affiche la placette à confirmer** (« P35-01 · UG 12 · parcelle 4 · 25
    plants pointés : ouvrir sans position ? »).
 5. Le contrôle **garde la position de la placette créée par sommieR** (« par défaut si pas de position, on garde cette
    position », Pascal) ; pas de position mesurée.
 6. Un fix reçu, **même unique, médiocre ou simulé**, reste une position et suit la règle actuelle (15 m, ou code lu
    qui l'emporte). **Hors de France : refusé**, avec une phrase qui dit quoi faire (« position aberrante : couper puis
-   rallumer la localisation »), le refus écrit au journal.
+   rallumer la localisation »), le refus écrit au **journal technique** (`JournalTechnique`, diagnostic), **pas au
+   journal des saisies**, dont la liste des types de ligne ne change pas (précisé par Pascal le 2026-11-02).
 7. **Export** : dans `positions_controles`, une ligne par contrôle, géométrie **NULL** (pas un POINT EMPTY),
    `precision_m` NULL, nouvelle colonne `sans_position_mesuree` (booléen), `rattache_par_identite` vrai (définition
    élargie : le code lu a désigné la placette, la position mesurée ne l'a pas fait) ; `controles` porte la position du
@@ -171,6 +180,22 @@ La ligne « Règle des 15 m » du tableau ci-dessus suppose une position mesuré
 8. **Journal des saisies** : **format v2**, qui admet l'absence de position mesurée quand `sans_position_mesuree` est
    vrai ; Surculus relit toujours le v1 (principe N-1, comme `.sursync`).
 9. L'**installation d'une placette** exige toujours une position (inchangé).
+10. **Fix reçu après une ouverture sans position** : rien ne change, la position est « fixée à l'arrivée ». Le contrôle
+    reste « sans position mesurée » jusqu'à la fin ; « Terminer » le reprend tel quel (décision de Pascal du
+    2026-11-02, reprise 1/3).
+
+**Sauvegarde `.sursync`** (décision de Pascal du 2026-11-02, reprise 1/3, « nouvelle version ») : la sauvegarde passe à
+la version suivante de son format ; un Surculus ancien la refuse avec un message (`version_future`, « mettre
+l'application à jour », `docs/formats/sursync-v1.md`) au lieu de perdre sans le dire les contrôles sans position ; un
+Surculus à jour lit toujours l'ancienne. Le numéro de cette version n'est pas tranché (la v2 est déjà promise au type
+`photo`, spec § 4.8) : question ouverte, notée pour la 086 dans la fiche 085.
+
+**Écart avec l'existant, signalé et non tranché ici.** « Une ligne par contrôle » dans `positions_controles` (point 7)
+contredit le scénario Couchey de la CI d'import : P35-02, « sans mesure », n'a aujourd'hui **aucune** ligne
+(`gpkg/.../ExportTravaux.kt` l. 230, ligne écrite seulement s'il y a une position mesurée) ; F4 prend alors le piquet
+dans `placettes` (ADR 0007, critère F4 ; `ci/sommier/README.md` l. 54-66 ; `fixtures/export/registre-attendu-couchey.json`,
+« decision »). La 086 en fera un contrôle `sans_position_mesuree`, ou dira pourquoi non ; si cela touche au sens (ce que
+F4 prouve), la question remonte à Pascal.
 
 **Valeur provisoire :** les **30 s** d'attente sans fix. Mesurées par Pascal à l'essai en forêt sous couvert (premier
 fix à froid du récepteur), date à fixer ; gelées avant la publication de la tranche 1.
@@ -199,13 +224,17 @@ Sources vérifiées par l'`archiviste` le 2026-11-02 (pages téléchargées et l
   l'encodage des NaN. Que GDAL et `sf` lisent une géométrie NULL de GeoPackage comme une géométrie vide : **non
   vérifié** (à couvrir par le test F4 de la 086).
 
+**Choix de format** (proposés par le `relecteur` de la PR #150, non tranchés par Pascal, écrits comme tels) : sans
+position mesurée, `source_gnss`, `referentiel_source` et `simulee` sont aussi **NULL** ; `sans_position_mesuree` porte
+seul l'information (spec § 5).
+
 ### Le crible FRANCE de l'amendement
 
 | Lettre | Question | Réponse (une ligne) | Ce que ça coûte |
 |---|---|---|---|
 | **F**rugale | La plus simple qui tienne ? | Oui : le code lu, déjà saisi pour le rattachement par identité, désigne la placette ; la position est celle que sommieR a créée. | Un écran de confirmation et un choix de l'UG ; un format de journal v2. |
 | **R**esponsable | Qui fait quoi ? | L'agent lit le code et confirme la placette ; Surculus dit qu'il n'a pas de position et le marque à l'export ; sommieR décide de ce qu'il garde. | L'identité repose sur l'agent : un code mal lu rattache le contrôle à la mauvaise placette, sans GNSS pour le voir. |
-| **A**nticipateur | Si l'imprévu arrive ? | Plus de forestier bloqué sous couvert ; localisation coupée ou permission refusée : on demande de l'activer ; fix hors de France refusé avec une phrase qui dit quoi faire. | Un fix simulé ou médiocre reste une position (point 6) ; 30 s non mesurées ; un ancien Surculus ignore un contrôle v2 sans position (voir le format v2). |
+| **A**nticipateur | Si l'imprévu arrive ? | Plus de forestier bloqué sous couvert ; localisation coupée ou permission refusée : on demande de l'activer ; fix hors de France refusé avec une phrase qui dit quoi faire. | Un fix simulé ou médiocre reste une position (point 6) ; 30 s non mesurées ; un ancien Surculus refuse la sauvegarde de version suivante (message « mettre l'application à jour ») plutôt que de perdre un contrôle sans position. |
 | **N**ovateur | Toutes les idées ? | Examinées par le `contradicteur` : code sans confirmation (écarté), attente de 5 s (trop courte, écartée), POINT EMPTY (écarté pour NULL), position de sommieR (retenue). | Aucune. |
 | **C**oût | Coût pour l'ensemble ? | Pas de matériel ; une mission de code (086) et un complément au brief `vers-sommier`. | Le registre de sommieR aura des contrôles sans position mesurée, à traiter à part. |
 | **É**cologique | Que réutilise-t-on, qui réutilisera ? | Conventions ouvertes : Darwin Core, comportement de QField, GeoPackage 1.3. | Aucune. |
@@ -216,8 +245,11 @@ Sources vérifiées par l'`archiviste` le 2026-11-02 (pages téléchargées et l
   le rattache.
 - **Contrôle croisé** : sans GNSS, rien ne signale un code mal lu ou une placette confondue ; la confirmation (point
   4) est le seul garde-fou.
-- **Rapidité** : 30 s d'attente et une confirmation de plus avant d'ouvrir ; un choix d'UG quand le code se répète.
-- **Simplicité du format** : un journal v2 à côté du v1, que Surculus doit lire tous les deux.
+- **Rapidité** : 30 s d'attente et une confirmation de plus avant d'ouvrir ; un choix d'UG quand le code se répète et
+  que la position ne tranche pas.
+- **Position tardive** : un fix reçu après l'ouverture sans position n'est pas gardé (point 10).
+- **Simplicité du format** : un journal v2 à côté du v1, et une version suivante du `.sursync`, que Surculus doit lire
+  avec la précédente.
 
 ### Tests attendus (mission 086)
 
@@ -227,10 +259,16 @@ Sources vérifiées par l'`archiviste` le 2026-11-02 (pages téléchargées et l
 - Moins de 30 s sans fix : « Ouvrir sans position » n'est pas proposé.
 - Localisation coupée, ou permission refusée : Surculus demande de l'activer ; « Ouvrir sans position » n'est pas
   proposé.
-- Code présent dans deux UG : l'agent choisit l'UG, avec position comme sans position ; jamais le premier trouvé.
+- Code présent dans deux UG : une seule à 15 m au plus de la position mesurée, c'est elle, sans question ; sans
+  position, ou aucune à 15 m au plus, l'agent choisit l'UG ; jamais le premier trouvé.
 - Un seul fix reçu (même médiocre ou simulé) : règle des 15 m ou du code lu, pas d'ouverture sans position.
 - Fix hors de France avec un code lu connu : refus, phrase « position aberrante : couper puis rallumer la
-  localisation », refus écrit au journal, pas d'ouverture sans position (placette en Somalie).
+  localisation », refus écrit au journal technique (`JournalTechnique`), aucune ligne ajoutée au journal des saisies,
+  pas d'ouverture sans position (placette en Somalie).
+- Fix reçu après une ouverture sans position : le contrôle reste sans position mesurée ; « Terminer » le reprend tel
+  quel.
+- Sauvegarde : écrite dans la version suivante du `.sursync` ; refusée par un lecteur de la version d'avant
+  (`version_future`) ; la version d'avant toujours lue par le lecteur à jour.
 - Journal v2 : un contrôle sans position mesurée écrit, l'application redémarrée, le contrôle relu ; une valeur v1
   toujours relue à l'identique.
 - Export : une ligne de `positions_controles` par contrôle sans position, géométrie NULL (pas un POINT EMPTY),

@@ -1,5 +1,13 @@
 # Format `.sursync`, version 1
 
+> **Version suivante décidée, pas encore écrite.** Deux décisions de Pascal appellent une version suivante de ce
+> format : le type de ligne `photo` (2026-10-28, spec § 4.8) et les valeurs v2 du journal, qui admettent un contrôle
+> sans position mesurée (2026-11-02, mission 085, [`journal-valeurs-v2.md`](journal-valeurs-v2.md), « Sauvegarde
+> `.sursync` »). La structure du fichier ne change pas pour la seconde : seul le numéro de version monte, pour qu'un
+> Surculus ancien refuse le fichier (`version_future`, voir « Version » plus bas) au lieu de perdre sans le dire les
+> contrôles sans position. Le numéro et le document de la version suivante restent à écrire par la mission de code
+> (086 ou mission des photos) ; ce document reste la définition de la v1, toujours lue.
+
 Sauvegarde du journal d'une tournée de Surculus (ADR 0005, spec § 4.8). Format ouvert : n'importe quel
 outil qui sait lire du gzip et du JSON peut le lire (test du successeur). Schéma :
 [`sursync-v1.schema.json`](sursync-v1.schema.json). Exemples : `fixtures/sursync/`. Cas d'acceptation :
