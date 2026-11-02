@@ -102,9 +102,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **083** le bandeau d'écoute ne cache plus « Plant précédent » (`afficheur`, appuyer) et **082** plus aucun message
-  d'exception brut à l'écran (`testeur` puis `dev`, appuyer) : validées par Pascal le 2026-11-02 (« oui, lance les
-  deux »), lancées le même jour ; fiches sur leurs seules branches.
+- **082** plus aucun message d'exception brut à l'écran (`testeur` puis `dev`, appuyer, PR #146) : reprise 2/3 en
+  cours ; validée par Pascal le 2026-11-02.
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
@@ -166,6 +165,10 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **083** le bandeau d'écoute ne cache plus « Plant précédent » (`testeur` puis `afficheur`, PR #148, c081f8a, deux
+  allers-retours) : fusionnée le 2026-11-02 ; preuve #147 rouge (18 tests) fermée sans fusion ; spec amendée par la
+  PR #149 ; **captures debout et couché après une vraie phrase à faire** (téléphone non branché le 2026-11-02).
 
 - **080** test de rendu des écrans (`afficheur`, tenir, PR #142, 76731ab, trois allers-retours) : fusionnée le
   2026-10-30 ; rouge vérifié sur 076, 078 et 060 (PR de preuve #143 à #145 fermées sans fusion) ; aucun
