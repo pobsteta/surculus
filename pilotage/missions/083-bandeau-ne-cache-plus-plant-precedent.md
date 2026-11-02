@@ -148,3 +148,10 @@ Ordre :
    ne fait pas défiler la zone (conséquence de « Rien ») ; preuve rejouée sur la tête finale.
 
 Au-delà de cette reprise et de la suivante (3/3), la décision remonte à Pascal.
+
+Complément du 2026-11-02 : tests du `testeur` (ed8123d, 14 de plus, 6 rouges couchés sur b246cb5). Zone défilée en bas,
+« sept sain » : bornes figées à 12 dp de texte et 24 dp de cadre sur « + Pointer », « Annuler », « Installer la
+dictée ». Avec la commande la plus longue, le bloc couvre 54 dp des 56 dp d'« Installer la dictée ». Décision de Pascal :
+**« Accepté 6 s, le figer »** : un test fige ce cas long (bornes mesurées, rien d'autre couvert). Les 17 / 29 dp cités
+plus haut sont le débord du bloc sur la zone non défilée ; les 9 / 21 dp, le recouvrement d'« Installer la dictée »
+zone défilée.
