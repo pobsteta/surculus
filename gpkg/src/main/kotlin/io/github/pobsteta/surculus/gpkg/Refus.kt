@@ -134,5 +134,8 @@ sealed interface RefusGpkg {
     }
 }
 
-/** Exception qui porte un [RefusGpkg]. */
-class GpkgRefuse(val refus: RefusGpkg) : Exception(refus.message)
+/**
+ * Exception qui porte un [RefusGpkg]. [cause] garde le détail technique (message SQLite, en anglais) pour le journal :
+ * il n'entre jamais dans [RefusGpkg.message], seul texte montré au forestier (mission 082).
+ */
+class GpkgRefuse(val refus: RefusGpkg, cause: Throwable? = null) : Exception(refus.message, cause)

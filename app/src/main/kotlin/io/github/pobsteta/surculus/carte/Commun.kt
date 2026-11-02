@@ -89,9 +89,11 @@ fun chargerTournee(id: String): Chargement {
             try {
                 Chargement.Pret(DepotTournees.ouvrir(File(DepotTournees.racine(ctx), id)))
             } catch (e: io.github.pobsteta.surculus.gpkg.GpkgRefuse) {
+                io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Carte", "tournée refusée", e)
                 Chargement.Refus(e.refus.message)
             } catch (e: Exception) {
-                Chargement.Refus(e.message ?: e.javaClass.simpleName)
+                io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Carte", "chargement de la tournée impossible", e)
+                Chargement.Refus(io.github.pobsteta.surculus.messages.TEXTE_TOURNEE_ILLISIBLE)
             }
         }
     }

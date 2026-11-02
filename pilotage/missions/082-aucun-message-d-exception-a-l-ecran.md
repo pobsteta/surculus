@@ -15,7 +15,9 @@ Surculus lui parle.
 - *Testeur (2026-11-02) :* ma mission est d'écrire les tests qui échouent tant qu'un des huit textes montrés au forestier
   (carte, liste et import des tournées, dictée, récepteur GNSS, NTRIP) laisse passer un nom d'exception, un texte
   anglais brut, un `_`, un chemin ou un UUID, pour que le `dev` ait un critère net et que le travail ne s'auto-évalue pas.
-- *Dev :* _à compléter par le `dev` avant d'agir._
+- *Dev (2026-11-02) :* ma mission est de remplacer, aux huit endroits (et dans le refus du module `gpkg`), le message brut
+  de l'exception par une phrase française qui dit quoi faire, le détail technique allant au `Log.w`, pour que le forestier
+  ne lise que du français et que les neuf tests du `testeur` passent au vert.
 
 ## Les trois questions (règle de staffing)
 

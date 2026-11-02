@@ -140,9 +140,11 @@ object DepotTournees {
             val t = LecteurTournee.lire(gpkg.toPath())
             LigneTournee(dossier, t, null)
         } catch (e: GpkgRefuse) {
+            io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Tournees", "tournée refusée : ${dossier.name}", e)
             LigneTournee(dossier, null, e.refus.message)
         } catch (e: Exception) {
-            LigneTournee(dossier, null, e.message ?: e.javaClass.simpleName)
+            io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Tournees", "tournée illisible : ${dossier.name}", e)
+            LigneTournee(dossier, null, io.github.pobsteta.surculus.messages.TEXTE_LIGNE_ILLISIBLE)
         }
     }
 

@@ -42,14 +42,16 @@ class MoteurDicteeVosk(private val dossierModele: File) : MoteurDictee {
                 override fun onFinalResult(hypothesis: String?) = rendre(hypothesis, ecouteur)
                 override fun onPartialResult(hypothesis: String?) = Unit
                 override fun onError(exception: Exception?) {
-                    ecouteur.surErreur(exception?.message ?: "erreur de dictée")
+                    if (exception != null) io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Dictee", "erreur du service de dictée", exception)
+                    ecouteur.surErreur(io.github.pobsteta.surculus.messages.TEXTE_DICTEE_INTERROMPUE)
                 }
                 override fun onTimeout() = Unit
             })
         } catch (e: Exception) {
             // Modèle absent ou illisible, micro refusé : message lisible, jamais d'exception muette.
             arreter()
-            ecouteur.surErreur(e.message ?: "dictée impossible")
+            io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Dictee", "démarrage de la dictée impossible", e)
+            ecouteur.surErreur(io.github.pobsteta.surculus.messages.TEXTE_DICTEE_NON_DEMARREE)
         }
     }
 

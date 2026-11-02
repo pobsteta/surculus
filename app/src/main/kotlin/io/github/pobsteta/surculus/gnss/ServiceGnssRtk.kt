@@ -81,7 +81,8 @@ data class EtatRtk(
  */
 class ServiceGnssRtk : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, e ->
-        _etat.update { it.copy(erreur = e.message ?: e.toString()) }
+        io.github.pobsteta.surculus.messages.JournalTechnique.avertir("GnssRtk", "erreur non rattrapée du service", e)
+        _etat.update { it.copy(erreur = getString(R.string.rtk_liaison_perdue)) }
     })
     private var travail: Job? = null
 
@@ -137,7 +138,10 @@ class ServiceGnssRtk : Service() {
         travail = scope.launch {
             while (isActive) {
                 runCatching { relier(transport, config) }
-                    .onFailure { e -> _etat.update { it.copy(erreur = e.message ?: e.toString()) } }
+                    .onFailure { e ->
+                        io.github.pobsteta.surculus.messages.JournalTechnique.avertir("GnssRtk", "liaison avec le récepteur coupée", e)
+                        _etat.update { it.copy(erreur = getString(R.string.rtk_liaison_perdue)) }
+                    }
                 if (!isActive) break
                 fixBrut = null
                 _fix.value = null
@@ -167,7 +171,10 @@ class ServiceGnssRtk : Service() {
                             transport.ecrire(rtcm)
                             _etat.update { it.copy(rtcmEnvoye = it.rtcmEnvoye + rtcm.size) }
                         }
-                    }.onFailure { e -> _etat.update { it.copy(ntripErreur = e.message ?: e.toString()) } }
+                    }.onFailure { e ->
+                        io.github.pobsteta.surculus.messages.JournalTechnique.avertir("GnssRtk", "serveur de corrections NTRIP en échec", e)
+                        _etat.update { it.copy(ntripErreur = getString(R.string.rtk_corrections_perdues)) }
+                    }
                     delay(RECONNEXION_MS * 2)
                 }
             }

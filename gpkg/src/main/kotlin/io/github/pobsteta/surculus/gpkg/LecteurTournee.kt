@@ -53,11 +53,15 @@ internal fun Ligne.blob(nom: String): ByteArray? = this[nom] as? ByteArray
  * 2154 et 9794 mêlés (ADR 0003, ADR 0007).
  */
 object LecteurTournee {
+    /** Détails français des refus venus de SQLite : son texte (anglais) reste dans la cause de l'exception. */
+    private const val DETAIL_OUVERTURE = "le fichier est illisible, abîmé ou d'un autre format"
+    private const val DETAIL_LECTURE = "son contenu est illisible ou incomplet"
+
     fun lire(chemin: Path): Tournee {
         val cnx = try {
             Sqlite.ouvrir(chemin, lectureSeule = true)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "ouverture impossible"))
+            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(DETAIL_OUVERTURE), e)
         }
         cnx.use { return lire(it) }
     }
@@ -66,7 +70,7 @@ object LecteurTournee {
         try {
             return lireSansTraduction(cnx)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "lecture impossible"))
+            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(DETAIL_LECTURE), e)
         }
     }
 
@@ -83,7 +87,7 @@ object LecteurTournee {
         val cnx = try {
             Sqlite.ouvrir(chemin, lectureSeule = true)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "ouverture impossible"))
+            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(DETAIL_OUVERTURE), e)
         }
         cnx.use { return lireCartographie(it) }
     }
@@ -98,7 +102,7 @@ object LecteurTournee {
             }
             return LectureCartographie.lire(cnx, geometries)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "lecture impossible"))
+            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(DETAIL_LECTURE), e)
         }
     }
 

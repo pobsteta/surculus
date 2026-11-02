@@ -5,6 +5,8 @@
     <string name="rtk_notif_titre">Surculus — GNSS RTK</string>
     <string name="rtk_liberer">Libérer le récepteur</string>
     <string name="rtk_connexion">Connexion au récepteur…</string>
+    <string name="rtk_liaison_perdue">Liaison avec le récepteur coupée : vérifier qu\'il est allumé et relié au téléphone. Surculus réessaie tout seul.</string>
+    <string name="rtk_corrections_perdues">serveur de corrections injoignable : vérifier le réseau et les identifiants NTRIP. La position reste moins précise.</string>
     <string name="rtk_config_incomplete">Récepteur RTK non choisi : Paramètres → Récepteur GNSS.</string>
 
     <!-- Écran d'essai GNSS (mission 018) -->
