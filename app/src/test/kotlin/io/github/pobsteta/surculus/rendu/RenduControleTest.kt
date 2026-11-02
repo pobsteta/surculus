@@ -374,19 +374,23 @@ class RenduControleTest {
     private fun profondeur(bloc: androidx.compose.ui.geometry.Rect, c: androidx.compose.ui.geometry.Rect): Float =
         if (BancRendu.intersection(bloc, c) > 1f) minOf(bloc.bottom, c.bottom) - maxOf(bloc.top, c.top) else 0f
 
-    private fun controlerZoneDefilee(cas: String, r: BancRendu.Resultat, defauts: MutableList<String>, toleres: MutableList<String>) {
+    private fun controlerZoneDefilee(
+        cas: String, r: BancRendu.Resultat, defauts: MutableList<String>, toleres: MutableList<String>,
+        borneTexte: Float = BORNE_TEXTE_SUR_BOUTON_DP, borneCadre: Float = BORNE_CADRE_SUR_BOUTON_DP, hauteurMax: Float? = null,
+    ) {
         val lignes = r.noeuds.filter { it.texte && estDuBloc(it.nom) && BancRendu.aire(it.rect) > 0f }
         if (lignes.isEmpty()) { defauts += "aucune ligne du bloc d'écoute dans la phase « $cas »"; return }
         val texte = androidx.compose.ui.geometry.Rect(lignes.minOf { it.rect.left }, lignes.minOf { it.rect.top }, lignes.maxOf { it.rect.right }, lignes.maxOf { it.rect.bottom })
         val m = MARGE_CADRE_DP
         val cadre = androidx.compose.ui.geometry.Rect(texte.left - m, texte.top - m, texte.right + m, texte.bottom + m)
+        if (hauteurMax != null && texte.height > hauteurMax) defauts += "le bloc d'écoute (lignes) ${BancRendu.fmt(texte)} fait %.0f dp de haut : la borne est $hauteurMax dp".format(texte.height)
         // Ce qui est permis : le bloc sur « Mode poche » (comme ailleurs) et, bornés, sur le haut des boutons du pied.
         defauts += BancRendu.recouvrements(r, { c, n ->
             when {
                 !estDuBloc(n.nom) -> null
                 c.nom == MODE_POCHE -> "permis : le bloc d'écoute sur « Mode poche »"
-                estBoutonDuPied(c.nom) && profondeur(n.rect, c.rect) <= BORNE_TEXTE_SUR_BOUTON_DP ->
-                    "toléré : le texte du bloc recouvre %.0f dp du haut de « ${c.nom} » (borne $BORNE_TEXTE_SUR_BOUTON_DP dp)".format(profondeur(n.rect, c.rect))
+                estBoutonDuPied(c.nom) && profondeur(n.rect, c.rect) <= borneTexte ->
+                    "toléré : le texte du bloc recouvre %.0f dp du haut de « ${c.nom} » (borne $borneTexte dp)".format(profondeur(n.rect, c.rect))
                 else -> null
             }
         }, toleres)
@@ -397,13 +401,16 @@ class RenduControleTest {
             if (p <= 0f) continue
             when {
                 !estBoutonDuPied(c.nom) -> defauts += "le cadre du bloc (lignes + ${m.toInt()} dp) ${BancRendu.fmt(cadre)} recouvre le cliquable « ${c.nom} » ${BancRendu.fmt(c.rect)} : seuls « + Pointer », « Annuler » et « Installer la dictée » sont permis"
-                p > BORNE_CADRE_SUR_BOUTON_DP -> defauts += "le cadre du bloc ${BancRendu.fmt(cadre)} recouvre %.0f dp du haut de « ${c.nom} » ${BancRendu.fmt(c.rect)} : la borne est $BORNE_CADRE_SUR_BOUTON_DP dp".format(p)
-                else -> toleres += "toléré : le cadre du bloc recouvre %.0f dp du haut de « ${c.nom} » (borne $BORNE_CADRE_SUR_BOUTON_DP dp)".format(p)
+                p > borneCadre -> defauts += "le cadre du bloc ${BancRendu.fmt(cadre)} recouvre %.0f dp du haut de « ${c.nom} » ${BancRendu.fmt(c.rect)} : la borne est $borneCadre dp".format(p)
+                else -> toleres += "toléré : le cadre du bloc recouvre %.0f dp du haut de « ${c.nom} » (borne $borneCadre dp)".format(p)
             }
         }
     }
 
-    private fun zoneDefilee(cas: String) {
+    private fun zoneDefilee(
+        cas: String, dite: String = "sept sain", annonce: String = "numéro 7, sain",
+        borneTexte: Float = BORNE_TEXTE_SUR_BOUTON_DP, borneCadre: Float = BORNE_CADRE_SUR_BOUTON_DP, hauteurMax: Float? = null,
+    ) {
         val e = Ecoute()
         EcouteApp.poserPilotePourTest(e.pilote)
         val defauts = ArrayList<String>()
@@ -420,25 +427,45 @@ class RenduControleTest {
         val toleres = ArrayList<String>()
         if (pendant.noeuds.none { it.nom == "J'ÉCOUTE" }) defauts += "« J'ÉCOUTE » n'est pas affiché pendant l'écoute"
         if (pendant.cliquables.none { estBoutonDuPied(it.nom) }) defauts += "la zone n'est pas défilée jusqu'en bas : aucun bouton du pied (« + Pointer », « Annuler », « Installer la dictée ») à l'écran"
-        controlerZoneDefilee("pendant", pendant, defauts, toleres)
+        controlerZoneDefilee("pendant", pendant, defauts, toleres, borneTexte, borneCadre, hauteurMax)
         BancRendu.rapport("$cas-pendant-l-ecoute", pendant, defauts, toleres)
 
-        regle.runOnIdle { e.t = 1_500; e.pilote.phrase("sept sain") }
+        regle.runOnIdle { e.t = 1_500; e.pilote.phrase(dite) }
         regle.runOnIdle { e.t = 2_000; e.pilote.relacher() }
         regle.waitForIdle()
         val fermeeA = e.t
-        regle.runOnIdle { e.pilote.resultat(AnnoncePoche("numéro 7, sain", MotifsVibration.SAIN)) }
+        regle.runOnIdle { e.pilote.resultat(AnnoncePoche(annonce, MotifsVibration.SAIN)) }
         regle.waitForIdle()
         regle.runOnIdle { e.t = fermeeA + DUREE_BANDEAU_MS - 1; e.pilote.avancer() }
         regle.waitForIdle()
         val apres = BancRendu.lire(regle, depart.densite)
         val toleres2 = ArrayList<String>()
         if (apres.noeuds.none { it.nom == "ÉCOUTE FERMÉE" }) defauts += "« ÉCOUTE FERMÉE » n'est pas affiché dans le délai"
-        controlerZoneDefilee("apres-une-phrase", apres, defauts, toleres2)
+        controlerZoneDefilee("apres-une-phrase", apres, defauts, toleres2, borneTexte, borneCadre, hauteurMax)
         BancRendu.rapport("$cas-apres-une-phrase", apres, defauts, toleres2)
         assertTrue(defauts.isEmpty(), "Rendu « $cas » :\n" + defauts.joinToString("\n"))
     }
 
     @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `zone defilee jusqu'en bas pendant l'ecoute, debout plein ecran, le bloc ne couvre que le haut d'un bouton du pied`() = zoneDefilee("defilee-debout-plein")
     @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `zone defilee jusqu'en bas pendant l'ecoute, debout sans plein ecran, le bloc ne couvre que le haut d'un bouton du pied`() = zoneDefilee("defilee-debout-sans-plein")
+
+    // --- décision de Pascal (2026-11-02) « Accepté 6 s, le figer » : la commande la plus longue, zone défilée jusqu'en bas
+
+    /**
+     * Mesure du 2026-11-02 (debout, plein écran, « hauteur trois cent quatre vingt quatorze ») : le texte du bloc recouvre 54 dp du haut de
+     * « Installer la dictée » (56 dp de haut), le bloc fait 169 dp de haut (633 → 802). Borne du texte : 57 dp (54 + 3 dp d'arrondi) ; borne
+     * du cadre : 59 dp (le cadre est capé par la hauteur du bouton, 56 dp, + 3 dp) ; hauteur des lignes du bloc : 172 dp (169 + 3 dp) : sans
+     * elle, un bloc qui grandirait vers le haut ne casserait rien tant qu'il ne touche qu'un bouton permis.
+     */
+    private val BORNE_TEXTE_COMMANDE_LONGUE_DP = 57f
+    private val BORNE_CADRE_COMMANDE_LONGUE_DP = 59f
+    private val HAUTEUR_MAX_BLOC_COMMANDE_LONGUE_DP = 172f
+
+    private fun zoneDefileeLongue(cas: String) = zoneDefilee(
+        cas, dite = COMMANDE_LA_PLUS_LONGUE, annonce = COMPRIS_LE_PLUS_LONG,
+        borneTexte = BORNE_TEXTE_COMMANDE_LONGUE_DP, borneCadre = BORNE_CADRE_COMMANDE_LONGUE_DP, hauteurMax = HAUTEUR_MAX_BLOC_COMMANDE_LONGUE_DP,
+    )
+
+    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `zone defilee jusqu'en bas, commande la plus longue, debout plein ecran, le bloc reste dans sa borne`() = zoneDefileeLongue("defilee-longue-debout-plein")
+    @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `zone defilee jusqu'en bas, commande la plus longue, debout sans plein ecran, le bloc reste dans sa borne`() = zoneDefileeLongue("defilee-longue-debout-sans-plein")
 }
