@@ -390,6 +390,10 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
                     e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
                     if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                // PREUVE : ancienne position (avant la 083), le bloc en haut de la zone, debout et couché.
+                if (!poche && blocEcouteVisible()) {
+                    Box(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
+                }
             }
         }
         // La disposition ne dépend que de l'écran (couché ou debout), jamais de la vue : la zone garde sa place dans la composition
@@ -406,7 +410,7 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
                         Column(Modifier.width(DimensionsMicro.ZONE).fillMaxHeight().padding(8.dp), verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally) { micro() }
                     }
                 }
-                if (!poche && blocEcouteVisible()) {
+                if (false) {
                     Box(Modifier.align(Alignment.TopStart).fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
                 }
             }
