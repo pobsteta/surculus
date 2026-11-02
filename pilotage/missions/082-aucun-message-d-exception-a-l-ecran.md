@@ -106,3 +106,30 @@ anglais. Pascal : « Élargir la fiche ». Le `dev` **peut** modifier ce refus :
 technique sort de l'écran et va au journal Android (ou à un champ non affiché). Les quatre tests du `testeur` sur
 `DepotTournees.ligne` restent tels quels. Les autres refus du module `gpkg` qui recopient un détail technique sont dans le
 même cas ; le `dev` les liste dans la PR.
+
+## Reprise, aller-retour 1/3 (2026-11-02)
+
+Relecture de la #146 (8f1379d) : « à reprendre ». Décisions de Pascal du 2026-11-02, posées une à une :
+
+1. **Refus « pas un GeoPackage »** : « Ajouter l'action » : la phrase dit quoi faire (par exemple « l'exporter de nouveau
+   depuis sommieR ») ; le `dev` propose la phrase exacte, Pascal la tranche.
+2. **Refus maison avec `_`** (« ni identifiant d'application GPKG, ni table gpkg_contents », « tables gpkg_contents ou
+   gpkg_spatial_ref_sys absentes ») : « Les traduire » : phrase française qui dit quoi faire, détail au journal.
+   Le `testeur` remet d'abord le cas « fichier vide » (et un fichier sans tables), vu rouge.
+3. **Récepteur** : « Aligner sur la carte » : l'Essai GNSS reprend les phrases de la carte
+   (`strings_tournees.xml:111-112`, « Liaison avec le récepteur GNSS perdue : nouvelle tentative en cours. »,
+   « Corrections RTK indisponibles : la position est moins précise. »), plus l'action à faire là où elle manque ;
+   « injoignable » disparaît.
+4. **Contrôles d'intégrité de l'export** (`ExportTravaux:487-494`) : « Les laisser, noter » : hors de la 082 (bac à sable).
+
+À reprendre aussi (relecteur) :
+- la liste des tournées bégaie (« Illisible : tournée illisible : … », préfixe `tournees_illisible`,
+  `EcranTournees.kt:354`, `VueKanban.kt:162`) : plus de redite ; le tableau de la PR donne chaque phrase **composée
+  telle qu'elle s'affiche**, préfixe compris (carte, tournée refusée, illisible) ;
+- `ServiceGnssRtk.kt:84` (gestionnaire d'exceptions) : rien n'y réessaie ; phrase générique qui dit quoi faire
+  (par exemple « arrêter puis relancer le récepteur »), la promesse « réessaie » seulement là où la boucle retente ;
+- mineurs : imports au lieu des noms complets ; la phrase de dictée ne renvoie pas à « Paramètres » pour le micro
+  (l'autorisation se règle dans Android) ; liens vers la fiche et le run de CI dans le corps.
+
+Hors périmètre (bac à sable) : après « Libérer le récepteur », un message « liaison coupée » peut rester affiché alors que
+le service est arrêté (`ServiceGnssRtk.kt:141`, non vérifié sur appareil).
