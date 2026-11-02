@@ -14,7 +14,7 @@ d'ouvrir la première trouvée sans rien dire, pour qu'aucun contrôle ne soit r
 **Redite par l'agent :** _(testeur, 2026-11-02)_ Je dois écrire les tests qui diront si, quand un code de piquet
 existe dans plusieurs UG, la position tranche (une seule placette à 15 m au plus, borne incluse), sinon si l'agent
 doit choisir l'UG, jamais la « première trouvée », pour qu'aucun contrôle ne soit rattaché en silence à la mauvaise
-placette. _(dev : à compléter par l'agent avant d'agir.)_
+placette. _(dev, 2026-11-02)_ Je dois faire que, quand le code lu existe dans plusieurs UG, Surculus rattache la seule placette à 15 m au plus si elle est unique, et sinon fasse choisir l'UG à l'agent (le choix rattache la placette choisie, par identité au-delà de 15 m), sans jamais prendre la première trouvée, pour qu'aucun contrôle ne soit rattaché en silence à la mauvaise placette.
 
 ## Les trois questions (règle de staffing)
 

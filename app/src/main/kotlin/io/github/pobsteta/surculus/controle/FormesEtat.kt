@@ -56,6 +56,9 @@ object DimensionsControle {
     val BOUTON_ETAT = 64.dp
     val BOUTON_CAUSE = 56.dp
     val ACTION = 56.dp
+
+    /** Un choix à une main, au soleil : une ligne = un bouton (choix de l'UG, mission 086). */
+    val GRAND_CHOIX = 72.dp
     val FLECHE = 48.dp
     val PASTILLE = 28.dp
 

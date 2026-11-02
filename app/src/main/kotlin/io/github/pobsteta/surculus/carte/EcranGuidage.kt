@@ -165,7 +165,7 @@ private fun GuidagePret(
 
     // Rattachement : moyenne de la position pendant quelques secondes, puis la règle des 15 m (ou le code lu).
     val piquets = remember(toutes) {
-        toutes.mapNotNull { p -> if (p.code != null && p.position != null) Piquet(UuidPlacette(p.uuid), p.code!!, p.position!!) else null }
+        toutes.mapNotNull { p -> if (p.code != null && p.position != null) Piquet(UuidPlacette(p.uuid), p.code!!, p.position!!, p.ug) else null }
     }
     val positionCourante = rememberUpdatedState(fix?.position)
     val enCours = confirmation is Confirmation.EnCours
@@ -253,6 +253,10 @@ private fun Resultat(v: Verdict<Rattache>) {
             Text(texte, color = couleurErreur(), fontWeight = FontWeight.Bold)
         }
         is Verdict.AConfirmer -> TexteEtat(v.alerte.message, Palette.Orange)
+        is Verdict.AChoisirUg -> TexteEtat(
+            stringResource(R.string.guidage_ug_a_choisir, v.candidats.first().code, v.candidats.mapNotNull { it.ug }.sorted().joinToString(", ")),
+            Palette.Orange, fontWeight = FontWeight.Bold,
+        )
     }
 }
 

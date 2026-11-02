@@ -92,6 +92,8 @@ import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.gpkg.ContexteDeTournee
 import io.github.pobsteta.surculus.gnss.FixPourSession
+import io.github.pobsteta.surculus.core.gnss.Position
+import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import io.github.pobsteta.surculus.gnss.SourcePosition
 import io.github.pobsteta.surculus.sauvegarde.SauvegardeApp
 import io.github.pobsteta.surculus.tournee.DepotTournees
@@ -153,12 +155,10 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onPara
     var essai by rememberSaveable(cle) { mutableIntStateOf(0) }
     var code by rememberSaveable(cle) { mutableStateOf("") }
     val fixActuel = rememberUpdatedState(fix)
-
-    // L'arrivée (décisions de Pascal du 2026-10-27) : la moyenne de 5 s part toute seule, avec son décompte, puis la règle des 15 m.
-    LaunchedEffect(cle, essai, ouverte) {
-        if (ouverte == null || ControleursOuverts.get(cle) != null) return@LaunchedEffect
-        // La moyenne de 5 s est celle du guidage : écrite une seule fois (`collecterPositionsArrivee`).
-        val positions = collecterPositionsArrivee(position = { fixActuel.value?.position }, surSeconde = { n -> arrivee = EtatArrivee.Moyenne(n) })
+    // Les fix de l'arrivée sont gardés : le choix de l'UG rouvre avec la même position, sans refaire la moyenne.
+    var positionsArrivee by remember(cle) { mutableStateOf<List<Position>>(emptyList()) }
+    val scope = rememberCoroutineScope()
+    suspend fun ouvrirArrivee(ouverte: TourneeOuverte, positions: List<Position>, ugChoisie: String?): EtatArrivee {
         val resultat = withContext(Dispatchers.IO) {
             runCatching {
                 ArriveeControle.ouvrir(
@@ -169,12 +169,22 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onPara
                     positions = positions,
                     codeLu = code,
                     sauvegarde = SauvegardeApp.ecoute(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
+                    ugChoisie = ugChoisie,
                 )
             }
         }
         val v = resultat.getOrNull()
         if (v is EtatArrivee.Ouverte) ControleursOuverts.poser(cle, v.controleur)
-        arrivee = v ?: EtatArrivee.SansPosition
+        return v ?: EtatArrivee.SansPosition
+    }
+
+    // L'arrivée (décisions de Pascal du 2026-10-27) : la moyenne de 5 s part toute seule, avec son décompte, puis la règle des 15 m.
+    LaunchedEffect(cle, essai, ouverte) {
+        if (ouverte == null || ControleursOuverts.get(cle) != null) return@LaunchedEffect
+        // La moyenne de 5 s est celle du guidage : écrite une seule fois (`collecterPositionsArrivee`).
+        val positions = collecterPositionsArrivee(position = { fixActuel.value?.position }, surSeconde = { n -> arrivee = EtatArrivee.Moyenne(n) })
+        positionsArrivee = positions
+        arrivee = ouvrirArrivee(ouverte, positions, null)
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -196,6 +206,7 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onPara
                     is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)
                     is EtatArrivee.Refus -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
                     EtatArrivee.SansPosition -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
+                    is EtatArrivee.UgAChoisir -> VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, positionsArrivee, ug) } }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
                     is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour, onParametres)
                 }
             }
@@ -219,7 +230,7 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
             }
             is EtatArrivee.Refus -> Text(TextesControle.message(etat.refus)!!.texte, style = MaterialTheme.typography.titleMedium, color = couleurErreur())
             EtatArrivee.SansPosition -> Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurErreur())
-            is EtatArrivee.Ouverte -> {}
+            is EtatArrivee.UgAChoisir, is EtatArrivee.Ouverte -> {}
         }
         OutlinedTextField(
             value = code,
@@ -230,6 +241,29 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
         )
         onRecommencer?.let {
             Button(onClick = it, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) { Text(TextesControle.boutonArrivee(code)) }
+        }
+    }
+}
+
+/**
+ * Le code lu existe dans plusieurs UG et la position ne tranche pas : une ligne par candidate, un gros bouton chacune
+ * (gants, soleil, une main). Rien n'est ouvert tant que l'agent n'a pas choisi ; aucune n'est présélectionnée.
+ */
+@Composable
+private fun VueChoixUg(etat: EtatArrivee.UgAChoisir, onChoix: (String) -> Unit, onRecommencer: () -> Unit) {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(stringResource(R.string.controle_ug_question, etat.code), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
+        Text(stringResource(R.string.controle_ug_aide), style = MaterialTheme.typography.bodyLarge, color = couleurNeutre())
+        for (c in etat.candidats.sortedWith(compareBy({ it.ug.orEmpty() }, { it.placette.valeur }))) {
+            val ug = c.ug
+            Button(
+                onClick = { onChoix(ug.orEmpty()) },
+                enabled = ug != null,
+                modifier = Modifier.fillMaxWidth().height(DimensionsControle.GRAND_CHOIX),
+            ) { Text(stringResource(R.string.controle_ug_choix, c.code, ug ?: "?"), style = MaterialTheme.typography.titleLarge) }
+        }
+        OutlinedButton(onClick = onRecommencer, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+            Text(stringResource(R.string.controle_ug_recommencer))
         }
     }
 }

@@ -81,6 +81,7 @@ class RejeuViaSessionTest {
                     add("position_mesuree_conservee", JsonObject().apply { addProperty("x", rat.positionMesuree.xMetres); addProperty("y", rat.positionMesuree.yMetres) })
                 }
                 is OuvertureControle.Refusee -> { addProperty("issue", "refus"); addProperty("motif", r.refus.motif) }
+                is OuvertureControle.UgAChoisir -> addProperty("issue", "ug_a_choisir")
             }
         }
     }
@@ -150,6 +151,7 @@ class RejeuViaSessionTest {
                     addProperty("refuse", true)
                     if (horsForet) addProperty("dans_emprise", false)
                 }
+                is OuvertureControle.UgAChoisir -> error("une seule placette dans ce cas : pas de choix d'UG")
             }
         }
     }

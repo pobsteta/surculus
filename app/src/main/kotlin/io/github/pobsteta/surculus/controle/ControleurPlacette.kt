@@ -449,5 +449,6 @@ object TextesControle {
         }
         is Verdict.Refuse -> VueTotaux("", v.refus.message)
         is Verdict.AConfirmer -> VueTotaux("", v.alerte.message)
+        is Verdict.AChoisirUg -> VueTotaux("", "")
     }
 }
