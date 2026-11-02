@@ -54,18 +54,16 @@ internal fun Ligne.blob(nom: String): ByteArray? = this[nom] as? ByteArray
  */
 object LecteurTournee {
     /**
-     * Ce que le forestier lit après « Ce fichier n'est pas un GeoPackage lisible : » : une consigne, jamais le détail
-     * technique. Le texte de SQLite (anglais) et les noms de tables restent dans la cause de l'exception, pour le journal.
+     * Ce que le forestier lit : « ce n'est pas une tournée de sommieR : l'exporter de nouveau depuis sommieR », jamais le
+     * détail technique. Le texte de SQLite (anglais) et les noms de tables restent dans la cause de l'exception, pour le journal.
      */
-    private const val CONSIGNE = "l'exporter de nouveau depuis sommieR"
-    private const val DETAIL_OUVERTURE = CONSIGNE
-    private const val DETAIL_LECTURE = CONSIGNE
+    private fun pasUneTournee() = RefusGpkg.PasUnGeoPackage(detail = "l'exporter de nouveau depuis sommieR", constat = "ce n'est pas une tournée de sommieR")
 
     fun lire(chemin: Path): Tournee {
         val cnx = try {
             Sqlite.ouvrir(chemin, lectureSeule = true)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(DETAIL_OUVERTURE), e)
+            throw GpkgRefuse(pasUneTournee(), e)
         }
         cnx.use { return lire(it) }
     }
@@ -74,7 +72,7 @@ object LecteurTournee {
         try {
             return lireSansTraduction(cnx)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(DETAIL_LECTURE), e)
+            throw GpkgRefuse(pasUneTournee(), e)
         }
     }
 
@@ -91,7 +89,7 @@ object LecteurTournee {
         val cnx = try {
             Sqlite.ouvrir(chemin, lectureSeule = true)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(DETAIL_OUVERTURE), e)
+            throw GpkgRefuse(pasUneTournee(), e)
         }
         cnx.use { return lireCartographie(it) }
     }
@@ -106,7 +104,7 @@ object LecteurTournee {
             }
             return LectureCartographie.lire(cnx, geometries)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(DETAIL_LECTURE), e)
+            throw GpkgRefuse(pasUneTournee(), e)
         }
     }
 
@@ -114,13 +112,13 @@ object LecteurTournee {
         val applicationId = cnx.createStatement().use { st -> st.executeQuery("PRAGMA application_id").use { it.next(); it.getInt(1) } }
         if (applicationId != APPLICATION_ID_GPKG && !cnx.existeTable("gpkg_contents")) {
             throw GpkgRefuse(
-                RefusGpkg.PasUnGeoPackage(CONSIGNE),
+                pasUneTournee(),
                 IllegalStateException("ni identifiant d'application GPKG, ni table gpkg_contents"),
             )
         }
         if (!cnx.existeTable("gpkg_contents") || !cnx.existeTable("gpkg_spatial_ref_sys")) {
             throw GpkgRefuse(
-                RefusGpkg.PasUnGeoPackage(CONSIGNE),
+                pasUneTournee(),
                 IllegalStateException("tables gpkg_contents ou gpkg_spatial_ref_sys absentes"),
             )
         }

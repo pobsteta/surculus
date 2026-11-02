@@ -13,9 +13,9 @@ package io.github.pobsteta.surculus.messages
  * Elles suivent « Carte impossible : », « Tournée refusée : » ou « Illisible : », donc commencent par une minuscule
  * et ne répètent pas le préfixe.
  */
-const val TEXTE_TOURNEE_ILLISIBLE = "cette tournée n'a pas pu être lue : l'importer de nouveau depuis sommieR"
-const val TEXTE_LIGNE_ILLISIBLE = "l'importer de nouveau depuis sommieR"
-const val TEXTE_IMPORT_ECHOUE = "ce fichier n'a pas pu être importé : vérifier que c'est bien le travaux.gpkg d'une tournée de sommieR, puis réessayer"
+const val TEXTE_TOURNEE_ILLISIBLE = "cette tournée n'a pas pu être lue : l'importer de nouveau depuis sommieR."
+const val TEXTE_LIGNE_ILLISIBLE = "l'importer de nouveau depuis sommieR."
+const val TEXTE_IMPORT_ECHOUE = "ce fichier n'a pas pu être importé : vérifier que c'est bien le travaux.gpkg d'une tournée de sommieR, puis réessayer."
 const val TEXTE_DICTEE_NON_DEMARREE = "la dictée n'a pas pu démarrer : autoriser le micro dans les réglages d'Android, puis vérifier le modèle de voix dans Paramètres"
 const val TEXTE_DICTEE_INTERROMPUE = "la dictée s'est interrompue : réessayer"
 

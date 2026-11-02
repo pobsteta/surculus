@@ -12,15 +12,15 @@ package io.github.pobsteta.surculus.dictee
 import io.github.pobsteta.surculus.core.dictee.EcouteurDictee
 import io.github.pobsteta.surculus.core.dictee.Grammaire
 import io.github.pobsteta.surculus.core.dictee.MoteurDictee
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_DICTEE_INTERROMPUE
+import io.github.pobsteta.surculus.messages.TEXTE_DICTEE_NON_DEMARREE
 import org.json.JSONObject
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener
 import org.vosk.android.SpeechService
 import java.io.File
-import io.github.pobsteta.surculus.messages.JournalTechnique
-import io.github.pobsteta.surculus.messages.TEXTE_DICTEE_INTERROMPUE
-import io.github.pobsteta.surculus.messages.TEXTE_DICTEE_NON_DEMARREE
 
 /**
  * [MoteurDictee] sur Vosk 0.3.75 : le [Recognizer] reçoit la grammaire fermée de [Grammaire.jsonVosk]

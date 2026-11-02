@@ -21,9 +21,13 @@ sealed interface RefusGpkg {
     val motif: String
     val message: String
 
-    data class PasUnGeoPackage(val detail: String) : RefusGpkg {
+    /**
+     * [constat] puis [detail] (la consigne) : une phrase en minuscules, sans point final, qui suit un préfixe d'écran
+     * (« Illisible : », « Carte impossible : », « Tournée refusée : ») sans le redire.
+     */
+    data class PasUnGeoPackage(val detail: String, val constat: String = "ce fichier n'est pas un GeoPackage lisible") : RefusGpkg {
         override val motif = "pas_un_geopackage"
-        override val message = "Ce fichier n'est pas un GeoPackage lisible : $detail."
+        override val message = "$constat : $detail."
     }
 
     data class CoucheAbsente(val couche: String) : RefusGpkg {

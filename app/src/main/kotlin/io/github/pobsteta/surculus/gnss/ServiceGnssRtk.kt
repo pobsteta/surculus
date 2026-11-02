@@ -29,10 +29,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.core.gnss.EvaluationFix
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.core.gnss.LecteurNmea
 import io.github.pobsteta.surculus.core.gnss.Ntrip
-import io.github.pobsteta.surculus.core.gnss.EvaluationFix
 import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.gnss.QualiteFix
 import io.github.pobsteta.surculus.core.gnss.RaisonRefus

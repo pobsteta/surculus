@@ -32,14 +32,14 @@ import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.gnss.SourcePosition
 import io.github.pobsteta.surculus.gnss.libelleFix
+import io.github.pobsteta.surculus.gpkg.GpkgRefuse
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_TOURNEE_ILLISIBLE
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import io.github.pobsteta.surculus.messages.JournalTechnique
-import io.github.pobsteta.surculus.messages.TEXTE_TOURNEE_ILLISIBLE
-import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 
 /**
  * La position de l'application ([SourcePosition.fix] : récepteur RTK s'il y en a un, sinon GNSS du téléphone). Demande la

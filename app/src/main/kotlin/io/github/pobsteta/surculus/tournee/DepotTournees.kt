@@ -18,11 +18,11 @@ import io.github.pobsteta.surculus.gpkg.LecteurTournee
 import io.github.pobsteta.surculus.gpkg.Tournee
 import io.github.pobsteta.surculus.data.session.JournalDeTournee
 import io.github.pobsteta.surculus.gpkg.titreForet
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_LIGNE_ILLISIBLE
 import io.github.pobsteta.surculus.sauvegarde.JournalApp
 import java.io.File
 import java.time.Instant
-import io.github.pobsteta.surculus.messages.JournalTechnique
-import io.github.pobsteta.surculus.messages.TEXTE_LIGNE_ILLISIBLE
 
 /** Une ligne de la liste des tournées (spec § 4.1). */
 data class LigneTournee(

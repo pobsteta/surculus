@@ -68,6 +68,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_IMPORT_ECHOUE
 import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.carte.couleurErreur
 import io.github.pobsteta.surculus.carte.couleurNeutre
@@ -75,8 +77,6 @@ import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import io.github.pobsteta.surculus.messages.JournalTechnique
-import io.github.pobsteta.surculus.messages.TEXTE_IMPORT_ECHOUE
 
 /** Où les sélecteurs s'ouvrent d'abord : `Download/Surculus` (mission 054, comme Groma pour `Download/groma`). */
 private val DOSSIER_PAR_DEFAUT: Uri =
