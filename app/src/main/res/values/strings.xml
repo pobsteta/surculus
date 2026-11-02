@@ -5,9 +5,9 @@
     <string name="rtk_notif_titre">Surculus — GNSS RTK</string>
     <string name="rtk_liberer">Libérer le récepteur</string>
     <string name="rtk_connexion">Connexion au récepteur…</string>
-    <string name="rtk_liaison_perdue">Liaison avec le récepteur coupée : vérifier qu\'il est allumé et relié au téléphone. Surculus réessaie tout seul.</string>
-    <string name="rtk_corrections_perdues">serveur de corrections injoignable : vérifier le réseau et les identifiants NTRIP. La position reste moins précise.</string>
-    <string name="rtk_config_incomplete">Récepteur RTK non choisi : Paramètres → Récepteur GNSS.</string>
+    <string name="rtk_liaison_action">Si cela dure, vérifier que le récepteur est allumé et relié au téléphone.</string>
+    <string name="rtk_corrections_action">Vérifier le réseau et les identifiants NTRIP.</string>
+    <string name="rtk_service_interrompu">Le service du récepteur GNSS s\'est interrompu : le libérer avec le bouton de la notification, puis rouvrir la carte.</string>
 
     <!-- Écran d'essai GNSS (mission 018) -->
     <string name="essai_ouvrir">Essai GNSS</string>
@@ -15,7 +15,6 @@
     <string name="essai_lien_ok">connecté</string>
     <string name="essai_lien_attente">en attente</string>
     <string name="essai_lien_arrete">arrêté</string>
-    <string name="essai_ntrip_erreur">Caster : %1$s</string>
     <string name="essai_recepteur_inactif">Récepteur externe non activé : Paramètres → Récepteur GNSS. La position est celle du téléphone.</string>
     <string name="essai_hors_france">Hors de France : vérifier l\'ordre latitude / longitude</string>
 

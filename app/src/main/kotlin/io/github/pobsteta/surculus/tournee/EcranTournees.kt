@@ -75,6 +75,8 @@ import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_IMPORT_ECHOUE
 
 /** Où les sélecteurs s'ouvrent d'abord : `Download/Surculus` (mission 054, comme Groma pour `Download/groma`). */
 private val DOSSIER_PAR_DEFAUT: Uri =
@@ -139,11 +141,11 @@ fun EcranTournees(
                 val dossier = withContext(Dispatchers.IO) { travail() }
                 MessageTournees(ressources.getString(R.string.tournees_import_ok, dossier.name), refus = false)
             } catch (e: GpkgRefuse) {
-                io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Tournees", "import refusé", e)
+                JournalTechnique.avertir("Tournees", "import refusé", e)
                 MessageTournees(ressources.getString(R.string.tournees_import_refus, e.refus.message), refus = true)
             } catch (e: Exception) {
-                io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Tournees", "import impossible", e)
-                MessageTournees(ressources.getString(R.string.tournees_import_refus, io.github.pobsteta.surculus.messages.TEXTE_IMPORT_ECHOUE), refus = true)
+                JournalTechnique.avertir("Tournees", "import impossible", e)
+                MessageTournees(ressources.getString(R.string.tournees_import_refus, TEXTE_IMPORT_ECHOUE), refus = true)
             }
             occupe = false
             version++

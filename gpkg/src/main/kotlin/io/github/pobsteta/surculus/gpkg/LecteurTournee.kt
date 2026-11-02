@@ -53,9 +53,13 @@ internal fun Ligne.blob(nom: String): ByteArray? = this[nom] as? ByteArray
  * 2154 et 9794 mêlés (ADR 0003, ADR 0007).
  */
 object LecteurTournee {
-    /** Détails français des refus venus de SQLite : son texte (anglais) reste dans la cause de l'exception. */
-    private const val DETAIL_OUVERTURE = "le fichier est illisible, abîmé ou d'un autre format"
-    private const val DETAIL_LECTURE = "son contenu est illisible ou incomplet"
+    /**
+     * Ce que le forestier lit après « Ce fichier n'est pas un GeoPackage lisible : » : une consigne, jamais le détail
+     * technique. Le texte de SQLite (anglais) et les noms de tables restent dans la cause de l'exception, pour le journal.
+     */
+    private const val CONSIGNE = "l'exporter de nouveau depuis sommieR"
+    private const val DETAIL_OUVERTURE = CONSIGNE
+    private const val DETAIL_LECTURE = CONSIGNE
 
     fun lire(chemin: Path): Tournee {
         val cnx = try {
@@ -109,10 +113,16 @@ object LecteurTournee {
     private fun lireSansTraduction(cnx: Connection): Tournee {
         val applicationId = cnx.createStatement().use { st -> st.executeQuery("PRAGMA application_id").use { it.next(); it.getInt(1) } }
         if (applicationId != APPLICATION_ID_GPKG && !cnx.existeTable("gpkg_contents")) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage("ni identifiant d'application GPKG, ni table gpkg_contents"))
+            throw GpkgRefuse(
+                RefusGpkg.PasUnGeoPackage(CONSIGNE),
+                IllegalStateException("ni identifiant d'application GPKG, ni table gpkg_contents"),
+            )
         }
         if (!cnx.existeTable("gpkg_contents") || !cnx.existeTable("gpkg_spatial_ref_sys")) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage("tables gpkg_contents ou gpkg_spatial_ref_sys absentes"))
+            throw GpkgRefuse(
+                RefusGpkg.PasUnGeoPackage(CONSIGNE),
+                IllegalStateException("tables gpkg_contents ou gpkg_spatial_ref_sys absentes"),
+            )
         }
         val geometries: Map<String, Pair<String, String>> = if (cnx.existeTable("gpkg_geometry_columns")) {
             cnx.lignes("SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns").associate {

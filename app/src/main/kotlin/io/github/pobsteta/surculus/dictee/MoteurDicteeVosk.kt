@@ -18,6 +18,9 @@ import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener
 import org.vosk.android.SpeechService
 import java.io.File
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_DICTEE_INTERROMPUE
+import io.github.pobsteta.surculus.messages.TEXTE_DICTEE_NON_DEMARREE
 
 /**
  * [MoteurDictee] sur Vosk 0.3.75 : le [Recognizer] reçoit la grammaire fermée de [Grammaire.jsonVosk]
@@ -42,16 +45,16 @@ class MoteurDicteeVosk(private val dossierModele: File) : MoteurDictee {
                 override fun onFinalResult(hypothesis: String?) = rendre(hypothesis, ecouteur)
                 override fun onPartialResult(hypothesis: String?) = Unit
                 override fun onError(exception: Exception?) {
-                    if (exception != null) io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Dictee", "erreur du service de dictée", exception)
-                    ecouteur.surErreur(io.github.pobsteta.surculus.messages.TEXTE_DICTEE_INTERROMPUE)
+                    if (exception != null) JournalTechnique.avertir("Dictee", "erreur du service de dictée", exception)
+                    ecouteur.surErreur(TEXTE_DICTEE_INTERROMPUE)
                 }
                 override fun onTimeout() = Unit
             })
         } catch (e: Exception) {
             // Modèle absent ou illisible, micro refusé : message lisible, jamais d'exception muette.
             arreter()
-            io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Dictee", "démarrage de la dictée impossible", e)
-            ecouteur.surErreur(io.github.pobsteta.surculus.messages.TEXTE_DICTEE_NON_DEMARREE)
+            JournalTechnique.avertir("Dictee", "démarrage de la dictée impossible", e)
+            ecouteur.surErreur(TEXTE_DICTEE_NON_DEMARREE)
         }
     }
 

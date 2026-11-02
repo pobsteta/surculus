@@ -24,6 +24,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.location.LocationManager
 import android.os.IBinder
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
@@ -36,12 +37,14 @@ import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.gnss.QualiteFix
 import io.github.pobsteta.surculus.core.gnss.RaisonRefus
 import io.github.pobsteta.surculus.core.gnss.StatutNtrip
+import io.github.pobsteta.surculus.messages.JournalTechnique
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -81,8 +84,8 @@ data class EtatRtk(
  */
 class ServiceGnssRtk : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, e ->
-        io.github.pobsteta.surculus.messages.JournalTechnique.avertir("GnssRtk", "erreur non rattrapée du service", e)
-        _etat.update { it.copy(erreur = getString(R.string.rtk_liaison_perdue)) }
+        JournalTechnique.avertir("GnssRtk", "erreur non rattrapée du service", e)
+        _etat.update { it.copy(erreur = getString(R.string.rtk_service_interrompu)) }
     })
     private var travail: Job? = null
 
@@ -111,6 +114,12 @@ class ServiceGnssRtk : Service() {
         }
     }
 
+    /** Même phrase que la carte, plus l'action : la boucle de [onStartCommand] retente, la promesse est vraie. */
+    private fun liaisonPerdue() = "${getString(R.string.carte_recepteur_liaison_perdue)} ${getString(R.string.rtk_liaison_action)}"
+
+    /** Même phrase que la carte, plus l'action : la boucle NTRIP retente. */
+    private fun correctionsPerdues() = "${getString(R.string.carte_recepteur_corrections)} ${getString(R.string.rtk_corrections_action)}"
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -129,7 +138,7 @@ class ServiceGnssRtk : Service() {
         val config = ConfigRtk.lire(this)
         val transport = transport(this, config)
         if (transport == null || !premier) {
-            _etat.value = EtatRtk(erreur = getString(R.string.rtk_config_incomplete))
+            _etat.value = EtatRtk(erreur = getString(R.string.carte_recepteur_non_demarre))
             arreterInterne()
             return START_NOT_STICKY
         }
@@ -139,8 +148,8 @@ class ServiceGnssRtk : Service() {
             while (isActive) {
                 runCatching { relier(transport, config) }
                     .onFailure { e ->
-                        io.github.pobsteta.surculus.messages.JournalTechnique.avertir("GnssRtk", "liaison avec le récepteur coupée", e)
-                        _etat.update { it.copy(erreur = getString(R.string.rtk_liaison_perdue)) }
+                        JournalTechnique.avertir("GnssRtk", "liaison avec le récepteur coupée", e)
+                        _etat.update { it.copy(erreur = liaisonPerdue()) }
                     }
                 if (!isActive) break
                 fixBrut = null
@@ -154,8 +163,8 @@ class ServiceGnssRtk : Service() {
     }
 
     /** One connection to the receiver (and the caster), until either closes. */
-    private suspend fun relier(transport: Transport, config: ConfigRtk) = kotlinx.coroutines.coroutineScope {
-        val lecteur = LecteurNmea(horlogeMonotone = android.os.SystemClock::elapsedRealtime)
+    private suspend fun relier(transport: Transport, config: ConfigRtk) = coroutineScope {
+        val lecteur = LecteurNmea(horlogeMonotone = SystemClock::elapsedRealtime)
         val ntrip = if (config.ntrip && config.pointMontage.isNotBlank()) {
             ClientNtrip(config.casterHote, config.casterPort, config.pointMontage, config.utilisateur, config.motDePasse)
         } else null
@@ -172,8 +181,8 @@ class ServiceGnssRtk : Service() {
                             _etat.update { it.copy(rtcmEnvoye = it.rtcmEnvoye + rtcm.size) }
                         }
                     }.onFailure { e ->
-                        io.github.pobsteta.surculus.messages.JournalTechnique.avertir("GnssRtk", "serveur de corrections NTRIP en échec", e)
-                        _etat.update { it.copy(ntripErreur = getString(R.string.rtk_corrections_perdues)) }
+                        JournalTechnique.avertir("GnssRtk", "serveur de corrections NTRIP en échec", e)
+                        _etat.update { it.copy(ntripErreur = correctionsPerdues()) }
                     }
                     delay(RECONNEXION_MS * 2)
                 }

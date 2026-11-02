@@ -25,7 +25,7 @@
     <string name="recepteur_caster">Caster</string>
     <string name="recepteur_point_montage">Point de montage</string>
     <string name="recepteur_charger">Charger</string>
-    <string name="recepteur_aucun_point">Aucun point de montage (caster injoignable ?)</string>
+    <string name="recepteur_aucun_point">Aucun point de montage : vérifier le réseau et l\'adresse du serveur de corrections, puis appuyer sur Charger.</string>
     <string name="recepteur_utilisateur">Identifiant</string>
     <string name="recepteur_mot_de_passe">Mot de passe</string>
     <string name="recepteur_compte_aide">Compte public de Centipède : voir docs.centipede.fr. Les réglages sont enregistrés à la saisie.</string>

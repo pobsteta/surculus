@@ -21,6 +21,8 @@ import io.github.pobsteta.surculus.gpkg.titreForet
 import io.github.pobsteta.surculus.sauvegarde.JournalApp
 import java.io.File
 import java.time.Instant
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_LIGNE_ILLISIBLE
 
 /** Une ligne de la liste des tournées (spec § 4.1). */
 data class LigneTournee(
@@ -140,11 +142,11 @@ object DepotTournees {
             val t = LecteurTournee.lire(gpkg.toPath())
             LigneTournee(dossier, t, null)
         } catch (e: GpkgRefuse) {
-            io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Tournees", "tournée refusée : ${dossier.name}", e)
+            JournalTechnique.avertir("Tournees", "tournée refusée : ${dossier.name}", e)
             LigneTournee(dossier, null, e.refus.message)
         } catch (e: Exception) {
-            io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Tournees", "tournée illisible : ${dossier.name}", e)
-            LigneTournee(dossier, null, io.github.pobsteta.surculus.messages.TEXTE_LIGNE_ILLISIBLE)
+            JournalTechnique.avertir("Tournees", "tournée illisible : ${dossier.name}", e)
+            LigneTournee(dossier, null, TEXTE_LIGNE_ILLISIBLE)
         }
     }
 

@@ -37,6 +37,9 @@ import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_TOURNEE_ILLISIBLE
+import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 
 /**
  * La position de l'application ([SourcePosition.fix] : récepteur RTK s'il y en a un, sinon GNSS du téléphone). Demande la
@@ -88,12 +91,12 @@ fun chargerTournee(id: String): Chargement {
         value = withContext(Dispatchers.IO) {
             try {
                 Chargement.Pret(DepotTournees.ouvrir(File(DepotTournees.racine(ctx), id)))
-            } catch (e: io.github.pobsteta.surculus.gpkg.GpkgRefuse) {
-                io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Carte", "tournée refusée", e)
+            } catch (e: GpkgRefuse) {
+                JournalTechnique.avertir("Carte", "tournée refusée", e)
                 Chargement.Refus(e.refus.message)
             } catch (e: Exception) {
-                io.github.pobsteta.surculus.messages.JournalTechnique.avertir("Carte", "chargement de la tournée impossible", e)
-                Chargement.Refus(io.github.pobsteta.surculus.messages.TEXTE_TOURNEE_ILLISIBLE)
+                JournalTechnique.avertir("Carte", "chargement de la tournée impossible", e)
+                Chargement.Refus(TEXTE_TOURNEE_ILLISIBLE)
             }
         }
     }
