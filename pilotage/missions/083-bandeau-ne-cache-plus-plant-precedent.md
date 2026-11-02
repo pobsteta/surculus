@@ -110,3 +110,14 @@ Ordre :
 3. Preuve du rouge rejouée sur la tête finale (`preuve/083-ancienne-position` remise à jour).
 
 La spec (§ bandeau d'écoute, l. 243) sera amendée par l'orchestrateur après la fusion.
+
+Décisions de Pascal du 2026-11-02, après la relecture (posées une à une) :
+
+- **Appui sur le bloc d'écoute** : « Rien » : pendant l'écoute et les 6 s, le bloc absorbe le toucher ; on ne déclenche
+  jamais un bouton caché dessous (« Mode poche » ni un bouton de la zone recouvert).
+- **Couché** : « Dans la reprise 083 » : avec les lignes « entendu » et « compris », le bloc (cadre compris) ne
+  recouvre plus « Plant précédent » ni le numéro du plant (≈ 9 dp aujourd'hui, défaut antérieur à la 083).
+
+Tests du `testeur` (fcc44e2, 8 rouges sur edab4f0) : phrase comprise / refusée, debout et couché, avec et sans plein
+écran ; appui sur le bloc, debout et couché. Le cadre du bloc n'est exposé par aucun nœud : le test l'approche par les
+lignes + 12 dp.
