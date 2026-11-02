@@ -121,3 +121,37 @@ Décisions de Pascal du 2026-11-02, après la relecture (posées une à une) :
 Tests du `testeur` (fcc44e2, 8 rouges sur edab4f0) : phrase comprise / refusée, debout et couché, avec et sans plein
 écran ; appui sur le bloc, debout et couché. Le cadre du bloc n'est exposé par aucun nœud : le test l'approche par les
 lignes + 12 dp.
+
+## Reprise, aller-retour 2/3 (2026-11-02)
+
+Relecture de la #148 (6c83846) : « à reprendre ». Debout tenu. Couché, marge de 3 dp : une commande de la grammaire
+(« hauteur trois cent quatre-vingt-dix-neuf », « atteint insectes hauteur quarante-cinq ») met « entendu » sur deux
+lignes et le cadre recouvre « Plant n° 1 » (13 dp) et « Plant précédent » (1 dp) ; le test ne dicte que « sept sain ».
+
+Décisions de Pascal du 2026-11-02, posées une à une :
+
+1. **Couché** : « Bloc plus large, à droite » : le bloc s'étend vers la droite de la zone (au-dessus des boutons d'état,
+   pas de la flèche ni du numéro) pour que « entendu » et « compris » tiennent sur une ligne, texte à sa taille.
+2. **Debout, zone défilée en bas** : « Oui, et le figer » : pendant l'écoute et les 6 s, le bloc peut couvrir le haut de
+   « + Pointer » / « Annuler » (ou « Installer la dictée ») ; un test le dit et casse si le bloc couvre davantage ou un
+   autre bouton.
+3. **« ÉCOUTE FERMÉE » sur deux lignes debout** : « Garder deux lignes ».
+
+Ordre :
+1. **`testeur`** : les phases « après une phrase » avec la commande la plus longue de la grammaire fermée (spec, liste
+   des mots ; par exemple « hauteur trois cent quatre-vingt-dix-neuf », « atteint insectes hauteur quarante-cinq ») et le
+   refus le plus long, debout et couché ; un test « zone défilée jusqu'en bas pendant l'écoute », debout, qui tolère le
+   haut de « + Pointer » / « Annuler » / « Installer la dictée » et rien d'autre (tolérance bornée en dp et nommée) ;
+   vus rouges sur 6c83846 là où le défaut existe.
+2. **`afficheur`** : la disposition couchée décidée ; tests verts sans les réécrire ; corps de PR corrigé (débord debout
+   17 dp de texte, 29 dp de cadre ; marge couchée avec « Plant n° 1 ») ; dire qu'une glissade qui commence sur le bloc
+   ne fait pas défiler la zone (conséquence de « Rien ») ; preuve rejouée sur la tête finale.
+
+Au-delà de cette reprise et de la suivante (3/3), la décision remonte à Pascal.
+
+Complément du 2026-11-02 : tests du `testeur` (ed8123d, 14 de plus, 6 rouges couchés sur b246cb5). Zone défilée en bas,
+« sept sain » : bornes figées à 12 dp de texte et 24 dp de cadre sur « + Pointer », « Annuler », « Installer la
+dictée ». Avec la commande la plus longue, le bloc couvre 54 dp des 56 dp d'« Installer la dictée ». Décision de Pascal :
+**« Accepté 6 s, le figer »** : un test fige ce cas long (bornes mesurées, rien d'autre couvert). Les 17 / 29 dp cités
+plus haut sont le débord du bloc sur la zone non défilée ; les 9 / 21 dp, le recouvrement d'« Installer la dictée »
+zone défilée.
