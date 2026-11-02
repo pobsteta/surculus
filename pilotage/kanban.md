@@ -7,6 +7,16 @@
 
 ## Bac à sable
 
+- **084** (décision de Pascal, 2026-11-02, relecture de la 082) : les autres refus de la lecture d'une tournée encore
+  techniques à l'écran (`ReferentielSpatialInconnu` avec `srs_id` et `gpkg_spatial_ref_sys`, `Referentiel` EPSG,
+  `CoucheAbsente` avec majuscule, `PointHorsFrance` aux coordonnées brutes), même règle que la 082 ; fiche à écrire
+  (`testeur` puis `dev`).
+- **« Carte impossible : placette <uuid> »** (`EcranGuidage:107`, `EcranControle:193`, relecture de la 082) : UUID à
+  l'écran.
+- **Test de la 082** : `gabarit()` ne lit que `strings_tournees.xml`, d'où le doublon `carte_recepteur_service_interrompu`
+  / `rtk_service_interrompu` ; le faire lire les deux fichiers (`testeur`), puis une seule ressource. La carte reconnaît
+  l'interruption par son texte (`DEBUT_SERVICE_INTERROMPU`) : un indicateur dans `EtatRtk` serait plus solide.
+
 - **Libellé « Caster » dans Paramètres** (`recepteur_caster`, `recepteur_ntrip_desc`, relecture de la 082) : mot
   technique, hors de la 082.
 
@@ -102,9 +112,6 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **082** plus aucun message d'exception brut à l'écran (`testeur` puis `dev`, appuyer, PR #146) : reprise 2/3 en
-  cours ; validée par Pascal le 2026-11-02.
-
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
@@ -165,6 +172,9 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **082** plus aucun message d'exception brut à l'écran (`testeur` puis `dev`, PR #146, a04eb64, deux allers-retours) :
+  fusionnée le 2026-11-02 ; **captures à faire** (import d'un fichier vide refusé, récepteur coupé).
 
 - **083** le bandeau d'écoute ne cache plus « Plant précédent » (`testeur` puis `afficheur`, PR #148, c081f8a, deux
   allers-retours) : fusionnée le 2026-11-02 ; preuve #147 rouge (18 tests) fermée sans fusion ; spec amendée par la
