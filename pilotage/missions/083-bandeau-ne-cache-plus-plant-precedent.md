@@ -88,3 +88,25 @@ l'essai ganté de Pascal.
 
 Le rapport de rendu en artefact de la CI n'a plus de ligne « DÉFAUT CONNU » ; la capture debout pendant l'écoute
 montre « Plant précédent » dégagé.
+
+## Reprise, aller-retour 1/3 (2026-11-02)
+
+Relecture de la #148 (edab4f0) : « à reprendre ». Debout, après une phrase, dans le pied (112 dp utiles), « ÉCOUTE
+FERMÉE » passe sur deux lignes, la ligne « entendu » est coupée (11 dp) et la ligne « compris » n'est plus affichée
+(0 × 0), mesuré par le relecteur ; le test de rendu ne le voyait pas (écoute du banc sans phrase ni résultat).
+
+Décision de Pascal du 2026-11-02 : **« Déborder vers le haut »**. Debout, le bloc part du pied, à gauche du micro, et
+monte sur le bas de la zone qui défile pendant l'écoute et les 6 s, assez pour montrer en entier « ÉCOUTE FERMÉE »,
+« entendu » et « compris ». Il ne couvre jamais « Plant précédent » ni le numéro du plant. Couché : inchangé.
+
+Ordre :
+1. **`testeur`** (sans lire le code de l'écran) : dans `RenduControleTest`, une phase « après une phrase et son
+   résultat » où l'écoute du banc reçoit une phrase et un résultat ; les lignes « entendu » et « compris » doivent être
+   affichées en entier (non coupées, non nulles), debout et couché, pendant le délai ; vue rouge sur edab4f0.
+2. **`afficheur`** : la disposition décidée, les tests du testeur verts sans les réécrire, les mineurs du relecteur
+   (commentaires périmés d'`EcranControle.kt` l. 345-346 et du KDoc de `BlocEcouteEncadre`, paramètre `modifier`
+   inutilisé, doc de `MicroControleTest`). Les blocs recouverts dans la zone pendant le débordement sont dits dans la
+   PR ; si une règle de `BancRendu` les refuse, ne pas la relâcher : le dire.
+3. Preuve du rouge rejouée sur la tête finale (`preuve/083-ancienne-position` remise à jour).
+
+La spec (§ bandeau d'écoute, l. 243) sera amendée par l'orchestrateur après la fusion.
