@@ -72,6 +72,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -343,7 +344,7 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
             }
         }
         // Mission 075 : le micro est HORS de la zone qui défile (pied debout, colonne couché) ; le bloc J'ÉCOUTE est posé PAR-DESSUS
-        // le haut de cette zone. Rien ne pousse rien : le micro et les boutons ne bougent pas quand l'écoute commence.
+        // (couché : le haut de la zone ; debout : du pied, vers le haut, 083). Rien ne pousse rien : le micro et les boutons ne bougent pas quand l'écoute commence.
         val config = LocalConfiguration.current
         val emplacement = DispositionMicro.emplacement(config.screenWidthDp.toFloat(), config.screenHeightDp.toFloat())
         val avecMicro = e.vue == VueControle.PLANT && !poche
@@ -389,8 +390,8 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
                     e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
                     if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                // Couché, le bloc reste par-dessus le haut de la zone (large, il ne couvre pas « Plant précédent »). Debout, il est dans le pied (083).
-                if (!poche && blocEcouteVisible()) {
+                // Couché, le bloc est par-dessus le haut de la zone, sans recouvrir « Plant précédent » ni le numéro. Debout, il part du pied (083, plus bas).
+                if (!poche && emplacement == EmplacementMicro.COLONNE && blocEcouteVisible()) {
                     Box(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
                 }
             }
@@ -405,18 +406,27 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
                 }
             }
         } else {
-            Column(Modifier.weight(1f).fillMaxWidth()) {
-                zone(Modifier.weight(1f).fillMaxWidth())
-                if (avecMicro) {
-                    Row(Modifier.fillMaxWidth().height(DimensionsMicro.ZONE).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        // Mission 083 : debout, le bloc d'écoute prend la place de « Mode poche » (le seul bouton qu'il peut couvrir), dans le pied,
-                        // à côté du micro : il ne recouvre plus « Plant précédent » en haut de la zone. Hauteur du pied : valeur PROVISOIRE (essai ganté).
-                        Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                            BoutonPoche(surPoche, Modifier.fillMaxWidth())
+            // Debout (083) : le bloc d'écoute est un frère du pied et de la zone, dans un Box qui les contient : il part du bas du pied, à
+            // gauche du micro, et monte sur le bas de la zone qui défile (débord vers le haut). Il ne pousse rien : le Column dessous ne
+            // dépend pas de lui.
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                Column(Modifier.fillMaxSize()) {
+                    zone(Modifier.weight(1f).fillMaxWidth())
+                    if (avecMicro) {
+                        Row(Modifier.fillMaxWidth().height(DimensionsMicro.ZONE).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) { BoutonPoche(surPoche, Modifier.fillMaxWidth()) }
+                            Spacer(Modifier.width(12.dp))
+                            micro()
                         }
-                        Spacer(Modifier.width(12.dp))
-                        micro()
                     }
+                }
+                // Même cadre que le pied : 16 dp de chaque côté, 8 dp sous, micro (112 dp) et 12 dp d'écart à droite. Largeur et pied
+                // : valeurs PROVISOIRES jusqu'à l'essai ganté. La hauteur est celle du texte : le bloc monte de ce qu'il lui faut.
+                if (avecMicro && !poche && blocEcouteVisible()) {
+                    Box(
+                        Modifier.align(Alignment.BottomStart).fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp + DimensionsMicro.BOUTON + 12.dp, bottom = 8.dp),
+                    ) { BlocEcouteEncadre(cote = false) }
                 }
             }
         }
@@ -549,31 +559,43 @@ private fun blocEcouteVisible(): Boolean = EcouteApp.bandeauVisible()
 private fun blocEcouteEnPoche(): Boolean = EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null
 
 /**
- * L'écoute, en deux lignes : en grand « J'ÉCOUTE » / « ÉCOUTE FERMÉE », puis la comparaison entendu / compris (ou refusé, en
- * couleur d'erreur) : le forestier compare ce qu'il a dit à ce que la machine a retenu (plan § 2).
+ * L'écoute : en grand « J'ÉCOUTE » / « ÉCOUTE FERMÉE », puis la comparaison entendu / compris (ou refusé, en couleur d'erreur) : le
+ * forestier compare ce qu'il a dit à ce que la machine a retenu (plan § 2). Avec [cote], « entendu » et « compris » partagent une
+ * ligne (couché : large mais bas, pour ne pas descendre sur « Plant précédent », 083) ; sinon l'un sous l'autre.
  */
 @Composable
-private fun BlocEcoute() {
+private fun BlocEcoute(cote: Boolean = false) {
     EcouteApp.version // lu pour se redessiner à chaque changement
     val grand = TextesEcoute.grand(EcouteApp.affichage)
     val entendu = EcouteApp.entendu
     val compris = EcouteApp.compris
     grand?.let { Text(it, style = MaterialTheme.typography.headlineMedium, color = couleurNeutre()) }
-    entendu?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre()) }
-    compris?.let {
-        val erreur = EcouteApp.comprisErreur
-        Text(TextesEcoute.compris(it, erreur), style = MaterialTheme.typography.titleMedium, color = if (erreur) couleurErreur() else couleurNeutre())
+    val ligneEntendu: @Composable (Modifier) -> Unit = { m -> entendu?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre(), modifier = m) } }
+    val ligneCompris: @Composable (Modifier) -> Unit = { m ->
+        compris?.let {
+            val erreur = EcouteApp.comprisErreur
+            Text(TextesEcoute.compris(it, erreur), style = MaterialTheme.typography.titleMedium, color = if (erreur) couleurErreur() else couleurNeutre(), modifier = m)
+        }
     }
+    if (cote && entendu != null && compris != null) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) { ligneEntendu(Modifier.weight(1f)); ligneCompris(Modifier.weight(1f)) }
+    } else { ligneEntendu(Modifier); ligneCompris(Modifier) }
 }
 
-/** Hors du mode poche, le même bloc dans son cadre, sur fond opaque : posé par-dessus le haut de la zone qui défile (075). */
+/**
+ * Hors du mode poche, le même bloc dans son cadre, sur fond opaque, posé par-dessus ce qu'il couvre (075, 083) : debout, du pied
+ * (à gauche du micro) vers le haut ; couché, en tête de la zone. Il **absorbe le toucher** (décision de Pascal du 2026-11-02) : pendant
+ * l'écoute et les 6 s, un appui sur lui ne déclenche aucun bouton caché dessous. [cote] : voir [BlocEcoute].
+ */
 @Composable
-private fun BlocEcouteEncadre(modifier: Modifier = Modifier) {
+private fun BlocEcouteEncadre(cote: Boolean = true) {
     Column(
-        modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.small)
-            .border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small).padding(12.dp),
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.small)
+            .border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small)
+            .pointerInput(Unit) { awaitPointerEventScope { while (true) awaitPointerEvent().changes.forEach { it.consume() } } }
+            .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) { BlocEcoute() }
+    ) { BlocEcoute(cote) }
 }
 
 /** « Mode poche », hors de la zone qui défile (debout : à gauche du micro, dans le pied ; couché : en tête de la zone). */
