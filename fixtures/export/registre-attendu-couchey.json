@@ -11,6 +11,7 @@
   },
   "methode_decalage": {
     "decision": "Pascal, 2026-10-21 : pour P35-01 le point attendu est la position mesurée (piquet + décalage), tolérance 0,5 m ; pour P35-02, sans mesure, c'est le piquet, même tolérance.",
+    "decision_2026_11_02": "Pascal, 2026-11-02 (mission 087, « en faire le cas sans position ») : P35-02 devient un contrôle ouvert sans position sur son code ; F4 vérifie sa ligne de positions_controles (géométrie NULL, sans_position_mesuree et rattache_par_identite vrais) et la position du piquet dans la couche controles, même tolérance.",
     "approximation": "locale (plan tangent à la placette) : dlon = decalage_est / (N cos(lat)), dlat = decalage_nord / M, en radians puis degrés ; le décalage est lu comme est et nord géographiques (le scénario le nomme decalage_est_m, decalage_nord_m).",
     "rayons": "ellipsoïde WGS 84 (a = 6 378 137 m, f = 1/298,257223563, e² = f(2 - f)) ; N = a / sqrt(1 - e² sin²lat) = 6 389 683,58 m ; M = a(1 - e²) / (1 - e² sin²lat)^1,5 = 6 369 909,51 m, à lat 47,25910.",
     "calcul_P35-01": "dlon = 0,6 / (6 389 683,58 × cos 47,25910°) rad = 7,9273e-6 degrés ; dlat = -0,4 / 6 369 909,51 rad = -3,5979e-6 degrés ; lon = 4,93250 + 0,0000079273 = 4,9325079273 ; lat = 47,25910 - 0,0000035979 = 47,2590964021.",
@@ -40,7 +41,7 @@
       "nb_vivants": 2,
       "nb_abroutis": 0,
       "h_moy_cm": 40,
-      "point": {"lon": 4.93300, "lat": 47.25940, "tolerance_m": 0.5, "origine": "piquet (aucune position mesurée dans le scénario)"},
+      "point": {"lon": 4.93300, "lat": 47.25940, "tolerance_m": 0.5, "sans_position_mesuree": true, "origine": "piquet : contrôle ouvert sans position mesurée, sur son code lu (ADR 0003, amendement du 2026-11-02 ; décision de Pascal du 2026-11-02, mission 087). Le point est lu dans la couche controles de l'export ; positions_controles porte une ligne pour ce contrôle, géométrie NULL, sans_position_mesuree et rattache_par_identite vrais."},
       "calcul": {
         "nb_total": "a sain + b atteint = 2 ; c non observé est exclu (spec § 4.3)",
         "nb_vivants": "a, b = 2",

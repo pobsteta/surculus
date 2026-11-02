@@ -237,6 +237,136 @@
         "motif": "code_inconnu"
       },
       "source": "docs/spec.md § 4.3 et § 6 (15 m au plus, borne incluse ; code de piquet inconnu refusé) ; sommieR R/travaux_qfield.R l. 303 (distances <= 15), arbitrage de Pascal 2026-10-16"
+    },
+    {
+      "id": "R10",
+      "description": "Aucune position mesurée (aucun fix), code lu connu : rattaché au piquet par identité, position du contrôle = position de la placette créée par sommieR, aucune position mesurée.",
+      "entree": {
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": null,
+        "identite_confirmee": true,
+        "code_lu": "P-001"
+      },
+      "attendu": {
+        "issue": "rattache",
+        "placette": "P-001",
+        "rattache_par_identite": true,
+        "position_controle": {
+          "x": 850469,
+          "y": 6686306
+        },
+        "position_mesuree_conservee": null
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md, amendement du 2026-11-02 (points 2, 3, 5) ; docs/spec.md § 4.3, « Arrivée sans position »"
+    },
+    {
+      "id": "R11",
+      "description": "Aucune position mesurée, aucun code lu : rien ne s'ouvre.",
+      "entree": {
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": null,
+        "identite_confirmee": false
+      },
+      "attendu": {
+        "issue": "refus"
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md, amendement du 2026-11-02 (points 2, 3, 5) ; docs/spec.md § 4.3, « Arrivée sans position » (point 2 : « sans code, rien ne s'ouvre » ; le motif du refus n'est pas spécifié)"
+    },
+    {
+      "id": "R12",
+      "description": "Aucune position mesurée, code lu inconnu de la tournée : refus.",
+      "entree": {
+        "piquets_stockes": [
+          {
+            "code": "P-001",
+            "x": 850469,
+            "y": 6686306
+          }
+        ],
+        "position_mesuree": null,
+        "identite_confirmee": true,
+        "code_lu": "ZZ-999"
+      },
+      "attendu": {
+        "issue": "refus",
+        "motif": "code_inconnu"
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md, amendement du 2026-11-02 (points 2, 3, 5) ; docs/spec.md § 4.3, « Arrivée sans position »"
+    },
+    {
+      "id": "R13",
+      "description": "Aucune position mesurée, code présent dans deux UG (à 10 m l'une de l'autre) : rien ne tranche, l'agent choisit l'UG.",
+      "entree": {
+        "piquets_stockes": [
+          {
+            "code": "P01",
+            "x": 850469,
+            "y": 6686306,
+            "ug": "12"
+          },
+          {
+            "code": "P01",
+            "x": 850479,
+            "y": 6686306,
+            "ug": "14"
+          }
+        ],
+        "position_mesuree": null,
+        "identite_confirmee": true,
+        "code_lu": "P01"
+      },
+      "attendu": {
+        "issue": "ug_a_choisir"
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md, amendement du 2026-11-02 (points 2, 3, 5) ; docs/spec.md § 4.3, « Arrivée sans position » (point 3 : « sans position, rien ne tranche »)"
+    },
+    {
+      "id": "R14",
+      "description": "Aucune position mesurée, code présent dans deux UG, UG 14 choisie : rattaché à la placette de l'UG 14, à sa position.",
+      "entree": {
+        "piquets_stockes": [
+          {
+            "code": "P01",
+            "x": 850469,
+            "y": 6686306,
+            "ug": "12"
+          },
+          {
+            "code": "P01",
+            "x": 850479,
+            "y": 6686306,
+            "ug": "14"
+          }
+        ],
+        "position_mesuree": null,
+        "identite_confirmee": true,
+        "code_lu": "P01",
+        "ug_choisie": "14"
+      },
+      "attendu": {
+        "issue": "rattache",
+        "placette": "P01",
+        "ug": "14",
+        "rattache_par_identite": true,
+        "position_controle": {
+          "x": 850479,
+          "y": 6686306
+        },
+        "position_mesuree_conservee": null
+      },
+      "source": "docs/adr/0003-gnss-et-reperes.md, amendement du 2026-11-02 (points 2, 3, 5) ; docs/spec.md § 4.3, « Arrivée sans position »"
     }
   ]
 }
