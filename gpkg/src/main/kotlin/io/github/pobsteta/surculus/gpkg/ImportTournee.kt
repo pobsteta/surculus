@@ -74,7 +74,12 @@ object ImportTournee {
      */
     fun finaliser(temporaire: Path, racine: Path, maintenant: Instant): Path {
         try {
-            val tournee = trouverTournee(temporaire) ?: throw GpkgRefuse(RefusGpkg.PasUnGeoPackage("aucun $NOM_GPKG dans ce dossier"))
+            val tournee = trouverTournee(temporaire) ?: throw GpkgRefuse(
+                RefusGpkg.PasUnGeoPackage(
+                    detail = "choisir le dossier de la tournée exportée par sommieR",
+                    constat = "aucun fichier $NOM_GPKG dans ce dossier",
+                ),
+            )
             val lue = LecteurTournee.lire(tournee.resolve(NOM_GPKG))
             // Mêmes refus que l'ouverture de la carte : une tournée hors de France (axes inversés) n'est pas rangée.
             LecteurTournee.lireCartographie(tournee.resolve(NOM_GPKG))

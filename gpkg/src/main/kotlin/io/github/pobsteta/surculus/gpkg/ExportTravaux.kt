@@ -72,7 +72,7 @@ object ExportTravaux {
             }
             return bilan
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "écriture impossible"))
+            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage("l'écriture du fichier a échoué"), e)
         } finally {
             Files.deleteIfExists(tmp)
         }

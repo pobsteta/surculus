@@ -22,9 +22,18 @@ enum class ErreurRecepteurCarte(@StringRes val texte: Int) {
     LIAISON_PERDUE(R.string.carte_recepteur_liaison_perdue),
 
     /** La liaison au récepteur marche, les corrections (NTRIP) non : la position reste moins précise. */
-    CORRECTIONS(R.string.carte_recepteur_corrections);
+    CORRECTIONS(R.string.carte_recepteur_corrections),
+
+    /** Le service s'est arrêté sur une erreur non rattrapée : il reste « en marche » mais rien ne retente (phrase de l'Essai GNSS). */
+    SERVICE_INTERROMPU(R.string.carte_recepteur_service_interrompu);
 
     companion object {
+        /**
+         * Début de la phrase `rtk_service_interrompu` (le service la pose dans l'erreur) ; un test la compare à la ressource.
+         * La phrase est la seule erreur du service qui ne promet pas de nouvelle tentative.
+         */
+        const val DEBUT_SERVICE_INTERROMPU = "Le service du récepteur GNSS s'est interrompu"
+
         /**
          * @param reglageActif Paramètres → « Utiliser un récepteur GNSS externe » ; inactif, la carte ne dit rien.
          * @param enMarche le service est démarré.
@@ -34,6 +43,7 @@ enum class ErreurRecepteurCarte(@StringRes val texte: Int) {
         fun pour(reglageActif: Boolean, enMarche: Boolean, erreur: String?, erreurCorrections: String?): ErreurRecepteurCarte? = when {
             !reglageActif -> null
             erreur != null && !enMarche -> NON_DEMARRE
+            erreur != null && erreur.startsWith(DEBUT_SERVICE_INTERROMPU) -> SERVICE_INTERROMPU
             erreur != null -> LIAISON_PERDUE
             enMarche && erreurCorrections != null -> CORRECTIONS
             else -> null

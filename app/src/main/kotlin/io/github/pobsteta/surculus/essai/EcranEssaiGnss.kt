@@ -115,7 +115,7 @@ fun EcranEssaiGnss(onRetour: () -> Unit) {
             if (!recepteurActif) Text(stringResource(R.string.essai_recepteur_inactif), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
             if (localisationRefusee) Text(stringResource(R.string.carte_permission), fontWeight = FontWeight.Bold, color = couleurErreur())
             etat.erreur?.let { Text(it, color = couleurErreur()) }
-            etat.ntripErreur?.let { Text(stringResource(R.string.essai_ntrip_erreur, it), color = couleurErreur()) }
+            etat.ntripErreur?.let { Text(it, color = couleurErreur()) }
             Spacer(Modifier.height(24.dp))
         }
     }

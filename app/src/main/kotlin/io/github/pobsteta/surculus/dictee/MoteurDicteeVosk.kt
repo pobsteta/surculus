@@ -12,6 +12,9 @@ package io.github.pobsteta.surculus.dictee
 import io.github.pobsteta.surculus.core.dictee.EcouteurDictee
 import io.github.pobsteta.surculus.core.dictee.Grammaire
 import io.github.pobsteta.surculus.core.dictee.MoteurDictee
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_DICTEE_INTERROMPUE
+import io.github.pobsteta.surculus.messages.TEXTE_DICTEE_NON_DEMARREE
 import org.json.JSONObject
 import org.vosk.Model
 import org.vosk.Recognizer
@@ -42,14 +45,16 @@ class MoteurDicteeVosk(private val dossierModele: File) : MoteurDictee {
                 override fun onFinalResult(hypothesis: String?) = rendre(hypothesis, ecouteur)
                 override fun onPartialResult(hypothesis: String?) = Unit
                 override fun onError(exception: Exception?) {
-                    ecouteur.surErreur(exception?.message ?: "erreur de dictée")
+                    if (exception != null) JournalTechnique.avertir("Dictee", "erreur du service de dictée", exception)
+                    ecouteur.surErreur(TEXTE_DICTEE_INTERROMPUE)
                 }
                 override fun onTimeout() = Unit
             })
         } catch (e: Exception) {
             // Modèle absent ou illisible, micro refusé : message lisible, jamais d'exception muette.
             arreter()
-            ecouteur.surErreur(e.message ?: "dictée impossible")
+            JournalTechnique.avertir("Dictee", "démarrage de la dictée impossible", e)
+            ecouteur.surErreur(TEXTE_DICTEE_NON_DEMARREE)
         }
     }
 

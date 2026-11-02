@@ -110,6 +110,7 @@
     <string name="carte_recepteur_non_demarre">Récepteur GNSS non démarré : voir Paramètres, Récepteur GNSS.</string>
     <string name="carte_recepteur_liaison_perdue">Liaison avec le récepteur GNSS perdue : nouvelle tentative en cours.</string>
     <string name="carte_recepteur_corrections">Corrections RTK indisponibles : la position est moins précise.</string>
+    <string name="carte_recepteur_service_interrompu">Le service du récepteur GNSS s\'est interrompu : le libérer avec le bouton de la notification, puis rouvrir la carte.</string>
 
     <!-- Écran Guidage (spec § 4.2 et 4.3) -->
     <string name="guidage_vers">Vers %1$s</string>
