@@ -390,7 +390,7 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
                     if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 // Couché, le bloc reste par-dessus le haut de la zone (large, il ne couvre pas « Plant précédent »). Debout, il est dans le pied (083).
-                if (!poche && emplacement == EmplacementMicro.COLONNE && blocEcouteVisible()) {
+                if (!poche && blocEcouteVisible()) {
                     Box(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
                 }
             }
@@ -413,7 +413,6 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
                         // à côté du micro : il ne recouvre plus « Plant précédent » en haut de la zone. Hauteur du pied : valeur PROVISOIRE (essai ganté).
                         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
                             BoutonPoche(surPoche, Modifier.fillMaxWidth())
-                            if (!poche && blocEcouteVisible()) BlocEcouteEncadre()
                         }
                         Spacer(Modifier.width(12.dp))
                         micro()
