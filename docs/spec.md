@@ -248,10 +248,12 @@ point à Brest et à Strasbourg.
   et un appui sur lui ne fait rien (décisions de Pascal du 2026-11-02, mission 083, PR #148,
   fusionnée le 2026-11-02) : debout, il part du pied, à gauche du micro, sur « Mode poche », et
   déborde vers le haut sur le bas de la zone sans rien pousser (« ÉCOUTE FERMÉE » sur deux
-  lignes) ; zone défilée jusqu'en bas, il peut couvrir le haut de « + Pointer », « Annuler » ou
-  « Installer la dictée » pendant ces 6 s ; couché, il s'étend sur toute la largeur en haut de
-  l'écran, « entendu » et « compris » en deux colonnes. Les tailles en dp sont provisoires
-  jusqu'à l'essai ganté.
+  lignes) ; zone défilée jusqu'en bas, pendant l'écoute et les 6 s, il peut couvrir en partie,
+  jusqu'à presque entier avec une longue commande, « + Pointer », « Annuler » ou « Installer la
+  dictée » (bornes figées par un test) ; couché, il est en haut de la zone, par-dessus « Mode
+  poche », sur toute la largeur (colonne du micro comprise), « entendu » et « compris » en deux
+  colonnes. Une glissade qui commence sur le bandeau ne fait pas défiler la zone. Les tailles en
+  dp sont provisoires jusqu'à l'essai ganté.
 
   Dictée hors ligne à **grammaire fermée** : « sain », « atteint », « mort », « absent »,
   « non observé », « insectes », « champignon », « animaux », « climat »,
