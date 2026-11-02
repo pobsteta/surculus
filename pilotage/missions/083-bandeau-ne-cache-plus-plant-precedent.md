@@ -10,7 +10,7 @@
 qu'il ne couvre plus la flèche « Plant précédent » ni le numéro du plant, pendant l'écoute et les 6 s qui suivent, pour
 que le forestier puisse toujours revenir au plant d'avant.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Debout, déplacer le bloc d'écoute du haut de la zone vers le pied (à la place de « Mode poche », à côté du micro), pour qu'il ne couvre plus « Plant précédent » ni le numéro du plant pendant l'écoute et les 6 s, afin que le forestier puisse toujours revenir au plant d'avant ; et lever dans le même commit la marque du défaut connu du test de rendu.
 
 ## Les trois questions (règle de staffing)
 
