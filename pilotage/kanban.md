@@ -7,6 +7,12 @@
 
 ## Bac à sable
 
+- **Contrôles d'intégrité de l'export** (`ExportTravaux:487-494`, clés étrangères, rtree, `gpkg_contents`) : textes
+  techniques, invisibles tant qu'aucun écran n'appelle l'export ; à traduire ce jour-là (« les laisser, noter », Pascal,
+  2026-11-02, relecture de la 082).
+- **Après « Libérer le récepteur »** (relecture de la 082, non vérifié sur appareil) : `travail.cancel()` peut remettre
+  « liaison coupée » dans l'état alors que le service est arrêté (`ServiceGnssRtk.kt:141`).
+
 - **Mineur M2 de la 076** (depuis le cycle 15) : plus aucun test ne vérifie que `echeance()` retient la plus
   proche des deux échéances (bandeau, résultat final) ; une ligne dans le premier test du bandeau.
 
