@@ -95,3 +95,12 @@ Aucune. Les phrases nouvelles sont listées dans la PR (endroit, cause, phrase) 
 
 `git grep -n "e.message\|simpleName\|e.toString()"` dans `app/src/main` ne trouve plus rien qui aille à l'écran ; les
 deux captures sont en français.
+
+## Décision de Pascal du 2026-11-02 (après le push du testeur)
+
+Les tests du `testeur` montrent que le refus du module `gpkg` (`gpkg/.../Refus.kt:26`, « Ce fichier n'est pas un
+GeoPackage lisible : [SQLITE_NOTADB] File opened that is not a database file … ») met à l'écran le détail SQLite
+anglais. Pascal : « Élargir la fiche ». Le `dev` **peut** modifier ce refus : la phrase française reste, le détail
+technique sort de l'écran et va au journal Android (ou à un champ non affiché). Les quatre tests du `testeur` sur
+`DepotTournees.ligne` restent tels quels. Les autres refus du module `gpkg` qui recopient un détail technique sont dans le
+même cas ; le `dev` les liste dans la PR.
