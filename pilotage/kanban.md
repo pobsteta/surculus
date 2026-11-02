@@ -10,12 +10,6 @@
 - **Mineur M2 de la 076** (depuis le cycle 15) : plus aucun test ne vérifie que `echeance()` retient la plus
   proche des deux échéances (bandeau, résultat final) ; une ligne dans le premier test du bandeau.
 
-- **082** (décision de Pascal, 2026-10-30, relecture de la 081) : plus aucun `e.message` brut à l'écran
-  (`carte/Commun.kt:94`, `DepotTournees.kt:145`, `EcranTournees.kt:144`, `MoteurDicteeVosk.kt:45`, `:52`,
-  `ServiceGnssRtk.kt:84`, `:140`, `:170`) ; fiche à écrire.
-- **Le plant par son numéro dans les refus** (« le plant n° 7 » plutôt que « ce plant », 081) : le refus doit porter le
-  numéro ; « assez pour l'instant » (Pascal, 2026-10-30).
-
 - **Questions de la relecture de la 081** (Pascal, « au bac à sable », 2026-10-30) : `ConnectException` (serveur qui
   refuse) dit « pas de réseau », coupure en plein téléchargement (`SocketException`, SSL) sur la phrase générique ;
   signe moins « - » ou « − » (U+2212) ; tests manquants : appel de `refusServeur` dans `source`, priorité
@@ -99,6 +93,10 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **083** le bandeau d'écoute ne cache plus « Plant précédent » (`afficheur`, appuyer) et **082** plus aucun message
+  d'exception brut à l'écran (`testeur` puis `dev`, appuyer) : validées par Pascal le 2026-11-02 (« oui, lance les
+  deux »), lancées le même jour ; fiches sur leurs seules branches.
+
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
@@ -130,10 +128,6 @@ _Idées, à trier au prochain `/mission`._
 ## Planifié
 
 _En attente sous le plafond humain (3 PR en revue)._
-
-- **083** (décision de Pascal, 2026-10-30, relecture de la 080) : debout, le bandeau d'écoute ne couvre plus la
-  flèche « Plant précédent » ni le numéro du plant ; le test de rendu le marque « défaut connu » jusque-là. Fiche à
-  écrire (`afficheur`).
 
 **Suite décidée de la 012 (2026-10-27) :** la 012-D2 (au Terminé), puis :
 
