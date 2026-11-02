@@ -112,6 +112,9 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **086** code de piquet en double entre UG (`testeur` puis `dev`, appuyer) : validée par Pascal le 2026-11-02, lancée
+  le même jour. Suivront **087** ouvrir un contrôle sans position et **088** `.sursync` v2 (fiches à écrire).
+
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
