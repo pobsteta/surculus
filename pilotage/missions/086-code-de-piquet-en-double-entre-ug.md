@@ -99,3 +99,25 @@ tranche.
 
 Avec deux placettes de même code, Surculus ne rattache jamais en silence la mauvaise ; la capture de l'écran de choix le
 montre.
+
+## Reprise, aller-retour 1/3 (2026-11-02)
+
+Relecture de la #151 (ec1a313) : « à reprendre », un point : `guidage_ug_a_choisir` (« ouvrez le contrôle et choisissez
+l'UG ») promet un choix que l'écran de contrôle ne propose pas (le code lu au guidage ne lui est pas transmis).
+
+Décisions de Pascal du 2026-11-02, posées une à une :
+
+1. **« Passer le code au contrôle »** (élargit la fiche) : le code lu au guidage arrive déjà rempli dans le champ « Code
+   lu sur le piquet » de l'écran de contrôle ; le choix de l'UG apparaît alors sans ressaisie. Le texte du guidage dit
+   vrai sur ce qui se passe.
+2. **Aide de l'écran de choix** : « Cliquez sur le bouton de l'UG où vous êtes. » (décision 077 : « cliquez sur le
+   bouton », pas « toucher »).
+3. **Parcelle** : « sans parcelle pour l'instant » : la ligne de choix reste « code · UG » ; la parcelle passe au bac à
+   sable (à demander à sommieR, une colonne dans `placettes`).
+
+Mineurs du relecteur à traiter : UG triées comme des nombres (« UG 9 » avant « UG 12 »), à l'écran de choix et au
+guidage ; la rotation pendant le choix ne relance pas la moyenne (`rememberSaveable` ou équivalent). Les impasses (UG
+nulle, deux homonymes dans la même UG) restent sans rattachement silencieux : les dire dans la PR, pas de changement.
+
+Ordre : `testeur` d'abord (code lu au guidage transmis au contrôle et choix de l'UG proposé sans ressaisie ; tri
+numérique des UG), vus rouges sur ec1a313 ; puis `dev`.
