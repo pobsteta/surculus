@@ -391,7 +391,7 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
                     if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 // Couché, le bloc est par-dessus le haut de la zone, sans recouvrir « Plant précédent » ni le numéro. Debout, il part du pied (083, plus bas).
-                if (!poche && emplacement == EmplacementMicro.COLONNE && blocEcouteVisible()) {
+                if (!poche && blocEcouteVisible()) {
                     Box(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
                 }
             }
@@ -422,7 +422,7 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
                 }
                 // Même cadre que le pied : 16 dp de chaque côté, 8 dp sous, micro (112 dp) et 12 dp d'écart à droite. Largeur et pied
                 // : valeurs PROVISOIRES jusqu'à l'essai ganté. La hauteur est celle du texte : le bloc monte de ce qu'il lui faut.
-                if (avecMicro && !poche && blocEcouteVisible()) {
+                if (false) {
                     Box(
                         Modifier.align(Alignment.BottomStart).fillMaxWidth()
                             .padding(start = 16.dp, end = 16.dp + DimensionsMicro.BOUTON + 12.dp, bottom = 8.dp),
