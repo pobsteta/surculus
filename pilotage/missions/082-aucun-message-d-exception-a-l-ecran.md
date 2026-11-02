@@ -133,3 +133,7 @@ Relecture de la #146 (8f1379d) : « à reprendre ». Décisions de Pascal du 202
 
 Hors périmètre (bac à sable) : après « Libérer le récepteur », un message « liaison coupée » peut rester affiché alors que
 le service est arrêté (`ServiceGnssRtk.kt:141`, non vérifié sur appareil).
+
+Complément du 2026-11-02 : tests du `testeur` (c4f02a9, 10 de plus, 7 rouges sur 8d1d52e). Décision de Pascal sur
+`recepteur_aucun_point` (« Aucun point de montage (caster injoignable ?) », `strings_recepteur.xml:28`) : « Le
+réécrire » : phrase française qui dit quoi faire, sans « caster » ni « injoignable » ; le `dev` propose la phrase exacte.
