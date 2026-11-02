@@ -173,7 +173,7 @@ seulement.
 
 1. **Code en double entre UG** : « la position tranche » : si une seule homonyme est à 15 m au plus, c'est elle ; le
    choix de l'UG n'est demandé que si rien ne tranche (sans position, ou position loin de toutes). Point 3 réécrit.
-   Lecture de l'`archiviste`, à confirmer : deux homonymes à 15 m au plus, rien ne tranche, l'agent choisit.
+   Lecture de l'`archiviste`, à confirmer : deux homonymes à 15 m au plus, rien ne tranche, l'agent choisit (confirmé par Pascal à la reprise 2/3).
 2. **`.sursync`** : « nouvelle version » : la sauvegarde passe à la version suivante ; un Surculus ancien la refuse
    avec un message (`version_future`) ; un Surculus à jour lit toujours l'ancienne. **Choix de l'`archiviste`** : je
    n'écris pas le document de la version suivante, je la note pour la 086 (ci-dessous), parce que son numéro n'est pas
@@ -205,8 +205,8 @@ au journal technique.
   (`VERSION_COURANTE`) et l. 130 (`lire`) ; `data/.../sauvegarde/Sauvegarde.kt` l. 42 ;
   `app/.../sauvegarde/EcranRestauration.kt` l. 104 (message `version_future`) ; `fixtures/sursync/` (exemple de la
   version suivante, lecture de la v1) ; `fixtures/sauvegarde/` ; `docs/formats/sursync-v1.schema.json` et le document
-  de la version suivante. **Avant de coder**, faire trancher par Pascal le numéro : v2 partagée avec le type `photo`
-  (mission des photos non faite), ou v3.
+  `docs/formats/sursync-v2.md` (à créer par la 086). Numéro tranché à la reprise 2/3 : **v2 partagée** avec le type
+  `photo` ; la 086 crée la v2, la partie photos reste à coder plus tard dans le même format.
 - Journal technique : `app/src/main/kotlin/io/github/pobsteta/surculus/messages/TextesEchec.kt` (`JournalTechnique`)
   pour le refus hors de France et les valeurs ignorées à la lecture.
 - Tests d'acceptation en plus : code en double avec une seule homonyme à 15 m au plus (pas de question) ; fix reçu
@@ -214,9 +214,22 @@ au journal technique.
   `.sursync` de la version suivante refusé par un lecteur de la version d'avant, version d'avant lue par le lecteur à
   jour ; valeur `"v":3` ignorée et tracée.
 
-**Questions restantes pour Pascal :** numéro de la version suivante du `.sursync` (v2 avec `photo`, ou v3) ; deux
-homonymes à 15 m au plus (lecture proposée : l'agent choisit) ; P35-02 de Couchey (en faire un contrôle sans position
+**Questions restantes pour Pascal :** ~~numéro de la version suivante du `.sursync`~~ et ~~deux homonymes à 15 m au
+plus~~ (tranchées, reprise 2/3 ci-dessous) ; P35-02 de Couchey (en faire un contrôle sans position
 mesurée, avec une ligne à géométrie NULL, change ce que F4 vérifie).
+
+## Reprise, aller-retour 2/3 (2026-11-02)
+
+Décisions de Pascal du 2026-11-02, écrites dans l'ADR 0003, la spec § 4.3 et § 4.8, `docs/formats/sursync-v1.md` et
+`docs/formats/journal-valeurs-v2.md` :
+
+1. **`.sursync` : « v2 partagée »** : une seule v2 porte à la fois le type `photo` (décision du 2026-10-28) et les
+   contrôles sans position. **La 086 crée la v2** (`FormatSursync.VERSION_COURANTE` = 2, lecture de la v1,
+   `docs/formats/sursync-v2.md`, schéma, fixtures) ; la partie photos reste à coder plus tard dans le même format.
+2. **Deux homonymes à 15 m au plus** : « l'agent choisit l'UG », borne de 15 m incluse : confirmé. La marque
+   « lecture de l'`archiviste`, à confirmer » est retirée (ADR 0003 point 3, spec § 4.3 point 3).
+
+Question encore ouverte : P35-02 de Couchey (reprise 1/3, ajouts à la liste de la 086).
 
 ## Terrain
 

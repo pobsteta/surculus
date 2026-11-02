@@ -76,5 +76,5 @@ Un Surculus ancien ne lit pas `v` : il lirait un contrôle v2 **avec** position 
 **ignorerait sans le dire** un contrôle v2 sans position (`position_mesuree_x` à `null`). Décision de Pascal du
 2026-11-02 (« nouvelle version ») : dès que le journal écrit des valeurs v2, la sauvegarde passe à la **version
 suivante** de son format ; un Surculus ancien la refuse (`version_future`, « mettre l'application à jour »,
-[`sursync-v1.md`](sursync-v1.md), « Version ») ; un Surculus à jour lit toujours la version précédente. Le numéro de
-cette version n'est pas tranché (spec § 4.8).
+[`sursync-v1.md`](sursync-v1.md), « Version ») ; un Surculus à jour lit toujours la version précédente. C'est la
+**v2** du `.sursync`, partagée avec le type `photo` (décision de Pascal du 2026-11-02, reprise 2/3 ; spec § 4.8).

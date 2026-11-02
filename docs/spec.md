@@ -184,7 +184,7 @@ point à Brest et à Strasbourg.
      ne s'ouvre**.
   3. **Code présent dans plusieurs UG** (le code n'est unique que dans une UG, § 6) : **la position tranche** : si une
      seule des placettes de ce code est à 15 m au plus de la position mesurée, c'est elle ; sinon (sans position,
-     aucune à 15 m au plus, ou plus d'une : ce dernier cas est une lecture de l'`archiviste`, à confirmer), l'agent
+     aucune à 15 m au plus, ou plus d'une, borne de 15 m incluse : décision de Pascal du 2026-11-02, reprise 2/3), l'agent
      **choisit l'UG** (« P01 : UG 12 ou UG 14 ? »). Jamais le premier trouvé (aujourd'hui `firstOrNull`, `Controle.kt`
      l. 55).
   4. Avant d'ouvrir sans position, Surculus **affiche la placette à confirmer** (« P35-01 · UG 12 · parcelle 4 ·
@@ -450,8 +450,10 @@ Règles du brief (arbitrages de Pascal ; sources dans `docs/referentiels/seuils-
   « nouvelle version ») : dès que le journal écrit des valeurs v2 (`docs/formats/journal-valeurs-v2.md`), la
   sauvegarde passe à la version suivante de son format ; un Surculus ancien la refuse (`version_future`, « mettre
   l'application à jour ») au lieu de perdre sans le dire un contrôle sans position ; un Surculus à jour lit toujours
-  la version précédente. Le numéro (v2 partagée avec le type `photo` ci-dessus, ou v3) n'est pas tranché ; voir la fiche
-  `pilotage/missions/085-ouvrir-sans-position-adr-et-spec.md`, « Reprise, aller-retour 1/3 ».
+  la version précédente. **Une seule v2, partagée** (décision de Pascal du 2026-11-02, reprise 2/3, « v2 partagée ») : la même v2 porte le type `photo`
+  ci-dessus et les contrôles sans position. La mission 086 crée la v2 (document `docs/formats/sursync-v2.md`, schéma,
+  fixtures) ; la partie photos reste à coder plus tard, dans le même format. Voir la fiche
+  `pilotage/missions/085-ouvrir-sans-position-adr-et-spec.md`, « Reprise ».
 * Export `<tournée>.zip` : `travaux.gpkg` complété, `DCIM/`. La tournée passe *rendue*
   et reste consultable. ([format d'échange](formats/sursync-v1.md) ; la fusion relève de l'ADR 0006, réservée et non écrite, voir [l'index](adr/README.md))
 

@@ -161,8 +161,7 @@ La spec § 4.3 reprend la même numérotation, de 1 à 10.
 3. **Code présent dans plusieurs UG** : **la position tranche** : si une seule des placettes de ce code est à 15 m au
    plus de la position mesurée, c'est elle. Le **choix de l'UG** (« P01 : UG 12 ou UG 14 ? ») n'est demandé que si rien
    ne tranche : sans position, ou position loin de toutes (aucune à 15 m au plus). Deux placettes de ce code à 15 m au
-   plus : rien ne tranche non plus, l'agent choisit (lecture de l'`archiviste`, cas que Pascal n'a pas dit, à
-   confirmer). Borne de 15 m incluse, comme la règle des 15 m. Corrige aussi le cas
+   plus : rien ne tranche non plus, l'agent choisit l'UG ; borne de 15 m incluse (décision de Pascal du 2026-11-02, reprise 2/3). Corrige aussi le cas
    avec position, aujourd'hui `firstOrNull` dans `core/.../placette/Controle.kt` l. 55. (Texte du 2026-11-02 matin :
    « l'agent choisit l'UG, avec ou sans position » ; précisé par Pascal le 2026-11-02, « la position tranche ».)
 4. Avant d'ouvrir sans position, Surculus **affiche la placette à confirmer** (« P35-01 · UG 12 · parcelle 4 · 25
@@ -187,8 +186,9 @@ La spec § 4.3 reprend la même numérotation, de 1 à 10.
 **Sauvegarde `.sursync`** (décision de Pascal du 2026-11-02, reprise 1/3, « nouvelle version ») : la sauvegarde passe à
 la version suivante de son format ; un Surculus ancien la refuse avec un message (`version_future`, « mettre
 l'application à jour », `docs/formats/sursync-v1.md`) au lieu de perdre sans le dire les contrôles sans position ; un
-Surculus à jour lit toujours l'ancienne. Le numéro de cette version n'est pas tranché (la v2 est déjà promise au type
-`photo`, spec § 4.8) : question ouverte, notée pour la 086 dans la fiche 085.
+Surculus à jour lit toujours l'ancienne. **Une seule v2 du `.sursync`**, partagée (décision de Pascal du 2026-11-02, reprise 2/3, « v2 partagée ») : elle porte à
+la fois le type `photo` (décision du 2026-10-28, spec § 4.8) et les contrôles sans position. La 086 crée la v2 ; la
+partie photos reste à coder plus tard, dans le même format.
 
 **Écart avec l'existant, signalé et non tranché ici.** « Une ligne par contrôle » dans `positions_controles` (point 7)
 contredit le scénario Couchey de la CI d'import : P35-02, « sans mesure », n'a aujourd'hui **aucune** ligne
