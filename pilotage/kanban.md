@@ -7,6 +7,14 @@
 
 ## Bac à sable
 
+- **Parcelle de la placette** (relecture de la 086, « sans parcelle pour l'instant », Pascal, 2026-11-02) : `placettes`
+  ne porte pas la parcelle ; à demander à sommieR (une colonne), pas à deviner par jointure. La confirmation de la 087
+  s'écrit sans parcelle d'ici là.
+- **Placette visée par le guidage** (relecture de la 086) : pourrait départager ou être mise en avant entre homonymes ;
+  l'ADR ne retient que la position. Signalé, non recommandé.
+- **ADR 0003** : l'en-tête et le paragraphe `.sursync` disent encore « codé par la 086 » ; le découpage 086 / 087 / 088
+  est à y reprendre (`archiviste`).
+
 - **084** (décision de Pascal, 2026-11-02, relecture de la 082) : les autres refus de la lecture d'une tournée encore
   techniques à l'écran (`ReferentielSpatialInconnu` avec `srs_id` et `gpkg_spatial_ref_sys`, `Referentiel` EPSG,
   `CoucheAbsente` avec majuscule, `PointHorsFrance` aux coordonnées brutes), même règle que la 082 ; fiche à écrire
