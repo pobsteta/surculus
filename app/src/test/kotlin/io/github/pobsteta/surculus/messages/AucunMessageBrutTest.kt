@@ -7,11 +7,16 @@
  */
 package io.github.pobsteta.surculus.messages
 
+import io.github.pobsteta.surculus.gnss.ErreurRecepteurCarte
+import io.github.pobsteta.surculus.gpkg.GpkgRefuse
+import io.github.pobsteta.surculus.gpkg.ImportTournee
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import java.io.File
 import java.nio.file.Files
 import java.sql.DriverManager
+import java.time.Instant
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -194,4 +199,100 @@ class AucunMessageBrutTest {
         val fautifs = textes.filter { "injoignable" in it.groupValues[2].lowercase() }.map { it.groupValues[1] }
         assertTrue(fautifs.isEmpty(), "« injoignable » encore dans : $fautifs")
     }
+
+    // --- Reprise 2/3 (2026-11-02), décisions de Pascal : phrases composées, carte après interruption, dossier vide -----
+    // Critères choisis par le testeur (voir le rendu) : sur « préfixe : refus »,
+    //  (a) la lettre qui suit le premier « : » est une minuscule ;
+    //  (b) au plus deux « : » ; s'il y en a deux, la partie entre les deux ne reprend pas l'idée du préfixe
+    //      (radicaux « lisible », « refus », « impossible ») et le dernier « : » est suivi d'un infinitif ;
+    //  (c) « lisible » (donc « illisible ») au plus une fois dans la phrase.
+
+    private fun gabarit(nom: String): String =
+        Regex("<string name=\"$nom\">(.*?)</string>").find(ressources.readText())!!.groupValues[1].replace("\\'", "'")
+
+    private val prefixes = listOf("tournees_illisible", "tournees_import_refus", "carte_refus")
+
+    private fun assertPhraseComposeeJuste(ou: String, nomGabarit: String, refus: String?) {
+        assertNotNull(refus, "$ou : pas de refus")
+        val phrase = gabarit(nomGabarit).replace("%1\$s", refus)
+        val m = "$ou / $nomGabarit : « $phrase »"
+        val premier = phrase.indexOf(':')
+        assertTrue(premier >= 0, "$m sans « : »")
+        val suite = phrase.substring(premier + 1).trimStart()
+        assertTrue(suite.isNotEmpty() && !suite[0].isUpperCase(), "$m : majuscule juste après le premier « : »")
+        val n = phrase.count { it == ':' }
+        assertTrue(n <= 2, "$m : $n fois « : » (au plus 2)")
+        if (n == 2) {
+            val milieu = phrase.substring(premier + 1, phrase.lastIndexOf(':')).lowercase()
+            listOf("lisible", "refus", "impossible").forEach {
+                assertFalse(it in milieu, "$m : la partie entre les deux « : » répète le préfixe (« $it »)")
+            }
+        }
+        assertTrue(ditQuoiFaire(":" + phrase.substringAfterLast(':')), "$m : pas d'infinitif après le dernier « : »")
+        val lisible = Regex("lisible", RegexOption.IGNORE_CASE).findAll(phrase).count()
+        assertTrue(lisible <= 1, "$m : « lisible » $lisible fois")
+    }
+
+    private fun assertSurTousLesPrefixes(ou: String, refus: String?) =
+        prefixes.forEach { assertPhraseComposeeJuste(ou, it, refus) }
+
+    @Test fun `phrases composees - fichier abime, trois prefixes`() = assertSurTousLesPrefixes("abîmé", refusDeLigne(abime))
+
+    @Test fun `phrases composees - fichier vide, trois prefixes`() = assertSurTousLesPrefixes("vide", refusDeLigne(ByteArray(0)))
+
+    @Test fun `phrases composees - sans tables, trois prefixes`() {
+        assertSurTousLesPrefixes("sans tables, sans id", refusDeLigne(sqliteSansTables(idGpkg = false)))
+        assertSurTousLesPrefixes("sans tables, avec id", refusDeLigne(sqliteSansTables(idGpkg = true)))
+    }
+
+    @Test fun `le critere des phrases composees distingue le bon du mauvais`() {
+        assertPhraseComposeeJuste("bon", "tournees_illisible", "ce n'est pas une tournée de sommieR : l'exporter de nouveau")
+        assertFailsWith<AssertionError> { assertPhraseComposeeJuste("maj", "tournees_illisible", "Ce fichier est abîmé : le réexporter") }
+        assertFailsWith<AssertionError> { assertPhraseComposeeJuste("redite", "tournees_illisible", "fichier illisible : le réexporter") }
+        assertFailsWith<AssertionError> { assertPhraseComposeeJuste("trois", "tournees_illisible", "a : b : c : le réexporter") }
+    }
+
+    /** Le texte français d'une ressource de chaîne, retrouvé par son identifiant dans la classe R publiée. */
+    private fun texteDeRessource(id: Int): String {
+        val champs = Class.forName("io.github.pobsteta.surculus.R\$string").fields
+        val nom = champs.first { it.type == Int::class.javaPrimitiveType && it.getInt(null) == id }.name
+        return gabarit(nom)
+    }
+
+    @Test fun `carte - service interrompu, pas de nouvelle tentative promise`() {
+        // L'erreur posée par le gestionnaire d'exceptions du service est le texte « rtk_service_interrompu » (cf. Essai GNSS) ;
+        // le service reste « en marche » mais plus rien ne retente.
+        val erreur = Regex("<string name=\"rtk_service_interrompu\">(.*?)</string>")
+            .find(File(main, "res/values/strings.xml").readText())!!.groupValues[1].replace("\\'", "'")
+        val e = ErreurRecepteurCarte.pour(reglageActif = true, enMarche = true, erreur = erreur, erreurCorrections = null)
+        assertNotNull(e, "la carte ne dit rien d'un service interrompu")
+        val phrase = texteDeRessource(e.texte)
+        assertFalse("nouvelle tentative" in phrase.lowercase(), "« $phrase » promet une nouvelle tentative que rien ne fait")
+        assertTrue("interrompu" in phrase.lowercase(), "« $phrase » ne dit pas que le service s'est interrompu")
+    }
+
+    @Test fun `carte - liaison perdue ordinaire, la nouvelle tentative reste dite`() {
+        val e = ErreurRecepteurCarte.pour(true, enMarche = true, erreur = "Connection reset", erreurCorrections = null)
+        assertNotNull(e)
+        assertTrue("nouvelle tentative" in texteDeRessource(e.texte).lowercase())
+    }
+
+    private fun refusSansGpkg(): String {
+        val tmp = Files.createTempDirectory("import-082").toFile().also { it.deleteOnExit() }
+        File(tmp, "lisez-moi.txt").writeText("rien")
+        val racine = Files.createTempDirectory("racine-082")
+        return assertFailsWith<GpkgRefuse> { ImportTournee.finaliser(tmp.toPath(), racine, Instant.parse("2026-11-02T10:00:00Z")) }.refus.message
+    }
+
+    @Test fun `import - dossier sans travaux gpkg, la phrase dit dossier et quoi faire`() {
+        val m = refusSansGpkg()
+        val bas = m.lowercase()
+        assertTrue("dossier" in bas, "« $m » ne dit pas « dossier »")
+        assertFalse(Regex("ce fichier").containsMatchIn(bas), "« $m » parle de « ce fichier » pour un dossier")
+        assertTrue(ditQuoiFaire(m), "« $m » ne dit pas quoi faire (infinitif après « : »)")
+        assertPropre("import sans gpkg", m.replace("travaux.gpkg", "travaux"))
+    }
+
+    @Test fun `import - dossier sans travaux gpkg, la phrase composee est juste`() =
+        assertPhraseComposeeJuste("sans gpkg", "tournees_import_refus", refusSansGpkg())
 }
