@@ -76,7 +76,7 @@ fun EcranGuidage(
     placetteUuid: String,
     arriveeVue: Boolean = false,
     /** Arrivée (moins de 30 m) ou bouton « Contrôler » : ouvre le contrôle (mission 012-B1). */
-    onArrivee: () -> Unit = {},
+    onArrivee: (String?) -> Unit = {},
     /** L'agent est ressorti à 40 m : l'ouverture automatique est de nouveau permise. */
     onRearme: () -> Unit = {},
     onRetour: () -> Unit,
@@ -124,7 +124,7 @@ private fun GuidagePret(
     toutes: List<PlacetteTournee>,
     fix: FixGnss?,
     arriveeVue: Boolean,
-    onArrivee: () -> Unit,
+    onArrivee: (String?) -> Unit,
     onRearme: () -> Unit,
 ) {
     val cap = fix?.let { Guidage.cap(it.position, cible.position!!) }
@@ -153,19 +153,20 @@ private fun GuidagePret(
     // navigation, car cet écran est recomposé à neuf au retour du contrôle : un détecteur local rouvrirait en boucle.
     // Il se baisse à 40 m (`Guidage.SEUIL_REARMEMENT_M`).
     val vue = rememberUpdatedState(arriveeVue)
+    val codeRef = rememberUpdatedState(code)
     LaunchedEffect(cap?.distanceM) {
         val d = cap?.distanceM ?: return@LaunchedEffect
         if (vue.value) {
             if (d >= Guidage.SEUIL_REARMEMENT_M) onRearme()
         } else if (Guidage.estArrive(d)) {
             if (sonActif.value) tonalite?.startTone(ToneGenerator.TONE_PROP_BEEP2, 500)
-            onArrivee()
+            onArrivee(codeRef.value)
         }
     }
 
     // Rattachement : moyenne de la position pendant quelques secondes, puis la règle des 15 m (ou le code lu).
     val piquets = remember(toutes) {
-        toutes.mapNotNull { p -> if (p.code != null && p.position != null) Piquet(UuidPlacette(p.uuid), p.code!!, p.position!!) else null }
+        toutes.mapNotNull { p -> if (p.code != null && p.position != null) Piquet(UuidPlacette(p.uuid), p.code!!, p.position!!, p.ug) else null }
     }
     val positionCourante = rememberUpdatedState(fix?.position)
     val enCours = confirmation is Confirmation.EnCours
@@ -218,7 +219,7 @@ private fun GuidagePret(
                 modifier = Modifier.fillMaxWidth().height(64.dp),
             ) { Text(stringResource(R.string.guidage_rattacher)) }
             // Rouvrir le contrôle à la main (il s'est ouvert tout seul à l'arrivée, mission 012-B1).
-            Button(onClick = onArrivee, modifier = Modifier.fillMaxWidth().height(64.dp)) { Text(stringResource(R.string.controle_controler)) }
+            Button(onClick = { onArrivee(code) }, modifier = Modifier.fillMaxWidth().height(64.dp)) { Text(stringResource(R.string.controle_controler)) }
             when (c) {
                 is Confirmation.EnCours -> Text(stringResource(R.string.guidage_moyenne, c.n, SECONDES_DE_MOYENNE_ARRIVEE), style = MaterialTheme.typography.bodyMedium)
                 is Confirmation.Fini -> Resultat(c.verdict)
@@ -253,6 +254,10 @@ private fun Resultat(v: Verdict<Rattache>) {
             Text(texte, color = couleurErreur(), fontWeight = FontWeight.Bold)
         }
         is Verdict.AConfirmer -> TexteEtat(v.alerte.message, Palette.Orange)
+        is Verdict.AChoisirUg -> TexteEtat(
+            stringResource(R.string.guidage_ug_a_choisir, v.candidats.first().code, v.candidats.mapNotNull { it.ug }.joinToString(", ")),
+            Palette.Orange, fontWeight = FontWeight.Bold,
+        )
     }
 }
 

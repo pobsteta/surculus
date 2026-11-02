@@ -43,6 +43,12 @@ data class EtatNavigation(
      * l'écran est recomposé à neuf. Sauvegardé avec l'état (survit à la rotation).
      */
     val arriveeVue: Boolean = false,
+    /**
+     * Code lu sur le piquet au guidage, transmis au contrôle ouvert depuis le guidage : il y arrive déjà dans le champ « Code
+     * lu sur le piquet » (mission 086, reprise 1/3), donc le choix de l'UG se présente sans ressaisie. `null` : champ vide.
+     * Sauvegardé avec l'état ; levé au retour.
+     */
+    val codeLu: String? = null,
 ) {
     val estRacine: Boolean get() = destination == Destination.TOURNEES && tourneeId == null
 
@@ -65,7 +71,8 @@ data class EtatNavigation(
     fun controler(id: String) = if (tourneeId == null) this else copy(carte = true, placetteId = null, centreId = id, controleId = id, recepteurOuvert = true)
 
     /** Porte n° 2 : à l'arrivée du guidage (ou son bouton « Contrôler ») ; le guidage reste dessous, l'arrivée est notée vue. */
-    fun controlerDepuisGuidage() = if (tourneeId == null || placetteId == null) this else copy(controleId = placetteId, arriveeVue = true)
+    fun controlerDepuisGuidage(codeLu: String? = null) =
+        if (tourneeId == null || placetteId == null) this else copy(controleId = placetteId, arriveeVue = true, codeLu = codeLu?.trim()?.ifEmpty { null })
 
     /** Vrai si le guidage doit ouvrir le contrôle tout seul à cette distance (mètres) : dans le cercle, et pas déjà ouvert à cette arrivée. */
     fun ouvreALArrivee(distanceM: Double): Boolean = placetteId != null && controleId == null && !arriveeVue && Guidage.estArrive(distanceM)
@@ -76,7 +83,7 @@ data class EtatNavigation(
 
     /** Un pas en arrière ; `null` = on est à la racine, le retour Android quitte l'application. */
     fun retour(): EtatNavigation? = when {
-        controleId != null -> copy(controleId = null)
+        controleId != null -> copy(controleId = null, codeLu = null)
         placetteId != null -> copy(placetteId = null, arriveeVue = false)
         carte -> copy(carte = false, centreId = null)
         tourneeId != null -> copy(tourneeId = null, recepteurOuvert = false)
@@ -85,8 +92,8 @@ data class EtatNavigation(
         else -> null
     }
 
-    /** Pour `rememberSaveable` (rotation) : `[destination, tourneeId, placetteId, carte, centreId, recepteurOuvert, controleId, arriveeVue]`, chaînes vides pour null. */
-    fun enListe(): List<String> = listOf(destination.name, tourneeId.orEmpty(), placetteId.orEmpty(), carte.toString(), centreId.orEmpty(), recepteurOuvert.toString(), controleId.orEmpty(), arriveeVue.toString())
+    /** Pour `rememberSaveable` (rotation) : `[destination, tourneeId, placetteId, carte, centreId, recepteurOuvert, controleId, arriveeVue, codeLu]`, chaînes vides pour null. */
+    fun enListe(): List<String> = listOf(destination.name, tourneeId.orEmpty(), placetteId.orEmpty(), carte.toString(), centreId.orEmpty(), recepteurOuvert.toString(), controleId.orEmpty(), arriveeVue.toString(), codeLu.orEmpty())
 
     companion object {
         fun depuisListe(l: List<String>) = EtatNavigation(
@@ -98,6 +105,7 @@ data class EtatNavigation(
             recepteurOuvert = l.getOrNull(5) == "true",
             controleId = l.getOrNull(6)?.ifEmpty { null },
             arriveeVue = l.getOrNull(7) == "true",
+            codeLu = l.getOrNull(8)?.ifEmpty { null },
         )
     }
 }

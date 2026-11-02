@@ -132,7 +132,7 @@ class MainActivity : ComponentActivity() {
                             // plant courant ne sont pas perdus) ; le retour referme les Paramètres.
                             var parametresSurControle by rememberSaveable { mutableStateOf(false) }
                             Box(Modifier.fillMaxSize()) {
-                                EcranControle(tourneeId, controleId, onRetour = { nav = nav.retour() ?: nav }, onParametres = { parametresSurControle = true })
+                                EcranControle(tourneeId, controleId, codeInitial = nav.codeLu.orEmpty(), onRetour = { nav = nav.retour() ?: nav }, onParametres = { parametresSurControle = true })
                                 if (parametresSurControle) {
                                     BackHandler { parametresSurControle = false }
                                     Surface(Modifier.fillMaxSize()) {
@@ -151,7 +151,7 @@ class MainActivity : ComponentActivity() {
                         } else if (tourneeId != null && placetteId != null) {
                             EcranGuidage(tourneeId, placetteId,
                                 arriveeVue = nav.arriveeVue,
-                                onArrivee = { nav = nav.controlerDepuisGuidage() },
+                                onArrivee = { codeLu -> nav = nav.controlerDepuisGuidage(codeLu) },
                                 onRearme = { nav = nav.apresDistance(Guidage.SEUIL_REARMEMENT_M) },
                                 onRetour = { nav = nav.retour() ?: nav },
                             )

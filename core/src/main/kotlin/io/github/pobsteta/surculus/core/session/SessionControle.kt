@@ -133,6 +133,9 @@ sealed interface SuiteSession {
 sealed interface OuvertureControle {
     data class Ouverte(val session: SessionControle) : OuvertureControle
     data class Refusee(val refus: SuiteSession.Refus) : OuvertureControle
+
+    /** Le code lu existe dans plusieurs UG et la position ne tranche pas : rien n'est ouvert, l'agent choisit l'UG. */
+    data class UgAChoisir(val code: String, val candidats: List<Piquet>) : OuvertureControle
 }
 
 /** Un plant tel que la session le montre. */
@@ -233,6 +236,7 @@ class SessionControle private constructor(
                 is Verdict.Accepte -> v.valeur
                 is Verdict.Refuse -> return SuiteSession.Refus.de(v.refus)
                 is Verdict.AConfirmer -> error("pas d'alerte attendue pour une essence")
+                is Verdict.AChoisirUg -> error("pas de choix d'UG attendu ici")
             }
         }
         val derive: PlantDerive = when (val r = PointDerive.deriver(cible.piquet.position, contexte.epsg, distanceM, azimut, vue.jour)) {
@@ -245,6 +249,7 @@ class SessionControle private constructor(
         val plant = when (val v = Pointage.pointer(nouveau, placette, derive, Instant.ofEpochMilli(maintenant), codeEssence, remplace, confirmeHorsRayon)) {
             is Verdict.Accepte -> v.valeur
             is Verdict.AConfirmer -> return SuiteSession.AConfirmer(v.alerte)
+            is Verdict.AChoisirUg -> error("pas de choix d'UG attendu ici")
             is Verdict.Refuse -> return SuiteSession.Refus.de(v.refus)
         }
         val identites = identites(vue.plants)
@@ -281,6 +286,7 @@ class SessionControle private constructor(
             is Verdict.Accepte -> v.valeur
             is Verdict.Refuse -> return SuiteSession.Refus.de(v.refus)
             is Verdict.AConfirmer -> error("pas d'alerte attendue pour un état")
+            is Verdict.AChoisirUg -> error("pas de choix d'UG attendu ici")
         }
         return ecrireObservation(plant, observation)
     }
@@ -305,6 +311,7 @@ class SessionControle private constructor(
             is Verdict.Accepte -> v.valeur
             is Verdict.Refuse -> return SuiteSession.Refus.de(v.refus)
             is Verdict.AConfirmer -> error("pas d'alerte attendue pour un état")
+            is Verdict.AChoisirUg -> error("pas de choix d'UG attendu ici")
         }
         return ecrireObservation(plant, observation)
     }
@@ -576,6 +583,7 @@ class SessionControle private constructor(
             arrivee: Arrivee,
             codeLu: String? = null,
             sauvegarde: EcouteSauvegarde = EcouteSauvegarde.AUCUNE,
+            ugChoisie: String? = null,
         ): OuvertureControle {
             val mesuree: PointLambert93 = when (arrivee) {
                 is Arrivee.Gnss -> {
@@ -597,9 +605,10 @@ class SessionControle private constructor(
                     arrivee.position
                 }
             }
-            val rattache = when (val v = Rattachement.rattacher(contexte.placettes.map { it.piquet }, mesuree, codeLu)) {
+            val rattache = when (val v = Rattachement.rattacher(contexte.placettes.map { it.piquet }, mesuree, codeLu, ugChoisie)) {
                 is Verdict.Accepte -> v.valeur
                 is Verdict.Refuse -> return OuvertureControle.Refusee(SuiteSession.Refus.de(v.refus))
+                is Verdict.AChoisirUg -> return OuvertureControle.UgAChoisir(codeLu!!, v.candidats)
                 is Verdict.AConfirmer -> error("pas d'alerte attendue au rattachement")
             }
             val foret = contexte.empriseForet

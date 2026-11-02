@@ -14,6 +14,7 @@ import io.github.pobsteta.surculus.core.guidage.Guidage
 import io.github.pobsteta.surculus.gpkg.Tournee
 import io.github.pobsteta.surculus.core.guidage.MoyennePosition
 import io.github.pobsteta.surculus.core.placette.Essences
+import io.github.pobsteta.surculus.core.placette.Piquet
 import io.github.pobsteta.surculus.core.reperes.PointGeographique
 import io.github.pobsteta.surculus.core.reperes.Resultat
 import io.github.pobsteta.surculus.core.session.Arrivee
@@ -34,6 +35,12 @@ sealed interface EtatArrivee {
 
     /** Aucune position reçue pendant la moyenne (pas de fix) : on le dit, rien n'est ouvert. */
     data object SansPosition : EtatArrivee
+
+    /**
+     * Le code lu existe dans plusieurs UG et la position ne tranche pas (une seule à 15 m au plus, sinon on demande) :
+     * rien n'est ouvert, l'agent choisit l'UG parmi les [candidats] (ADR 0003, amendement du 2026-11-02, point 3).
+     */
+    data class UgAChoisir(val code: String, val candidats: List<Piquet>) : EtatArrivee
 
     data class Ouverte(val controleur: ControleurPlacette) : EtatArrivee
 }
@@ -75,14 +82,16 @@ object ArriveeControle {
         positions: List<Position>,
         codeLu: String?,
         sauvegarde: EcouteSauvegarde,
+        ugChoisie: String? = null,
     ): EtatArrivee {
         val arrivee = arrivee(positions) ?: return EtatArrivee.SansPosition
-        return when (val o = SessionControle.ouvrir(contexte, journal, horloge, essences, arrivee, codeLu?.trim()?.ifEmpty { null }, sauvegarde)) {
+        return when (val o = SessionControle.ouvrir(contexte, journal, horloge, essences, arrivee, codeLu?.trim()?.ifEmpty { null }, sauvegarde, ugChoisie)) {
             is OuvertureControle.Ouverte -> {
                 val rayon = contexte.placettes.firstOrNull { it.piquet.placette == o.session.rattachement.piquet.placette }?.rayonM ?: RAYON_PAR_DEFAUT_M
                 EtatArrivee.Ouverte(ControleurPlacette(o.session, rayon, essences.liste()))
             }
             is OuvertureControle.Refusee -> EtatArrivee.Refus(o.refus)
+            is OuvertureControle.UgAChoisir -> EtatArrivee.UgAChoisir(o.code, o.candidats)
         }
     }
 }

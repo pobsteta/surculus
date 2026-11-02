@@ -39,6 +39,9 @@ sealed interface Verdict<out T> {
     data class Refuse(val refus: RefusPlacette) : Verdict<Nothing>
     data class AConfirmer(val alerte: AlertePlacette) : Verdict<Nothing>
 
+    /** Le code lu existe dans plusieurs UG et la position ne tranche pas : l'agent choisit l'UG parmi les [candidats]. */
+    data class AChoisirUg(val candidats: List<Piquet>) : Verdict<Nothing>
+
     val estAccepte: Boolean get() = this is Accepte
 
     fun valeurOuNull(): T? = (this as? Accepte<T>)?.valeur
@@ -48,6 +51,7 @@ sealed interface Verdict<out T> {
         is Accepte -> valeur
         is Refuse -> throw IllegalStateException("${refus.motif} : ${refus.message}")
         is AConfirmer -> throw IllegalStateException("${alerte.motif} : ${alerte.message}")
+        is AChoisirUg -> throw IllegalStateException("UG à choisir : ${candidats.map { it.ug }}")
     }
 }
 
@@ -55,6 +59,7 @@ inline fun <T, R> Verdict<T>.puis(etape: (T) -> Verdict<R>): Verdict<R> = when (
     is Verdict.Accepte -> etape(valeur)
     is Verdict.Refuse -> this
     is Verdict.AConfirmer -> this
+    is Verdict.AChoisirUg -> this
 }
 
 /** Alerte qui demande une confirmation de l'agent avant d'enregistrer. */

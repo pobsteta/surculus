@@ -98,6 +98,7 @@ object AdaptateurReglesPlacette : ReglesPlacette {
                     add("position_mesuree_conservee", json(r.valeur.positionMesuree))
                 }
                 is Verdict.Refuse -> { addProperty("issue", "refus"); addProperty("motif", r.refus.motif) }
+                is Verdict.AChoisirUg -> addProperty("issue", "ug_a_choisir")
                 is Verdict.AConfirmer -> error("pas d'alerte attendue au rattachement")
             }
         }

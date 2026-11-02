@@ -19,9 +19,10 @@ import kotlin.math.hypot
 
 /**
  * Piquet d'une placette de la tournée : UUID de la placette (`placettes.uuid`), code lu sur le piquet
- * (`placettes.code_placette`) et position stockée (EPSG:2154, x = E, y = N, mètres).
+ * (`placettes.code_placette`), position stockée (EPSG:2154, x = E, y = N, mètres) et UG (`placettes.ug`, `null` si la
+ * tournée n'en porte pas). Le code n'est unique que dans une UG (sommieR `R/registre6.R` l. 85) : l'UG départage les homonymes.
  */
-data class Piquet(val placette: UuidPlacette, val code: String, val position: PointLambert93)
+data class Piquet(val placette: UuidPlacette, val code: String, val position: PointLambert93, val ug: String? = null)
 
 /** Contrôle rattaché à une placette (ADR 0003, spec § 4.3). */
 data class Rattache(
@@ -48,11 +49,27 @@ object Rattachement {
     /**
      * [codeLu] : code du piquet confirmé par l'agent, `null` s'il n'a rien confirmé. Le code lu l'emporte sur
      * le GNSS ; sans code, la placette la plus proche, une égalité de distance départagée par le code.
+     *
+     * Code présent dans plusieurs placettes (ADR 0003, amendement du 2026-11-02, point 3) : si une seule est à 15 m au
+     * plus (borne incluse), c'est elle ; sinon [Verdict.AChoisirUg], et l'agent choisit l'UG ([ugChoisie]) : la placette
+     * choisie est alors rattachée (par identité si elle est à plus de 15 m). Jamais « la première trouvée ».
      */
-    fun rattacher(piquets: List<Piquet>, mesuree: PointLambert93, codeLu: String? = null): Verdict<Rattache> {
+    fun rattacher(piquets: List<Piquet>, mesuree: PointLambert93, codeLu: String? = null, ugChoisie: String? = null): Verdict<Rattache> {
         if (piquets.isEmpty()) return Verdict.Refuse(RefusPlacette.AucunePlacette)
         if (codeLu != null) {
-            val p = piquets.firstOrNull { it.code == codeLu } ?: return Verdict.Refuse(RefusPlacette.CodeInconnu(codeLu))
+            val homonymes = piquets.filter { it.code == codeLu }
+            if (homonymes.isEmpty()) return Verdict.Refuse(RefusPlacette.CodeInconnu(codeLu))
+            val p = if (homonymes.size == 1) {
+                homonymes.single()
+            } else {
+                val choisie = ugChoisie?.let { ug -> homonymes.filter { it.ug == ug } }.orEmpty()
+                val proches = homonymes.filter { distanceM(it.position, mesuree) <= DISTANCE_MAX_M }
+                when {
+                    choisie.size == 1 -> choisie.single()
+                    proches.size == 1 -> proches.single()
+                    else -> return Verdict.AChoisirUg(homonymes.sortedWith(OrdreUg))
+                }
+            }
             val d = distanceM(p.position, mesuree)
             val parIdentite = d > DISTANCE_MAX_M
             return Verdict.Accepte(Rattache(p, d, parIdentite, if (parIdentite) p.position else mesuree, mesuree))
