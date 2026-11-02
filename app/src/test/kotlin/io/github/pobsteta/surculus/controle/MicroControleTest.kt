@@ -15,6 +15,10 @@ import kotlin.test.assertTrue
  * Mission 075 : le bouton micro comme celui de Marculus. Sans Compose : la place (fonction pure de l'écran, jamais de l'écoute),
  * l'aspect (fonction pure de l'écoute et de « prêt ») et les contrastes. « Il ne bouge pas sous le doigt » et « visible sans défiler »
  * ne se prouvent qu'à la capture.
+ *
+ * Le bloc d'écoute (`BlocEcouteEncadre`) : couché, il est posé par-dessus le haut de la zone qui défile (gardes ci-dessous, sur le
+ * `Box` de zone). Debout (mission 083), il n'est plus dans la zone : il part du pied, à gauche du micro, et monte sur le bas de la
+ * zone ; sa place est jugée par le test de rendu (`RenduControleTest`), pas ici.
  */
 class MicroControleTest {
     @Test fun `couche, le micro est dans une colonne fixe de 128 dp a droite`() {
@@ -58,6 +62,7 @@ class MicroControleTest {
         assertEquals(1, Regex("AspectMicro\\.pour\\(").findAll(source).count(), "un seul calcul de l'aspect, dans BoutonMicro")
     }
 
+    /** Couché seulement : l'appel du `Box` de zone ; l'appel debout est hors de la zone (083) et n'est pas compté ici. */
     @Test fun `le bloc J'ECOUTE est pose hors de la colonne qui defile`() {
         val defile = corps("Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp))")
         assertFalse(defile.contains("BlocEcouteEncadre()"), "le bloc ne doit pas être dans la colonne qui défile")
