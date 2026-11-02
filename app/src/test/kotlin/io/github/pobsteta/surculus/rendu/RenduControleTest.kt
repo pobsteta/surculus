@@ -24,6 +24,8 @@ import io.github.pobsteta.surculus.controle.RaisonSortie
 import io.github.pobsteta.surculus.controle.SortiesPoche
 import io.github.pobsteta.surculus.controle.Vibreur
 import io.github.pobsteta.surculus.controle.VueSession
+import io.github.pobsteta.surculus.core.dictee.Grammaire
+import io.github.pobsteta.surculus.core.session.TextesDictee
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import org.junit.After
 import org.junit.Rule
@@ -203,19 +205,26 @@ class RenduControleTest {
      * L'écoute reçoit une phrase entendue et un résultat (compris, ou refusé si [erreur]) ; l'écran est relu à `DUREE_BANDEAU_MS - 1`
      * après la fermeture. Les deux lignes doivent y être, non nulles, sans texte tronqué.
      */
-    private fun phraseEtResultat(cas: String, erreur: Boolean, defauts: MutableList<String>, apresLecture: (Ecoute, BancRendu.Resultat) -> Unit = { _, _ -> }) {
+    private fun phraseEtResultat(
+        cas: String,
+        erreur: Boolean,
+        defauts: MutableList<String>,
+        dite: String = "sept sain",
+        annonce: String = if (erreur) "numéro hors plantation" else "numéro 7, sain",
+        apresLecture: (Ecoute, BancRendu.Resultat) -> Unit = { _, _ -> },
+    ) {
         val e = Ecoute()
         EcouteApp.poserPilotePourTest(e.pilote)
         e.pilote.tenir(); e.t = 300; e.pilote.moteurPret(1)
         val depart = BancRendu.rendre(session(), regle = regle)
-        regle.runOnIdle { e.t = 1_500; e.pilote.phrase("sept sain") }
+        regle.runOnIdle { e.t = 1_500; e.pilote.phrase(dite) }
         regle.runOnIdle { e.t = 2_000; e.pilote.relacher() }
         regle.waitForIdle()
         val fermeeA = e.t
         assertNotNull(e.pilote.entendu, "la phrase n'a pas été entendue par l'écoute")
-        val texteCompris = if (erreur) "refusé : numéro hors plantation" else "compris : numéro 7, sain"
+        val texteCompris = (if (erreur) "refusé : " else "compris : ") + annonce
         regle.runOnIdle {
-            e.pilote.resultat(if (erreur) AnnoncePoche("numéro hors plantation", MotifsVibration.REFUS, erreur = true) else AnnoncePoche("numéro 7, sain", MotifsVibration.SAIN))
+            e.pilote.resultat(if (erreur) AnnoncePoche(annonce, MotifsVibration.REFUS, erreur = true) else AnnoncePoche(annonce, MotifsVibration.SAIN))
         }
         regle.waitForIdle()
         regle.runOnIdle { e.t = fermeeA + DUREE_BANDEAU_MS - 1; e.pilote.avancer() }
@@ -223,7 +232,7 @@ class RenduControleTest {
         val r = BancRendu.lire(regle, depart.densite)
         val toleres = ArrayList<String>()
         if (r.noeuds.none { it.nom == "ÉCOUTE FERMÉE" }) defauts += "« ÉCOUTE FERMÉE » n'est pas affiché dans le délai"
-        for ((prefixe, attendu) in listOf("entendu" to "entendu : « sept sain »", "compris" to texteCompris)) {
+        for ((prefixe, attendu) in listOf("entendu" to "entendu : « $dite »", "compris" to texteCompris)) {
             val motif = if (erreur && prefixe == "compris") "refusé" else prefixe
             val n = r.noeuds.firstOrNull { it.texte && it.nom.startsWith(motif) }
             if (n == null) { defauts += "la ligne « $attendu » est absente de l'arbre"; continue }
@@ -278,7 +287,7 @@ class RenduControleTest {
 
     private fun appuiSurLeBloc(cas: String) {
         val defauts = ArrayList<String>()
-        phraseEtResultat(cas, false, defauts) { e, avant ->
+        phraseEtResultat(cas, false, defauts, apresLecture = { e, avant ->
             val bloc = avant.noeuds.filter { it.texte && (it.nom == "ÉCOUTE FERMÉE" || it.nom.startsWith("entendu") || it.nom.startsWith("compris")) }
             if (bloc.isEmpty()) { defauts += "aucune ligne du bloc d'écoute à toucher"; return@phraseEtResultat }
             val d = avant.densite
@@ -296,10 +305,140 @@ class RenduControleTest {
             if (PocheApp.mode.actif) defauts += "un appui sur le bloc d'écoute a déclenché « Mode poche »"
             if (apres.noeuds.map { it.nom }.sorted() != avantNoms) defauts += "un appui sur le bloc d'écoute a changé l'écran (nœuds avant/après différents)"
             if (e.pilote.affichage != avantAffichage) defauts += "un appui sur le bloc d'écoute a changé l'état de l'écoute"
-        }
+        })
         assertTrue(defauts.isEmpty(), "Rendu « $cas » :\n" + defauts.joinToString("\n"))
     }
 
     @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `appui sur le bloc d'ecoute debout, rien ne se declenche dessous`() = appuiSurLeBloc("appui-bloc-debout-plein")
     @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `appui sur le bloc d'ecoute couche, rien ne se declenche dessous`() = appuiSurLeBloc("appui-bloc-couche-plein")
+
+    // --- mission 083 (reprise 2/3) : la commande la plus longue de la grammaire fermée et le refus le plus long
+
+    /** La commande la plus longue (en caractères) de la grammaire fermée de la dictée (spec, « Dictée hors ligne à grammaire fermée »). */
+    private val COMMANDE_LA_PLUS_LONGUE: String = Grammaire.phrases.maxByOrNull { it.length }!!
+
+    /** Mesurée par le relecteur de la PR #148 : une phrase qui enchaîne état, cause et hauteur (l'API de l'écoute accepte tout texte). */
+    private val PHRASE_MESUREE_PAR_LE_RELECTEUR = "atteint insectes hauteur quarante-cinq"
+
+    /**
+     * Le refus le plus long que la dictée peut produire : l'alerte « Placette déjà terminée. » (qui précède tout refus compris) devant
+     * le plus long texte de refus de [TextesDictee].
+     */
+    private val REFUS_LE_PLUS_LONG: String = TextesDictee.DEJA_TERMINEE + listOf(
+        TextesDictee.HAUTEUR_SANS_ETAT, TextesDictee.HAUTEUR_ABSENT, TextesDictee.HAUTEUR_NON_OBSERVE, TextesDictee.HAUTEUR_HORS_BORNES,
+        TextesDictee.VIDE, TextesDictee.CAUSE_SUR_SAIN, TextesDictee.CAUSE_SUR_ABSENT, TextesDictee.CAUSE_SUR_NON_OBSERVE,
+        TextesDictee.ETAT_D_ABORD, TextesDictee.MANGE_REFUSE, TextesDictee.REMPLACE_REFUSE, TextesDictee.AUCUN_PLANT,
+        TextesDictee.REFUS_SESSION, TextesDictee.RIEN_A_ANNULER,
+    ).maxByOrNull { it.length }!!
+
+    private val COMPRIS_LE_PLUS_LONG = TextesDictee.hauteurDite(7, 399)
+
+    private fun longue(cas: String, dite: String, erreur: Boolean = false) {
+        val defauts = ArrayList<String>()
+        phraseEtResultat(cas, erreur, defauts, dite = dite, annonce = if (erreur) REFUS_LE_PLUS_LONG else COMPRIS_LE_PLUS_LONG)
+        assertTrue(defauts.isEmpty(), "Rendu « $cas » (dite « $dite ») :\n" + defauts.joinToString("\n"))
+    }
+
+    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `commande la plus longue, debout plein ecran, entendu et compris entiers`() = longue("longue-compris-debout-plein", COMMANDE_LA_PLUS_LONGUE)
+    @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `commande la plus longue, debout sans plein ecran, entendu et compris entiers`() = longue("longue-compris-debout-sans-plein", COMMANDE_LA_PLUS_LONGUE)
+    @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `commande la plus longue, couche plein ecran, entendu et compris entiers`() = longue("longue-compris-couche-plein", COMMANDE_LA_PLUS_LONGUE)
+    @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `commande la plus longue, couche sans plein ecran, entendu et compris entiers`() = longue("longue-compris-couche-sans-plein", COMMANDE_LA_PLUS_LONGUE)
+
+    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `phrase enchainee du relecteur, debout plein ecran, entendu et compris entiers`() = longue("enchainee-compris-debout-plein", PHRASE_MESUREE_PAR_LE_RELECTEUR)
+    @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `phrase enchainee du relecteur, debout sans plein ecran, entendu et compris entiers`() = longue("enchainee-compris-debout-sans-plein", PHRASE_MESUREE_PAR_LE_RELECTEUR)
+    @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `phrase enchainee du relecteur, couche plein ecran, entendu et compris entiers`() = longue("enchainee-compris-couche-plein", PHRASE_MESUREE_PAR_LE_RELECTEUR)
+    @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `phrase enchainee du relecteur, couche sans plein ecran, entendu et compris entiers`() = longue("enchainee-compris-couche-sans-plein", PHRASE_MESUREE_PAR_LE_RELECTEUR)
+
+    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `refus le plus long, debout plein ecran, entendu et refus entiers`() = longue("longue-refus-debout-plein", COMMANDE_LA_PLUS_LONGUE, erreur = true)
+    @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `refus le plus long, debout sans plein ecran, entendu et refus entiers`() = longue("longue-refus-debout-sans-plein", COMMANDE_LA_PLUS_LONGUE, erreur = true)
+    @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `refus le plus long, couche plein ecran, entendu et refus entiers`() = longue("longue-refus-couche-plein", COMMANDE_LA_PLUS_LONGUE, erreur = true)
+    @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `refus le plus long, couche sans plein ecran, entendu et refus entiers`() = longue("longue-refus-couche-sans-plein", COMMANDE_LA_PLUS_LONGUE, erreur = true)
+
+    // --- décision « Oui, et le figer » : zone défilée jusqu'en bas, le bloc ne couvre que le haut d'un bouton du pied, d'une hauteur bornée
+
+    /**
+     * Borne du texte du bloc sur un bouton du pied : le relecteur a mesuré 9 dp de texte sur « Installer la dictée » ; 12 dp laissent 3 dp
+     * (un tiers) de marge pour l'arrondi de la mise en page, pas pour une ligne de texte de plus (17 dp debout selon le corps de PR).
+     */
+    private val BORNE_TEXTE_SUR_BOUTON_DP = 12f
+
+    /**
+     * Borne du cadre (lignes + [MARGE_CADRE_DP]) sur un bouton du pied : le relecteur a mesuré 21 dp avec le cadre sur « Installer la
+     * dictée » ; 24 dp laissent 3 dp de marge, soit moins de la moitié d'une cible de 48 dp : le bouton reste atteignable par son bas.
+     */
+    private val BORNE_CADRE_SUR_BOUTON_DP = 24f
+
+    private fun estBoutonDuPied(nom: String) = nom.startsWith("+ Pointer") || nom == "Annuler" || nom.startsWith("Installer la dictée")
+
+    /** Profondeur (dp) dont [bloc] recouvre le haut de [c] ; 0 s'il ne le touche pas. */
+    private fun profondeur(bloc: androidx.compose.ui.geometry.Rect, c: androidx.compose.ui.geometry.Rect): Float =
+        if (BancRendu.intersection(bloc, c) > 1f) minOf(bloc.bottom, c.bottom) - maxOf(bloc.top, c.top) else 0f
+
+    private fun controlerZoneDefilee(cas: String, r: BancRendu.Resultat, defauts: MutableList<String>, toleres: MutableList<String>) {
+        val lignes = r.noeuds.filter { it.texte && estDuBloc(it.nom) && BancRendu.aire(it.rect) > 0f }
+        if (lignes.isEmpty()) { defauts += "aucune ligne du bloc d'écoute dans la phase « $cas »"; return }
+        val texte = androidx.compose.ui.geometry.Rect(lignes.minOf { it.rect.left }, lignes.minOf { it.rect.top }, lignes.maxOf { it.rect.right }, lignes.maxOf { it.rect.bottom })
+        val m = MARGE_CADRE_DP
+        val cadre = androidx.compose.ui.geometry.Rect(texte.left - m, texte.top - m, texte.right + m, texte.bottom + m)
+        // Ce qui est permis : le bloc sur « Mode poche » (comme ailleurs) et, bornés, sur le haut des boutons du pied.
+        defauts += BancRendu.recouvrements(r, { c, n ->
+            when {
+                !estDuBloc(n.nom) -> null
+                c.nom == MODE_POCHE -> "permis : le bloc d'écoute sur « Mode poche »"
+                estBoutonDuPied(c.nom) && profondeur(n.rect, c.rect) <= BORNE_TEXTE_SUR_BOUTON_DP ->
+                    "toléré : le texte du bloc recouvre %.0f dp du haut de « ${c.nom} » (borne $BORNE_TEXTE_SUR_BOUTON_DP dp)".format(profondeur(n.rect, c.rect))
+                else -> null
+            }
+        }, toleres)
+        // Le cadre, que le banc ne voit pas, est suivi par approximation : sur un bouton du pied, borné ; sur tout autre cliquable, rien.
+        for (c in r.cliquables) {
+            if (BancRendu.aire(c.rect) <= 0f || c.nom == MODE_POCHE || c.id in lignes.map { it.id }) continue
+            val p = profondeur(cadre, c.rect)
+            if (p <= 0f) continue
+            when {
+                !estBoutonDuPied(c.nom) -> defauts += "le cadre du bloc (lignes + ${m.toInt()} dp) ${BancRendu.fmt(cadre)} recouvre le cliquable « ${c.nom} » ${BancRendu.fmt(c.rect)} : seuls « + Pointer », « Annuler » et « Installer la dictée » sont permis"
+                p > BORNE_CADRE_SUR_BOUTON_DP -> defauts += "le cadre du bloc ${BancRendu.fmt(cadre)} recouvre %.0f dp du haut de « ${c.nom} » ${BancRendu.fmt(c.rect)} : la borne est $BORNE_CADRE_SUR_BOUTON_DP dp".format(p)
+                else -> toleres += "toléré : le cadre du bloc recouvre %.0f dp du haut de « ${c.nom} » (borne $BORNE_CADRE_SUR_BOUTON_DP dp)".format(p)
+            }
+        }
+    }
+
+    private fun zoneDefilee(cas: String) {
+        val e = Ecoute()
+        EcouteApp.poserPilotePourTest(e.pilote)
+        val defauts = ArrayList<String>()
+        // L'écran est posé sans écoute, la zone est défilée jusqu'en bas, puis l'écoute commence : c'est la situation du forestier.
+        val depart = BancRendu.rendre(
+            session(),
+            apres = { repeat(6) { onNode(hasScrollAction()).performTouchInput { swipeUp() } } },
+            regle = regle,
+        )
+        regle.runOnIdle { e.t = 300; e.pilote.tenir(); e.pilote.moteurPret(1) }
+        regle.waitForIdle()
+        assertEquals(AffichageEcoute.ECOUTE, e.pilote.affichage)
+        val pendant = BancRendu.lire(regle, depart.densite)
+        val toleres = ArrayList<String>()
+        if (pendant.noeuds.none { it.nom == "J'ÉCOUTE" }) defauts += "« J'ÉCOUTE » n'est pas affiché pendant l'écoute"
+        if (pendant.cliquables.none { estBoutonDuPied(it.nom) }) defauts += "la zone n'est pas défilée jusqu'en bas : aucun bouton du pied (« + Pointer », « Annuler », « Installer la dictée ») à l'écran"
+        controlerZoneDefilee("pendant", pendant, defauts, toleres)
+        BancRendu.rapport("$cas-pendant-l-ecoute", pendant, defauts, toleres)
+
+        regle.runOnIdle { e.t = 1_500; e.pilote.phrase("sept sain") }
+        regle.runOnIdle { e.t = 2_000; e.pilote.relacher() }
+        regle.waitForIdle()
+        val fermeeA = e.t
+        regle.runOnIdle { e.pilote.resultat(AnnoncePoche("numéro 7, sain", MotifsVibration.SAIN)) }
+        regle.waitForIdle()
+        regle.runOnIdle { e.t = fermeeA + DUREE_BANDEAU_MS - 1; e.pilote.avancer() }
+        regle.waitForIdle()
+        val apres = BancRendu.lire(regle, depart.densite)
+        val toleres2 = ArrayList<String>()
+        if (apres.noeuds.none { it.nom == "ÉCOUTE FERMÉE" }) defauts += "« ÉCOUTE FERMÉE » n'est pas affiché dans le délai"
+        controlerZoneDefilee("apres-une-phrase", apres, defauts, toleres2)
+        BancRendu.rapport("$cas-apres-une-phrase", apres, defauts, toleres2)
+        assertTrue(defauts.isEmpty(), "Rendu « $cas » :\n" + defauts.joinToString("\n"))
+    }
+
+    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `zone defilee jusqu'en bas pendant l'ecoute, debout plein ecran, le bloc ne couvre que le haut d'un bouton du pied`() = zoneDefilee("defilee-debout-plein")
+    @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `zone defilee jusqu'en bas pendant l'ecoute, debout sans plein ecran, le bloc ne couvre que le haut d'un bouton du pied`() = zoneDefilee("defilee-debout-sans-plein")
 }
