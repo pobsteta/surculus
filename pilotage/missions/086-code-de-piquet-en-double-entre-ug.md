@@ -11,7 +11,10 @@
 position trancher si une seule de ces placettes est à 15 m au plus, et sinon faire choisir l'UG à l'agent, au lieu
 d'ouvrir la première trouvée sans rien dire, pour qu'aucun contrôle ne soit rattaché à la mauvaise placette.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** _(testeur, 2026-11-02)_ Je dois écrire les tests qui diront si, quand un code de piquet
+existe dans plusieurs UG, la position tranche (une seule placette à 15 m au plus, borne incluse), sinon si l'agent
+doit choisir l'UG, jamais la « première trouvée », pour qu'aucun contrôle ne soit rattaché en silence à la mauvaise
+placette. _(dev : à compléter par l'agent avant d'agir.)_
 
 ## Les trois questions (règle de staffing)
 
