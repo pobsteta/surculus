@@ -240,11 +240,18 @@ point à Brest et à Strasbourg.
   du 2026-10-29, PR #130 fusionnée le 2026-10-30 ; 96 dp à décider après l'essai ganté). En
   mode poche il n'y a pas de bouton. La permission `RECORD_AUDIO` est demandée à l'appui sur
   « Mode poche » ou sur le micro, l'écran sous les yeux, jamais en poche (012-D2 Q6).
-  **Bandeau d'écoute** « J'ÉCOUTE » : il couvre le haut de la zone qui défile pendant
-  l'écoute, puis reste **6 s** avec ce qui a été entendu et compris ou refusé, et **s'efface**
-  seul, pour que « Mode poche » réapparaisse (décision de Pascal du 2026-10-30, mission 076,
-  PR #132, fusionnée le 2026-10-30 ; 6 s est plus long que l'attente du résultat final de Vosk,
-  5 s, pour que le bandeau ne revienne jamais).
+  **Bandeau d'écoute** « J'ÉCOUTE » : il s'affiche pendant l'écoute, puis reste **6 s** avec
+  ce qui a été entendu et compris ou refusé, et **s'efface** seul, pour que « Mode poche »
+  réapparaisse (décision de Pascal du 2026-10-30, mission 076, PR #132, fusionnée le
+  2026-10-30 ; 6 s est plus long que l'attente du résultat final de Vosk, 5 s, pour que le
+  bandeau ne revienne jamais). Il ne couvre jamais « Plant précédent » ni le numéro du plant,
+  et un appui sur lui ne fait rien (décisions de Pascal du 2026-11-02, mission 083, PR #148,
+  fusionnée le 2026-11-02) : debout, il part du pied, à gauche du micro, sur « Mode poche », et
+  déborde vers le haut sur le bas de la zone sans rien pousser (« ÉCOUTE FERMÉE » sur deux
+  lignes) ; zone défilée jusqu'en bas, il peut couvrir le haut de « + Pointer », « Annuler » ou
+  « Installer la dictée » pendant ces 6 s ; couché, il s'étend sur toute la largeur en haut de
+  l'écran, « entendu » et « compris » en deux colonnes. Les tailles en dp sont provisoires
+  jusqu'à l'essai ganté.
 
   Dictée hors ligne à **grammaire fermée** : « sain », « atteint », « mort », « absent »,
   « non observé », « insectes », « champignon », « animaux », « climat »,
