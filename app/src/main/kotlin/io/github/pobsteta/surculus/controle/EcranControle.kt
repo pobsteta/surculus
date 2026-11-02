@@ -344,7 +344,7 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
             }
         }
         // Mission 075 : le micro est HORS de la zone qui défile (pied debout, colonne couché) ; le bloc J'ÉCOUTE est posé PAR-DESSUS
-        // (couché : le haut de la zone ; debout : du pied, vers le haut, 083). Rien ne pousse rien : le micro et les boutons ne bougent pas quand l'écoute commence.
+        // (couché : le haut de la zone, étendu à droite sur la colonne du micro ; debout : du pied, vers le haut, 083). Rien ne pousse rien : le micro et les boutons ne bougent pas quand l'écoute commence.
         val config = LocalConfiguration.current
         val emplacement = DispositionMicro.emplacement(config.screenWidthDp.toFloat(), config.screenHeightDp.toFloat())
         val avecMicro = e.vue == VueControle.PLANT && !poche
@@ -390,19 +390,24 @@ internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglage
                     e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
                     if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                // Couché, le bloc est par-dessus le haut de la zone, sans recouvrir « Plant précédent » ni le numéro. Debout, il part du pied (083, plus bas).
-                if (!poche && emplacement == EmplacementMicro.COLONNE && blocEcouteVisible()) {
-                    Box(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
-                }
             }
         }
         // La disposition ne dépend que de l'écran (couché ou debout), jamais de la vue : la zone garde sa place dans la composition
         // en passant de Plant à Pointer ou Terminer, et le micro n'est qu'un frère conditionnel à côté d'elle.
         if (emplacement == EmplacementMicro.COLONNE) {
-            Row(Modifier.weight(1f).fillMaxWidth()) {
-                zone(Modifier.weight(1f).fillMaxHeight())
-                if (avecMicro) {
-                    Column(Modifier.width(DimensionsMicro.ZONE).fillMaxHeight().padding(8.dp), verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally) { micro() }
+            // Couché (083, reprise 2/3, décision « Bloc plus large, à droite ») : le bloc est un frère de la zone et de la colonne du micro,
+            // dans un Box qui les contient. Il part du haut de la zone et s'étend vers la droite, par-dessus le haut de la colonne du micro
+            // (vide : le micro est en bas), de la largeur de l'écran moins 16 dp de chaque côté ; « entendu » et « compris » y tiennent sur
+            // une ligne. Il reste sous « Mode poche » et au-dessus de la flèche et du numéro. Largeur et marges : PROVISOIRES jusqu'à l'essai ganté.
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                Row(Modifier.fillMaxSize()) {
+                    zone(Modifier.weight(1f).fillMaxHeight())
+                    if (avecMicro) {
+                        Column(Modifier.width(DimensionsMicro.ZONE).fillMaxHeight().padding(8.dp), verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally) { micro() }
+                    }
+                }
+                if (!poche && blocEcouteVisible()) {
+                    Box(Modifier.align(Alignment.TopStart).fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
                 }
             }
         } else {
@@ -569,7 +574,7 @@ private fun BlocEcoute(cote: Boolean = false) {
     val grand = TextesEcoute.grand(EcouteApp.affichage)
     val entendu = EcouteApp.entendu
     val compris = EcouteApp.compris
-    grand?.let { Text(it, style = MaterialTheme.typography.headlineMedium, color = couleurNeutre()) }
+    val titre: @Composable () -> Unit = { grand?.let { Text(it, style = MaterialTheme.typography.headlineMedium, color = couleurNeutre()) } }
     val ligneEntendu: @Composable (Modifier) -> Unit = { m -> entendu?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre(), modifier = m) } }
     val ligneCompris: @Composable (Modifier) -> Unit = { m ->
         compris?.let {
@@ -578,13 +583,18 @@ private fun BlocEcoute(cote: Boolean = false) {
         }
     }
     if (cote && entendu != null && compris != null) {
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) { ligneEntendu(Modifier.weight(1f)); ligneCompris(Modifier.weight(1f)) }
-    } else { ligneEntendu(Modifier); ligneCompris(Modifier) }
+        // Deux colonnes : à gauche le titre et « entendu » (une ligne), à droite « compris » ou le refus, libre de prendre 2 ou 3 lignes
+        // sans descendre plus bas que la colonne de gauche (083, reprise 2/3).
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
+            Column(Modifier.weight(1.2f), verticalArrangement = Arrangement.spacedBy(4.dp)) { titre(); ligneEntendu(Modifier) }
+            ligneCompris(Modifier.weight(1f))
+        }
+    } else { titre(); ligneEntendu(Modifier); ligneCompris(Modifier) }
 }
 
 /**
  * Hors du mode poche, le même bloc dans son cadre, sur fond opaque, posé par-dessus ce qu'il couvre (075, 083) : debout, du pied
- * (à gauche du micro) vers le haut ; couché, en tête de la zone. Il **absorbe le toucher** (décision de Pascal du 2026-11-02) : pendant
+ * (à gauche du micro) vers le haut ; couché, en tête de la zone et étendu à droite sur la colonne du micro. Il **absorbe le toucher** (décision de Pascal du 2026-11-02) : pendant
  * l'écoute et les 6 s, un appui sur lui ne déclenche aucun bouton caché dessous. [cote] : voir [BlocEcoute].
  */
 @Composable
