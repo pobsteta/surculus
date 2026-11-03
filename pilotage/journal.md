@@ -929,3 +929,5 @@
 
 2026-11-03 · dev · mission 087 · écart · codée (8e587c7..43ded98), Import sommieR vert (F4 vert, F5 7/7) ; le `dev` s'est trompé sur le compte des tests existants à adapter pour « une ligne par contrôle » (3 annoncés, 8 de plus, commits séparés). `CI` rouge sur un test du testeur (« 1 sur 12 » à l'ouverture, alors que le compteur compte les états dits) : corrigé par le `testeur` en « 0 sur 12 » (27546a9).
 2026-11-03 · Pascal · mission 087 · les 8 tests en plus : « Accepter, sous relecture » ; le `relecteur` vérifie commit par commit quaucun
+2026-11-03 · relecteur · PR #152 · à fusionner : 8 adaptations de tests vérifiées, aucune assertion affaiblie ; tests du testeur intacts ; 2289 tests, test-criteres.R 130/130 ; mineurs : corps de PR périmé, KDoc de `uneSecondeArrivee`, `ArriveeSansPosition.kt` hors liste (imposé par l'API des tests, admis par l'orchestrateur), textes du `dev`.
+2026-11-03 · Pascal · PR #152 · « Titre neutre + garder » (titre « Recherche de la position… », lignes du `dev` validées) ; hors de France « Oui, journal seul » ; plants pointés « Oui, plants connus ». Reprise 1/3 confiée au `dev`.
