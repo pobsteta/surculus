@@ -934,3 +934,6 @@
 
 2026-11-03 · dev · PR #152 · reprise 1/3 (54e1555) : titre « Recherche de la position… », moyenne par `uneSecondeArrivee()`, corps de PR à jour ; CI verte. Relecteur : à fusionner ; réserve : le titre s'affiche aussi quand rien n'écoute et après 30 s.
 2026-11-03 · Pascal · PR #152 · « Couleur normale » ; « Titre pendant l'attente seule ». Reprise 2/3 confiée au `dev`. Fix reçu pendant le choix de l'UG traité comme pendant la confirmation (même règle, ADR 0003 point 6), lecture de l'orchestrateur, dite à Pascal.
+
+2026-11-03 · relecteur · PR #152 · reprise 2/3 (eb207b4) : à fusionner ; titre limité au décompte, couleur normale, CI verte.
+2026-11-03 · Pascal · PR #152 · « Attendre la 088 » : chaque fusion dans `main` publie une release ; la #152 reste ouverte, approuvée ; la 088 part de la branche 087 et sa PR vise cette branche ; une seule release portera les deux. Fiche 088 écrite (7e88024, `mission/088-sauvegarde-sursync-v2`) : `testeur` puis `dev`, tenir, plan d'abord, opus ; la spec § 4.8 et `sursync-v1.md` disent encore « la mission 086 crée la v2 » : à corriger avec les amendements de l'orchestrateur.
