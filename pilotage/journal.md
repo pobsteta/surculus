@@ -945,3 +945,5 @@
 2026-11-03 · dev · mission 088 · plan rendu (version 2 en une ligne de code ; `sursync-v2.md` qui renvoie à la v1, schéma qui réserve `photo`) ; fait nouveau : l'application n'exporte pas la tournée (aucun écran n'appelle `ExportTravaux`).
 2026-11-03 · Claude (orchestrateur) · fiches 087 et 088 · écart · je me suis trompé : j'y ai écrit un échantillon terrain « export lu dans QGIS » que l'application ne permet pas ; échantillon de la 088 corrigé (restauration seule, export vérifié sur ordinateur).
 2026-11-03 · Pascal · mission 088 · « Accepter, avec les 3 détails » ; ligne `photo` « Garder, l'écrire » ; test restauration puis export « Le testeur » (harnais élargi à `gpkg/src/test`) ; export depuis le téléphone « Mission 090, avant l'essai ». Décisions dans la fiche (98e51f5) ; `dev` relancé pour coder, `testeur` lancé pour le test de bout en bout.
+
+2026-11-03 · testeur · mission 088 · test de bout en bout `SursyncV2ExportBoutEnBoutTest` poussé (db3b461) : vert d'emblée (la chaîne relève de la 087), vu rouge par une erreur provisoire ; tournée d'essai recalée sur les UUID de la fixture, fixture intacte ; la restauration de `data` n'y passe pas.
