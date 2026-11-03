@@ -66,7 +66,7 @@ des photos.
 
 ## Exemples
 
-Dans `fixtures/sursync/`, refaits par `exemple-v2-fabrication.sh` (sh, gzip `-n`, sha256sum) :
+Dans `fixtures/sursync/`, refaits par `exemple-v2-fabrication.sh` (sh, gzip `-n -9`, sha256sum) :
 
 - `exemple-v2.jsonl` : le contenu décompressé, lisible : en-tête en version 2 et deux contrôles en valeurs v2, l'un
   ouvert sans position mesurée, l'autre avec ;

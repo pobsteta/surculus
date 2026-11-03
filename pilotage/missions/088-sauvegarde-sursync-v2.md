@@ -108,9 +108,9 @@ position ». L'export se vérifie sur ordinateur (test de bout en bout, CI d'imp
 
 ## Terrain
 
-- **Échantillon que Pascal vérifiera :** sur la release (087 et 088), un contrôle ouvert sans position, la sauvegarde
-  écrite dans `Documents/Surculus/` (en-tête en version 2), puis restaurée sur le même téléphone (ou un second) : le
-  contrôle revient « sans position » et l'export le garde.
+- **Échantillon que Pascal vérifiera :** voir « Décisions de Pascal sur le plan du `dev` », échantillon corrigé
+  (l'application n'exporte pas encore la tournée, mission 090) : refus de `exemple-v2.sursync` par l'application
+  installée avant la release, puis restauration « sans position » sur la release 087 + 088.
 
 ## Qui veille, qui tranche
 

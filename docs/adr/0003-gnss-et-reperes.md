@@ -144,7 +144,7 @@ La ligne « Règle des 15 m » du tableau ci-dessus suppose une position mesuré
 - **Décidé par :** Pascal, le 2026-11-02 (journal de pilotage, branche `pilotage/cycle-17`, lignes « cap », « 085 » et
   « ADR 0003 » du 2026-11-02), après la critique du `contradicteur` ; points 3 et 6 précisés et point 10 ajouté le même
   jour, après la relecture de la PR #150 (reprise 1/3 de la mission 085, fiche, « Reprise, aller-retour 1/3 »). Écrit par l'`archiviste` (mission 085) ; codé
-  par la mission 086.
+  par la mission 087 (homonymes : 086 ; `.sursync` v2 : 088).
 - **Ce qui change :** la règle « toujours une position mesurée à l'arrivée » tombe. Sous couvert dense, le téléphone
   peut ne donner aucune position au pied du piquet, et le forestier ne pouvait plus travailler (`ArriveeControle.arrivee`
   rendait `EtatArrivee.SansPosition` et ignorait le code lu).
@@ -187,7 +187,7 @@ La spec § 4.3 reprend la même numérotation, de 1 à 10.
 la version suivante de son format ; un Surculus ancien la refuse avec un message (`version_future`, « mettre
 l'application à jour », `docs/formats/sursync-v1.md`) au lieu de perdre sans le dire les contrôles sans position ; un
 Surculus à jour lit toujours l'ancienne. **Une seule v2 du `.sursync`**, partagée (décision de Pascal du 2026-11-02, reprise 2/3, « v2 partagée ») : elle porte à
-la fois le type `photo` (décision du 2026-10-28, spec § 4.8) et les contrôles sans position. La 086 crée la v2 ; la
+la fois le type `photo` (décision du 2026-10-28, spec § 4.8) et les contrôles sans position. La 088 a créé la v2 (`docs/formats/sursync-v2.md`) ; la
 partie photos reste à coder plus tard, dans le même format.
 
 **Écart avec l'existant, signalé et non tranché ici.** « Une ligne par contrôle » dans `positions_controles` (point 7)
@@ -195,7 +195,8 @@ contredit le scénario Couchey de la CI d'import : P35-02, « sans mesure », n'
 (`gpkg/.../ExportTravaux.kt` l. 230, ligne écrite seulement s'il y a une position mesurée) ; F4 prend alors le piquet
 dans `placettes` (ADR 0007, critère F4 ; `ci/sommier/README.md` l. 54-66 ; `fixtures/export/registre-attendu-couchey.json`,
 « decision »). La 086 en fera un contrôle `sans_position_mesuree`, ou dira pourquoi non ; si cela touche au sens (ce que
-F4 prouve), la question remonte à Pascal.
+F4 prouve), la question remonte à Pascal. **Tranché le 2026-11-02 par Pascal** (« en faire le cas sans position »),
+codé par la 087 : P35-02 a une ligne à géométrie NULL, vérifiée par F4 (ADR 0007).
 
 **Valeur provisoire :** les **30 s** d'attente sans fix. Mesurées par Pascal à l'essai en forêt sous couvert (premier
 fix à froid du récepteur), date à fixer ; gelées avant la publication de la tranche 1.
@@ -222,7 +223,8 @@ Sources vérifiées par l'`archiviste` le 2026-11-02 (pages téléchargées et l
   « underspecified » sur les géométries vides et que des lecteurs peuvent s'y tromper. `ST_IsEmpty` rend NULL pour
   une géométrie NULL (même page, extension SQL). Une géométrie **NULL** dit « pas de valeur », sans dépendre de
   l'encodage des NaN. Que GDAL et `sf` lisent une géométrie NULL de GeoPackage comme une géométrie vide : **non
-  vérifié** (à couvrir par le test F4 de la 086).
+  vérifié** (à couvrir par le test F4 de la 086). Vérifié par la 087 : `sf` lit la géométrie NULL comme vide, sans la
+  distinguer d'un POINT EMPTY ; c'est le test Kotlin de l'export qui exige NULL.
 
 **Choix de format** (proposés par le `relecteur` de la PR #150, non tranchés par Pascal, écrits comme tels) : sans
 position mesurée, `source_gnss`, `referentiel_source` et `simulee` sont aussi **NULL** ; `sans_position_mesuree` porte
@@ -236,7 +238,7 @@ seul l'information (spec § 5).
 | **R**esponsable | Qui fait quoi ? | L'agent lit le code et confirme la placette ; Surculus dit qu'il n'a pas de position et le marque à l'export ; sommieR décide de ce qu'il garde. | L'identité repose sur l'agent : un code mal lu rattache le contrôle à la mauvaise placette, sans GNSS pour le voir. |
 | **A**nticipateur | Si l'imprévu arrive ? | Plus de forestier bloqué sous couvert ; localisation coupée ou permission refusée : on demande de l'activer ; fix hors de France refusé avec une phrase qui dit quoi faire. | Un fix simulé ou médiocre reste une position (point 6) ; 30 s non mesurées ; un ancien Surculus refuse la sauvegarde de version suivante (message « mettre l'application à jour ») plutôt que de perdre un contrôle sans position. |
 | **N**ovateur | Toutes les idées ? | Examinées par le `contradicteur` : code sans confirmation (écarté), attente de 5 s (trop courte, écartée), POINT EMPTY (écarté pour NULL), position de sommieR (retenue). | Aucune. |
-| **C**oût | Coût pour l'ensemble ? | Pas de matériel ; une mission de code (086) et un complément au brief `vers-sommier`. | Le registre de sommieR aura des contrôles sans position mesurée, à traiter à part. |
+| **C**oût | Coût pour l'ensemble ? | Pas de matériel ; une mission de code (087) et un complément au brief `vers-sommier`. | Le registre de sommieR aura des contrôles sans position mesurée, à traiter à part. |
 | **É**cologique | Que réutilise-t-on, qui réutilisera ? | Conventions ouvertes : Darwin Core, comportement de QField, GeoPackage 1.3. | Aucune. |
 
 ### Valeurs sacrifiées
@@ -251,7 +253,7 @@ seul l'information (spec § 5).
 - **Simplicité du format** : un journal v2 à côté du v1, et une version suivante du `.sursync`, que Surculus doit lire
   avec la précédente.
 
-### Tests attendus (mission 086)
+### Tests attendus (mission 087)
 
 - Aucun fix pendant 30 s, récepteur actif, localisation et permission accordées, code lu connu : « Ouvrir sans
   position » proposé, placette affichée à confirmer, contrôle ouvert à la position du piquet, sans position mesurée.
