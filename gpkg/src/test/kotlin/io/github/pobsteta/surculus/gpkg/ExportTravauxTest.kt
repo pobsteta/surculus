@@ -199,7 +199,8 @@ class ExportTravauxTest {
     @Test
     fun `la position GNSS mesuree va dans positions_controles, le drapeau d identite est ecrit`() {
         val f = exporter(depart(), v.saisiesDeLaJournee())
-        val l = Sqlite.ouvrir(f, lectureSeule = true).use { it.lignes("SELECT * FROM positions_controles").single() }
+        // Mission 087 : une ligne par contrôle ; celle de P35-01 (3001) porte la position mesurée.
+        val l = Sqlite.ouvrir(f, lectureSeule = true).use { it.lignes("SELECT * FROM positions_controles WHERE controle_uuid = '${v.uuid(3001)}'").single() }
         assertEquals(v.uuid(3001), l.texte("controle_uuid"))
         assertEquals(0.4, l.reel("precision_m"))
         assertEquals("essai", l.texte("source_gnss"))
@@ -241,7 +242,8 @@ class ExportTravauxTest {
         val f = exporter(depart(), saisies.copy(constats = listOf(constat(1)), vides = listOf(vide(1, constatUuid = v.uuid(5001)))))
         Sqlite.ouvrir(f, lectureSeule = true).use { cnx ->
             for (c in Couches.TOUTES.filter { it.geometrie != null }) {
-                val n = cnx.lignes("SELECT count(*) AS n FROM ${c.nom.ident()}").first().entier("n")
+                // Mission 087 : une géométrie NULL (contrôle sans position) n'entre pas dans l'index ; on compte les présentes.
+                val n = cnx.lignes("SELECT count(*) AS n FROM ${c.nom.ident()} WHERE geom IS NOT NULL").first().entier("n")
                 assertTrue(n!! > 0, "couche ${c.nom} vide : le test ne prouve rien")
                 assertEquals(n, cnx.lignes("SELECT count(*) AS n FROM ${"rtree_${c.nom}_geom".ident()}").first().entier("n"), "rtree ${c.nom}")
                 val ext = cnx.lignes("SELECT scope FROM gpkg_extensions WHERE table_name = '${c.nom}' AND extension_name = 'gpkg_rtree_index'").map { it.texte("scope") }
@@ -294,14 +296,14 @@ class ExportTravauxTest {
         val bilan = ExportTravaux.exporter(premier, sortie, s, v.VERSION, v.EXPORTE_LE)
         assertEquals(Contenu.de(premier), Contenu.de(sortie))
         assertEquals(0, bilan.controles + bilan.plants + bilan.etats + bilan.positions)
-        assertEquals(2 + 6 + 6 + 1, bilan.dejaPresentes)
+        assertEquals(2 + 6 + 6 + 2, bilan.dejaPresentes, "mission 087 : deux lignes de positions_controles, une par contrôle")
     }
 
     @Test
     fun `le bilan compte ce qui est ecrit`() {
         val sortie = dossier.resolve("e.gpkg")
         val bilan = ExportTravaux.exporter(depart(), sortie, v.saisiesDeLaJournee(), v.VERSION, v.EXPORTE_LE)
-        assertEquals(BilanExport(v.EXPORTE_LE, 0, 2, 6, 6, 1, 0, 0, 0), bilan)
+        assertEquals(BilanExport(v.EXPORTE_LE, 0, 2, 6, 6, 2, 0, 0, 0), bilan, "mission 087 : une ligne de positions_controles par contrôle")
     }
 
     @Test
@@ -373,7 +375,11 @@ class ExportTravauxTest {
     // -------------------------------------------------------------- France, forêt
 
     private fun controleA(position: PointLambert93) = v.saisiesDeLaJournee().let { s ->
-        s.copy(controles = listOf(s.controles[0].copy(position = position, positionMesuree = null)), plants = s.plants.take(4))
+        // Mission 087 : une ligne par contrôle ; le point éprouvé est celui de `controles`, la ligne est « sans position ».
+        s.copy(
+            controles = listOf(s.controles[0].copy(position = position, positionMesuree = PositionMesuree(position = null, rattacheParIdentite = true, sansPositionMesuree = true))),
+            plants = s.plants.take(4),
+        )
     }
 
     @Test
@@ -414,8 +420,10 @@ class ExportTravauxTest {
         assertEquals("totaux_discordants", r.motif)
     }
 
+    // Mission 087 : une ligne de positions_controles par contrôle (décision de Pascal du 2026-11-03) ; ici, sans position.
     private fun sansEtats(n: Int, placette: Int, quand: Instant) = ControleSaisi(
-        UuidControle(v.uuid(4000 + n)), UuidPlacette(v.placetteUuid(placette)), quand, JourCivil.de(quand), v.centre(placette), totaux = Totaux(4, 3, 1, 40),
+        UuidControle(v.uuid(4000 + n)), UuidPlacette(v.placetteUuid(placette)), quand, JourCivil.de(quand), v.centre(placette),
+        PositionMesuree(position = null, rattacheParIdentite = true, sansPositionMesuree = true), totaux = Totaux(4, 3, 1, 40),
     )
 
     @Test
