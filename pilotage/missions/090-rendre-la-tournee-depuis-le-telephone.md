@@ -55,6 +55,31 @@ _Rempli par Pascal seul._
 3. Où se trouve le bouton « Rendre la tournée », et ce que l'agent voit pendant et après (nombre de contrôles, fautes).
 4. Un contrôle commencé mais non terminé : exporté, refusé, ou signalé ?
 
+## Décisions de Pascal sur le plan du `dev` (2026-11-03)
+
+Le plan du `dev` (temps « tenir ») est accepté : API du testeur reprise sans écart (ajouts compatibles
+`ResultatRendu.Impossible` et `SaisiesDuJournal` public) ; passage journal → saisies, fautes et zip dans `gpkg` ; marque
+`rendue.json` ; chemin du rendu branché dans la CI d'import (`:gpkg:rendreScenario`, F1 à F5). Réponses :
+1. **Le `.zip`** : les deux : copie dans `Documents/Surculus/<tournée>.zip` (MediaStore) et bouton « Partager » (partage
+   Android, `FileProvider`).
+2. **Après le rendu** : tournée rendue en lecture seule ; « Rouvrir la tournée » explicite, qui avertit « un contrôle
+   déjà importé dans sommieR ne sera pas mis à jour » ; un nouveau rendu écrit un `.zip` neuf, horodaté, sans écraser
+   l'ancien.
+3. **Bouton et déroulé** : grand bouton « Rendre la tournée » en bas de l'écran des placettes (48 dp au moins) ;
+   confirmation avec le décompte (« 2 contrôles, 8 plants : rendre ? ») ; « Vérification… » puis « Écriture… » ;
+   « Tournée rendue : 2 contrôles, 8 plants, Documents/Surculus/….zip » avec « Partager » ; en cas de faute, une liste
+   dont chaque ligne ouvre sa placette.
+4. **Contrôle non terminé** : refusé, faute « P35-01 : contrôle non terminé : le terminer ou l'annuler ».
+5. **Plants d'un contrôle annulé** : non exportés, ils restent au journal.
+6. **Contenu du zip** : `travaux.gpkg` et `DCIM/` seuls (même vide), ni ortho, ni `.qgs`, ni marque.
+7. **Forme des fautes** : « placette[, plant n° N] : ce qui ne va pas : quoi faire », sans motif technique ni UUID
+   (exemples du plan retenus, indice « latitude et longitude inversées ? » compris).
+
+Le `dev` peut toucher ce que son plan nomme : `SaisiesDuJournal.kt`, `RenduTournee.kt`, `ExportZip.kt` (gpkg) ;
+`DepotTournees.kt`, `RenduApp.kt`, `StockageMediaStore.kt`, `EcranPlacettes.kt`, l'ouverture d'un contrôle sur une
+tournée rendue (`ControleurPlacette` ou l'écran qui l'ouvre), `strings.xml`, le manifeste (`FileProvider`) ; l'outil de
+CI et `ci/sommier/` pour la seconde comparaison. Spec § 4.8 et ADR 0005 : à compléter par l'orchestrateur.
+
 ## Harnais
 
 - **Testeur peut :** tests dans `core/`, `gpkg/`, `data/`, `app/src/test/` ; fixtures sous `fixtures/` ; vus rouges.
