@@ -24,6 +24,37 @@ object ExportZip {
     const val GPKG = "travaux.gpkg"
     private val DATE_FIXE = LocalDateTime.of(1980, 1, 1, 0, 0)
 
+    /** Le dossier des photos, présent dans le zip même vide (spec § 4.8 ; l'aller de sommieR le livre vide). */
+    const val DCIM = "DCIM"
+
+    /**
+     * Mission 090 : le zip du rendu de la tournée, à liste fixe (décision de Pascal du 2026-11-03) : [gpkg] sous le nom
+     * `travaux.gpkg`, puis `DCIM/` (même vide) et son contenu tel que la tournée l'a livré, rien d'autre (ni ortho, ni
+     * projet QGIS, ni marque « rendue »). [dcim] absent : `DCIM/` est écrit vide. Mêmes dates fixes et même ordre que
+     * [ecrire] : deux rendus du même état ont les mêmes entrées.
+     */
+    fun ecrireRendu(gpkg: Path, dcim: Path?, zip: Path) {
+        require(Files.isRegularFile(gpkg)) { "Pas de $GPKG à zipper : $gpkg" }
+        val photos = dcim?.toFile()?.takeIf { it.isDirectory }?.let { d ->
+            d.walkTopDown().filter { it != d && (it.isFile || it.isDirectory) }
+                .map { it to "$DCIM/" + it.relativeTo(d).invariantSeparatorsPath + if (it.isDirectory) "/" else "" }
+                .sortedBy { it.second }
+                .toList()
+        }.orEmpty()
+        val millis = DATE_FIXE.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        Files.createDirectories(zip.toAbsolutePath().parent)
+        ZipOutputStream(Files.newOutputStream(zip)).use { out ->
+            fun entree(nom: String, source: Path?) {
+                out.putNextEntry(ZipEntry(nom).also { it.time = millis })
+                source?.let { Files.copy(it, out) }
+                out.closeEntry()
+            }
+            entree(GPKG, gpkg)
+            entree("$DCIM/", null)
+            for ((f, nom) in photos) entree(nom, if (nom.endsWith("/")) null else f.toPath())
+        }
+    }
+
     /** Zippe le [dossier] (qui contient `travaux.gpkg`, et éventuellement `DCIM/`) vers [zip]. */
     fun ecrire(dossier: Path, zip: Path) {
         require(Files.isRegularFile(dossier.resolve(GPKG))) { "Pas de $GPKG dans $dossier" }
