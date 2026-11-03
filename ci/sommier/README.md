@@ -155,3 +155,18 @@ Le workflow, entre « Préparer » et « Rejouer », installe le JDK 21 et lance
 exige l'export et son bilan : s'ils manquent, le travail échoue. Le résumé du job
 affiche F1 à F4 avec leur verdict, le registre ligne à ligne, les sabotages de F5, les compteurs de F1 (attendu et mesuré) et les
 lignes ajoutées par couche ; le détail reste dans l'artefact `bilans-import-sommier`.
+
+## Seconde passe : le chemin du rendu de l'application (mission 090)
+
+Après l'export direct du scénario, le workflow lance `./gradlew :gpkg:rendreScenario
+-Ptournee=ci/sommier/sortie/tournee-depart -Pscenario=fixtures/export/scenario-couchey.json
+-Psortie=ci/sommier/rendu`. L'outil (classes de test de `:gpkg`, jamais dans l'APK) joue le même
+scénario **geste par geste par la session de contrôle** sur un journal en mémoire, puis rend la
+tournée par `RenduTournee.rendre`, comme le bouton « Rendre la tournée » : `rendu-surculus.zip`
+(`travaux.gpkg` et `DCIM/` seuls), `rendu-surculus/` (le zip décompressé) et `bilan-export.json`.
+Une seconde passe de `verifier.R --etape comparer`, dans `ci/sommier/sortie-rendu` (où sont copiés
+`tournee-depart/` et `foret_id.txt` de l'étape « preparer »), mesure F1 à F4 et rejoue les sabotages
+de F5 sur ce zip ; son résumé suit celui de la première passe. Ce qui n'y passe pas : le journal Room
+de l'appareil et la publication du fichier par MediaStore. Écart connu : le journal ne porte ni
+`precision_m`, ni `source_gnss`, ni `concurrence`, ni `besoin` ; le rendu les laisse vides là où
+l'export direct du scénario les remplit (aucun de F1 à F4 ne les compare).
