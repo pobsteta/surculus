@@ -939,3 +939,5 @@
 2026-11-03 · Pascal · PR #152 · « Attendre la 088 » : chaque fusion dans `main` publie une release ; la #152 reste ouverte, approuvée ; la 088 part de la branche 087 et sa PR vise cette branche ; une seule release portera les deux. Fiche 088 écrite (7e88024, `mission/088-sauvegarde-sursync-v2`) : `testeur` puis `dev`, tenir, plan d'abord, opus ; la spec § 4.8 et `sursync-v1.md` disent encore « la mission 086 crée la v2 » : à corriger avec les amendements de l'orchestrateur.
 
 2026-11-03 · Pascal · mission 088 · « Lancer » : fiche validée ; `testeur` lancé (worktree, opus), PR vers la branche 087.
+
+2026-11-03 · testeur · mission 088 · tests et exemples `.sursync` v2 poussés (a3a30ec, PR #153 en brouillon vers la branche 087), 16 rouges attendus jusqu'au `dev` ; refus d'un ancien Surculus prouvé par la règle N+1 (lecteur réglé en version 1), pas sur l'ancien APK ; export après restauration couvert par étapes seulement. Questions : ligne `photo` en v2 et test de bout en bout, au plan du `dev` ; version en texte = `version_illisible` (schéma) ; mention « 086 » de `sursync-v1.md` et `fixtures/README.md` confiés au `dev`. `dev` lancé pour un plan.
