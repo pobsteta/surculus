@@ -926,3 +926,6 @@
 
 2026-11-02 · dev · mission 087 · plan rendu (temps tenir), sans une ligne de code : API du testeur suivie, sauf `distanceM` qui peut être vide ; 4 questions et 5 fichiers hors liste soumis à Pascal.
 2026-11-03 · Pascal · mission 087 · plan accepté : « Élargir la fiche » (5 fichiers), « Distance vide », récepteur actif = une source écoute (« Oui, cette lecture »), sans code « Oui, texte et code » (`code_requis`, spec § 6 à amender par l'orchestrateur), placette sans UG « Omettre l'UG », « Refuser, adapter » (une ligne par contrôle) ; le trou du guidage sous couvert devient la mission 089 (« Mission à part »), après la 088. Décisions inscrites dans la fiche (7be7ab3) ; `dev` relancé pour coder.
+
+2026-11-03 · dev · mission 087 · écart · codée (8e587c7..43ded98), Import sommieR vert (F4 vert, F5 7/7) ; le `dev` s'est trompé sur le compte des tests existants à adapter pour « une ligne par contrôle » (3 annoncés, 8 de plus, commits séparés). `CI` rouge sur un test du testeur (« 1 sur 12 » à l'ouverture, alors que le compteur compte les états dits) : corrigé par le `testeur` en « 0 sur 12 » (27546a9).
+2026-11-03 · Pascal · mission 087 · les 8 tests en plus : « Accepter, sous relecture » ; le `relecteur` vérifie commit par commit quaucun
