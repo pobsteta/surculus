@@ -85,6 +85,7 @@ import io.github.pobsteta.surculus.carte.PastilleDisque
 import io.github.pobsteta.surculus.carte.Palette
 import io.github.pobsteta.surculus.carte.chargerTournee
 import io.github.pobsteta.surculus.carte.collecterPositionsArrivee
+import io.github.pobsteta.surculus.carte.uneSecondeArrivee
 import io.github.pobsteta.surculus.carte.couleurErreur
 import io.github.pobsteta.surculus.carte.couleurNeutre
 import io.github.pobsteta.surculus.carte.rememberFix
@@ -135,6 +136,23 @@ object ChoixUgEnAttente {
 }
 
 /**
+ * Arrivée sans position en attente, par tournée et placette (mission 087) : début de l'attente sans fix (horloge monotone),
+ * et, une fois « Ouvrir sans position » demandé, l'étape en cours (choix de l'UG, puis confirmation) et l'UG choisie.
+ * Survit à la rotation, comme [ChoixUgEnAttente] ; libéré en quittant vraiment l'écran, à l'ouverture et quand un fix arrive.
+ */
+object SansPositionEnAttente {
+    class Etat(var debutMs: Long? = null, var etape: EtatArrivee? = null, var ugChoisie: String? = null)
+
+    private val attente = HashMap<String, Etat>()
+
+    @Synchronized fun de(cle: String): Etat = attente.getOrPut(cle) { Etat() }
+
+    @Synchronized fun etape(cle: String): EtatArrivee? = attente[cle]?.etape
+
+    @Synchronized fun liberer(cle: String) { attente.remove(cle) }
+}
+
+/**
  * Écran du contrôle d'une placette (mission 012-B1, spec § 4.3). Une question : « sur quel plant suis-je, dans quel état,
  * combien en reste-t-il ? » En grand : « Plant n° 7 » et son état. Une comparaison : « 7 sur 12 », l'état d'avant en petit.
  * Source et jour dans le bandeau. Tout ce que l'agent dit est écrit au journal de la tournée tout de suite : sortir sans
@@ -164,9 +182,9 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
     }
     // On libère le contrôleur en quittant vraiment l'écran, pas à la rotation.
     val activite = ctx as? android.app.Activity
-    DisposableEffect(cle) { onDispose { if (activite?.isChangingConfigurations != true) { ControleursOuverts.liberer(cle); ChoixUgEnAttente.liberer(cle) } } }
+    DisposableEffect(cle) { onDispose { if (activite?.isChangingConfigurations != true) { ControleursOuverts.liberer(cle); ChoixUgEnAttente.liberer(cle); SansPositionEnAttente.liberer(cle) } } }
 
-    var arrivee by remember(cle) { mutableStateOf<EtatArrivee>(ControleursOuverts.get(cle)?.let { EtatArrivee.Ouverte(it) } ?: ChoixUgEnAttente.get(cle)?.first ?: EtatArrivee.Moyenne(0)) }
+    var arrivee by remember(cle) { mutableStateOf<EtatArrivee>(ControleursOuverts.get(cle)?.let { EtatArrivee.Ouverte(it) } ?: ChoixUgEnAttente.get(cle)?.first ?: SansPositionEnAttente.etape(cle) ?: EtatArrivee.Moyenne(0)) }
     var essai by rememberSaveable(cle) { mutableIntStateOf(0) }
     var code by rememberSaveable(cle) { mutableStateOf(codeInitial) }
     val fixActuel = rememberUpdatedState(fix)
@@ -194,12 +212,53 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
         return v ?: EtatArrivee.SansPosition
     }
 
+    /** « Ouvrir sans position » (mission 087) : choix de l'UG si le code se répète, puis confirmation, puis ouverture. */
+    suspend fun ouvrirSansPosition(ouverte: TourneeOuverte, ugChoisie: String?, confirmee: Boolean): EtatArrivee {
+        val resultat = withContext(Dispatchers.IO) {
+            runCatching {
+                ArriveeControle.ouvrirSansPosition(
+                    contexte = ContexteDeTournee.de(ouverte.tournee),
+                    journal = SauvegardeApp.journal(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
+                    horloge = SauvegardeApp.horloge(ctx) { FixPourSession.depuis(SourcePosition.fix.value) },
+                    essences = ArriveeControle.essencesDe(ouverte.tournee),
+                    codeLu = code,
+                    sauvegarde = SauvegardeApp.ecoute(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
+                    ugChoisie = ugChoisie,
+                    confirmee = confirmee,
+                )
+            }
+        }
+        val v = resultat.getOrNull() ?: EtatArrivee.SansPosition
+        val attente = SansPositionEnAttente.de(cle)
+        when (v) {
+            is EtatArrivee.Ouverte -> { ControleursOuverts.poser(cle, v.controleur); SansPositionEnAttente.liberer(cle) }
+            is EtatArrivee.UgAChoisir, is EtatArrivee.ConfirmerSansPosition -> { attente.etape = v; attente.ugChoisie = ugChoisie }
+            else -> { attente.etape = null; attente.ugChoisie = null }
+        }
+        return v
+    }
+
+    // Un fix reçu pendant le choix de l'UG ou la confirmation sans position : on abandonne et on refait la moyenne (ADR 0003,
+    // amendement du 2026-11-02, point 6 ; le point 10 ne vaut qu'après l'ouverture ; décision de Pascal du 2026-11-03).
+    val enSansPosition = SansPositionEnAttente.etape(cle) != null && (arrivee is EtatArrivee.ConfirmerSansPosition || arrivee is EtatArrivee.UgAChoisir)
+    LaunchedEffect(cle, enSansPosition, fix != null) {
+        if (enSansPosition && fix != null) {
+            SansPositionEnAttente.liberer(cle)
+            arrivee = EtatArrivee.Moyenne(0)
+            essai++
+        }
+    }
+
     // L'arrivée (décisions de Pascal du 2026-10-27) : la moyenne de 5 s part toute seule, avec son décompte, puis la règle des 15 m.
     LaunchedEffect(cle, essai, ouverte) {
-        if (ouverte == null || ControleursOuverts.get(cle) != null || ChoixUgEnAttente.get(cle) != null) return@LaunchedEffect
+        if (ouverte == null || ControleursOuverts.get(cle) != null || ChoixUgEnAttente.get(cle) != null || SansPositionEnAttente.etape(cle) != null) return@LaunchedEffect
+        // L'attente sans fix (30 s, mission 087) court dès la première moyenne sans position.
+        SansPositionEnAttente.de(cle).let { if (it.debutMs == null) it.debutMs = SystemClock.elapsedRealtime() }
         // La moyenne de 5 s est celle du guidage : écrite une seule fois (`collecterPositionsArrivee`).
         val positions = collecterPositionsArrivee(position = { fixActuel.value?.position }, surSeconde = { n -> arrivee = EtatArrivee.Moyenne(n) })
         positionsArrivee = positions
+        // Un fix reçu : l'attente sans fix repart de zéro la prochaine fois.
+        if (positions.isNotEmpty()) SansPositionEnAttente.de(cle).debutMs = null
         arrivee = ouvrirArrivee(ouverte, positions, null)
     }
 
@@ -221,8 +280,23 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
                 else -> when (val a = arrivee) {
                     is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)
                     is EtatArrivee.Refus -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
-                    EtatArrivee.SansPosition -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
-                    is EtatArrivee.UgAChoisir -> VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, positionsArrivee, ug) } }, onRecommencer = { ChoixUgEnAttente.liberer(cle); arrivee = EtatArrivee.Moyenne(0); essai++ })
+                    EtatArrivee.SansPosition -> VueSansFix(
+                        debutMs = SansPositionEnAttente.de(cle).debutMs ?: SystemClock.elapsedRealtime(),
+                        fixRecu = fix != null,
+                        code = code, onCode = { code = it },
+                        onOuvrir = { scope.launch { arrivee = ouvrirSansPosition(ouverte!!, null, confirmee = false) } },
+                        onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ },
+                    )
+                    is EtatArrivee.UgAChoisir -> if (SansPositionEnAttente.etape(cle) != null) {
+                        VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirSansPosition(ouverte!!, ug, confirmee = false) } }, onRecommencer = { SansPositionEnAttente.de(cle).etape = null; arrivee = EtatArrivee.SansPosition })
+                    } else {
+                        VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, positionsArrivee, ug) } }, onRecommencer = { ChoixUgEnAttente.liberer(cle); arrivee = EtatArrivee.Moyenne(0); essai++ })
+                    }
+                    is EtatArrivee.ConfirmerSansPosition -> VueConfirmerSansPosition(
+                        a,
+                        onOuvrir = { scope.launch { arrivee = ouvrirSansPosition(ouverte!!, SansPositionEnAttente.de(cle).ugChoisie, confirmee = true) } },
+                        onAnnuler = { SansPositionEnAttente.de(cle).let { it.etape = null; it.ugChoisie = null }; arrivee = EtatArrivee.SansPosition },
+                    )
                     is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour, onParametres)
                 }
             }
@@ -246,7 +320,7 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
             }
             is EtatArrivee.Refus -> Text(TextesControle.message(etat.refus)!!.texte, style = MaterialTheme.typography.titleMedium, color = couleurErreur())
             EtatArrivee.SansPosition -> Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurErreur())
-            is EtatArrivee.UgAChoisir, is EtatArrivee.Ouverte -> {}
+            is EtatArrivee.UgAChoisir, is EtatArrivee.Ouverte, is EtatArrivee.ConfirmerSansPosition -> {}
         }
         OutlinedTextField(
             value = code,
@@ -257,6 +331,75 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
         )
         onRecommencer?.let {
             Button(onClick = it, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) { Text(TextesControle.boutonArrivee(code)) }
+        }
+    }
+}
+
+/**
+ * Aucune position (mission 087 ; ADR 0003, amendement du 2026-11-02, point 1) : l'attente de 30 s sans fix, puis
+ * « Ouvrir sans position », grisé tant que le champ du code est vide. Si rien n'écoute (localisation coupée, permission
+ * refusée, aucun récepteur branché) : on demande de l'activer, jamais d'ouverture sans position. Un fix reçu : la moyenne
+ * repart (c'est une position, point 6).
+ */
+@Composable
+private fun VueSansFix(debutMs: Long, fixRecu: Boolean, code: String, onCode: (String) -> Unit, onOuvrir: () -> Unit, onRecommencer: () -> Unit) {
+    val ctx = LocalContext.current
+    var maintenant by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            maintenant = SystemClock.elapsedRealtime()
+            uneSecondeArrivee()
+        }
+    }
+    // « Récepteur actif » (décision de Pascal du 2026-11-03) : un récepteur RTK branché écoute, même sans la localisation du téléphone.
+    val rtk = SourcePosition.recepteurBranche()
+    val suite = ArriveeSansPosition.suite(
+        msSansFix = maintenant - debutMs,
+        fixRecus = if (fixRecu) 1 else 0,
+        localisationActive = rtk || SourcePosition.localisationActive(ctx),
+        permissionAccordee = rtk || SourcePosition.localisationAutorisee(ctx),
+    )
+    val relancer = rememberUpdatedState(onRecommencer)
+    LaunchedEffect(suite) { if (suite == SuiteSansFix.POSITION_RECUE) relancer.value() }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurErreur())
+        when (suite) {
+            SuiteSansFix.ACTIVER_LOCALISATION ->
+                Text(TextesControle.ACTIVER_LOCALISATION, style = MaterialTheme.typography.titleMedium, color = couleurErreur())
+            SuiteSansFix.ATTENDRE, SuiteSansFix.POSITION_RECUE ->
+                Text(TextesControle.attenteSansFix(((maintenant - debutMs) / 1000).toInt()), style = MaterialTheme.typography.bodyLarge, color = couleurNeutre())
+            SuiteSansFix.PROPOSER ->
+                Text(TextesControle.SANS_FIX_PROPOSE, style = MaterialTheme.typography.bodyLarge, color = couleurNeutre())
+        }
+        OutlinedTextField(
+            value = code,
+            onValueChange = onCode,
+            label = { Text(stringResource(R.string.guidage_code)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (suite == SuiteSansFix.PROPOSER) {
+            Button(onClick = onOuvrir, enabled = code.isNotBlank(), modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+                Text(TextesControle.OUVRIR_SANS_POSITION)
+            }
+            if (code.isBlank()) Text(TextesControle.CODE_REQUIS, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
+        }
+        OutlinedButton(onClick = onRecommencer, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+            Text(stringResource(R.string.controle_ug_recommencer))
+        }
+    }
+}
+
+/** La placette à confirmer avant d'ouvrir sans position (point 4) : rien n'est ouvert tant que l'agent n'a pas confirmé. */
+@Composable
+private fun VueConfirmerSansPosition(etat: EtatArrivee.ConfirmerSansPosition, onOuvrir: () -> Unit, onAnnuler: () -> Unit) {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(TextesControle.confirmationSansPosition(etat.piquet, etat.plantsPointes), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
+        Button(onClick = onOuvrir, modifier = Modifier.fillMaxWidth().height(DimensionsControle.GRAND_CHOIX)) {
+            Text(TextesControle.OUVRIR_SANS_POSITION, style = MaterialTheme.typography.titleLarge)
+        }
+        OutlinedButton(onClick = onAnnuler, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+            Text(TextesControle.ANNULER)
         }
     }
 }

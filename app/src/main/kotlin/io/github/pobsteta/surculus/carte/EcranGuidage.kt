@@ -239,9 +239,9 @@ private fun Resultat(v: Verdict<Rattache>) {
         is Verdict.Accepte -> {
             val r = v.valeur
             if (r.parIdentite) {
-                TexteEtat(stringResource(R.string.guidage_rattache_identite, r.piquet.code, Libelles.distance(r.distanceM)), Palette.Orange, fontWeight = FontWeight.Bold)
+                TexteEtat(stringResource(R.string.guidage_rattache_identite, r.piquet.code, Libelles.distance(checkNotNull(r.distanceM) { "guidage : rattachement toujours mesuré" })), Palette.Orange, fontWeight = FontWeight.Bold)
             } else {
-                TexteEtat(stringResource(R.string.guidage_rattache, r.piquet.code, Libelles.distance(r.distanceM)), Palette.Vert, fontWeight = FontWeight.Bold)
+                TexteEtat(stringResource(R.string.guidage_rattache, r.piquet.code, Libelles.distance(checkNotNull(r.distanceM) { "guidage : rattachement toujours mesuré" })), Palette.Vert, fontWeight = FontWeight.Bold)
             }
         }
         is Verdict.Refuse -> {

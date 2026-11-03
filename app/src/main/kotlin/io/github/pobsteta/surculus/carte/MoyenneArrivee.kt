@@ -14,6 +14,12 @@ import kotlinx.coroutines.delay
 const val SECONDES_DE_MOYENNE_ARRIVEE = 5
 
 /**
+ * Le pas d'une seconde de l'arrivée, **écrit une seule fois** ici : la moyenne s'en sert, et l'attente sans fix de l'écran
+ * du contrôle (30 s, mission 087) aussi, pour son décompte.
+ */
+suspend fun uneSecondeArrivee() = delay(1000)
+
+/**
  * La moyenne de l'arrivée, **écrite une seule fois** (reprise de la 012-B1, décision de Pascal sur la #108, 2026-10-28) :
  * une position par seconde pendant [secondes] secondes, le décompte rendu par [surSeconde] (0 à [secondes] - 1). Le guidage
  * (rattachement) et le contrôle (ouverture de la session) s'en servent tous deux ; ils moyennent ensuite eux-mêmes.
