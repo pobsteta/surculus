@@ -7,6 +7,9 @@
 
 ## Bac à sable
 
+- **089** ouvrir sans position depuis le guidage (« Contrôler » et le code n'y viennent qu'avec un fix) : décision de
+  Pascal du 2026-11-03, mission à part après la 088, avant l'essai en forêt ; fiche à écrire.
+
 - **Parcelle de la placette** (relecture de la 086, « sans parcelle pour l'instant », Pascal, 2026-11-02) : `placettes`
   ne porte pas la parcelle ; à demander à sommieR (une colonne), pas à deviner par jointure. La confirmation de la 087
   s'écrit sans parcelle d'ici là.
@@ -121,7 +124,7 @@ _Idées, à trier au prochain `/mission`._
 ## Validé
 
 - **087** ouvrir un contrôle sans position (`testeur` puis `dev`, tenir : plan d'abord) : fiche écrite et validée par Pascal le 2026-11-02 ;
-  `testeur` lancé le 2026-11-02 ; **088** `.sursync` v2 ensuite (la 087 ne part sur les téléphones qu'avec la 088).
+  `testeur` fait (PR #152), plan du `dev` accepté le 2026-11-03, code en cours ; **088** `.sursync` v2 ensuite (la 087 ne part sur les téléphones qu'avec la 088).
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
