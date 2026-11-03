@@ -114,7 +114,7 @@ object TourneeDeTest {
 
     /**
      * Saisies d'une journée : contrôle de P35-01 (4 plants : sain, atteint abrouti de 40 cm, mort, absent) et de
-     * P35-02 (2 plants sains), avec leur position mesurée. Totaux déduits des états, comme l'application.
+     * P35-02 (2 plants, un sain, un non observé) ; P35-01 avec sa position mesurée, P35-02 ouvert sans position (mission 087). Totaux déduits des états, comme l'application.
      */
     fun saisiesDeLaJournee(epsg: CodeEpsg = CodeEpsg.RGF93_V1_LAMBERT93): Saisies {
         val p1 = listOf(
@@ -141,7 +141,9 @@ object TourneeDeTest {
         )
         val c2 = ControleSaisi(
             UuidControle(uuid(3002)), UuidPlacette(placetteUuid(1)), INSTANT_CONTROLE.plusSeconds(3600), JourCivil.de(INSTANT_CONTROLE.plusSeconds(3600)), centre(1),
-            null, etats2, totaux = totaux(etats2), operateur = "Agent d'essai",
+            // Mission 087 (décision de Pascal du 2026-11-03, une ligne par contrôle) : P35-02 est ouvert sans position mesurée.
+            PositionMesuree(position = null, rattacheParIdentite = true, sansPositionMesuree = true),
+            etats2, totaux = totaux(etats2), operateur = "Agent d'essai",
         )
         return Saisies(
             operateur = "Agent d'essai",

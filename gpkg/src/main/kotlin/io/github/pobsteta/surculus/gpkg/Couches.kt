@@ -116,7 +116,14 @@ object Couches {
             Colonne("source_gnss", "TEXT", "Source GNSS", "Récepteur ou source de la position."),
             Colonne("referentiel_source", "TEXT", "Référentiel de la source", "Référentiel dans lequel la position a été mesurée."),
             Colonne("simulee", "BOOLEAN", "Simulée", "Vrai si la position est simulée (essai)."),
-            Colonne("rattache_par_identite", "BOOLEAN", "Rattaché par identité", "Vrai si le code lu a rattaché le contrôle à un piquet à plus de 15 m."),
+            Colonne(
+                "rattache_par_identite", "BOOLEAN", "Rattaché par identité",
+                "Vrai si le code lu a désigné la placette et que la position mesurée ne l'a pas fait : piquet à plus de 15 m, ou contrôle sans position mesurée.",
+            ),
+            Colonne(
+                "sans_position_mesuree", "BOOLEAN", "Sans position mesurée",
+                "Vrai si le contrôle a été ouvert sans aucun fix, sur le code lu : géométrie et précision vides, la position du contrôle est celle de la placette.",
+            ),
         ),
     )
 

@@ -228,16 +228,20 @@ private class Ecrivain(private val cnx: Connection, private val tournee: Tournee
         )
         if (ecrit) compter("controles")
         c.positionMesuree?.let { m ->
+            // Sans position mesurée (ADR 0003, amendement du 2026-11-02, point 7) : géométrie NULL (pas un POINT EMPTY),
+            // precision_m NULL (Darwin Core : jamais 0), source, référentiel et « simulée » NULL (choix de format).
+            val sans = m.sansPositionMesuree
             val ecritP = inserer(
                 "positions_controles", "controle_uuid",
                 linkedMapOf(
-                    "geom" to blobPoint(m.position),
+                    "geom" to m.position?.let { blobPoint(it) },
                     "controle_uuid" to c.uuid.valeur,
-                    "precision_m" to m.precisionM,
-                    "source_gnss" to m.sourceGnss,
-                    "referentiel_source" to m.referentielSource,
-                    "simulee" to m.simulee,
+                    "precision_m" to m.precisionM.takeUnless { sans },
+                    "source_gnss" to m.sourceGnss.takeUnless { sans },
+                    "referentiel_source" to m.referentielSource.takeUnless { sans },
+                    "simulee" to m.simulee.takeUnless { sans },
                     "rattache_par_identite" to m.rattacheParIdentite,
+                    "sans_position_mesuree" to sans,
                 ),
             )
             if (ecritP) compter("positions_controles")
@@ -324,10 +328,25 @@ private class Ecrivain(private val cnx: Connection, private val tournee: Tournee
         creerExtensionSchema()
         for (c in Couches.TOUTES) {
             val existait = cnx.existeTable(c.nom)
-            if (!existait) executer(Couches.ddl(c))
+            if (!existait) executer(Couches.ddl(c)) else ajouterColonnesManquantes(c)
             enregistrer(c)
             if (c.geometrie != null) creerIndexRtree(c.nom)
             declarerColonnes(c)
+        }
+    }
+
+    /**
+     * Tournée rendue par un Surculus plus ancien : une couche ajoutée sans une colonne venue depuis reçoit la colonne.
+     * Seul cas aujourd'hui : `positions_controles.sans_position_mesuree` (mission 087). L'ancien export n'écrivait une ligne
+     * qu'avec une position mesurée : ses lignes passent à 0 (faux), ce qui est vrai, et le rejeu les reconnaît à l'identique.
+     */
+    private fun ajouterColonnesManquantes(c: CoucheAjoutee) {
+        val presentes = cnx.lignes("PRAGMA table_info(${c.nom.ident()})").mapNotNull { it.texte("name") }.toSet()
+        for (col in c.colonnes.filter { it.nom !in presentes }) {
+            executer("ALTER TABLE ${c.nom.ident()} ADD COLUMN ${col.nom.ident()} ${col.type}")
+            if (c.nom == Couches.POSITIONS_CONTROLES.nom && col.nom == "sans_position_mesuree") {
+                executer("UPDATE ${c.nom.ident()} SET ${col.nom.ident()} = 0 WHERE geom IS NOT NULL")
+            }
         }
     }
 
