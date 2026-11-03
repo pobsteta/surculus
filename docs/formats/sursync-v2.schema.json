@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pobsteta/surculus/docs/formats/sursync-v2.schema.json",
+  "title": "Ligne d'un fichier .sursync, version 2",
+  "description": "Chaque ligne du contenu décompressé d'un .sursync v2 est un objet JSON valide pour l'un des trois schémas ci-dessous : première ligne = en-tête, lignes du milieu = saisies, dernière ligne = pied. Même structure que la v1 (sursync-v1.schema.json) ; changent : la version (2), le type de ligne photo (réservé, jamais écrit par Surculus 088) et les valeurs du journal, qui peuvent être en v2 (journal-valeurs-v2.md). Voir docs/formats/sursync-v2.md.",
+  "oneOf": [
+    { "$ref": "#/$defs/entete" },
+    { "$ref": "#/$defs/saisie" },
+    { "$ref": "#/$defs/pied" }
+  ],
+  "$defs": {
+    "entete": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "version", "code_tournee", "version_sommier", "appareil", "cree_le_utc_ms", "nb_lignes"],
+      "properties": {
+        "format": { "const": "sursync" },
+        "version": { "type": "integer", "const": 2, "description": "nombre entier ; écrit en texte (\"2\"), le fichier est refusé (version_illisible)" },
+        "code_tournee": { "type": "string", "minLength": 1 },
+        "version_sommier": { "type": ["string", "null"] },
+        "appareil": { "type": "string", "pattern": "^[A-Za-z0-9]+$", "description": "identifiant opaque de l'appareil qui a écrit le fichier" },
+        "cree_le_utc_ms": { "type": "integer", "description": "millisecondes depuis l'époque Unix, UTC" },
+        "nb_lignes": { "type": "integer", "minimum": 0, "description": "nombre de lignes de saisie qui suivent" }
+      }
+    },
+    "saisie": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uuid", "objet_uuid", "type", "valeur", "remplace_uuid", "operateur", "appareil", "sequence", "saisi_le_utc_ms", "heure_gnss_ms", "monotone_ms", "demarrage", "age_fix_ms"],
+      "properties": {
+        "uuid": { "type": "string", "minLength": 1 },
+        "objet_uuid": { "type": "string", "minLength": 1 },
+        "type": {
+          "enum": ["controle", "pointage", "etat", "annulation", "saut_horloge", "photo"],
+          "description": "photo : réservé (spec § 4.8), jamais écrit par Surculus 088 ; un lecteur 088 écarte une telle ligne et la signale ligne_illisible (sursync-v2.md, « Le type photo »)"
+        },
+        "valeur": { "type": ["string", "null"], "description": "texte JSON de la valeur, recopié au caractère près ; valeurs v1 ou v2 du journal (journal-valeurs-v1.md, journal-valeurs-v2.md)" },
+        "remplace_uuid": { "type": ["string", "null"] },
+        "operateur": { "type": "string" },
+        "appareil": { "type": "string", "description": "appareil d'origine de la saisie, jamais réécrit" },
+        "sequence": { "type": "integer" },
+        "saisi_le_utc_ms": { "type": "integer", "description": "ms Unix, UTC" },
+        "heure_gnss_ms": { "type": ["integer", "null"], "description": "ms Unix, UTC" },
+        "monotone_ms": { "type": "integer", "description": "SystemClock.elapsedRealtime, valable dans un même démarrage" },
+        "demarrage": { "type": "integer" },
+        "age_fix_ms": { "type": ["integer", "null"] },
+        "code_tournee": { "type": "string", "minLength": 1, "description": "facultatif, jamais écrit par l'application ; s'il est présent, il doit être celui de l'en-tête, sinon la ligne est refusée (ligne_autre_tournee)" }
+      }
+    },
+    "pied": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256"],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

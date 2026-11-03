@@ -13,13 +13,17 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 /**
- * Format `.sursync` (docs/formats/sursync-v1.md, ADR 0005) : JSON Lines compressé en gzip.
+ * Format `.sursync` (docs/formats/sursync-v2.md, qui renvoie à sursync-v1.md pour la structure ; ADR 0005) :
+ * JSON Lines compressé en gzip.
  * Ligne 1 : en-tête ; lignes suivantes : une saisie du journal ; dernière ligne : `{"sha256": ...}`, empreinte
  * SHA-256 (hexadécimal minuscule) des octets décompressés de toutes les lignes précédentes, fins de ligne comprises.
  */
 object FormatSursync {
-    /** Version écrite par cette application. */
-    const val VERSION_COURANTE = 1
+    /**
+     * Version écrite par cette application : 2 depuis la mission 088 (le journal écrit des valeurs v2, dont les
+     * contrôles sans position mesurée ; docs/formats/sursync-v2.md). Un lecteur v1 refuse nos fichiers (`version_future`).
+     */
+    const val VERSION_COURANTE = 2
 
     /** Déclenchement (décision de Pascal, 2026-10-21) : 20 saisies ou 5 minutes, au premier des deux. */
     const val N_SAISIES = 20

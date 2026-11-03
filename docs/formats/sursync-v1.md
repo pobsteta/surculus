@@ -1,12 +1,12 @@
 # Format `.sursync`, version 1
 
-> **Version suivante décidée, pas encore écrite.** Deux décisions de Pascal appellent une version suivante de ce
+> **Version suivante écrite : [`sursync-v2.md`](sursync-v2.md)** (mission 088). Deux décisions de Pascal appellent une version suivante de ce
 > format : le type de ligne `photo` (2026-10-28, spec § 4.8) et les valeurs v2 du journal, qui admettent un contrôle
 > sans position mesurée (2026-11-02, mission 085, [`journal-valeurs-v2.md`](journal-valeurs-v2.md), « Sauvegarde
 > `.sursync` »). La structure du fichier ne change pas pour la seconde : seul le numéro de version monte, pour qu'un
 > Surculus ancien refuse le fichier (`version_future`, voir « Version » plus bas) au lieu de perdre sans le dire les
 > contrôles sans position. **Une seule v2, partagée** (décision de Pascal du 2026-11-02, reprise 2/3, « v2 partagée ») : la même v2 porte le type `photo` et
-> les contrôles sans position. La mission 086 crée la v2 (`sursync-v2.md`, schéma, fixtures) ; la partie photos reste à
+> les contrôles sans position. La mission 088 crée la v2 ([`sursync-v2.md`](sursync-v2.md), schéma, fixtures) ; la partie photos reste à
 > coder plus tard, dans le même format. Ce document reste la définition de la v1, toujours lue.
 
 Sauvegarde du journal d'une tournée de Surculus (ADR 0005, spec § 4.8). Format ouvert : n'importe quel
