@@ -10,6 +10,8 @@ package io.github.pobsteta.surculus.controle
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.core.placette.Observation
+import io.github.pobsteta.surculus.core.placette.Piquet
+import io.github.pobsteta.surculus.core.placette.RefusPlacette
 import io.github.pobsteta.surculus.core.placette.Totaux
 import io.github.pobsteta.surculus.core.placette.Verdict
 import io.github.pobsteta.surculus.core.session.ActionGeste
@@ -368,6 +370,41 @@ object TextesControle {
     const val NON_OBSERVE = "non observé"
 
     fun compteur(dits: Int, total: Int) = "$dits sur $total"
+
+    // ------------------------------------------------------------ arrivée sans position (mission 087)
+
+    /** Fix hors de France à l'arrivée : la phrase qui dit quoi faire (ADR 0003, amendement du 2026-11-02, point 6). */
+    const val POSITION_ABERRANTE = "Position aberrante : couper puis rallumer la localisation."
+
+    /** Rien n'écoute : localisation coupée, permission refusée et aucun récepteur branché (décision de Pascal du 2026-11-03). */
+    const val ACTIVER_LOCALISATION = "Activez la localisation ou reconnectez le récepteur."
+
+    /** Sous le bouton « Ouvrir sans position » grisé, tant que le champ du code est vide (décision de Pascal du 2026-11-03). */
+    val CODE_REQUIS: String get() = RefusPlacette.CodeRequis.message
+
+    const val OUVRIR_SANS_POSITION = "Ouvrir sans position"
+    const val ANNULER = "Annuler"
+
+    /** L'attente sans fix : « Aucune position depuis 12 s sur 30. » */
+    fun attenteSansFix(secondes: Int, total: Int = ArriveeSansPosition.SECONDES_SANS_FIX): String =
+        "Aucune position depuis ${minOf(secondes, total)} s sur $total."
+
+    /** Proposé après l'attente : ce que fait le bouton, en clair. */
+    const val SANS_FIX_PROPOSE = "Aucune position reçue. Saisissez le code lu sur le piquet pour ouvrir le contrôle à la position de la placette."
+
+    /**
+     * La placette à confirmer avant d'ouvrir sans position (ADR 0003, amendement du 2026-11-02, point 4 ; **sans parcelle** :
+     * la tournée ne la porte pas, décision de Pascal du 2026-11-02 ; UG omise quand la tournée n'en donne pas, décision du
+     * 2026-11-03) : « P35-01 · UG 12 · 25 plants pointés : ouvrir sans position ? ».
+     */
+    fun confirmationSansPosition(piquet: Piquet, plantsPointes: Int): String {
+        val parties = listOfNotNull(
+            piquet.code,
+            piquet.ug?.takeIf { it.isNotBlank() }?.let { "UG $it" },
+            "$plantsPointes ${if (plantsPointes > 1) "plants pointés" else "plant pointé"}",
+        )
+        return parties.joinToString(" · ") + " : ouvrir sans position ?"
+    }
 
     /** Le bouton sous « Code lu sur le piquet » suit le champ (mission 068, décision de Pascal) : « Rattacher » dès qu'un code est lu (non vide après `trim`), « Recommencer » sinon. Même action dans les deux cas. */
     fun boutonArrivee(code: String): String = if (code.isBlank()) "Recommencer" else "Rattacher"

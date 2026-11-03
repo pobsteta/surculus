@@ -24,4 +24,9 @@ object JournalTechnique {
     fun avertir(etiquette: String, quoi: String, cause: Throwable) {
         runCatching { android.util.Log.w(etiquette, quoi, cause) }
     }
+
+    /** Une ligne de diagnostic sans exception (refus d'un fix hors de France, valeur du journal ignorée : mission 087). */
+    fun diagnostic(etiquette: String, quoi: String) {
+        runCatching { android.util.Log.w(etiquette, quoi) }
+    }
 }

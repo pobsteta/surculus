@@ -66,6 +66,13 @@ object SourcePosition {
     fun localisationAutorisee(ctx: Context) =
         ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
+    /** La localisation du téléphone est allumée (réglage d'Android), toutes versions depuis l'API 26. */
+    fun localisationActive(ctx: Context): Boolean =
+        ctx.getSystemService(LocationManager::class.java)?.let { androidx.core.location.LocationManagerCompat.isLocationEnabled(it) } == true
+
+    /** Le récepteur RTK est branché (Bluetooth connecté) : il écoute le ciel, même téléphone sans localisation. */
+    fun recepteurBranche(): Boolean = ServiceGnssRtk.etat.value.connecte
+
     /**
      * Listens to the phone's GNSS every second (only while the map is shown,
      * no background location); close the result to stop. No-op without permission.

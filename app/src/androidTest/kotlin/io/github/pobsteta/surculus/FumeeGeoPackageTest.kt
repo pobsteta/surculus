@@ -105,7 +105,10 @@ class FumeeGeoPackageTest {
             controles = listOf(
                 ControleSaisi(
                     UuidControle("00000000-0000-4000-8000-000000003001"), UuidPlacette(placetteId),
-                    Instant.parse("2026-10-20T09:00:00Z"), java.time.LocalDate.of(2026, 10, 20), piquet, etats = etats, totaux = totaux,
+                    Instant.parse("2026-10-20T09:00:00Z"), java.time.LocalDate.of(2026, 10, 20), piquet,
+                    // Mission 087 : une ligne de positions_controles par contrôle (décision de Pascal du 2026-11-03).
+                    io.github.pobsteta.surculus.gpkg.PositionMesuree(piquet, precisionM = 0.5),
+                    etats = etats, totaux = totaux,
                 ),
             ),
             plants = listOf(PlantNumerote(p1, 1), PlantNumerote(p2, 2)),

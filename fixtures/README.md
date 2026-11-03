@@ -127,6 +127,8 @@ Cas d'acceptation de la sauvegarde et de sa restauration, écrits par le `testeu
 
 Exemples du format publié dans `docs/formats/sursync-v1.md`, tirés du journal `fixtures/journal/projection.json#JR-02` (écrits par la mission 009, rejoués par `FormatEtServiceTest`) : `exemple-v1.jsonl` (contenu décompressé, lisible), `exemple-v1.sursync` (le même, en gzip), `exemple-v1-tronque.sursync` (10 derniers octets coupés), `exemple-v1-empreinte-fausse.sursync` (une valeur changée, pied inchangé). Les cas d'acceptation, eux, sont dans `sauvegarde/`.
 
+**Exemples v2** (mission 088), du format publié dans `docs/formats/sursync-v2.md`, refaits par `exemple-v2-fabrication.sh` (sh, `gzip -n -9`, `sha256sum` ; octets reproductibles) et rejoués par `FixturesSursyncV2Test` (core) et `SursyncV2Test` (data) : `exemple-v2.jsonl` (contenu décompressé, lisible, écrit à la main : en-tête en version 2, tournée `COUCHEY-2026`, deux saisies `controle` en valeurs v2 du journal, l'une ouverte sans position mesurée, recopiée de l'exemple de `docs/formats/journal-valeurs-v2.md`, l'autre avec une position mesurée à 2,5 m du piquet ; Lambert-93, EPSG:2154, x = Est, y = Nord, en mètres), `exemple-v2.sursync` (le même, en gzip), `exemple-v2-empreinte-fausse.sursync` (`position_mesuree_x` du contrôle avec position changée, pied de l'original : empreinte fausse, contrôle sans position intact), `exemple-v2-tronque.sursync` (10 derniers octets coupés).
+
 ## Dictée (`fixtures/dictee/`, mission 025)
 
 Cas d'acceptation de la mission 013, écrits depuis `docs/spec.md` § 4.3, l'ADR 0004 et les décisions de Pascal

@@ -1,7 +1,7 @@
 # Format de la `valeur` des lignes du journal, version 2
 
 Décision de Pascal du 2026-11-02 (ADR 0003, « Amendement du 2026-11-02 : ouvrir un contrôle sans position », point
-8 ; mission 085 pour l'écrit, 086 pour le code). Ce document ne décrit que **ce qui change** par rapport à la
+8 ; mission 085 pour l'écrit, 087 pour le code). Ce document ne décrit que **ce qui change** par rapport à la
 [version 1](journal-valeurs-v1.md), qui reste la référence pour tout le reste (règles communes, `pointage`, `etat`,
 `annulation`, codes de refus) : un lien plutôt qu'une copie.
 
@@ -51,7 +51,7 @@ Le même contrôle avec une position mesurée à 3 m du piquet s'écrit comme en
 `"sans_position_mesuree":false`.
 
 Comme en v1, le code qui écrit et lit ces valeurs est unique (`core/.../core/session/Valeurs.kt`) et ses tests
-rejouent chaque exemple de ce document (mission 086).
+rejouent chaque exemple de ce document (mission 087).
 
 ## Ce qui ne change pas
 

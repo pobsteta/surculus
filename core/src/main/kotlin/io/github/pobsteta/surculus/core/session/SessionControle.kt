@@ -92,6 +92,12 @@ sealed interface Arrivee {
 
     /** Position déjà en Lambert-93 (x = Est, y = Nord, mètres). */
     data class Lambert93(val position: PointLambert93) : Arrivee
+
+    /**
+     * Aucun fix reçu (ADR 0003, amendement du 2026-11-02) : le contrôle s'ouvre sur le seul code lu, à la position du
+     * piquet de sommieR, sans position mesurée. L'attente de 30 s et la confirmation de la placette sont faites par l'écran.
+     */
+    data object SansPosition : Arrivee
 }
 
 /** Issue d'une commande de la session. Un refus porte son **code** de la spec § 6 et l'explication en français. */
@@ -197,9 +203,18 @@ class SessionControle private constructor(
     private val sauvegarde: EcouteSauvegarde,
     private val cible: PlacetteControlable,
     private val rattache: Rattache,
+    private val diagnostic: (String) -> Unit,
 ) {
-    /** Le rattachement de l'arrivée : piquet, distance, « par identité », position du contrôle et position mesurée. */
+    /**
+     * Le rattachement de l'arrivée : piquet, distance, « par identité », position du contrôle et position mesurée. Fixé à
+     * l'ouverture : un fix reçu ensuite ne le change pas (ADR 0003, amendement du 2026-11-02, point 10).
+     */
     val rattachement: Rattache get() = rattache
+
+    /** Lignes déjà signalées au journal technique : une valeur ignorée n'est tracée qu'une fois par session. */
+    private val tracees = HashSet<String>()
+
+    private fun trace(l: LigneCourante): (String) -> Unit = { motif -> if (tracees.add(l.uuid)) diagnostic("$motif (ligne ${l.uuid})") }
 
     private val placette = Placette(cible.piquet.placette, cible.rayonM)
     private var courant: UuidPlant? = null
@@ -428,8 +443,8 @@ class SessionControle private constructor(
             placetteUuid = placette.uuid.valeur, codePlacette = cible.piquet.code, jourCivil = vue.jour.toString(),
             operateur = contexte.operateur, termine = false, visiteLeUtcMs = vue.instantMs,
             positionX = rattache.positionControle.xMetres, positionY = rattache.positionControle.yMetres,
-            positionMesureeX = rattache.positionMesuree.xMetres, positionMesureeY = rattache.positionMesuree.yMetres,
-            rattacheParIdentite = rattache.parIdentite, repereEpsg = contexte.epsg.code,
+            positionMesureeX = rattache.positionMesuree?.xMetres, positionMesureeY = rattache.positionMesuree?.yMetres,
+            rattacheParIdentite = rattache.parIdentite, repereEpsg = contexte.epsg.code, sansPositionMesuree = rattache.sansPositionMesuree,
         )
         val ligne = ecrire(uuid, FormatValeurs.TYPE_CONTROLE, valeur.versJson(), remplace = null)
         return ControleAssure(uuid, listOf(ligne))
@@ -437,9 +452,9 @@ class SessionControle private constructor(
 
     /** Lignes annulables : pointage, état, ou fin de placette (la ligne `controle` réécrite), de **cette** placette. */
     private fun annulable(l: LigneCourante, vue: Vue): Boolean = when (l.type) {
-        FormatValeurs.TYPE_POINTAGE -> ValeurPointage.lire(l.valeur)?.placetteUuid == placette.uuid.valeur
-        FormatValeurs.TYPE_ETAT -> ValeurEtat.lire(l.valeur)?.controleUuid in vue.controlesParUuid
-        FormatValeurs.TYPE_CONTROLE -> l.remplaceUuid != null && ValeurControle.lire(l.valeur)?.let { it.termine && it.placetteUuid == placette.uuid.valeur } == true
+        FormatValeurs.TYPE_POINTAGE -> ValeurPointage.lire(l.valeur, trace(l))?.placetteUuid == placette.uuid.valeur
+        FormatValeurs.TYPE_ETAT -> ValeurEtat.lire(l.valeur, trace(l))?.controleUuid in vue.controlesParUuid
+        FormatValeurs.TYPE_CONTROLE -> l.remplaceUuid != null && ValeurControle.lire(l.valeur, trace(l))?.let { it.termine && it.placetteUuid == placette.uuid.valeur } == true
         else -> false
     }
 
@@ -471,15 +486,15 @@ class SessionControle private constructor(
         val lignes = journal.lignesCourantes()
         val miens = placette.uuid.valeur
         val controles = lignes.filter { it.type == FormatValeurs.TYPE_CONTROLE }
-            .mapNotNull { l -> ValeurControle.lire(l.valeur)?.takeIf { it.placetteUuid == miens }?.let { l to it } }
+            .mapNotNull { l -> ValeurControle.lire(l.valeur, trace(l))?.takeIf { it.placetteUuid == miens }?.let { l to it } }
         val existants = controles.map { (l, v) -> ControleEcrit(UuidControle(l.objetUuid), placette.uuid, LocalDate.parse(v.jourCivil)) }
         val duJour = (UnControleParJour.ecrire(existants, UuidControle("sans-objet"), placette.uuid, Instant.ofEpochMilli(instant)) as? EcritureControle.Corrige)
             ?.let { c -> controles.first { it.first.objetUuid == c.premier.uuid.valeur } }
         val pointages = lignes.filter { it.type == FormatValeurs.TYPE_POINTAGE }
-            .mapNotNull { l -> ValeurPointage.lire(l.valeur)?.takeIf { it.placetteUuid == miens }?.let { l to it } }
+            .mapNotNull { l -> ValeurPointage.lire(l.valeur, trace(l))?.takeIf { it.placetteUuid == miens }?.let { l to it } }
         val parControle = controles.associate { it.first.objetUuid to it.second }
         val etats = lignes.filter { it.type == FormatValeurs.TYPE_ETAT }
-            .mapNotNull { l -> ValeurEtat.lire(l.valeur)?.takeIf { it.controleUuid in parControle }?.let { l to it } }
+            .mapNotNull { l -> ValeurEtat.lire(l.valeur, trace(l))?.takeIf { it.controleUuid in parControle }?.let { l to it } }
         val (plants, numeros) = plants(jour, controles, duJour, pointages, etats, parControle)
         return Vue(lignes, jour, instant, controles, duJour, pointages, etats, plants, numeros)
     }
@@ -574,6 +589,10 @@ class SessionControle private constructor(
          * projection), puis rattachée à un piquet à 15 m au plus, ou à celui dont l'agent a lu le [codeLu] (le code lu
          * l'emporte sur le GNSS). Un fix hors de France, un piquet inconnu ou une position hors de l'emprise de la forêt :
          * [OuvertureControle.Refusee] avec son code, aucune ligne n'est écrite.
+         *
+         * [Arrivee.SansPosition] (ADR 0003, amendement du 2026-11-02) : code lu obligatoire (`code_requis` sinon), connu de
+         * la tournée ; contrôle à la position du piquet, rattaché par identité, sans position mesurée. [diagnostic] reçoit
+         * les valeurs du journal ignorées à la lecture (le journal technique), une fois par ligne.
          */
         fun ouvrir(
             contexte: ContexteControle,
@@ -584,8 +603,12 @@ class SessionControle private constructor(
             codeLu: String? = null,
             sauvegarde: EcouteSauvegarde = EcouteSauvegarde.AUCUNE,
             ugChoisie: String? = null,
+            diagnostic: (String) -> Unit = {},
         ): OuvertureControle {
-            val mesuree: PointLambert93 = when (arrivee) {
+            // Le code lu est pris sans les espaces autour ; vide, il n'y a pas de code.
+            val code = codeLu?.trim()?.ifEmpty { null }
+            val mesuree: PointLambert93? = when (arrivee) {
+                Arrivee.SansPosition -> null
                 is Arrivee.Gnss -> {
                     val c = EmpriseEtFrance.controler(arrivee.position)
                     if (!c.enFrance) {
@@ -605,10 +628,10 @@ class SessionControle private constructor(
                     arrivee.position
                 }
             }
-            val rattache = when (val v = Rattachement.rattacher(contexte.placettes.map { it.piquet }, mesuree, codeLu, ugChoisie)) {
+            val rattache = when (val v = Rattachement.rattacher(contexte.placettes.map { it.piquet }, mesuree, code, ugChoisie)) {
                 is Verdict.Accepte -> v.valeur
                 is Verdict.Refuse -> return OuvertureControle.Refusee(SuiteSession.Refus.de(v.refus))
-                is Verdict.AChoisirUg -> return OuvertureControle.UgAChoisir(codeLu!!, v.candidats)
+                is Verdict.AChoisirUg -> return OuvertureControle.UgAChoisir(code!!, v.candidats)
                 is Verdict.AConfirmer -> error("pas d'alerte attendue au rattachement")
             }
             val foret = contexte.empriseForet
@@ -621,7 +644,7 @@ class SessionControle private constructor(
                 )
             }
             val cible = contexte.placettes.first { it.piquet.placette == rattache.piquet.placette }
-            return OuvertureControle.Ouverte(SessionControle(contexte, journal, horloge, essences, sauvegarde, cible, rattache))
+            return OuvertureControle.Ouverte(SessionControle(contexte, journal, horloge, essences, sauvegarde, cible, rattache, diagnostic))
         }
 
         private fun horsFrance(position: String, axesInverses: Boolean) = SuiteSession.Refus(

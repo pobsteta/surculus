@@ -102,7 +102,14 @@ class SessionEtExportCoucheyTest {
             horloge.ms = Instant.parse(c.get("visite_le").asString).toEpochMilli()
             val m = c.getAsJsonObject("position_mesuree")
             val mesuree = PointLambert93(piquet.xMetres + (m?.reel("decalage_est_m") ?: 0.0), piquet.yMetres + (m?.reel("decalage_nord_m") ?: 0.0))
-            val s = (SessionControle.ouvrir(contexte, journal, horloge, essences, Arrivee.Lambert93(mesuree)) as OuvertureControle.Ouverte).session
+            // Mission 087 : P35-02 est ouvert sans aucun fix, sur son seul code lu (ADR 0003, amendement du 2026-11-02).
+            val sansPosition = c.get("sans_position_mesuree")?.takeUnless { it.isJsonNull }?.asBoolean == true
+            val ouverture = if (sansPosition) {
+                SessionControle.ouvrir(contexte, journal, horloge, essences, Arrivee.SansPosition, code)
+            } else {
+                SessionControle.ouvrir(contexte, journal, horloge, essences, Arrivee.Lambert93(mesuree))
+            }
+            val s = (ouverture as OuvertureControle.Ouverte).session
             for (p in c.getAsJsonArray("plants").map { it.asJsonObject }) {
                 val unite = (CodesUniteAzimut.lire(p.get("unite_azimut").asString) as Resultat.Accepte).valeur
                 val az = (AzimutSaisi.valider(p.get("azimut").asDouble, unite) as Resultat.Accepte).valeur
@@ -150,7 +157,12 @@ class SessionEtExportCoucheyTest {
             val totaux = (Totaux.deduire(etats.map { EtatPlant(it.plant, it.observation) }) as Verdict.Accepte).valeur
             controles += ControleSaisi(
                 UuidControle(lc.objetUuid), UuidPlacette(c.placetteUuid), Instant.ofEpochMilli(c.visiteLeUtcMs), LocalDate.parse(c.jourCivil),
-                PointLambert93(c.positionX, c.positionY), PositionMesuree(PointLambert93(c.positionMesureeX, c.positionMesureeY)),
+                PointLambert93(c.positionX, c.positionY),
+                if (c.sansPositionMesuree) {
+                    PositionMesuree(position = null, rattacheParIdentite = c.rattacheParIdentite, sansPositionMesuree = true)
+                } else {
+                    PositionMesuree(PointLambert93(c.positionMesureeX!!, c.positionMesureeY!!), rattacheParIdentite = c.rattacheParIdentite)
+                },
                 etats, totaux = totaux, operateur = c.operateur,
             )
             plants += plantsDuControle
@@ -186,6 +198,20 @@ class SessionEtExportCoucheyTest {
                 ligne.drop(1).map { (it as Number).toInt() }, "totaux de ${attendu.get("placette").asString}",
             )
         }
+
+        // Mission 087 : P35-02, ouvert sans position, a sa ligne de positions_controles à géométrie NULL, et son contrôle
+        // est à la position du piquet (x = E, y = N, Lambert-93) ; P35-01 garde sa position mesurée.
+        val uuidP2 = Contenu.colonnes(sortie, "controles", "uuid", "placette_uuid").single { codes[it[1]] == "P35-02" }[0] as String
+        val p2 = Sqlite.ouvrir(sortie, lectureSeule = true).use {
+            it.lignes("SELECT geom IS NULL AS nulle, precision_m, sans_position_mesuree, rattache_par_identite FROM positions_controles WHERE controle_uuid = '$uuidP2'")
+        }.single()
+        assertEquals(listOf(1, null, 1, 1), listOf(p2.entier("nulle"), p2["precision_m"], p2.entier("sans_position_mesuree"), p2.entier("rattache_par_identite")))
+        assertEquals(2, Contenu.compter(sortie, "positions_controles"), "une ligne par contrôle")
+        val geomP2 = Sqlite.ouvrir(sortie, lectureSeule = true).use { it.lignes("SELECT geom FROM controles WHERE uuid = '$uuidP2'").single().blob("geom")!! }
+        val pointP2 = GeometrieGpkg.point(geomP2)!!
+        val piquetP2 = relu.placettes.single { it.code == "P35-02" }.position!!
+        assertTrue(hypot(pointP2.xMetres - piquetP2.xMetres, pointP2.yMetres - piquetP2.yMetres) < 1e-6, "contrôle de P35-02 au piquet")
+        assertTrue(EmpriseEtFrance.enFrance(pointP2))
 
         // Mêmes plants, mêmes numéros, mêmes positions que l'export direct du scénario (l'outil de la CI).
         val direct = dossier.resolve("direct")

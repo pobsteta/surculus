@@ -52,6 +52,10 @@ monte un service PostGIS éphémère et lance `verifier.R`.
      couche `positions_controles` du GeoPackage exporté (docs/spec.md l. 259), avec la
      tolérance de 0,5 m (décision de Pascal, mission 027, `tolerance_m` du JSON) ;
      pour P35-02, sans mesure, au piquet, lu dans la couche `placettes` de l'export.
+     **Depuis la mission 087** (décision de Pascal du 2026-11-02), P35-02 est un contrôle
+     **sans position mesurée** : F4 exige une seule ligne de `positions_controles` à géométrie NULL,
+     `sans_position_mesuree` et `rattache_par_identite` vrais et `precision_m` vide, et lit
+     son point (le piquet) dans la couche `controles` de l'export.
      Source de ce choix : pilotage/journal.md, 2026-10-22, décision de Pascal
      (mission 028). Coordonnées : `lon` puis `lat`, degrés WGS 84 ; les couches de
      l'export (EPSG:2154) sont converties par sf ; chaque point doit tomber dans le

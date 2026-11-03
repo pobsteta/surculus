@@ -59,7 +59,7 @@ class RattachementHomonymesTest {
         for (tournee in ordres(ug12, ug14)) {
             val r = Rattachement.rattacher(tournee, mesureeAuNordDe12(15.0), codeLu = "P01").valeurOuEchec()
             assertEquals("uuid-ug12", r.piquet.placette.valeur)
-            assertEquals(15.0, r.distanceM, 1e-9)
+            assertEquals(15.0, r.distanceM!!, 1e-9)
         }
     }
 

@@ -184,14 +184,22 @@ object ExporterScenario {
                 ).valeur.numeros
             val etats = pointes.map { (cle, plant, obs) -> LigneEtat(uuidDe("etat:${placette.uuid}:${visite}:$cle"), plant.uuid, obs) }
             val totaux = (Totaux.deduire(etats.map { EtatPlant(it.plant, it.observation) }) as Verdict.Accepte).valeur
-            val mesuree = c.getAsJsonObject("position_mesuree")?.let { m ->
+            // Mission 087 : un contrôle « sans_position_mesuree » (ADR 0003, amendement du 2026-11-02) est au piquet, avec
+            // une ligne de positions_controles à géométrie NULL ; tout autre contrôle porte sa position mesurée (une ligne
+            // par contrôle, décision de Pascal du 2026-11-03).
+            val sansPosition = c.get("sans_position_mesuree")?.takeUnless { it.isJsonNull }?.asBoolean == true
+            val mesuree = if (sansPosition) {
+                if (c.has("position_mesuree")) throw ScenarioInvalide("contrôle $code : « sans_position_mesuree » avec une position mesurée")
+                PositionMesuree(position = null, rattacheParIdentite = true, sansPositionMesuree = true)
+            } else {
+                val m = c.getAsJsonObject("position_mesuree") ?: throw ScenarioInvalide("contrôle $code : ni position mesurée ni « sans_position_mesuree »")
                 PositionMesuree(
                     PointLambert93(piquet.xMetres + (m.reel("decalage_est_m") ?: 0.0), piquet.yMetres + (m.reel("decalage_nord_m") ?: 0.0)),
                     m.reel("precision_m"), m.texte("source_gnss"), m.texte("referentiel_source"), m.get("simulee")?.asBoolean ?: false,
                 )
             }
             controles += ControleSaisi(
-                UuidControle(uuidDe("controle:${placette.uuid}:$visite")), domaine.uuid, visite, JourCivil.de(visite), mesuree?.position ?: piquet, mesuree,
+                UuidControle(uuidDe("controle:${placette.uuid}:$visite")), domaine.uuid, visite, JourCivil.de(visite), mesuree.position ?: piquet, mesuree,
                 etats, totaux = totaux, operateur = operateur, concurrence = c.texte("concurrence"), besoin = c.texte("besoin"),
                 observations = c.texte("observations"),
             )
