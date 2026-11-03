@@ -29,7 +29,7 @@ suspend fun collecterPositionsArrivee(
     position: () -> Position?,
     surSeconde: (Int) -> Unit = {},
     secondes: Int = SECONDES_DE_MOYENNE_ARRIVEE,
-    attendre: suspend () -> Unit = { delay(1000) },
+    attendre: suspend () -> Unit = { uneSecondeArrivee() },
 ): List<Position> {
     val positions = ArrayList<Position>()
     repeat(secondes) { n ->

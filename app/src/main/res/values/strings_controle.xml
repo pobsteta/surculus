@@ -10,7 +10,7 @@
     <string name="controle_ug_aide">Cliquez sur le bouton de l\'UG où vous êtes.</string>
     <string name="controle_ug_choix">%1$s · UG %2$s</string>
     <string name="controle_ug_recommencer">Refaire la mesure</string>
-    <string name="controle_sans_position">Pas de position GNSS : approchez-vous du piquet et attendez un fix.</string>
+    <string name="controle_sans_position">Recherche de la position…</string>
     <string name="controle_alerte_terminee">Placette déjà terminée : ce que vous dites s\'ajoute.</string>
     <string name="controle_stockage_refuse">La sauvegarde hors de l\'appareil attend la permission de stockage. La saisie continue.</string>
     <string name="controle_plant_precedent">Plant précédent</string>
