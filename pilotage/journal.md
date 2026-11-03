@@ -953,3 +953,7 @@
 2026-11-03 · relecteur · PR #153 · 088 à fusionner : tests du testeur intacts, fixtures refaites à l'octet, schéma v2 valide (Draft 2020-12), test-command 0, CI verte ; mineurs : bout en bout en deux morceaux, rubrique Terrain de la fiche, « gzip -n ».
 2026-11-03 · Pascal · PR #153 · « Fusionner dans la 087 » : fusionnée dans `mission/087-ouvrir-un-controle-sans-position` (d920c58) ; branche 088 supprimée.
 2026-11-03 · Claude (orchestrateur) · PR #154 · documents alignés sur 087 et 088 (ADR 0007 F4, `ci/sommier/README.md`, spec `code_requis` et v2, ADR 0003, formats du journal, `gzip -n -9`, Terrain de la fiche 088), vers la branche 087 ; relecture lancée. Reste : `fixtures/sauvegarde/versions.json` l. 5 (fixture du testeur).
+
+2026-11-03 · relecteur · PR #154 · reprise 1/3 (e10d8f1) : à fusionner ; trois mentions « 086 » corrigées, README de la CI complété sans effacer ; CI verte.
+2026-11-03 · Pascal · PR #154 et #152 · « Fusionner les deux » : #154 fusionnée dans la branche 087 (3693686), puis #152 (087 + 088 + documents) dans `main` (7c8f969), CI verte ; release en cours.
+2026-11-03 · Claude (orchestrateur) · essai 088, étape 1 · sur le téléphone de Pascal (0.7.102, avant la release), `exemple-v2.sursync` restauré : « Ce fichier vient d'une version plus récente de Surculus. Mettez l'application à jour. Rien n'a été changé. » Conforme.
