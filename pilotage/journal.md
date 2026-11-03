@@ -937,3 +937,5 @@
 
 2026-11-03 · relecteur · PR #152 · reprise 2/3 (eb207b4) : à fusionner ; titre limité au décompte, couleur normale, CI verte.
 2026-11-03 · Pascal · PR #152 · « Attendre la 088 » : chaque fusion dans `main` publie une release ; la #152 reste ouverte, approuvée ; la 088 part de la branche 087 et sa PR vise cette branche ; une seule release portera les deux. Fiche 088 écrite (7e88024, `mission/088-sauvegarde-sursync-v2`) : `testeur` puis `dev`, tenir, plan d'abord, opus ; la spec § 4.8 et `sursync-v1.md` disent encore « la mission 086 crée la v2 » : à corriger avec les amendements de l'orchestrateur.
+
+2026-11-03 · Pascal · mission 088 · « Lancer » : fiche validée ; `testeur` lancé (worktree, opus), PR vers la branche 087.
