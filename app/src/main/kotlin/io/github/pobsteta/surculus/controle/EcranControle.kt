@@ -92,6 +92,7 @@ import io.github.pobsteta.surculus.carte.rememberFix
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.gpkg.ContexteDeTournee
+import io.github.pobsteta.surculus.gpkg.RenduTournee
 import io.github.pobsteta.surculus.gnss.FixPourSession
 import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
@@ -166,6 +167,9 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
     val ouverte = (chargement as? Chargement.Pret)?.tournee
     val placette = ouverte?.tournee?.placettes?.firstOrNull { it.uuid == placetteUuid }
     val cle = ControleursOuverts.cle(id, placetteUuid)
+    // Mission 090 : une tournée rendue est en lecture seule (décision de Pascal du 2026-11-03) ; aucun contrôle ne s'ouvre,
+    // rien n'est écrit au journal. On la rouvre depuis la liste de ses placettes.
+    val rendue = remember(ouverte) { ouverte != null && RenduTournee.estRendue(ouverte.dossier.toPath()) }
 
     // Permission de stockage, Android 8 et 9 seulement : demandée **une seule fois** (le réglage s'en souvient) ; tant qu'elle
     // manque, une ligne en petit l'explique, et rien n'est bloqué.
@@ -251,7 +255,7 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
 
     // L'arrivée (décisions de Pascal du 2026-10-27) : la moyenne de 5 s part toute seule, avec son décompte, puis la règle des 15 m.
     LaunchedEffect(cle, essai, ouverte) {
-        if (ouverte == null || ControleursOuverts.get(cle) != null || ChoixUgEnAttente.get(cle) != null || SansPositionEnAttente.etape(cle) != null) return@LaunchedEffect
+        if (ouverte == null || rendue || ControleursOuverts.get(cle) != null || ChoixUgEnAttente.get(cle) != null || SansPositionEnAttente.etape(cle) != null) return@LaunchedEffect
         // L'attente sans fix (30 s, mission 087) court dès la première moyenne sans position.
         SansPositionEnAttente.de(cle).let { if (it.debutMs == null) it.debutMs = SystemClock.elapsedRealtime() }
         // La moyenne de 5 s est celle du guidage : écrite une seule fois (`collecterPositionsArrivee`).
@@ -277,6 +281,7 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
                 chargement == Chargement.EnCours -> Texte(stringResource(R.string.carte_ouverture))
                 chargement is Chargement.Refus -> Texte(stringResource(R.string.carte_refus, chargement.message), erreur = true)
                 placette == null -> Texte(stringResource(R.string.carte_refus, "placette $placetteUuid"), erreur = true)
+                rendue -> Texte(stringResource(R.string.controle_tournee_rendue))
                 else -> when (val a = arrivee) {
                     is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)
                     is EtatArrivee.Refus -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })

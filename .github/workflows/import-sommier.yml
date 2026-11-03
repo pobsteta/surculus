@@ -120,6 +120,16 @@ jobs:
             -Pscenario=fixtures/export/scenario-couchey.json \
             -Psortie=ci/sommier
 
+      # Mission 090 : le chemin du rendu de l'application (session de contrôle →
+      # journal → RenduTournee → zip), sur la même tournée de départ ; sa sortie
+      # est comparée plus bas par une seconde passe de verifier.R (F1 à F5).
+      - name: Rendre la tournée par le chemin de l'application (scénario Couchey)
+        run: |
+          ./gradlew :gpkg:rendreScenario --no-daemon \
+            -Ptournee=ci/sommier/sortie/tournee-depart \
+            -Pscenario=fixtures/export/scenario-couchey.json \
+            -Psortie=ci/sommier/rendu
+
       # Mission 026 : F1, F2 et F3 remplacent la comparaison « avec / sans »
       # (ancien critère (a)). Mission 028 : F4 (registre contre les attentes
       # de la 027) et F5 (un sabotage par contrôle, qui doit rougir). Le détail
@@ -142,6 +152,27 @@ jobs:
             --bilan-export ci/sommier/bilan-export.json \
             --registre-attendu fixtures/export/registre-attendu-couchey.json
 
+      # Mission 090 : seconde passe, sur le zip du chemin du rendu. Même tournée
+      # de départ et même forêt (copiées depuis l'étape « preparer ») ; ses
+      # résultats vont dans ci/sommier/sortie-rendu pour ne pas écraser ceux de
+      # la première passe.
+      - name: Rejouer l'import du rendu de l'application, F1 à F4 et sabotages (F5)
+        if: always()
+        run: |
+          for f in ci/sommier/rendu/rendu-surculus/travaux.gpkg ci/sommier/rendu/bilan-export.json; do
+            if [ ! -f "$f" ]; then
+              echo "::error title=Rendu Surculus absent::$f n'a pas été produit par :gpkg:rendreScenario."
+              exit 1
+            fi
+          done
+          rm -rf ci/sommier/sortie-rendu
+          mkdir -p ci/sommier/sortie-rendu
+          cp -r ci/sommier/sortie/tournee-depart ci/sommier/sortie/foret_id.txt ci/sommier/sortie-rendu/
+          Rscript ci/sommier/verifier.R --sortie ci/sommier/sortie-rendu \
+            --etape comparer --avec ci/sommier/rendu/rendu-surculus \
+            --bilan-export ci/sommier/rendu/bilan-export.json \
+            --registre-attendu fixtures/export/registre-attendu-couchey.json
+
       # Le résumé est écrit par verifier.R, même en cas d'écart.
       - name: Résumé du job (F1 à F5)
         if: always()
@@ -150,6 +181,13 @@ jobs:
             cat ci/sommier/sortie/resume.md >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Aucun résumé : le script n'a pas atteint les critères." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Seconde passe : le rendu de l'application (mission 090)" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f ci/sommier/sortie-rendu/resume.md ]; then
+            cat ci/sommier/sortie-rendu/resume.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Aucun résumé : la seconde passe n'a pas atteint les critères." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Publier les bilans
@@ -162,4 +200,8 @@ jobs:
             ci/sommier/sortie/resume.md
             ci/sommier/bilan-export.json
             ci/sommier/export-surculus.zip
+            ci/sommier/sortie-rendu/bilan-*.json
+            ci/sommier/sortie-rendu/resume.md
+            ci/sommier/rendu/bilan-export.json
+            ci/sommier/rendu/rendu-surculus.zip
           if-no-files-found: ignore

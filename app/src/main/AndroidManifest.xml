@@ -37,6 +37,17 @@
             </intent-filter>
         </activity>
 
+        <!-- Mission 090 : « Partager » le .zip rendu (files/rendus/), lu seulement par l'application choisie par l'agent. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.rendus"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/chemins_partages" />
+        </provider>
+
         <service
             android:name=".gnss.ServiceGnssRtk"
             android:exported="false"

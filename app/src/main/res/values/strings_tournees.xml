@@ -129,4 +129,32 @@
     <string name="guidage_refus_code">Code « %1$s » inconnu de la tournée.</string>
     <string name="guidage_rien_enregistre">Rien n\'est enregistré à ce stade.</string>
     <string name="guidage_nord">Nord en haut</string>
+
+    <!-- Rendre la tournée (mission 090, décisions de Pascal du 2026-11-03) -->
+    <string name="rendu_bouton">Rendre la tournée</string>
+    <string name="rendu_rouvrir">Rouvrir la tournée</string>
+    <plurals name="rendu_controles">
+        <item quantity="one">%1$d contrôle</item>
+        <item quantity="other">%1$d contrôles</item>
+    </plurals>
+    <plurals name="rendu_plants">
+        <item quantity="one">%1$d plant</item>
+        <item quantity="other">%1$d plants</item>
+    </plurals>
+    <string name="rendu_confirmer_titre">Rendre la tournée ?</string>
+    <string name="rendu_confirmer_texte">%1$s : rendre ? La tournée passera en lecture seule.</string>
+    <string name="rendu_confirmer">Rendre</string>
+    <string name="rendu_annuler">Annuler</string>
+    <string name="rendu_verification">Vérification…</string>
+    <string name="rendu_ecriture">Écriture…</string>
+    <string name="rendu_fait">Tournée rendue : %1$s, %2$s</string>
+    <string name="rendu_partager">Partager</string>
+    <string name="rendu_fermer">Fermer</string>
+    <string name="rendu_fautes_titre">Rendu impossible : à corriger d\'abord</string>
+    <string name="rendu_impossible">Rendu impossible : %1$s</string>
+    <string name="rendu_lecture_seule">Tournée rendue : en lecture seule.</string>
+    <string name="rendu_rouvrir_titre">Rouvrir la tournée ?</string>
+    <string name="rendu_rouvrir_texte">Un contrôle déjà importé dans sommieR ne sera pas mis à jour : sommieR ignore ce qu\'il a déjà reçu. Les nouveaux contrôles partiront au prochain rendu, dans un nouveau fichier.</string>
+    <string name="rendu_rouvrir_confirmer">Rouvrir</string>
+    <string name="controle_tournee_rendue">Tournée rendue : en lecture seule. Pour saisir, la rouvrir depuis la liste de ses placettes.</string>
 </resources>

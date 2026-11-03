@@ -43,7 +43,7 @@ fun compterSaisies(projection: Map<CleProjection, EtatCle>): Int =
 
 /**
  * Statut minimal imposé par l'avancement : rendue → Réalisée ; au moins une saisie → Planifiée ; sinon Proposée.
- * (`rendue` est toujours faux tant que l'export n'écrit pas la marque : mission 041.)
+ * (`rendue` : la marque écrite par « Rendre la tournée », mission 090.)
  */
 fun statutMinimal(saisies: Int, rendue: Boolean): EtatKanban = when {
     rendue -> EtatKanban.REALISEE
