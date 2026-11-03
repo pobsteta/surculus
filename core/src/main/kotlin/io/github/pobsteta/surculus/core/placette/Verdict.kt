@@ -199,6 +199,16 @@ sealed interface RefusPlacette {
         override val motif = "code_inconnu"
         override val message = "Code de piquet « $code » inconnu de la tournée."
     }
+
+    /**
+     * Ouvrir sans position sans code lu : rien ne s'ouvre (ADR 0003, amendement du 2026-11-02, point 2). Motif nouveau,
+     * décision de Pascal du 2026-11-03 (mission 087), texte tranché par Pascal le même jour.
+     */
+    data object CodeRequis : RefusPlacette {
+        override val motif = "code_requis"
+        override val message = "Sans position, le code du piquet est obligatoire : lisez-le, saisissez-le dans « Code lu sur le piquet », " +
+            "puis cliquez sur « Ouvrir sans position »."
+    }
 }
 
 /**
@@ -224,7 +234,7 @@ object CodesRefus {
         is RefusPlacette.NumeroEnDouble, is RefusPlacette.NumeroChange, RefusPlacette.NumerosDejaFiges,
         RefusPlacette.RemplaceObligatoire, is RefusPlacette.PlantRemplaceInconnu, is RefusPlacette.PlantRemplaceAutrePlacette,
         is RefusPlacette.PlantRemplaceNiMortNiAbsent, is RefusPlacette.PlantDejaRemplace, RefusPlacette.AucunePlacette,
-        is RefusPlacette.HorsQuinzeMetres, is RefusPlacette.CodeInconnu -> refus.motif
+        is RefusPlacette.HorsQuinzeMetres, is RefusPlacette.CodeInconnu, RefusPlacette.CodeRequis -> refus.motif
     }
 
     /** Code d'un refus de la chaîne des repères : `hors_france` pour un piquet hors de France, le motif sinon. */

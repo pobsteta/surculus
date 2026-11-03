@@ -118,7 +118,7 @@ class PointageEtRattachementTest {
         assertEquals("P-001", Rattachement.rattacher(listOf(p1, nord), mesuree).valeurOuEchec().piquet.code)
         val r = Rattachement.rattacher(listOf(p1, nord), mesuree, codeLu = "P-002").valeurOuEchec()
         assertEquals("P-002", r.piquet.code)
-        assertEquals(10.0, r.distanceM, 1e-9)
+        assertEquals(10.0, r.distanceM!!, 1e-9)
         assertFalse(r.parIdentite)
         assertEquals(mesuree, r.positionControle)
     }

@@ -514,7 +514,7 @@ class SessionControleTest {
         val c = ValeurControle.lire(journal.deType("controle").single().valeur)!!
         assertTrue(c.rattacheParIdentite)
         assertEquals(BancSession.POSITION_P1.yMetres, c.positionY, "le contrôle prend la position du piquet")
-        assertEquals(BancSession.POSITION_P1.yMetres + 15.1, c.positionMesureeY, 1e-9, "la position mesurée est gardée à part")
+        assertEquals(BancSession.POSITION_P1.yMetres + 15.1, c.positionMesureeY!!, 1e-9, "la position mesurée est gardée à part")
     }
 
     @Test

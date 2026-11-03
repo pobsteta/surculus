@@ -60,25 +60,31 @@ class RejeuViaSessionTest {
         Triple(b, ctx, b.journal)
     }
 
-    private fun ouvrir(b: BancSession, ctx: ContexteControle, arrivee: Arrivee, codeLu: String? = null) =
-        SessionControle.ouvrir(ctx, b.journal, b.horloge, essences, arrivee, codeLu, b.ecoute)
+    private fun ouvrir(b: BancSession, ctx: ContexteControle, arrivee: Arrivee, codeLu: String? = null, ugChoisie: String? = null) =
+        SessionControle.ouvrir(ctx, b.journal, b.horloge, essences, arrivee, codeLu, b.ecoute, ugChoisie)
 
     // ---------------------------------------------------------------- familles
 
     private fun rattachement(e: JsonObject): JsonObject {
-        val piquets = e.objets("piquets_stockes").map { Piquet(UuidPlacette("uuid-${it.texte("code")}"), it.texte("code")!!, xy(it)) }
+        // Mission 087 : UG des piquets (homonymes) et `position_mesuree` à null (aucun fix), comme AdaptateurReglesPlacette.
+        val piquets = e.objets("piquets_stockes").map {
+            val ug = it.texte("ug")
+            Piquet(UuidPlacette("uuid-${it.texte("code")}" + (ug?.let { u -> "-ug$u" } ?: "")), it.texte("code")!!, xy(it), ug = ug)
+        }
+        val mesuree = e.get("position_mesuree")?.takeUnless { it.isJsonNull }?.asJsonObject
         val (b, ctx) = banc(piquets)
         val codeLu = if (e["identite_confirmee"].asBoolean) e.texte("code_lu") else null
         return JsonObject().apply {
-            when (val r = ouvrir(b, ctx, Arrivee.Lambert93(xy(e.getAsJsonObject("position_mesuree"))), codeLu)) {
+            when (val r = ouvrir(b, ctx, mesuree?.let { Arrivee.Lambert93(xy(it)) } ?: Arrivee.SansPosition, codeLu, e.texte("ug_choisie"))) {
                 is OuvertureControle.Ouverte -> {
                     val rat = r.session.rattachement
                     addProperty("issue", "rattache")
                     addProperty("placette", rat.piquet.code)
-                    addProperty("distance_m", rat.distanceM)
+                    rat.piquet.ug?.let { addProperty("ug", it) }
+                    rat.distanceM?.let { addProperty("distance_m", it) }
                     addProperty("rattache_par_identite", rat.parIdentite)
                     add("position_controle", JsonObject().apply { addProperty("x", rat.positionControle.xMetres); addProperty("y", rat.positionControle.yMetres) })
-                    add("position_mesuree_conservee", JsonObject().apply { addProperty("x", rat.positionMesuree.xMetres); addProperty("y", rat.positionMesuree.yMetres) })
+                    add("position_mesuree_conservee", rat.positionMesuree?.let { m -> JsonObject().apply { addProperty("x", m.xMetres); addProperty("y", m.yMetres) } } ?: com.google.gson.JsonNull.INSTANCE)
                 }
                 is OuvertureControle.Refusee -> { addProperty("issue", "refus"); addProperty("motif", r.refus.motif) }
                 is OuvertureControle.UgAChoisir -> addProperty("issue", "ug_a_choisir")
@@ -140,7 +146,7 @@ class RejeuViaSessionTest {
                 is OuvertureControle.Ouverte -> {
                     addProperty("en_france", true); addProperty("inversion_detectee", false); addProperty("refuse", false)
                     addProperty("dans_emprise", true)
-                    val p = r.session.rattachement.positionMesuree
+                    val p = r.session.rattachement.positionMesuree!!
                     addProperty("x_l93", p.xMetres); addProperty("y_l93", p.yMetres); addProperty("x", p.xMetres); addProperty("y", p.yMetres)
                     addProperty("crs", "EPSG:2154")
                 }
