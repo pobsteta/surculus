@@ -76,6 +76,30 @@ par le `dev` (qui le signale dans la PR).
 - **Sources autorisées :** ADR 0003 et 0007, spec, `docs/formats/journal-valeurs-v1.md` et `-v2.md`, fiche 085, sommieR
   (`~/dev/sommieR`, lecture, tag v0.31.1).
 
+## Décisions de Pascal sur le plan du `dev` (2026-11-03)
+
+Le plan du `dev` (temps « tenir ») est accepté, avec ces six réponses :
+1. **Périmètre élargi** : le `dev` peut aussi toucher `Verdict.kt`, `EcranControle.kt`, `ControleurPlacette.kt`
+   (`TextesControle`), `SourcePosition.kt` ou `carte/Commun.kt` (localisation active), et l'outil de la CI
+   `gpkg/src/test/.../outil/ExporterScenario.kt`. Aucun autre fichier hors liste.
+2. **`Rattache.distanceM` peut être vide** (`Double?`) : sans position, pas de distance ; ni 0 ni NaN. Le `dev` adapte
+   seulement `PointageEtRattachementTest` l. 121 et `RattachementHomonymesTest` l. 62.
+3. **« Récepteur actif »** = Surculus écoute une source (le récepteur RTK s'il est branché, sinon le GNSS du téléphone) ;
+   un RTK débranché ne bloque pas, le téléphone prend le relais et les 30 s comptent. Si rien n'écoute : jamais
+   d'ouverture sans position, phrase « Activez la localisation ou reconnectez le récepteur. »
+4. **Sans code** : bouton « Ouvrir sans position » grisé tant que le champ est vide, avec la ligne « Sans position, le code
+   du piquet est obligatoire : lisez-le, saisissez-le dans « Code lu sur le piquet », puis cliquez sur « Ouvrir sans
+   position ». » ; motif de refus nouveau `code_requis` dans core (l'orchestrateur l'ajoute à la spec § 6).
+5. **Placette sans UG** : la confirmation omet l'UG (« P35-01 · 12 plants pointés : ouvrir sans position ? »).
+6. **Une ligne par contrôle** : l'export refuse un contrôle sans `positionMesuree` ; le `dev` adapte `TourneeDeTest`
+   (c2 sans position) et `ExportTravauxTest` l. 202 et l. 376.
+
+Fix reçu pendant la confirmation, avant l'ouverture : la confirmation est abandonnée et la moyenne refaite (ADR 0003,
+point 6 ; le point 10 ne vaut qu'après l'ouverture).
+
+Hors de la 087 : ouvrir sans position **depuis le guidage** (aujourd'hui « Contrôler » et le champ du code n'y
+apparaissent qu'une fois arrivé, donc avec un fix) : mission à part, 089, après la 088 et avant l'essai en forêt.
+
 ## Valeur provisoire (chiffre, réglage)
 
 - **Valeur provisoire :** 30 s sans aucun fix avant « Ouvrir sans position ».
