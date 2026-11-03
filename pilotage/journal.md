@@ -931,3 +931,6 @@
 2026-11-03 · Pascal · mission 087 · les 8 tests en plus : « Accepter, sous relecture » ; le `relecteur` vérifie commit par commit quaucun
 2026-11-03 · relecteur · PR #152 · à fusionner : 8 adaptations de tests vérifiées, aucune assertion affaiblie ; tests du testeur intacts ; 2289 tests, test-criteres.R 130/130 ; mineurs : corps de PR périmé, KDoc de `uneSecondeArrivee`, `ArriveeSansPosition.kt` hors liste (imposé par l'API des tests, admis par l'orchestrateur), textes du `dev`.
 2026-11-03 · Pascal · PR #152 · « Titre neutre + garder » (titre « Recherche de la position… », lignes du `dev` validées) ; hors de France « Oui, journal seul » ; plants pointés « Oui, plants connus ». Reprise 1/3 confiée au `dev`.
+
+2026-11-03 · dev · PR #152 · reprise 1/3 (54e1555) : titre « Recherche de la position… », moyenne par `uneSecondeArrivee()`, corps de PR à jour ; CI verte. Relecteur : à fusionner ; réserve : le titre s'affiche aussi quand rien n'écoute et après 30 s.
+2026-11-03 · Pascal · PR #152 · « Couleur normale » ; « Titre pendant l'attente seule ». Reprise 2/3 confiée au `dev`. Fix reçu pendant le choix de l'UG traité comme pendant la confirmation (même règle, ADR 0003 point 6), lecture de l'orchestrateur, dite à Pascal.
