@@ -23,6 +23,13 @@ class ArriveeSansPositionDevTest {
     }
 
     @Test
+    fun `le titre Recherche de la position ne s'affiche que pendant le decompte`() {
+        assertTrue(ArriveeSansPosition.titreVisible(SuiteSansFix.ATTENDRE))
+        assertFalse(ArriveeSansPosition.titreVisible(SuiteSansFix.PROPOSER))
+        assertFalse(ArriveeSansPosition.titreVisible(SuiteSansFix.ACTIVER_LOCALISATION))
+    }
+
+    @Test
     fun `la confirmation compte aussi les plants pointes au journal, sans doublon`() = with(BancControle()) {
         // Un premier contrôle avec position, qui pointe un plant de plus que les 12 du passage précédent.
         val c = assertIs<EtatArrivee.Ouverte>(ArriveeControle.ouvrir(contexte, journal, horloge, essences, positionsAuPiquet(), null, sauvegarde)).controleur

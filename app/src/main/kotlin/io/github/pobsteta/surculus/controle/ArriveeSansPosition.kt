@@ -43,4 +43,11 @@ object ArriveeSansPosition {
         msSansFix >= SECONDES_SANS_FIX * 1_000L -> SuiteSansFix.PROPOSER
         else -> SuiteSansFix.ATTENDRE
     }
+
+    /**
+     * Le titre « Recherche de la position… » ne s'affiche que pendant le décompte des 30 s (décision de Pascal du
+     * 2026-11-03) : ni quand rien n'écoute, ni quand « Ouvrir sans position » est proposé, la phrase en dessous suffit.
+     * [SuiteSansFix.POSITION_RECUE] ne dure qu'un instant (la moyenne repart) : le décompte reste affiché.
+     */
+    fun titreVisible(suite: SuiteSansFix): Boolean = suite == SuiteSansFix.ATTENDRE || suite == SuiteSansFix.POSITION_RECUE
 }

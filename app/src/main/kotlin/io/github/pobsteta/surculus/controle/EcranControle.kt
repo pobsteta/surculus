@@ -319,8 +319,8 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
                 Text(stringResource(R.string.controle_moyenne_aide), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
             }
             is EtatArrivee.Refus -> Text(TextesControle.message(etat.refus)!!.texte, style = MaterialTheme.typography.titleMedium, color = couleurErreur())
-            EtatArrivee.SansPosition -> Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurErreur())
-            is EtatArrivee.UgAChoisir, is EtatArrivee.Ouverte, is EtatArrivee.ConfirmerSansPosition -> {}
+            // L'attente sans position a sa propre vue (`VueSansFix`, mission 087) : cette vue n'est jamais appelée pour elle.
+            EtatArrivee.SansPosition, is EtatArrivee.UgAChoisir, is EtatArrivee.Ouverte, is EtatArrivee.ConfirmerSansPosition -> {}
         }
         OutlinedTextField(
             value = code,
@@ -362,7 +362,10 @@ private fun VueSansFix(debutMs: Long, fixRecu: Boolean, code: String, onCode: (S
     val relancer = rememberUpdatedState(onRecommencer)
     LaunchedEffect(suite) { if (suite == SuiteSansFix.POSITION_RECUE) relancer.value() }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurErreur())
+        // Titre « Recherche de la position… » pendant le décompte seulement, en couleur normale (décisions de Pascal du 2026-11-03).
+        if (ArriveeSansPosition.titreVisible(suite)) {
+            Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
+        }
         when (suite) {
             SuiteSansFix.ACTIVER_LOCALISATION ->
                 Text(TextesControle.ACTIVER_LOCALISATION, style = MaterialTheme.typography.titleMedium, color = couleurErreur())
