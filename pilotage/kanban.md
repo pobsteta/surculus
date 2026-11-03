@@ -7,6 +7,9 @@
 
 ## Bac à sable
 
+- **090** rendre la tournée depuis le téléphone (aucun écran n'appelle `ExportTravaux` ; `<tournée>.zip`, spec § 4.8) :
+  décision de Pascal du 2026-11-03, après la 088, avec la 089, avant l'essai en forêt ; fiche à écrire.
+
 - **089** ouvrir sans position depuis le guidage (« Contrôler » et le code n'y viennent qu'avec un fix) : décision de
   Pascal du 2026-11-03, mission à part après la 088, avant l'essai en forêt ; fiche à écrire.
 
@@ -124,7 +127,7 @@ _Idées, à trier au prochain `/mission`._
 ## Validé
 
 - **087** ouvrir un contrôle sans position (`testeur` puis `dev`, tenir : plan d'abord) : fiche écrite et validée par Pascal le 2026-11-02 ;
-  codée, relue (PR #152, à fusionner), **attend la 088** (décision de Pascal du 2026-11-03) ; **088** `.sursync` v2 : fiche validée le 2026-11-03, `testeur` lancé, branche partie de la 087 (la 087 ne part sur les téléphones qu'avec la 088).
+  codée, relue (PR #152, à fusionner), **attend la 088** (décision de Pascal du 2026-11-03) ; **088** `.sursync` v2 : fiche validée, tests (PR #153 vers la branche 087), plan accepté le 2026-11-03, code en cours (la 087 ne part sur les téléphones qu'avec la 088).
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de

@@ -941,3 +941,7 @@
 2026-11-03 · Pascal · mission 088 · « Lancer » : fiche validée ; `testeur` lancé (worktree, opus), PR vers la branche 087.
 
 2026-11-03 · testeur · mission 088 · tests et exemples `.sursync` v2 poussés (a3a30ec, PR #153 en brouillon vers la branche 087), 16 rouges attendus jusqu'au `dev` ; refus d'un ancien Surculus prouvé par la règle N+1 (lecteur réglé en version 1), pas sur l'ancien APK ; export après restauration couvert par étapes seulement. Questions : ligne `photo` en v2 et test de bout en bout, au plan du `dev` ; version en texte = `version_illisible` (schéma) ; mention « 086 » de `sursync-v1.md` et `fixtures/README.md` confiés au `dev`. `dev` lancé pour un plan.
+
+2026-11-03 · dev · mission 088 · plan rendu (version 2 en une ligne de code ; `sursync-v2.md` qui renvoie à la v1, schéma qui réserve `photo`) ; fait nouveau : l'application n'exporte pas la tournée (aucun écran n'appelle `ExportTravaux`).
+2026-11-03 · Claude (orchestrateur) · fiches 087 et 088 · écart · je me suis trompé : j'y ai écrit un échantillon terrain « export lu dans QGIS » que l'application ne permet pas ; échantillon de la 088 corrigé (restauration seule, export vérifié sur ordinateur).
+2026-11-03 · Pascal · mission 088 · « Accepter, avec les 3 détails » ; ligne `photo` « Garder, l'écrire » ; test restauration puis export « Le testeur » (harnais élargi à `gpkg/src/test`) ; export depuis le téléphone « Mission 090, avant l'essai ». Décisions dans la fiche (98e51f5) ; `dev` relancé pour coder, `testeur` lancé pour le test de bout en bout.
