@@ -126,9 +126,6 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **087** ouvrir un contrôle sans position (`testeur` puis `dev`, tenir : plan d'abord) : fiche écrite et validée par Pascal le 2026-11-02 ;
-  codée, relue (PR #152, à fusionner), **attend la 088** (décision de Pascal du 2026-11-03) ; **088** `.sursync` v2 : fiche validée, tests (PR #153 vers la branche 087), plan accepté le 2026-11-03, code en cours (la 087 ne part sur les téléphones qu'avec la 088).
-
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
@@ -189,6 +186,11 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **087** ouvrir un contrôle sans position et **088** `.sursync` v2 : fusionnées ensemble (#153 et #154 dans la
+  branche 087, puis #152 dans `main`, 7c8f969), release v0.7.106 installée le 2026-11-03 ; essais : refus de la v2 par
+  la 0.7.102, restauration sur la 0.7.106, « Activez la localisation… », ouverture sans position vue par Pascal
+  (micro-ondes). Reste : la mesure des 30 s à l'essai en forêt.
 
 - **086** code de piquet en double entre UG (`testeur` puis `dev`, PR #151, 709c7bd, un aller-retour) : fusionnée le
   2026-11-02 ; **capture à faire** (écran « P01 : quelle UG ? », tournée à deux « P01 »).
