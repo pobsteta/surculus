@@ -15,7 +15,9 @@
 #   F4  la ligne sans position de P35-02 retirée de `positions_controles`
 #       (mission 087) ;
 #   F4  la géométrie de cette ligne remplie par le piquet (mission 087 : elle
-#       doit rester NULL).
+#       doit rester NULL) ;
+#   F4  le besoin de P35-02 vidé dans `controles`, puis import : P35-02 reste
+#       « a_jour » au lieu de « a_programmer » (mission 091).
 #
 # Coordonnées : les couches sont en EPSG:2154, x (est) puis y (nord), en
 # mètres ; le déplacement est de +5 m en x.
@@ -112,6 +114,20 @@ liste_sabotages <- function(controle_autre, controle_p35_01) {
              "UPDATE positions_controles SET geom =",
              "(SELECT geom FROM controles WHERE uuid = '%s')",
              "WHERE controle_uuid = '%s'"), controle_autre, controle_autre))
+         }),
+    # Mission 091 (fiche 091, relecture de la PR #155) : le défaut constaté.
+    # Le besoin de P35-02 (`controle_autre`) est vidé dans `controles`, comme
+    # l'écrivait le rendu de la 090 ; après l'import, sommieR doit laisser
+    # P35-02 « a_jour » (R/travaux_qfield.R l. 334-337), et F4 doit le voir.
+    # Écrit par le testeur.
+    list(nom = "besoin de P35-02 vidé (controles), puis import par sommieR",
+         controle = "F4", import = TRUE,
+         motif = "F4 : état de suivi de P35-02 après l'import : attendu a_programmer",
+         modifier = function(gpkg) {
+           sans_declencheurs_rtree(gpkg, "controles")
+           sql_sur(gpkg, sprintf(
+             "UPDATE controles SET besoin = NULL WHERE uuid = '%s'",
+             controle_autre))
          })
   )
 }
@@ -134,7 +150,7 @@ mesurer_sabotage <- function(s, gpkg, dossier, ctx) {
     F4 = controle_f4(ctx$attendu,
                      controles_ecrits(bilan$registre, bilan$entrees_ecrites,
                                       bilan$codes_placettes),
-                     lire_points_export(gpkg))$fautes)
+                     lire_points_export(gpkg), bilan$etats_suivi)$fautes)
   rouge <- length(fautes) > 0L
   # Le contrôle doit rougir POUR LE MOTIF VISÉ (`s$motif`, expression régulière) :
   # une autre faute du même contrôle ne prouve pas qu'il voit le sabotage.

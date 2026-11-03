@@ -83,6 +83,16 @@ monte un service PostGIS éphémère et lance `verifier.R`.
      | un déclencheur ajouté (sur `codes`) | F3 |
      | `nb_total` de P35-01 + 1, puis import par sommieR | F4 (total) |
      | point de `positions_controles` déplacé de 5 m (> 0,5 m) | F4 (point) |
+     | besoin de P35-02 vidé dans `controles`, puis import (mission 091) | F4 (état de suivi : P35-02 reste `a_jour`) |
+
+     **Mission 091** (fiche `pilotage/missions/091-besoin-concurrence-et-qualite-du-fix.md`) : F4 compare aussi
+     `besoin` et `concurrence` de chaque contrôle au registre, l'**état de suivi** de chaque placette après
+     l'import (`etats_suivi` du JSON attendu ; lu dans la couche `placettes` d'une tournée régénérée par
+     `sommier_projet_qfield_travaux()`, `etats_suivi_apres_import()` de `fonctions.R` ; règle de sommieR 0.31.1,
+     `R/travaux_qfield.R` l. 317-339), et `precision_m`, `source_gnss`, `simulee` de la position mesurée de
+     P35-01 dans `positions_controles` ; sur la ligne sans position de P35-02, `source_gnss` et `simulee` vides.
+     Seul P35-02 change d'état par l'import (la démo contrôle déjà les trois placettes en 2025, `R/demo.R`
+     l. 373-391) : il passe `a_programmer` si et seulement si le besoin « RG » arrive au registre.
 
      Le sabotage « total faux » retire d'abord les déclencheurs R-tree d'UPDATE de
      `controles` de la **copie** (RSQLite n'a pas `ST_IsEmpty`) ; F3 n'y est pas rejoué.
