@@ -110,6 +110,6 @@ La session annule la dernière ligne annulable : un pointage, un état, ou la fi
 
 Un refus de la session porte un code stable (`CodesRefus`, `core/.../core/placette/Verdict.kt`), celui de la spec § 6 et
 de l'export : `hors_referentiel` (état, cause ou essence hors des référentiels), `uuid_en_double`, `hors_france`,
-`point_hors_foret`, et sinon le motif du domaine (`hors_15_m`, `code_inconnu`, `cause_sur_etat`, `hauteur_sur_absent`,
+`point_hors_foret`, et sinon le motif du domaine (`hors_15_m`, `code_inconnu`, `code_requis` (v2, mission 087), `cause_sur_etat`, `hauteur_sur_absent`,
 `plant_remplace_ni_mort_ni_absent`, `plant_deja_remplace`, `date_hors_validite`...). « vide » n'a pas de code : la
 session répond « pas encore disponible » et ne trace rien.

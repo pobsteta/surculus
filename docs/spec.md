@@ -176,7 +176,7 @@ point à Brest et à Strasbourg.
   message sans motif technique sont ceux de la mission 068, décision du 2026-10-29).
 * **Arrivée sans position** (décisions de Pascal du 2026-11-02, ADR 0003, « Amendement du 2026-11-02 », dont le texte
   fait foi, même numérotation de 1 à 10 ; points 3, 6 et 10 précisés le 2026-11-02 après la relecture de la PR #150 ;
-  mission 085, codé par la 086) :
+  mission 085, codé par la 087 ; motif `code_requis` décidé par Pascal le 2026-11-03) :
   1. **Sans aucun fix** reçu pendant **30 s** (**provisoire**, mesurée à l'essai en forêt), récepteur actif,
      localisation et permission accordées, Surculus propose « Ouvrir sans position ». Localisation coupée ou
      permission refusée : il demande de l'activer, pas d'ouverture sans position.
@@ -451,11 +451,11 @@ Règles du brief (arbitrages de Pascal ; sources dans `docs/referentiels/seuils-
   sauvegarde passe à la version suivante de son format ; un Surculus ancien la refuse (`version_future`, « mettre
   l'application à jour ») au lieu de perdre sans le dire un contrôle sans position ; un Surculus à jour lit toujours
   la version précédente. **Une seule v2, partagée** (décision de Pascal du 2026-11-02, reprise 2/3, « v2 partagée ») : la même v2 porte le type `photo`
-  ci-dessus et les contrôles sans position. La mission 086 crée la v2 (document `docs/formats/sursync-v2.md`, schéma,
+  ci-dessus et les contrôles sans position. La mission 088 a créé la v2 ([`docs/formats/sursync-v2.md`](formats/sursync-v2.md), schéma,
   fixtures) ; la partie photos reste à coder plus tard, dans le même format. Voir la fiche
   `pilotage/missions/085-ouvrir-sans-position-adr-et-spec.md`, « Reprise ».
 * Export `<tournée>.zip` : `travaux.gpkg` complété, `DCIM/`. La tournée passe *rendue*
-  et reste consultable. ([format d'échange](formats/sursync-v1.md) ; la fusion relève de l'ADR 0006, réservée et non écrite, voir [l'index](adr/README.md))
+  et reste consultable. ([format d'échange](formats/sursync-v2.md), qui relit la [v1](formats/sursync-v1.md) ; la fusion relève de l'ADR 0006, réservée et non écrite, voir [l'index](adr/README.md))
 
 ## 5. Modèle de données
 
@@ -641,7 +641,7 @@ dans Surculus.
 | Un plant « non observé » ne porte aucune mesure (hauteur, cause, détail) ; hauteur refusée sur un plant absent ; un seul état par plant dans un contrôle ; numéro déjà pris dans la placette refusé (comme `sommier_pointer_plant`) | Surculus | 1 |
 | Plant pointé au-delà du rayon de sa placette (+ 0,10 m) : alerte et confirmation de l'agent, non refusé | Surculus | 1 |
 | Numéros provisoires pendant le premier contrôle, figés à sa clôture ; « un contrôle par jour » = (placette, jour civil Europe/Paris) dans une tournée ; le code lu l'emporte sur le GNSS, « rattaché par identité » seulement au-delà de 15 m, ou sans position mesurée (2026-11-02) | Surculus | 1 |
-| **Ouvrir sans position** (décisions de Pascal du 2026-11-02, ADR 0003, amendement du 2026-11-02, § 4.3) : proposé seulement après **30 s** sans aucun fix (**provisoire**), récepteur actif, localisation et permission accordées ; localisation coupée ou permission refusée : demande de l'activer, pas d'ouverture ; **code lu connu de la tournée exigé**, sans code rien ne s'ouvre ; placette affichée à confirmer avant d'ouvrir ; position du contrôle = position du piquet créée par sommieR, aucune position mesurée ; un fix reçu, même unique, médiocre ou simulé, suit la règle des 15 m ; fix hors de France refusé (« position aberrante : couper puis rallumer la localisation »), refus écrit au journal technique, pas au journal des saisies ; fix reçu après l'ouverture sans position : ignoré, le contrôle reste sans position mesurée jusqu'à « Terminer » ; installation d'une placette sans position refusée | Surculus | 1 |
+| **Ouvrir sans position** (décisions de Pascal du 2026-11-02, ADR 0003, amendement du 2026-11-02, § 4.3) : proposé seulement après **30 s** sans aucun fix (**provisoire**), récepteur actif, localisation et permission accordées ; localisation coupée ou permission refusée : demande de l'activer, pas d'ouverture ; **code lu connu de la tournée exigé**, sans code rien ne s'ouvre (refus `code_requis`, bouton grisé, décision de Pascal du 2026-11-03) ; placette affichée à confirmer avant d'ouvrir ; position du contrôle = position du piquet créée par sommieR, aucune position mesurée ; un fix reçu, même unique, médiocre ou simulé, suit la règle des 15 m ; fix hors de France refusé (« position aberrante : couper puis rallumer la localisation »), refus écrit au journal technique, pas au journal des saisies ; fix reçu après l'ouverture sans position : ignoré, le contrôle reste sans position mesurée jusqu'à « Terminer » ; installation d'une placette sans position refusée | Surculus | 1 |
 | **Code présent dans plusieurs UG** : la position tranche (une seule placette de ce code à 15 m au plus : c'est elle) ; sinon, ou sans position, l'agent choisit l'UG ; jamais le premier trouvé (décisions de Pascal du 2026-11-02) | Surculus | 1 |
 | Export d'un contrôle sans position mesurée : une ligne de `positions_controles`, géométrie **NULL** (pas un POINT EMPTY), `precision_m` NULL, `sans_position_mesuree` vrai, `rattache_par_identite` vrai ; `controles` à la position du piquet ; `source_gnss`, `referentiel_source`, `simulee` NULL (choix de format) ; journal v2 relu après redémarrage, v1 toujours relu ; `.sursync` de la version suivante refusé par un lecteur ancien, version précédente toujours lue (décisions de Pascal du 2026-11-02) | Surculus | 1 |
 | Pente acceptée dans ]−90°, 90°[ ; pas de correction du facteur d'échelle Lambert-93 (erreur < 3 cm à 30 m) | Surculus | 1 |
