@@ -949,3 +949,7 @@
 2026-11-03 · testeur · mission 088 · test de bout en bout `SursyncV2ExportBoutEnBoutTest` poussé (db3b461) : vert d'emblée (la chaîne relève de la 087), vu rouge par une erreur provisoire ; tournée d'essai recalée sur les UUID de la fixture, fixture intacte ; la restauration de `data` n'y passe pas.
 
 2026-11-03 · dev · mission 088 · codée (cf34984) : la sauvegarde s'écrit en v2 (une ligne de code), `sursync-v2.md`, schéma (`const: 2`, `photo` réservé), renvoi de la v1, `fixtures/README.md`, option A figée par `SursyncV2DevTest` (vert d'emblée, signalé) ; tests du testeur intacts ; CI verte ; PR #153 prête, relecture lancée.
+
+2026-11-03 · relecteur · PR #153 · 088 à fusionner : tests du testeur intacts, fixtures refaites à l'octet, schéma v2 valide (Draft 2020-12), test-command 0, CI verte ; mineurs : bout en bout en deux morceaux, rubrique Terrain de la fiche, « gzip -n ».
+2026-11-03 · Pascal · PR #153 · « Fusionner dans la 087 » : fusionnée dans `mission/087-ouvrir-un-controle-sans-position` (d920c58) ; branche 088 supprimée.
+2026-11-03 · Claude (orchestrateur) · PR #154 · documents alignés sur 087 et 088 (ADR 0007 F4, `ci/sommier/README.md`, spec `code_requis` et v2, ADR 0003, formats du journal, `gzip -n -9`, Terrain de la fiche 088), vers la branche 087 ; relecture lancée. Reste : `fixtures/sauvegarde/versions.json` l. 5 (fixture du testeur).
