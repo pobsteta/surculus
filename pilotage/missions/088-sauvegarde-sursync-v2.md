@@ -67,6 +67,25 @@ _Rempli par Pascal seul._
 - **Sources autorisées :** spec § 4.8 et § 5, ADR 0005, `docs/formats/sursync-v1.md` et son schéma,
   `docs/formats/journal-valeurs-v1.md` et `-v2.md`, fiches 009, 024, 031, 085 et 087.
 
+## Décisions de Pascal sur le plan du `dev` (2026-11-03)
+
+1. **Plan accepté, avec ses trois détails** : le schéma v2 exige `version` = 2 (`const`) ; l'encadré de `sursync-v1.md`
+   devient « Version suivante écrite » (et « mission 088 » au lieu de « 086 », avec un lien vers `sursync-v2.md`) ; la v1
+   garde « version courante 1 », puisqu'elle définit la v1. `sursync-v2.md` renvoie à la v1 section par section, sans la
+   recopier ; le schéma v2 est complet.
+2. **Ligne `photo` dans une v2** : on garde le comportement actuel (écartée, signalée `ligne_illisible`, le reste
+   restauré), écrit dans `sursync-v2.md` et figé par un test du `dev` (`SursyncV2DevTest`) ; le vrai message viendra
+   avec la mission des photos.
+3. **Test de bout en bout (restaurer une v2 avec un contrôle sans position, puis l'exporter)** : écrit par le
+   `testeur`, dont le harnais est élargi à `gpkg/src/test` pour ce seul test, sans lire le code.
+4. **Fichiers en plus pour le `dev`** : `fixtures/README.md` (exemples v2) et `SursyncV2DevTest.kt`.
+
+**Échantillon terrain corrigé** (l'application n'exporte pas encore la tournée : aucun écran n'appelle `ExportTravaux` ;
+mission 090, décision de Pascal du 2026-11-03) : avant d'installer la release, copier
+`fixtures/sursync/exemple-v2.sursync` dans `Documents/Surculus/` et le restaurer avec l'application installée : « Mettez
+l'application à jour. Rien n'a été changé. » ; puis, sur la release 087 + 088, le restaurer : le contrôle revient « sans
+position ». L'export se vérifie sur ordinateur (test de bout en bout, CI d'import).
+
 ## Valeur provisoire (chiffre, réglage)
 
 - Aucune.
