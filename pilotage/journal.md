@@ -947,3 +947,5 @@
 2026-11-03 · Pascal · mission 088 · « Accepter, avec les 3 détails » ; ligne `photo` « Garder, l'écrire » ; test restauration puis export « Le testeur » (harnais élargi à `gpkg/src/test`) ; export depuis le téléphone « Mission 090, avant l'essai ». Décisions dans la fiche (98e51f5) ; `dev` relancé pour coder, `testeur` lancé pour le test de bout en bout.
 
 2026-11-03 · testeur · mission 088 · test de bout en bout `SursyncV2ExportBoutEnBoutTest` poussé (db3b461) : vert d'emblée (la chaîne relève de la 087), vu rouge par une erreur provisoire ; tournée d'essai recalée sur les UUID de la fixture, fixture intacte ; la restauration de `data` n'y passe pas.
+
+2026-11-03 · dev · mission 088 · codée (cf34984) : la sauvegarde s'écrit en v2 (une ligne de code), `sursync-v2.md`, schéma (`const: 2`, `photo` réservé), renvoi de la v1, `fixtures/README.md`, option A figée par `SursyncV2DevTest` (vert d'emblée, signalé) ; tests du testeur intacts ; CI verte ; PR #153 prête, relecture lancée.
