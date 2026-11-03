@@ -185,7 +185,7 @@ class OuvrirSansPositionArriveeTest {
         val e = ArriveeControle.ouvrirSansPosition(contexte, journal, horloge, essences, "P35-01", sauvegarde, confirmee = true)
         val c = assertIs<EtatArrivee.Ouverte>(e).controleur
         assertEquals(0, journal.nombreDeLignes, "ouvrir n'écrit rien")
-        assertEquals("1 sur 12", c.instantane().plant.compteur, "les plants de P35-01 sont là")
+        assertEquals("0 sur 12", c.instantane().plant.compteur, "les 12 plants de P35-01 sont là, aucun état dit")
         c.dire(EtatDsf.SAIN)
         val v = controle(journal)
         assertEquals(BancControle.P1.valeur, v.placetteUuid)
