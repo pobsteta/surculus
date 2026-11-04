@@ -1,6 +1,6 @@
 # Brief `surculus` → `sommieR` — définir les niveaux de concurrence et le besoin d'un contrôle
 
-> **Statut** : ouvert, 2026-11-04 · **Émis par** : session `surculus` (orchestrateur), sur la · **Issue** : pobsteta/sommieR#69
+> **Statut** : ouvert, 2026-11-04 · **Émis par** : session `surculus` (orchestrateur), sur la
 > décision de Pascal · **Urgence** : moyenne · **Issue** : pobsteta/sommieR#69
 
 ## Décisions de Pascal (2026-11-04, missions 091 et 092 de Surculus)
