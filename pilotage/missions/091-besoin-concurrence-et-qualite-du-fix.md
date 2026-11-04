@@ -72,6 +72,31 @@ _Rempli par Pascal seul._
 - La tolérance de 1 mm du recalcul des positions (`SaisiesDuJournal.kt` l. 99) : le plan dit d'où elle vient ou propose
   mieux.
 
+## Décisions de Pascal sur le plan du `dev` (2026-11-04)
+
+Le plan du `dev` (temps « tenir ») est accepté. API du `testeur` reprise (écarts compatibles : `precisionM: Double?`,
+`QualiteFix` dans `core.session` malgré l'homonyme `core.gnss.QualiteFix`, besoin écrit au journal par réécriture de la
+ligne `controle`). Réponses :
+1. **Saisie** : à l'écran, dans la vue « Terminer », **obligatoire**, sans valeur par défaut : grand bouton « Aucun »,
+   grille des codes de la couche `codes` (code en gros, début du libellé, environ 80 dp), puis faible, moyenne, forte ;
+   « Terminer » grisé tant qu'il manque un choix, avec la phrase de ce qui manque. Ni voix ni boutons de volume ici.
+2. **Contrôles anciens sans besoin** : refusés au rendu, faute « P35-01 : contrôle sans besoin ni concurrence :
+   l'annuler et le refaire » ; leur qualité du fix à NULL, jamais « faux ».
+3. **Format** : valeurs du journal **v3** et sauvegarde `.sursync` **v3**, partagées ; le journal relit v1, v2, v3 ; la
+   sauvegarde suit N-1 (v2 et v3). Les tests « v3 ignorée » de la 087 et de la 088 (`JournalValeursV2Test` l. 56, 162,
+   179 ; `TraceValeursIgnoreesTest` l. 22 ; `SursyncV2Test` l. 99) passent à « v4 ignorée », par le `testeur`, qui écrit
+   aussi les tests de la v3. Documents `journal-valeurs-v3.md`, `sursync-v3.md` et schéma : rédigés par l'orchestrateur.
+4. **Qualité du fix** : `source_gnss` ∈ `telephone`, `recepteur_autonome`, `recepteur_dgps`, `recepteur_rtk_flottant`,
+   `recepteur_rtk_fixe` (indicateur de qualité GGA, NMEA 0183 ; la plus mauvaise des fix moyennés, après
+   rétrogradation) ; `precision_m` = la plus mauvaise précision des fix moyennés, NULL si un fix n'en donne pas, jamais
+   0 ; `simulee` vrai si un fix est `isMock` ou de qualité GGA 8.
+5. **Tests existants à compléter** (environ 40 appels à `terminer()` dans 13 fichiers) : par le `testeur`, qui ajoute
+   seulement le besoin et la concurrence avant « terminer », sans lire le code ; aucune assertion touchée.
+6. **Tolérance de 1 mm** : le recalcul des plants au rendu utilise la déclinaison inscrite au journal ; 1 mm reste la
+   marge d'arrondi, raison écrite dans le code.
+7. **Concurrence** : référentiel `docs/referentiels/concurrences.csv` écrit d'abord par l'`acquereur` (mission 092) ;
+   le code le reprend avec un test d'égalité.
+
 ## Harnais
 
 - **Testeur peut :** tests dans `core/`, `gpkg/`, `data/`, `app/src/test/` ; fixtures ; CI d'import (`ci/sommier/`) pour
