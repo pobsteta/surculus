@@ -248,7 +248,7 @@ object SaisiesDuJournal {
                 PositionMesuree(position = null, rattacheParIdentite = true, sansPositionMesuree = true)
             } else {
                 // Qualité du fix : celle inscrite au journal (v3) ; inconnue (contrôle d'avant la 091) : NULL, jamais « faux ».
-                val q = v.qualiteFix
+                val q = v.qualite
                 PositionMesuree(
                     PointLambert93(xMetres = v.positionMesureeX!!, yMetres = v.positionMesureeY!!),
                     precisionM = q?.precisionM, sourceGnss = q?.sourceGnss, simulee = q?.simulee,

@@ -222,7 +222,7 @@ class SessionControle private constructor(
     private val rattache: Rattache,
     private val diagnostic: (String) -> Unit,
     /** Qualité du fix d'arrivée (mission 091) : `null` sans position mesurée ou si l'écran ne la sait pas. */
-    private val qualiteFix: QualiteFix?,
+    private val qualite: QualiteFix?,
 ) {
     /**
      * Le rattachement de l'arrivée : piquet, distance, « par identité », position du contrôle et position mesurée. Fixé à
@@ -402,7 +402,7 @@ class SessionControle private constructor(
                 "Besoin « $code » absent de la couche codes de la tournée : choisir un code proposé, ou « aucun ».",
             )
         }
-        return reecrireControle { it.copy(besoin = code) }
+        return reecrireControle({ besoinEnAttente = code }) { it.copy(besoin = code) }
     }
 
     /** Dit la concurrence du contrôle du jour : faible, moyenne ou forte ([Concurrences]) ; sinon `hors_referentiel`. */
@@ -413,19 +413,25 @@ class SessionControle private constructor(
                 "Concurrence « $niveau » inconnue : faible, moyenne ou forte.",
             )
         }
-        return reecrireControle { it.copy(concurrence = niveau) }
+        return reecrireControle({ concurrenceEnAttente = niveau }) { it.copy(concurrence = niveau) }
     }
 
-    /** Réécrit la ligne `controle` du jour (l'écrit d'abord s'il n'existe pas) ; rien n'est écrit si rien ne change. */
-    private fun reecrireControle(changer: (ValeurControle) -> ValeurControle): SuiteSession {
-        val vue = lire()
-        val assure = assurerControle(vue)
-        val (ligne, valeur) = lire().controleDuJour ?: error("le contrôle du jour vient d'être écrit")
+    /**
+     * Réécrit la ligne `controle` du jour ; rien n'est écrit si rien ne change. Sans contrôle du jour (aucun plant pointé
+     * ni dit), le choix est gardé [enAttente] et écrit avec le contrôle, à la première saisie : un choix seul n'ouvre pas
+     * de contrôle au journal (« Terminer » sans état dit n'écrit rien, décision de Pascal sur la #108).
+     */
+    private fun reecrireControle(enAttente: () -> Unit, changer: (ValeurControle) -> ValeurControle): SuiteSession {
+        val (ligne, valeur) = lire().controleDuJour ?: run { enAttente(); return SuiteSession.Fait() }
         val nouvelle = changer(valeur)
-        if (nouvelle == valeur) return SuiteSession.Fait(assure.lignes)
+        if (nouvelle == valeur) return SuiteSession.Fait()
         val ecrite = ecrire(ligne.objetUuid, FormatValeurs.TYPE_CONTROLE, nouvelle.versJson(), remplace = ligne.uuid)
-        return SuiteSession.Fait(assure.lignes + ecrite)
+        return SuiteSession.Fait(listOf(ecrite))
     }
+
+    /** Besoin et concurrence dits avant que le contrôle du jour n'existe : écrits avec lui (en mémoire jusque-là). */
+    private var besoinEnAttente: String? = null
+    private var concurrenceEnAttente: String? = null
 
     /**
      * Termine la placette (décision de Pascal du 2026-10-27) : le contrôle devient « Contrôlé », les numéros sont
@@ -504,7 +510,8 @@ class SessionControle private constructor(
             positionX = rattache.positionControle.xMetres, positionY = rattache.positionControle.yMetres,
             positionMesureeX = rattache.positionMesuree?.xMetres, positionMesureeY = rattache.positionMesuree?.yMetres,
             rattacheParIdentite = rattache.parIdentite, repereEpsg = contexte.epsg.code, sansPositionMesuree = rattache.sansPositionMesuree,
-            qualiteFix = qualiteFix.takeUnless { rattache.sansPositionMesuree },
+            qualite = qualite.takeUnless { rattache.sansPositionMesuree },
+            besoin = besoinEnAttente, concurrence = concurrenceEnAttente,
         )
         val ligne = ecrire(uuid, FormatValeurs.TYPE_CONTROLE, valeur.versJson(), remplace = null)
         return ControleAssure(uuid, listOf(ligne))
@@ -638,7 +645,8 @@ class SessionControle private constructor(
             plants = vue.plants, courant = courant?.takeIf { c -> vue.plants.any { it.uuid == c } }, regarniDe = regarniEnAttente?.first,
             nbDits = comptes.count { it.duJour != null }, nbPlants = comptes.size,
             totaux = Totaux.deduire(etatsDuJour, remplaces),
-            besoin = vue.controleDuJour?.second?.besoin, concurrence = vue.controleDuJour?.second?.concurrence,
+            besoin = if (vue.controleDuJour != null) vue.controleDuJour.second.besoin else besoinEnAttente,
+            concurrence = if (vue.controleDuJour != null) vue.controleDuJour.second.concurrence else concurrenceEnAttente,
         )
     }
 

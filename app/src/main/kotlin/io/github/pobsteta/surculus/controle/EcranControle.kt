@@ -211,7 +211,7 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
                     codeLu = code,
                     sauvegarde = SauvegardeApp.ecoute(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
                     ugChoisie = ugChoisie,
-                    qualite = QualiteFix.de(fixes),
+                    qualite = QualiteFix.deFix(fixes),
                 )
             }
         }
@@ -894,13 +894,13 @@ private fun VueTerminer(e: EcranControle, agir: (ControleurPlacette.() -> EcranC
 @Composable
 private fun ChoixBesoinEtConcurrence(b: VueBesoin, agir: (ControleurPlacette.() -> EcranControle) -> Unit) {
     Text(stringResource(R.string.controle_besoin_titre), style = MaterialTheme.typography.titleLarge, color = couleurNeutre())
-    BoutonChoix(b.aucunChoisi, Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT), { agir { choisirBesoin(Besoins.AUCUN) } }) {
+    BoutonChoix(b.aucunChoisi, Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT), { agir { direBesoin(Besoins.AUCUN) } }) {
         Text(stringResource(R.string.controle_besoin_aucun), style = MaterialTheme.typography.titleLarge)
     }
     for (ligne in b.codes.chunked(DimensionsControle.CODES_PAR_LIGNE)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             for (c in ligne) {
-                BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_CODE), { agir { choisirBesoin(c.code) } }) {
+                BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_CODE), { agir { direBesoin(c.code) } }) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(c.code, style = MaterialTheme.typography.titleLarge, maxLines = 1)
                         if (c.libelleCourt.isNotEmpty()) Text(c.libelleCourt, style = MaterialTheme.typography.labelSmall, maxLines = 2)
@@ -913,7 +913,7 @@ private fun ChoixBesoinEtConcurrence(b: VueBesoin, agir: (ControleurPlacette.() 
     Text(stringResource(R.string.controle_concurrence_titre), style = MaterialTheme.typography.titleLarge, color = couleurNeutre())
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         for (c in b.concurrences) {
-            BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_ETAT), { agir { choisirConcurrence(c.niveau) } }) {
+            BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_ETAT), { agir { direConcurrence(c.niveau) } }) {
                 Text(c.libelle, style = MaterialTheme.typography.titleMedium, maxLines = 1)
             }
         }

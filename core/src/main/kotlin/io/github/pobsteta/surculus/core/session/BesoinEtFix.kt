@@ -25,7 +25,10 @@ data class QualiteFix(val precisionM: Double?, val sourceGnss: String, val simul
          * La qualité d'une arrivée moyennée sur [fixes] : la plus mauvaise source, la plus mauvaise précision, simulée si
          * un seul fix l'est. `null` sans fix. Une précision non finie ou nulle est une précision inconnue (`null`).
          */
-        fun de(fixes: List<FixGnss>): QualiteFix? {
+        /** Les cinq valeurs de `source_gnss` ([SourcesGnss]), du moins bon au meilleur. */
+        val SOURCES_GNSS: List<String> get() = SourcesGnss.RANG
+
+        fun deFix(fixes: List<FixGnss>): QualiteFix? {
             if (fixes.isEmpty()) return null
             val source = fixes.map(SourcesGnss::de).minBy { SourcesGnss.RANG.indexOf(it) }
             val precisions = fixes.map { f -> f.precisionHorizontaleM?.takeIf { it.isFinite() && it > 0.0 } }

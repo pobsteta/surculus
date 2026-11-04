@@ -49,7 +49,7 @@ class BesoinEtFixDevTest {
 
     @Test
     fun `sans fix, pas de qualite`() {
-        assertNull(QualiteFix.de(emptyList()))
+        assertNull(QualiteFix.deFix(emptyList()))
     }
 
     @Test
@@ -71,26 +71,26 @@ class BesoinEtFixDevTest {
     @Test
     fun `une moyenne prend la plus mauvaise source et la plus mauvaise precision`() {
         val r = OrigineFix.RECEPTEUR
-        val q = assertNotNull(QualiteFix.de(listOf(fix(r, QualiteGga.RTK_FIXE, 0.02), fix(r, QualiteGga.RTK_FLOTTANT, 0.3), fix(r, QualiteGga.RTK_FIXE, 0.03))))
+        val q = assertNotNull(QualiteFix.deFix(listOf(fix(r, QualiteGga.RTK_FIXE, 0.02), fix(r, QualiteGga.RTK_FLOTTANT, 0.3), fix(r, QualiteGga.RTK_FIXE, 0.03))))
         assertEquals(SourcesGnss.RECEPTEUR_RTK_FLOTTANT, q.sourceGnss)
         assertEquals(0.3, q.precisionM)
         assertFalse(q.simulee)
         // Un fix du téléphone dans la moyenne : la source est « telephone ».
-        assertEquals(SourcesGnss.TELEPHONE, QualiteFix.de(listOf(fix(r, QualiteGga.RTK_FIXE, 0.02), fix()))!!.sourceGnss)
+        assertEquals(SourcesGnss.TELEPHONE, QualiteFix.deFix(listOf(fix(r, QualiteGga.RTK_FIXE, 0.02), fix()))!!.sourceGnss)
     }
 
     @Test
     fun `une precision inconnue, nulle ou non finie rend la precision de la moyenne inconnue, jamais 0`() {
         for (p in listOf(null, 0.0, -1.0, Double.NaN, Double.POSITIVE_INFINITY)) {
-            assertNull(QualiteFix.de(listOf(fix(precision = 2.0), fix(precision = p)))!!.precisionM, "précision $p")
+            assertNull(QualiteFix.deFix(listOf(fix(precision = 2.0), fix(precision = p)))!!.precisionM, "précision $p")
         }
     }
 
     @Test
     fun `simulee si un fix est isMock ou de qualite GGA 8`() {
-        assertTrue(QualiteFix.de(listOf(fix(), fix(simule = true)))!!.simulee)
-        assertTrue(QualiteFix.de(listOf(fix(OrigineFix.RECEPTEUR, QualiteGga.SIMULATION)))!!.simulee)
-        assertFalse(QualiteFix.de(listOf(fix(), fix()))!!.simulee)
+        assertTrue(QualiteFix.deFix(listOf(fix(), fix(simule = true)))!!.simulee)
+        assertTrue(QualiteFix.deFix(listOf(fix(OrigineFix.RECEPTEUR, QualiteGga.SIMULATION)))!!.simulee)
+        assertFalse(QualiteFix.deFix(listOf(fix(), fix()))!!.simulee)
     }
 
     // ------------------------------------------------------------------ session : besoin, concurrence, qualité
@@ -138,18 +138,31 @@ class BesoinEtFixDevTest {
     }
 
     @Test
+    fun `un choix dit avant toute saisie n'ecrit rien, puis part avec le controle a la premiere saisie`() = with(banc()) {
+        val s = session()
+        assertEquals(SuiteSession.Fait(), s.direBesoin("aucun"))
+        assertEquals(SuiteSession.Fait(), s.direConcurrence("moyenne"))
+        assertEquals(0, journal.lignes.size, "un choix seul n'ouvre pas de contrôle au journal")
+        assertEquals("aucun", s.etat().besoin)
+        assertEquals(SuiteSession.RienASaisir, s.terminer())
+        s.pointe(1.2, 10.0)
+        val v = dernierControle(this)
+        assertEquals("aucun", v.besoin); assertEquals("moyenne", v.concurrence)
+    }
+
+    @Test
     fun `la qualite dite a l'arrivee est ecrite au journal, et rien sans position mesuree`() {
         val b = banc()
         val q = QualiteFix(0.4, SourcesGnss.RECEPTEUR_RTK_FIXE, simulee = false)
         val o = SessionControle.ouvrir(b.contexte, b.journal, b.horloge, b.essences, Arrivee.Lambert93(BancSession.POSITION_P1, q))
         val s = assertIs<OuvertureControle.Ouverte>(o).session
         with(b) { s.pointe(1.2, 10.0) }
-        assertEquals(q, dernierControle(b).qualiteFix)
+        assertEquals(q, dernierControle(b).qualite)
 
         val b2 = banc()
         val s2 = assertIs<OuvertureControle.Ouverte>(SessionControle.ouvrir(b2.contexte, b2.journal, b2.horloge, b2.essences, Arrivee.SansPosition, "P35-01")).session
         with(b2) { s2.pointe(1.2, 10.0) }
-        assertNull(dernierControle(b2).qualiteFix)
+        assertNull(dernierControle(b2).qualite)
     }
 
     @Test
@@ -170,7 +183,7 @@ class BesoinEtFixDevTest {
         operateur = "Agent d'essai", termine = true, visiteLeUtcMs = Instant.parse("2026-10-20T09:30:00Z").toEpochMilli(),
         positionX = 846_165.36, positionY = 6_686_122.86, positionMesureeX = 846_165.36, positionMesureeY = 6_686_122.86,
         rattacheParIdentite = false, repereEpsg = 2154, numeros = mapOf("p" to 1),
-        besoin = "RG", concurrence = "forte", qualiteFix = QualiteFix(0.4, SourcesGnss.TELEPHONE, simulee = true),
+        besoin = "RG", concurrence = "forte", qualite = QualiteFix(0.4, SourcesGnss.TELEPHONE, simulee = true),
     )
 
     @Test
@@ -181,10 +194,10 @@ class BesoinEtFixDevTest {
         assertEquals(v3, ValeurControle.lire(t) { traces += it })
         assertEquals(emptyList(), traces)
         // Sans besoin ni qualité : clés à null, relues à null.
-        val vide = v3.copy(besoin = null, concurrence = null, qualiteFix = null)
+        val vide = v3.copy(besoin = null, concurrence = null, qualite = null)
         assertEquals(vide, ValeurControle.lire(vide.versJson()))
         // Précision inconnue : la qualité garde sa source et « simulée ».
-        val sansPrecision = v3.copy(qualiteFix = QualiteFix(null, SourcesGnss.RECEPTEUR_AUTONOME, false))
+        val sansPrecision = v3.copy(qualite = QualiteFix(null, SourcesGnss.RECEPTEUR_AUTONOME, false))
         assertEquals(sansPrecision, ValeurControle.lire(sansPrecision.versJson()))
     }
 
@@ -193,7 +206,7 @@ class BesoinEtFixDevTest {
         for (v in listOf(1, 2)) {
             val ancien = v3.versJson().replace("{\"v\":3,", "{\"v\":$v,")
             val lu = assertNotNull(ValeurControle.lire(ancien), "v$v")
-            assertNull(lu.besoin); assertNull(lu.concurrence); assertNull(lu.qualiteFix)
+            assertNull(lu.besoin); assertNull(lu.concurrence); assertNull(lu.qualite)
         }
     }
 

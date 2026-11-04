@@ -91,7 +91,7 @@ data class ValeurControle(
     /** faible, moyenne ou forte (v3) ; `null` : pas encore dite. */
     val concurrence: String? = null,
     /** Qualité du fix d'arrivée (v3) : `null` sans position mesurée, et pour toute valeur v1 ou v2 (inconnue, jamais devinée). */
-    val qualiteFix: QualiteFix? = null,
+    val qualite: QualiteFix? = null,
 ) {
     fun versJson(): String = Json.ecrire(
         linkedMapOf<String, Any?>(
@@ -101,7 +101,7 @@ data class ValeurControle(
             "position_mesuree_x" to positionMesureeX, "position_mesuree_y" to positionMesureeY,
             "rattache_par_identite" to rattacheParIdentite, "sans_position_mesuree" to sansPositionMesuree, "repere_epsg" to repereEpsg,
             "besoin" to besoin, "concurrence" to concurrence,
-            "precision_m" to qualiteFix?.precisionM, "source_gnss" to qualiteFix?.sourceGnss, "simulee" to qualiteFix?.simulee,
+            "precision_m" to qualite?.precisionM, "source_gnss" to qualite?.sourceGnss, "simulee" to qualite?.simulee,
         ).also { m -> numeros?.let { m["numeros"] = LinkedHashMap<String, Any?>(it) } },
     )
 
@@ -146,6 +146,8 @@ data class ValeurControle(
                 val s = m["simulee"]
                 if (s != null && s !is Boolean) return null
                 val simulee = s as? Boolean
+                // Une concurrence hors de faible, moyenne, forte n'a pas été écrite par Surculus : ignorée, tracée.
+                if (c != null && !Concurrences.permise(c)) return null
                 besoin = b
                 concurrence = c
                 if (precision != null || source != null || simulee != null) {

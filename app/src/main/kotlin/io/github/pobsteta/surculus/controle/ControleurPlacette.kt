@@ -356,13 +356,13 @@ class ControleurPlacette(
     }
 
     /** Le besoin touché dans la vue « Terminer » : un code de la couche `codes`, ou « aucun » (mission 091). */
-    fun choisirBesoin(code: String): EcranControle {
+    fun direBesoin(code: String): EcranControle {
         message = TextesControle.message(session.direBesoin(code))
         return instantane()
     }
 
     /** La concurrence touchée dans la vue « Terminer » : faible, moyenne ou forte. */
-    fun choisirConcurrence(niveau: String): EcranControle {
+    fun direConcurrence(niveau: String): EcranControle {
         message = TextesControle.message(session.direConcurrence(niveau))
         return instantane()
     }

@@ -61,8 +61,8 @@ class BesoinTerminerDevTest {
         val refuse = c.terminer()
         assertEquals(VueControle.TERMINER, refuse.vue)
         assertEquals("Choisir le besoin et la concurrence pour terminer.", refuse.message!!.texte)
-        assertEquals(true, c.choisirBesoin("aucun").besoin.aucunChoisi)
-        val e = c.choisirConcurrence("moyenne")
+        assertEquals(true, c.direBesoin("aucun").besoin.aucunChoisi)
+        val e = c.direConcurrence("moyenne")
         assertTrue(e.besoin.terminerPermis)
         assertTrue(e.besoin.concurrences.single { it.niveau == "moyenne" }.choisi)
         assertEquals(VueControle.TERMINEE, c.terminer().vue)
@@ -71,7 +71,7 @@ class BesoinTerminerDevTest {
     @Test
     fun `un code absent de la couche codes est refuse, l'ecran le dit`() {
         val c = BancControle(nbPlantsAnterieurs = 1).controleur()
-        val e = c.choisirBesoin("ZZ")
+        val e = c.direBesoin("ZZ")
         assertTrue(e.message!!.erreur)
         assertFalse(e.besoin.aucunChoisi)
     }
@@ -84,6 +84,6 @@ class BesoinTerminerDevTest {
         val c = (e as EtatArrivee.Ouverte).controleur
         c.dire(io.github.pobsteta.surculus.core.placette.EtatDsf.SAIN)
         val controle = b.journal.lignesCourantes().last { it.type == "controle" }
-        assertEquals(q, ValeurControle.lire(controle.valeur)!!.qualiteFix)
+        assertEquals(q, ValeurControle.lire(controle.valeur)!!.qualite)
     }
 }
