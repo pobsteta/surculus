@@ -10,7 +10,8 @@ package io.github.pobsteta.surculus.core.session
 /**
  * Format de la `valeur` des lignes du journal écrites par la session de contrôle : **unique endroit du code** qui
  * connaît les clés. Le format est décrit dans `docs/formats/journal-valeurs-v1.md` et, pour ce qui change en version 2,
- * dans `docs/formats/journal-valeurs-v2.md` (mission 087). Les clés suivent les noms de colonnes de la spec § 5 quand
+ * dans `docs/formats/journal-valeurs-v2.md` (mission 087) ; la version 3 (mission 091, décision de Pascal du 2026-11-04,
+ * question 3) ajoute à la valeur `controle` le besoin, la concurrence et la qualité du fix d'arrivée. Les clés suivent les noms de colonnes de la spec § 5 quand
  * ils existent (`placette_uuid`, `jour_civil`, `etat`, `cause_groupe`, `cause_detail`, `hauteur_cm`, `azimut_mag`,
  * `unite_azimut`, `remplace_uuid`...).
  *
@@ -18,16 +19,18 @@ package io.github.pobsteta.surculus.core.session
  * dans `unite_azimut` (`deg` ou `gr`), positions en Lambert-93 (`x` = Est, `y` = Nord, mètres), instants en
  * millisecondes Unix UTC.
  *
- * Lecture (v2, « Lecture ») : `"v":1` se lit selon la v1, `"v":2` selon la v2 ; toute autre valeur de `v` (absente, 0,
- * 3...) rend la valeur illisible. Une valeur illisible, incomplète ou incohérente est **ignorée, jamais complétée**, et
+ * Lecture : `"v":1` se lit selon la v1, `"v":2` selon la v2, `"v":3` selon la v3 ; toute autre valeur de `v` (absente,
+ * 0, 4...) rend la valeur illisible. Le journal relit **toutes** les versions qu'il a écrites (v1 à v3, décision de Pascal
+ * du 2026-11-04) : un journal déjà sur un téléphone ne perd jamais une valeur ancienne (la règle N-1 est celle de la
+ * sauvegarde `.sursync`, pas du journal). Une valeur illisible, incomplète ou incohérente est **ignorée, jamais complétée**, et
  * signalée une fois à la fonction `trace` des lecteurs (le journal technique : choix de format de la v2).
  */
 object FormatValeurs {
-    /** Version du format de `valeur`, écrite dans chaque ligne sous la clé `v` : une seule pour tout le format (v2). */
-    const val VERSION = 2L
+    /** Version du format de `valeur`, écrite dans chaque ligne sous la clé `v` : une seule pour tout le format (v3). */
+    const val VERSION = 3L
 
-    /** Versions relues : la courante et la précédente (principe N-1, comme `.sursync`). */
-    val VERSIONS_LUES: Set<Long> = setOf(1L, 2L)
+    /** Versions relues : toutes celles que Surculus a écrites (v1 à v3), pour qu'aucun journal ancien ne perde rien. */
+    val VERSIONS_LUES: Set<Long> = setOf(1L, 2L, 3L)
 
     const val TYPE_CONTROLE = "controle"
     const val TYPE_POINTAGE = "pointage"
@@ -40,7 +43,7 @@ object FormatValeurs {
     internal fun Map<String, Any?>.booleen(cle: String): Boolean? = this[cle] as? Boolean
 
     /**
-     * Le cadre commun des lecteurs : JSON lisible, version 1 ou 2, puis [lecture] ; à chaque échec, une seule trace
+     * Le cadre commun des lecteurs : JSON lisible, version 1, 2 ou 3, puis [lecture] ; à chaque échec, une seule trace
      * (sans le contenu de la valeur, qui porte le nom de l'opérateur), et `null`.
      */
     internal fun <T> lire(texte: String?, type: String, trace: (String) -> Unit, lecture: (Map<String, Any?>, Long) -> T?): T? {
@@ -51,7 +54,7 @@ object FormatValeurs {
         }
         val v = m.entier("v")
         if (v == null || v !in VERSIONS_LUES) {
-            trace("journal : valeur « $type » de version ${m["v"] ?: "absente"}, ignorée (versions lues : 1 et 2)")
+            trace("journal : valeur « $type » de version ${m["v"] ?: "absente"}, ignorée (versions lues : 1, 2 et 3)")
             return null
         }
         val lu = lecture(m, v)
@@ -83,6 +86,12 @@ data class ValeurControle(
     val numeros: Map<String, Int>? = null,
     /** Ouvert sans aucun fix, sur le code lu confirmé (ADR 0003, amendement du 2026-11-02 ; v2). Faux pour toute valeur v1. */
     val sansPositionMesuree: Boolean = false,
+    /** Le travail qui s'impose : un code de la couche `codes` de la tournée, ou « aucun » (v3) ; `null` : pas encore dit. */
+    val besoin: String? = null,
+    /** faible, moyenne ou forte (v3) ; `null` : pas encore dite. */
+    val concurrence: String? = null,
+    /** Qualité du fix d'arrivée (v3) : `null` sans position mesurée, et pour toute valeur v1 ou v2 (inconnue, jamais devinée). */
+    val qualiteFix: QualiteFix? = null,
 ) {
     fun versJson(): String = Json.ecrire(
         linkedMapOf<String, Any?>(
@@ -91,6 +100,8 @@ data class ValeurControle(
             "position_x" to positionX, "position_y" to positionY,
             "position_mesuree_x" to positionMesureeX, "position_mesuree_y" to positionMesureeY,
             "rattache_par_identite" to rattacheParIdentite, "sans_position_mesuree" to sansPositionMesuree, "repere_epsg" to repereEpsg,
+            "besoin" to besoin, "concurrence" to concurrence,
+            "precision_m" to qualiteFix?.precisionM, "source_gnss" to qualiteFix?.sourceGnss, "simulee" to qualiteFix?.simulee,
         ).also { m -> numeros?.let { m["numeros"] = LinkedHashMap<String, Any?>(it) } },
     )
 
@@ -114,11 +125,42 @@ data class ValeurControle(
             } else if (mx == null || my == null) {
                 return null
             }
+            // v3 : besoin, concurrence et qualité du fix (journal-valeurs-v3). Une clé absente vaut `null` ; une clé présente
+            // d'un autre type rend la valeur incohérente. Sans position mesurée, la qualité du fix est forcément vide.
+            fun texteOuNul(cle: String): Pair<Boolean, String?> = when (val x = m[cle]) {
+                null -> true to null
+                is String -> true to x
+                else -> false to null
+            }
+            var besoin: String? = null
+            var concurrence: String? = null
+            var qualite: QualiteFix? = null
+            if (v >= 3L) {
+                val (okB, b) = texteOuNul("besoin")
+                val (okC, c) = texteOuNul("concurrence")
+                val (okS, source) = texteOuNul("source_gnss")
+                if (!okB || !okC || !okS) return null
+                val p = m["precision_m"]
+                if (p != null && p !is Number) return null
+                val precision = (p as? Number)?.toDouble()
+                val s = m["simulee"]
+                if (s != null && s !is Boolean) return null
+                val simulee = s as? Boolean
+                besoin = b
+                concurrence = c
+                if (precision != null || source != null || simulee != null) {
+                    // La qualité se dit en entier (source et « simulée » ensemble ; la précision peut manquer), et
+                    // jamais pour un contrôle sans position mesurée.
+                    if (sans || source == null || simulee == null) return null
+                    if (precision != null && !(precision.isFinite() && precision > 0.0)) return null
+                    qualite = QualiteFix(precision, source, simulee)
+                }
+            }
             ValeurControle(
                 m.texte("placette_uuid") ?: return null, m.texte("code_placette") ?: return null, m.texte("jour_civil") ?: return null,
                 m.texte("operateur") ?: return null, m.booleen("termine") ?: return null, m.entier("visite_le_utc_ms") ?: return null,
                 m.reel("position_x") ?: return null, m.reel("position_y") ?: return null,
-                mx, my, identite, m.entier("repere_epsg")?.toInt() ?: return null, numeros, sans,
+                mx, my, identite, m.entier("repere_epsg")?.toInt() ?: return null, numeros, sans, besoin, concurrence, qualite,
             )
         }
     }

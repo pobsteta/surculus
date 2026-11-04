@@ -31,6 +31,9 @@
     <string name="controle_annuler">Annuler</string>
     <string name="controle_terminer">Terminer</string>
     <string name="controle_terminer_titre">Terminer %1$s ?</string>
+    <string name="controle_besoin_titre">Besoin</string>
+    <string name="controle_besoin_aucun">Aucun</string>
+    <string name="controle_concurrence_titre">Concurrence</string>
     <string name="controle_reprendre">Reprendre</string>
     <string name="controle_controlee">%1$s contrôlée</string>
     <string name="controle_fermer">Fermer</string>

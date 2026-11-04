@@ -20,10 +20,12 @@ import java.util.zip.GZIPOutputStream
  */
 object FormatSursync {
     /**
-     * Version écrite par cette application : 2 depuis la mission 088 (le journal écrit des valeurs v2, dont les
-     * contrôles sans position mesurée ; docs/formats/sursync-v2.md). Un lecteur v1 refuse nos fichiers (`version_future`).
+     * Version écrite par cette application : 3 depuis la mission 091 (le journal écrit des valeurs v3 : besoin,
+     * concurrence et qualité du fix ; décision de Pascal du 2026-11-04, question 3 ; docs/formats/sursync-v3.md). Un
+     * Surculus ancien (lecteur v2) refuse nos fichiers (`version_future`) au lieu de perdre le besoin sans le dire ; ce
+     * lecteur relit v2 et v3 (règle N-1).
      */
-    const val VERSION_COURANTE = 2
+    const val VERSION_COURANTE = 3
 
     /** Déclenchement (décision de Pascal, 2026-10-21) : 20 saisies ou 5 minutes, au premier des deux. */
     const val N_SAISIES = 20

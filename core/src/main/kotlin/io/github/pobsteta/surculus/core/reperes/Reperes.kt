@@ -102,13 +102,19 @@ object ChaineAzimut {
     const val ALTITUDE_TERRAIN_M = 0.0
 
     fun orienter(azimut: AzimutSaisi, point: PointGeographique, date: LocalDate): Resultat<Orientation> =
-        DeclinaisonWmm2025.calculer(point, date, ALTITUDE_TERRAIN_M).puis { d ->
-            val gamma = Convergence.lambert93(point)
-            val azMag = azimut.degres
-            val azGeo = Azimut.magnetiqueVersGeographique(azMag, d)
-            val azGrille = Azimut.geographiqueVersGrille(azGeo, gamma)
-            Resultat.Accepte(Orientation(azMag, d, gamma, azGeo, azGrille))
-        }
+        DeclinaisonWmm2025.calculer(point, date, ALTITUDE_TERRAIN_M).puis { d -> Resultat.Accepte(orienterAvec(azimut, point, d)) }
+
+    /**
+     * La même chaîne avec une déclinaison **donnée** (en degrés, positive vers l'est), par exemple celle inscrite au
+     * journal au moment du pointage (mission 091) : le résultat ne dépend plus de la version du modèle magnétique.
+     */
+    fun orienterAvec(azimut: AzimutSaisi, point: PointGeographique, declinaisonDeg: Double): Orientation {
+        val gamma = Convergence.lambert93(point)
+        val azMag = azimut.degres
+        val azGeo = Azimut.magnetiqueVersGeographique(azMag, declinaisonDeg)
+        val azGrille = Azimut.geographiqueVersGrille(azGeo, gamma)
+        return Orientation(azMag, declinaisonDeg, gamma, azGeo, azGrille)
+    }
 }
 
 /** Référentiel (EPSG) d'une tournée : Lambert-93 sur RGF93 v1 (contrat sommieR 0.31.1) ou v2b (cible, ADR 0003). */
@@ -181,16 +187,37 @@ object PointDerive {
             return Resultat.Refuse(RefusRepere.DistanceInvalide(distanceHorizontaleM))
         }
         val geo = PointGeographique.depuisLambert93(piquet)
-        return ChaineAzimut.orienter(azimut, geo, date).puis { o ->
-            val a = Math.toRadians(o.azimutGrilleDeg)
-            val dx = distanceHorizontaleM * sin(a)
-            val dy = distanceHorizontaleM * cos(a)
-            Resultat.Accepte(
-                PlantDerive(
-                    piquet, epsg, distanceHorizontaleM, azimut, date, o, dx, dy,
-                    PointLambert93(piquet.xMetres + dx, piquet.yMetres + dy),
-                ),
-            )
+        return ChaineAzimut.orienter(azimut, geo, date).puis { o -> Resultat.Accepte(placer(piquet, epsg, distanceHorizontaleM, azimut, date, o)) }
+    }
+
+    /**
+     * Comme [deriver], avec la déclinaison **inscrite au journal** au moment du pointage (mission 091, décision de Pascal
+     * du 2026-11-04, point 6) : le rendu recalcule la géométrie du plant sans dépendre de la version du modèle magnétique
+     * de l'application qui rend (une mise à jour du WMM entre le pointage et le rendu ne crée pas de fausse faute).
+     */
+    fun deriverAvecDeclinaison(
+        piquet: PointLambert93,
+        epsg: CodeEpsg,
+        distanceHorizontaleM: Double,
+        azimut: AzimutSaisi,
+        date: LocalDate,
+        declinaisonDeg: Double,
+    ): Resultat<PlantDerive> {
+        if (!EmpriseLambert93.FRANCE_METROPOLITAINE.contient(piquet)) {
+            return Resultat.Refuse(RefusRepere.PiquetHorsFrance(piquet.xMetres, piquet.yMetres))
         }
+        if (!distanceHorizontaleM.isFinite() || distanceHorizontaleM < 0.0) {
+            return Resultat.Refuse(RefusRepere.DistanceInvalide(distanceHorizontaleM))
+        }
+        require(declinaisonDeg.isFinite()) { "déclinaison non finie : $declinaisonDeg" }
+        val o = ChaineAzimut.orienterAvec(azimut, PointGeographique.depuisLambert93(piquet), declinaisonDeg)
+        return Resultat.Accepte(placer(piquet, epsg, distanceHorizontaleM, azimut, date, o))
+    }
+
+    private fun placer(piquet: PointLambert93, epsg: CodeEpsg, distanceHorizontaleM: Double, azimut: AzimutSaisi, date: LocalDate, o: Orientation): PlantDerive {
+        val a = Math.toRadians(o.azimutGrilleDeg)
+        val dx = distanceHorizontaleM * sin(a)
+        val dy = distanceHorizontaleM * cos(a)
+        return PlantDerive(piquet, epsg, distanceHorizontaleM, azimut, date, o, dx, dy, PointLambert93(piquet.xMetres + dx, piquet.yMetres + dy))
     }
 }

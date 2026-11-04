@@ -95,8 +95,20 @@ data class SaisiesConverties(
  * Le journal n'est que lu : l'export ne touche pas au journal (spec § 5).
  */
 object SaisiesDuJournal {
-    /** Écart toléré entre la position recalculée d'un plant et celle du journal, en mètres. */
+    /**
+     * Écart toléré entre la position recalculée d'un plant et celle du journal, en mètres. **Aucune source publiée** :
+     * c'est une marge d'arrondi, pas une précision de terrain. Le recalcul refait le même calcul sur les mêmes données
+     * (piquet de la tournée, distance, azimut lu, et la **déclinaison inscrite au journal**, mission 091, décision de
+     * Pascal du 2026-11-04, point 6) ; les nombres du journal sont écrits sans perte (`Json` écrit le plus court décimal qui
+     * redonne le même `Double`). L'écart attendu est donc nul ; 1 mm laisse place aux arrondis d'une autre plateforme
+     * (JVM du poste, ART du téléphone), mille fois plus petits, et reste très au-dessous des 0,5 m de la CI d'import.
+     * Au-delà, la ligne a été altérée : c'est une faute, jamais corrigée en silence.
+     */
     const val ECART_MAX_M = 0.001
+
+    /** La faute d'un contrôle terminé sans besoin ni concurrence (décision de Pascal du 2026-11-04, question 2). */
+    const val CONSTAT_SANS_BESOIN = "contrôle sans besoin ni concurrence"
+    const val CONSIGNE_SANS_BESOIN = "l'annuler et le refaire"
 
     private class Controle(val ligne: LigneCourante, val valeur: ValeurControle, val code: String) {
         val uuid: String get() = ligne.objetUuid
@@ -125,6 +137,10 @@ object SaisiesDuJournal {
                 !v.termine -> fautes += FauteDeSaisie.de(code, null, "contrôle non terminé", "le terminer ou l'annuler")
                 v.repereEpsg != tournee.epsg.code ->
                     fautes += FauteDeSaisie.de(code, null, "la position du contrôle n'est pas dans le repère de la tournée", "annuler ce contrôle et le refaire")
+                // Mission 091 : un contrôle terminé sans besoin ou sans concurrence (contrôle d'avant la 091) ferait passer sa
+                // placette « à jour » dans sommieR sans que l'agent l'ait dit : refusé.
+                v.besoin == null || v.concurrence == null ->
+                    fautes += FauteDeSaisie.de(code, null, CONSTAT_SANS_BESOIN, CONSIGNE_SANS_BESOIN)
                 else -> controles += Controle(l, v, code ?: "Placette sans code")
             }
         }
@@ -188,8 +204,8 @@ object SaisiesDuJournal {
                 val unite = (CodesUniteAzimut.lire(pv.uniteAzimut) as? Resultat.Accepte)?.valeur
                 val azimut = unite?.let { (AzimutSaisi.valider(pv.azimutMag, it) as? Resultat.Accepte)?.valeur }
                 val jourDeclinaison = runCatching { LocalDate.parse(pv.jourDeclinaison) }.getOrNull()
-                val derive = if (azimut != null && jourDeclinaison != null) {
-                    (PointDerive.deriver(piquet, tournee.epsg, pv.distanceHorizontaleM, azimut, jourDeclinaison) as? Resultat.Accepte)?.valeur
+                val derive = if (azimut != null && jourDeclinaison != null && pv.declinaisonDeg.isFinite()) {
+                    (PointDerive.deriverAvecDeclinaison(piquet, tournee.epsg, pv.distanceHorizontaleM, azimut, jourDeclinaison, pv.declinaisonDeg) as? Resultat.Accepte)?.valeur
                 } else {
                     null
                 }
@@ -231,7 +247,13 @@ object SaisiesDuJournal {
             val mesuree = if (v.sansPositionMesuree) {
                 PositionMesuree(position = null, rattacheParIdentite = true, sansPositionMesuree = true)
             } else {
-                PositionMesuree(PointLambert93(xMetres = v.positionMesureeX!!, yMetres = v.positionMesureeY!!), rattacheParIdentite = v.rattacheParIdentite)
+                // Qualité du fix : celle inscrite au journal (v3) ; inconnue (contrôle d'avant la 091) : NULL, jamais « faux ».
+                val q = v.qualiteFix
+                PositionMesuree(
+                    PointLambert93(xMetres = v.positionMesureeX!!, yMetres = v.positionMesureeY!!),
+                    precisionM = q?.precisionM, sourceGnss = q?.sourceGnss, simulee = q?.simulee,
+                    rattacheParIdentite = v.rattacheParIdentite,
+                )
             }
             val visite = Instant.ofEpochMilli(v.visiteLeUtcMs)
             plusRecent(visite)
@@ -239,6 +261,7 @@ object SaisiesDuJournal {
                 uuid = UuidControle(c.uuid), placette = domaine.uuid, visiteLe = visite, jour = c.jour,
                 position = PointLambert93(xMetres = v.positionX, yMetres = v.positionY), positionMesuree = mesuree,
                 etats = lignesEtat, remplaces = remplaces, totaux = totaux, operateur = v.operateur.ifBlank { null },
+                concurrence = v.concurrence, besoin = v.besoin,
             )
         }
         // Les plants exportés sont ceux des contrôles exportés (et sans faute) : ceux d'un contrôle refusé ne partent pas seuls.

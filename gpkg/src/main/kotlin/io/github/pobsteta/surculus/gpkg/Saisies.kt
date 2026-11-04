@@ -80,7 +80,8 @@ data class PositionMesuree(
     val precisionM: Double? = null,
     val sourceGnss: String? = null,
     val referentielSource: String? = null,
-    val simulee: Boolean = false,
+    /** Vrai si la position est simulée (ADR 0003) ; `null` : on ne le sait pas (contrôle d'avant la mission 091), jamais « faux » par défaut. */
+    val simulee: Boolean? = null,
     val rattacheParIdentite: Boolean = false,
     val sansPositionMesuree: Boolean = false,
 )
