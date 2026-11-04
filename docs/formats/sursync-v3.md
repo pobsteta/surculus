@@ -7,7 +7,7 @@
 Ce document dit **ce qui change** par rapport à la [v2](sursync-v2.md), qui renvoie elle-même à la [v1](sursync-v1.md)
 pour tout le reste (structure, empreinte, fichier abîmé, nom, rotation, restauration, confidentialité, limites).
 **Seul le numéro de version monte** : l'en-tête, les saisies et le pied ont les mêmes champs que la v2 (schéma
-[`sursync-v2.schema.json`](sursync-v2.schema.json), avec `version` = 3).
+[`sursync-v3.schema.json`](sursync-v3.schema.json), copie de celui de la v2 avec `version` = 3).
 
 ## Version
 
