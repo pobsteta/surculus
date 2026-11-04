@@ -90,10 +90,12 @@ class FixturesSursyncV2Test {
             val traces = ArrayList<String>()
             val c = assertNotNull(ValeurControle.lire(v) { traces += it }, "valeur illisible : $v")
             assertEquals(emptyList(), traces)
-            assertEquals(v, c.versJson(), "écriture de Surculus, au caractère près")
+            // Mission 091 : Surculus écrit désormais la v3 ; une valeur v2 relue garde chaque clé, hors `v`, à l'identique.
+            assertMemesClesSaufVersion(v, c.versJson())
             assertTrue(v.startsWith("{\"v\":2,"))
             c
         }
+        val v2Sans = valeurs.single { "\"sans_position_mesuree\":true" in it }
         val sans = lues.single { it.sansPositionMesuree }
         assertNull(sans.positionMesureeX); assertNull(sans.positionMesureeY)
         assertTrue(sans.rattacheParIdentite)
@@ -102,7 +104,14 @@ class FixturesSursyncV2Test {
         // Le contrôle sans position est l'exemple du format des valeurs v2, recopié tel quel.
         val exemple = Regex("```json\\s*\\n(.*?)\\n```", RegexOption.DOT_MATCHES_ALL)
             .findAll(File(formats, "journal-valeurs-v2.md").readText()).map { it.groupValues[1].trim() }.single { "\"v\":2" in it }
-        assertEquals(exemple, sans.versJson())
+        assertEquals(exemple, v2Sans, "recopié tel quel dans la fixture")
+        assertMemesClesSaufVersion(exemple, sans.versJson())
+    }
+
+    /** Mission 091 (v3) : chaque clé de [v2], hors `v`, se retrouve avec la même valeur (null explicites compris) dans [ecrit]. */
+    private fun assertMemesClesSaufVersion(v2: String, ecrit: String) {
+        val a = json(v2); val b = json(ecrit)
+        for ((k, x) in a.entrySet()) if (k != "v") assertEquals(x, b.get(k), "clé $k : $ecrit")
     }
 
     @Test

@@ -42,7 +42,7 @@ class OuvrirSansPositionSessionTest {
         assertIs<SuiteSession.Fait>(s.pointe(1.0, 10.0))
         assertIs<SuiteSession.Fait>(s.dire("sain"))
         val brut = journal.deType(FormatValeurs.TYPE_CONTROLE).single().valeur!!
-        assertTrue(brut.startsWith("{\"v\":2,"), brut)
+        assertTrue(brut.startsWith("{\"v\":3,"), brut) // mission 091 : les valeurs du journal passent en v3
         assertTrue("\"position_mesuree_x\":null,\"position_mesuree_y\":null" in brut, brut)
         assertTrue("\"sans_position_mesuree\":true" in brut, brut)
         val c = controles().single()
@@ -183,7 +183,7 @@ class OuvrirSansPositionSessionTest {
         val s = session()
         s.pointe(1.0, 10.0); s.dire("sain")
         val brut = journal.deType(FormatValeurs.TYPE_CONTROLE).single().valeur!!
-        assertTrue(brut.startsWith("{\"v\":2,"), brut)
+        assertTrue(brut.startsWith("{\"v\":3,"), brut) // mission 091 : les valeurs du journal passent en v3
         val c = controles().single()
         assertFalse(c.sansPositionMesuree)
         assertEquals(BancSession.POSITION_P1.xMetres, c.positionMesureeX)

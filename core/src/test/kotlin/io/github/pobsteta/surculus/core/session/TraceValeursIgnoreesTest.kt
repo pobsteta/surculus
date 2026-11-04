@@ -19,18 +19,19 @@ import kotlin.test.assertTrue
  */
 class TraceValeursIgnoreesTest {
     @Test
-    fun `une valeur v3 du journal est tracee une seule fois par session, meme relue a chaque commande`() = with(BancSession()) {
-        val v3 = "{\"v\":3,\"controle_uuid\":\"c\",\"placette_uuid\":\"placette-1\"}"
-        journal.saisir("plant-futur", FormatValeurs.TYPE_POINTAGE, v3, "Agent d'essai", null, null)
+    fun `une valeur v4 du journal est tracee une seule fois par session, meme relue a chaque commande`() = with(BancSession()) {
+        // Mission 091 : la v3 est désormais écrite et lue ; la version inconnue est la v4.
+        val v4 = "{\"v\":4,\"controle_uuid\":\"c\",\"placette_uuid\":\"placette-1\"}"
+        journal.saisir("plant-futur", FormatValeurs.TYPE_POINTAGE, v4, "Agent d'essai", null, null)
         val traces = ArrayList<String>()
         val s = assertIs<OuvertureControle.Ouverte>(
             SessionControle.ouvrir(contexte, journal, horloge, essences, Arrivee.Lambert93(BancSession.POSITION_P1), null, ecoute, diagnostic = { traces += it }),
         ).session
         s.pointe(1.0, 10.0); s.dire("sain"); s.etat(); s.etat()
         assertEquals(1, traces.size, traces.toString())
-        assertTrue("version 3" in traces.single(), traces.single())
+        assertTrue("version 4" in traces.single(), traces.single())
         assertFalse("Agent" in traces.single(), "le contenu de la valeur n'est pas recopié dans la trace")
-        assertEquals(1, s.etat().nbPlants, "la valeur v3 est ignorée, jamais devinée")
+        assertEquals(1, s.etat().nbPlants, "la valeur v4 est ignorée, jamais devinée")
     }
 
     @Test
