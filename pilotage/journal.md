@@ -988,3 +988,6 @@
 
 2026-11-04 · testeur · mission 091 · deuxième passe poussée (dc0695d..aeb94be) : 36 appels à `terminer()` complétés (ajout seul, 13 fichiers) ; « v3 ignorée » devient « v4 » ; tests et fixture v3 (journal et sauvegarde) ; qualité du fix ; refus P35-01 au rendu. Rouge à la compilation jusqu'au `dev`. Signalés : le Retour arrière après `direBesoin` (`ControleurPlacetteTest` l. 118-126), `SursyncV2DevTest` l. 83.
 2026-11-04 · Pascal · mission 091 · sauvegarde v1 « Garder la règle » (N-1 : un lecteur v3 refuse la v1) ; le `testeur` règle les tests de la v1 sur un lecteur v2, vérifications inchangées.
+
+2026-11-04 · testeur · mission 091 · tests de la v1 réglés sur un lecteur v2, vérifications inchangées (31a640a) ; un lecteur v3 refuse `exemple-v1.sursync` en `version_illisible` (0d5488b).
+2026-11-04 · Claude (orchestrateur) · mission 091 · `docs/formats/journal-valeurs-v3.md`, `sursync-v3.md` et `sursync-v3.schema.json` écrits d'après les décisions de Pascal (fb6b904, eaceb2a), sur la branche de la 091, pour la relecture avec la PR #156.
