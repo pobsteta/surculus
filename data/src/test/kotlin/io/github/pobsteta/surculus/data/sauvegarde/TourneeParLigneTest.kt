@@ -74,7 +74,7 @@ class TourneeParLigneTest {
         val entete = OutilsSursync.entete(1, 3).apply { addProperty("code_tournee", "TOURNEE-A") }
         val saisies = (deA + deB).map { EcritureSursync.versJson(it).apply { addProperty("code_tournee", it.codeTournee) }.toString() }
         val cible = depot("b7e1d4f2")
-        val cr = Restauration.restaurer(OutilsSursync.fichier(listOf(entete.toString()) + saisies), cible)
+        val cr = Restauration.restaurer(OutilsSursync.fichier(listOf(entete.toString()) + saisies), cible, versionCourante = 2)
         assertTrue(cr.accepte)
         assertEquals(setOf(Signalement.LIGNE_AUTRE_TOURNEE), cr.signalements)
         assertEquals(2, cr.ajoutees)
@@ -87,20 +87,20 @@ class TourneeParLigneTest {
         val l = OutilsSursync.journalDe("journal/projection.json#JR-01", "AUTRE").single()
         val brut = EcritureSursync.versJson(l)
         assertFalse(brut.has("code_tournee"))
-        val lu = LectureSursync.lire(OutilsSursync.fichier(listOf(OutilsSursync.entete(1, 1).toString(), brut.toString())))
+        val lu = LectureSursync.lire(OutilsSursync.fichier(listOf(OutilsSursync.entete(1, 1).toString(), brut.toString())), versionCourante = 2)
         assertEquals("COUCHEY-2026", lu.lignes.single().codeTournee)
     }
 
     @Test fun `un code_tournee de ligne qui n'est pas un texte est une ligne illisible`() {
         val l = OutilsSursync.journalDe("journal/projection.json#JR-01").single()
         val brut = EcritureSursync.versJson(l).apply { addProperty("code_tournee", 3) }
-        val lu = LectureSursync.lire(OutilsSursync.fichier(listOf(OutilsSursync.entete(1, 1).toString(), brut.toString())))
+        val lu = LectureSursync.lire(OutilsSursync.fichier(listOf(OutilsSursync.entete(1, 1).toString(), brut.toString())), versionCourante = 2)
         assertEquals(setOf(Signalement.LIGNE_ILLISIBLE), lu.signalements)
     }
 
     @Test fun `un en-tete sans code de tournee n'est pas lu`() {
         val entete = OutilsSursync.entete(1, 0).apply { addProperty("code_tournee", "") }
-        assertEquals(MotifRefus.VERSION_ILLISIBLE, LectureSursync.lire(OutilsSursync.fichier(listOf(entete.toString()))).motif)
+        assertEquals(MotifRefus.VERSION_ILLISIBLE, LectureSursync.lire(OutilsSursync.fichier(listOf(entete.toString())), versionCourante = 2).motif)
     }
 
     @Test fun `un meme uuid avec une autre tournee est un contenu different`() {
