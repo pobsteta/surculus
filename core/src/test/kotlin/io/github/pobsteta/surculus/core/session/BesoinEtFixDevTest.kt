@@ -256,6 +256,22 @@ class BesoinEtFixDevTest {
         }
     }
 
+    /** Les clés d'un objet JSON de premier niveau, dans l'ordre du texte (Gson garde l'ordre d'insertion). */
+    private fun cles(json: String): List<String> = com.google.gson.JsonParser.parseString(json).asJsonObject.keySet().toList()
+
+    @Test
+    fun `les cles v3 sont ecrites dans l'ordre de la ligne P35-01 de exemple-v3 jsonl`() {
+        val racine = generateSequence(java.nio.file.Paths.get("").toAbsolutePath()) { it.parent }.first { java.nio.file.Files.exists(it.resolve("settings.gradle.kts")) }
+        val p3501 = java.nio.file.Files.readAllLines(racine.resolve("fixtures/sursync/exemple-v3.jsonl")).drop(1).dropLast(1)
+            .map { com.google.gson.JsonParser.parseString(it).asJsonObject.get("valeur").asString }
+            .single { "\"code_placette\":\"P35-01\"" in it }
+        val attendu = cles(p3501)
+        assertTrue(attendu.indexOf("precision_m") == attendu.indexOf("sans_position_mesuree") + 1, "garde-fou : $attendu")
+        val ecrit = ValeurControle.lire(p3501)!!
+        assertEquals(attendu, cles(ecrit.versJson()))
+        assertEquals(attendu, cles(v3.versJson()))
+    }
+
     @Test
     fun `un besoin vide ou entoure d'espaces rend la valeur illisible`() {
         for (b in listOf("", " RG", "RG ", " ")) {

@@ -93,14 +93,20 @@ data class ValeurControle(
     /** Qualité du fix d'arrivée (v3) : `null` sans position mesurée, et pour toute valeur v1 ou v2 (inconnue, jamais devinée). */
     val qualite: QualiteFix? = null,
 ) {
+    /**
+     * L'ordre des clés est celui de `docs/formats/journal-valeurs-v3.md` et de `fixtures/sursync/exemple-v3.jsonl` :
+     * `precision_m`, `source_gnss`, `simulee` juste après `sans_position_mesuree`, puis `repere_epsg`, `numeros`, et
+     * `besoin`, `concurrence` à la fin.
+     */
     fun versJson(): String = Json.ecrire(
         linkedMapOf<String, Any?>(
             "v" to FormatValeurs.VERSION, "placette_uuid" to placetteUuid, "code_placette" to codePlacette, "jour_civil" to jourCivil,
             "operateur" to operateur, "termine" to termine, "visite_le_utc_ms" to visiteLeUtcMs,
             "position_x" to positionX, "position_y" to positionY,
             "position_mesuree_x" to positionMesureeX, "position_mesuree_y" to positionMesureeY,
-            "rattache_par_identite" to rattacheParIdentite, "sans_position_mesuree" to sansPositionMesuree, "repere_epsg" to repereEpsg,
+            "rattache_par_identite" to rattacheParIdentite, "sans_position_mesuree" to sansPositionMesuree,
             "precision_m" to qualite?.precisionM, "source_gnss" to qualite?.sourceGnss, "simulee" to qualite?.simulee,
+            "repere_epsg" to repereEpsg,
         ).also { m ->
             numeros?.let { m["numeros"] = LinkedHashMap<String, Any?>(it) }
             m["besoin"] = besoin
