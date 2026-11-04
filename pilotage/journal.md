@@ -991,3 +991,7 @@
 
 2026-11-04 · testeur · mission 091 · tests de la v1 réglés sur un lecteur v2, vérifications inchangées (31a640a) ; un lecteur v3 refuse `exemple-v1.sursync` en `version_illisible` (0d5488b).
 2026-11-04 · Claude (orchestrateur) · mission 091 · `docs/formats/journal-valeurs-v3.md`, `sursync-v3.md` et `sursync-v3.schema.json` écrits d'après les décisions de Pascal (fb6b904, eaceb2a), sur la branche de la 091, pour la relecture avec la PR #156.
+
+2026-11-04 · Claude (orchestrateur) · PR #157 · CI verte : fusionnée (957ced7), sur l'accord de Pascal « Fusionner si CI verte ».
+2026-11-04 · dev · mission 091 · code poussé (d5cbbac, e00f1a3) : Import sommieR vert aux deux passes (P35-02 `a_programmer`, sabotage « besoin vidé » détecté) ; CI rouge sur un seul test : deux tests du testeur se contredisent sur le domaine de `source_gnss`. Retour arrière tenu sans toucher `ControleurPlacetteTest` ; un choix dit avant toute saisie reste en mémoire jusqu'à la première saisie ; GGA 3, 6, 7, 8 → `recepteur_autonome`, mélange téléphone et récepteur → `telephone`.
+2026-11-04 · Claude (orchestrateur) · mission 091 · contradiction tranchée par la décision 4 de Pascal (domaine fermé) : le `testeur` ramène les sources d'essai au domaine ; `journal-valeurs-v3.md` complété (sources GGA hors domaine).
