@@ -117,6 +117,7 @@ class SessionEtExportCoucheyTest {
                 val dit = s.dire(p.get("etat").asString, p.texte("cause_groupe"), p.texte("cause_detail"), p.get("hauteur_cm")?.asInt)
                 assertTrue(dit is SuiteSession.Fait, "$code : $dit")
             }
+            s.direBesoin(c.texte("besoin")!!); s.direConcurrence(c.texte("concurrence")!!)
             assertTrue(s.terminer() is SuiteSession.Fait)
         }
         return journal

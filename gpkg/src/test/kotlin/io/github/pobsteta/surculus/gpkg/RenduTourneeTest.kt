@@ -177,7 +177,7 @@ class RenduTourneeTest {
 
         fun dernier(type: String) = journal.lignes.last { it.type == type }
 
-        fun controler(code: String, visiteLe: String, sansPosition: Boolean, decalageEst: Double, decalageNord: Double, liste: List<JsonObject>) {
+        fun controler(code: String, visiteLe: String, sansPosition: Boolean, decalageEst: Double, decalageNord: Double, liste: List<JsonObject>, besoin: String = "aucun", concurrence: String = "faible") {
             val piquet = tournee.placettes.single { it.code == code }.position!!
             horloge.ms = Instant.parse(visiteLe).toEpochMilli()
             val ouverture = if (sansPosition) {
@@ -196,6 +196,7 @@ class RenduTourneeTest {
                 assertTrue(dit is SuiteSession.Fait, "$code : $dit")
                 etats["$code/${p.get("cle").asString}"] = dernier(FormatValeurs.TYPE_ETAT).objet
             }
+            s.direBesoin(besoin); s.direConcurrence(concurrence)
             assertTrue(s.terminer() is SuiteSession.Fait, "$code terminé")
             controles[code] = dernier(FormatValeurs.TYPE_CONTROLE).objet
         }
@@ -207,8 +208,8 @@ class RenduTourneeTest {
             addProperty("etat", "mort"); addProperty("cause_groupe", "animaux"); add("hauteur_cm", JsonNull.INSTANCE)
         }
         val m = c[0].getAsJsonObject("position_mesuree")
-        controler("P35-01", c[0].texte("visite_le")!!, false, m.reel("decalage_est_m")!!, m.reel("decalage_nord_m")!!, p1)
-        controler("P35-02", c[1].texte("visite_le")!!, true, 0.0, 0.0, c[1].getAsJsonArray("plants").map { it.asJsonObject })
+        controler("P35-01", c[0].texte("visite_le")!!, false, m.reel("decalage_est_m")!!, m.reel("decalage_nord_m")!!, p1, c[0].texte("besoin")!!, c[0].texte("concurrence")!!)
+        controler("P35-02", c[1].texte("visite_le")!!, true, 0.0, 0.0, c[1].getAsJsonArray("plants").map { it.asJsonObject }, c[1].texte("besoin")!!, c[1].texte("concurrence")!!)
         val p3 = JsonParser.parseString("""{"cle":"a","distance_m":1.4,"azimut":120.0,"unite_azimut":"deg","essence":"CHS","etat":"sain","hauteur_cm":30}""").asJsonObject
         controler("P35-03", "2026-10-20T11:00:00Z", false, 0.3, 0.2, listOf(p3))
 
