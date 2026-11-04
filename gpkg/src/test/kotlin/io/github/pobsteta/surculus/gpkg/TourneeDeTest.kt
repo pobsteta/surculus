@@ -141,7 +141,7 @@ object TourneeDeTest {
             (Totaux.deduire(e.map { io.github.pobsteta.surculus.core.placette.EtatPlant(it.plant, it.observation) }) as Verdict.Accepte).valeur
         val c1 = ControleSaisi(
             UuidControle(uuid(3001)), UuidPlacette(placetteUuid(0)), INSTANT_CONTROLE, JourCivil.de(INSTANT_CONTROLE), centre(0),
-            PositionMesuree(centre(0), precisionM = 0.4, sourceGnss = "essai", referentielSource = "RGF93", simulee = true),
+            PositionMesuree(centre(0), precisionM = 0.4, sourceGnss = "telephone", referentielSource = "RGF93", simulee = true),
             etats1, totaux = totaux(etats1), operateur = "Agent d'essai", concurrence = "moyenne", besoin = "aucun",
         )
         val c2 = ControleSaisi(

@@ -280,8 +280,8 @@ class RenduBesoinEtFixTest {
     @Test
     fun `la position mesuree sort avec la precision, la source et le caractere simule dits a l'arrivee`() {
         val b = banc()
-        val simulee = QualiteFix(precisionM = 0.4, sourceGnss = "source d'essai A", simulee = true)
-        val vraie = QualiteFix(precisionM = 2.7, sourceGnss = "source d'essai B", simulee = false)
+        val simulee = QualiteFix(precisionM = 0.4, sourceGnss = "telephone", simulee = true)
+        val vraie = QualiteFix(precisionM = 2.7, sourceGnss = "recepteur_dgps", simulee = false)
         val c1 = controler(b, "P35-01", "2026-10-20T09:30:00Z", b.mesuree("P35-01", simulee), "aucun", "moyenne")
         val c3 = controler(b, "P35-03", "2026-10-20T11:00:00Z", b.mesuree("P35-03", vraie), "aucun", "faible")
         val c2 = controler(b, "P35-02", "2026-10-20T10:15:00Z", Arrivee.SansPosition, "aucun", "faible")
@@ -291,12 +291,12 @@ class RenduBesoinEtFixTest {
 
         val l1 = p.getValue(c1)
         assertEquals(0.4, assertNotNull(l1["precision_m"] as Number?, "precision_m de P35-01 vide (le défaut de la PR #155)").toDouble(), 1e-9, "precision_m de P35-01")
-        assertEquals("source d'essai A", l1["source_gnss"], "source_gnss de P35-01 : celle dite à l'arrivée")
+        assertEquals("telephone", l1["source_gnss"], "source_gnss de P35-01 : celle dite à l'arrivée")
         assertEquals(1, (l1["simulee"] as Number?)?.toInt(), "P35-01 : position simulée enregistrée (ADR 0003)")
 
         val l3 = p.getValue(c3)
         assertEquals(2.7, assertNotNull(l3["precision_m"] as Number?, "precision_m de P35-03 vide").toDouble(), 1e-9, "precision_m de P35-03")
-        assertEquals("source d'essai B", l3["source_gnss"])
+        assertEquals("recepteur_dgps", l3["source_gnss"])
         assertEquals(0, (l3["simulee"] as Number?)?.toInt(), "P35-03 : non simulée, dite telle (pas un faux par défaut)")
 
         val l2 = p.getValue(c2)

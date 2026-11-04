@@ -40,7 +40,7 @@
       "h_moy_cm": 39,
       "besoin": "aucun",
       "concurrence": "moyenne",
-      "point": {"lon": 4.9325079273, "lat": 47.2590964021, "tolerance_m": 0.5, "origine": "position mesurée (piquet + décalage +0,6 m est, -0,4 m nord)", "precision_m": 0.4, "source_gnss": "scénario", "simulee": true, "qualite_du_fix": "mission 091 : precision_m, source_gnss et simulee de la position mesurée, lus dans positions_controles de l'export ; valeurs reprises de position_mesuree du scénario (spec § 5, ADR 0003 ligne « Fix »)"},
+      "point": {"lon": 4.9325079273, "lat": 47.2590964021, "tolerance_m": 0.5, "origine": "position mesurée (piquet + décalage +0,6 m est, -0,4 m nord)", "precision_m": 0.4, "source_gnss": "telephone", "simulee": true, "qualite_du_fix": "mission 091 : precision_m, source_gnss et simulee de la position mesurée, lus dans positions_controles de l'export ; valeurs reprises de position_mesuree du scénario (spec § 5, ADR 0003 ligne « Fix »)"},
       "calcul": {
         "nb_total": "a sain + b atteint + c mort + d absent + e sain = 5 (spec § 4.3 : sains + atteints + morts + absents, hors non observés et plants remplacés)",
         "nb_vivants": "sains + atteints = a, b, e = 3",

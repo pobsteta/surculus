@@ -12,7 +12,7 @@
       "visite_le": "2026-10-20T09:30:00Z",
       "concurrence": "moyenne",
       "besoin": "aucun",
-      "position_mesuree": {"decalage_est_m": 0.6, "decalage_nord_m": -0.4, "precision_m": 0.4, "source_gnss": "scénario", "referentiel_source": "RGF93", "simulee": true},
+      "position_mesuree": {"decalage_est_m": 0.6, "decalage_nord_m": -0.4, "precision_m": 0.4, "source_gnss": "telephone", "referentiel_source": "RGF93", "simulee": true},
       "plants": [
         {"cle": "a", "distance_m": 1.2, "azimut": 10.0,  "unite_azimut": "deg", "essence": "CHS", "etat": "sain",    "hauteur_cm": 35},
         {"cle": "b", "distance_m": 2.0, "azimut": 100.0, "unite_azimut": "deg", "essence": "CHS", "etat": "atteint", "cause_detail": "abroutissement", "hauteur_cm": 40},

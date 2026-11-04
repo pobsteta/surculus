@@ -136,7 +136,7 @@ class BesoinEtConcurrenceExportTest {
 
     @Test
     fun `une position mesuree ecrit sa precision, sa source et simulee tels que saisis`() {
-        // Ce que l'export reçoit, il l'écrit : 0,4 m, la source et « simulée » (TourneeDeTest : « essai », RGF93, vrai).
+        // Ce que l'export reçoit, il l'écrit : 0,4 m, la source et « simulée » (TourneeDeTest : « telephone », RGF93, vrai).
         val f = exporter(depart(), v.saisiesDeLaJournee(), "avec-position.gpkg")
         val c1 = v.saisiesDeLaJournee().controles[0]
         val attendu = c1.positionMesuree!!
