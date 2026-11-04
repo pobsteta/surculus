@@ -429,6 +429,20 @@ class SessionControle private constructor(
         return SuiteSession.Fait(listOf(ecrite))
     }
 
+    /**
+     * La qualité du fix à écrire : aucune sans position mesurée ; une source hors de [QualiteFix.SOURCES_GNSS] rendrait la
+     * valeur illisible (journal-valeurs-v3), elle n'est donc pas écrite : qualité inconnue (NULL au rendu), tracée au journal
+     * technique ; une précision nulle, négative ou non finie devient inconnue (jamais 0).
+     */
+    private fun qualiteEcrite(): QualiteFix? {
+        val q = qualite?.takeUnless { rattache.sansPositionMesuree } ?: return null
+        if (q.sourceGnss !in QualiteFix.SOURCES_GNSS) {
+            diagnostic("qualité du fix ignorée : source « ${q.sourceGnss} » hors du domaine de source_gnss")
+            return null
+        }
+        return q.copy(precisionM = q.precisionM?.takeIf { it.isFinite() && it > 0.0 })
+    }
+
     /** Besoin et concurrence dits avant que le contrôle du jour n'existe : écrits avec lui (en mémoire jusque-là). */
     private var besoinEnAttente: String? = null
     private var concurrenceEnAttente: String? = null
@@ -510,7 +524,7 @@ class SessionControle private constructor(
             positionX = rattache.positionControle.xMetres, positionY = rattache.positionControle.yMetres,
             positionMesureeX = rattache.positionMesuree?.xMetres, positionMesureeY = rattache.positionMesuree?.yMetres,
             rattacheParIdentite = rattache.parIdentite, repereEpsg = contexte.epsg.code, sansPositionMesuree = rattache.sansPositionMesuree,
-            qualite = qualite.takeUnless { rattache.sansPositionMesuree },
+            qualite = qualiteEcrite(),
             besoin = besoinEnAttente, concurrence = concurrenceEnAttente,
         )
         val ligne = ecrire(uuid, FormatValeurs.TYPE_CONTROLE, valeur.versJson(), remplace = null)

@@ -166,6 +166,35 @@ class BesoinEtFixDevTest {
     }
 
     @Test
+    fun `une source hors domaine n'est pas ecrite - qualite inconnue, tracee, le controle reste lisible`() {
+        val b = banc()
+        val traces = ArrayList<String>()
+        val o = SessionControle.ouvrir(
+            b.contexte, b.journal, b.horloge, b.essences, Arrivee.Lambert93(BancSession.POSITION_P1, QualiteFix(0.4, "gps", false)),
+            diagnostic = { traces += it },
+        )
+        val s = assertIs<OuvertureControle.Ouverte>(o).session
+        with(b) { s.pointe(1.2, 10.0) }
+        val v = dernierControle(b)
+        assertNull(v.qualite)
+        assertEquals(1, traces.size)
+        // Une précision de 0 devient inconnue, la source reste.
+        val b2 = banc()
+        val s2 = assertIs<OuvertureControle.Ouverte>(
+            SessionControle.ouvrir(b2.contexte, b2.journal, b2.horloge, b2.essences, Arrivee.Lambert93(BancSession.POSITION_P1, QualiteFix(0.0, SourcesGnss.TELEPHONE, false))),
+        ).session
+        with(b2) { s2.pointe(1.2, 10.0) }
+        assertEquals(QualiteFix(null, SourcesGnss.TELEPHONE, false), dernierControle(b2).qualite)
+    }
+
+    @Test
+    fun `une valeur v3 a la source hors domaine est ignoree et tracee`() {
+        val traces = ArrayList<String>()
+        assertNull(ValeurControle.lire(v3.versJson().replace("\"source_gnss\":\"telephone\"", "\"source_gnss\":\"gps\"")) { traces += it })
+        assertEquals(1, traces.size)
+    }
+
+    @Test
     fun `un code de la couche codes du contexte est un besoin permis, au caractere pres`() {
         val b = banc()
         val contexte = b.contexte.copy(codesTravaux = linkedSetOf("PL", "RG"))

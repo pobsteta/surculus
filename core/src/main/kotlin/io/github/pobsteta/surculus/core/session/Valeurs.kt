@@ -154,6 +154,8 @@ data class ValeurControle(
                     // La qualité se dit en entier (source et « simulée » ensemble ; la précision peut manquer), et
                     // jamais pour un contrôle sans position mesurée.
                     if (sans || source == null || simulee == null) return null
+                    // Une source hors du domaine décidé (QualiteFix.SOURCES_GNSS) n'a pas été écrite par Surculus.
+                    if (source !in QualiteFix.SOURCES_GNSS) return null
                     if (precision != null && !(precision.isFinite() && precision > 0.0)) return null
                     qualite = QualiteFix(precision, source, simulee)
                 }
