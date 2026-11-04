@@ -59,6 +59,7 @@ class ControleurPlacetteTest {
         val c = controleur()
         // Le pilote ne juge plus : il ouvre la confirmation, c'est la session qui refuse au moment de terminer.
         assertEquals(VueControle.TERMINER, c.demanderTerminer().vue)
+        c.direBesoin("aucun"); c.direConcurrence("faible")
         val e = c.terminer()
         assertEquals(VueControle.PLANT, e.vue)
         val m = assertNotNull(e.message)
@@ -77,6 +78,7 @@ class ControleurPlacetteTest {
         assertEquals(VueControle.TERMINER, confirmation.vue)
         assertEquals("2 plants · 1 vivant · 0 abrouti", confirmation.totaux.texte)
         assertTrue(controlees().isEmpty(), "pas encore terminée : encore à faire")
+        c.direBesoin("aucun"); c.direConcurrence("faible")
         val fini = c.terminer()
         assertEquals(VueControle.TERMINEE, fini.vue)
         assertEquals(setOf(BancControle.P1.valeur), controlees())
@@ -96,6 +98,7 @@ class ControleurPlacetteTest {
         val c = controleur()
         c.dire(EtatDsf.SAIN)
         c.demanderTerminer()
+        c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         assertTrue(c.instantane().plant.alerteTerminee, "l'alerte est vraie dès que la placette est terminée")
         val repris = c.reprendre()
@@ -110,6 +113,7 @@ class ControleurPlacetteTest {
     @Test fun `terminer deux fois - la session refuse, l'ecran le dit`() = with(BancControle()) {
         val c = controleur()
         c.dire(EtatDsf.SAIN)
+        c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         val m = assertNotNull(c.terminer().message)
         assertEquals("Placette déjà terminée aujourd'hui.", m.texte)
@@ -118,6 +122,7 @@ class ControleurPlacetteTest {
     @Test fun `annuler defait la derniere saisie et annuler la fin rend la placette a faire`() = with(BancControle()) {
         val c = controleur()
         c.dire(EtatDsf.SAIN)
+        c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         c.annuler()
         assertTrue(controlees().isEmpty())
