@@ -94,7 +94,6 @@ import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.gpkg.ContexteDeTournee
 import io.github.pobsteta.surculus.gpkg.RenduTournee
 import io.github.pobsteta.surculus.gnss.FixPourSession
-import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import io.github.pobsteta.surculus.gnss.SourcePosition
 import io.github.pobsteta.surculus.core.gnss.FixGnss

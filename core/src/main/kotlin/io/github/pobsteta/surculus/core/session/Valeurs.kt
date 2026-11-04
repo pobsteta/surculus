@@ -100,9 +100,12 @@ data class ValeurControle(
             "position_x" to positionX, "position_y" to positionY,
             "position_mesuree_x" to positionMesureeX, "position_mesuree_y" to positionMesureeY,
             "rattache_par_identite" to rattacheParIdentite, "sans_position_mesuree" to sansPositionMesuree, "repere_epsg" to repereEpsg,
-            "besoin" to besoin, "concurrence" to concurrence,
             "precision_m" to qualite?.precisionM, "source_gnss" to qualite?.sourceGnss, "simulee" to qualite?.simulee,
-        ).also { m -> numeros?.let { m["numeros"] = LinkedHashMap<String, Any?>(it) } },
+        ).also { m ->
+            numeros?.let { m["numeros"] = LinkedHashMap<String, Any?>(it) }
+            m["besoin"] = besoin
+            m["concurrence"] = concurrence
+        },
     )
 
     companion object {
@@ -148,6 +151,9 @@ data class ValeurControle(
                 val simulee = s as? Boolean
                 // Une concurrence hors de faible, moyenne, forte n'a pas été écrite par Surculus : ignorée, tracée.
                 if (c != null && !Concurrences.permise(c)) return null
+                // Un besoin est un texte non vide sans espaces autour (journal-valeurs-v3.md, « Cohérence ») ; son
+                // appartenance à la couche codes se vérifie à la saisie et à l'export, pas ici.
+                if (b != null && (b.isEmpty() || b != b.trim())) return null
                 besoin = b
                 concurrence = c
                 if (precision != null || source != null || simulee != null) {

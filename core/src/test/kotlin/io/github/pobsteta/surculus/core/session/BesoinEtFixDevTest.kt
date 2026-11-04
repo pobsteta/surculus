@@ -257,6 +257,15 @@ class BesoinEtFixDevTest {
     }
 
     @Test
+    fun `un besoin vide ou entoure d'espaces rend la valeur illisible`() {
+        for (b in listOf("", " RG", "RG ", " ")) {
+            val traces = ArrayList<String>()
+            assertNull(ValeurControle.lire(v3.copy(besoin = b).versJson()) { traces += it }, "besoin « $b »")
+            assertEquals(1, traces.size, "besoin « $b »")
+        }
+    }
+
+    @Test
     fun `une valeur v4 est ignoree et tracee`() {
         val traces = ArrayList<String>()
         assertNull(ValeurControle.lire(v3.versJson().replace("{\"v\":3,", "{\"v\":4,")) { traces += it })

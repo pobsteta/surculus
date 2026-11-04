@@ -16,18 +16,19 @@ import io.github.pobsteta.surculus.core.gnss.OrigineFix
  *
  * - [precisionM] : précision horizontale en mètres, la **plus mauvaise** des fix moyennés ; `null` si un fix n'en donne
  *   pas (récepteur sans trame GST), jamais 0.
- * - [sourceGnss] : un code de [SourcesGnss] (ou, dans les tests, un texte d'essai : la session écrit ce qu'on lui dit).
+ * - [sourceGnss] : un code de [SourcesGnss] ; une source hors de ce domaine n'est jamais écrite au journal (la session
+ *   la refuse : qualité inconnue, tracée au journal technique) et rend illisible une valeur v3 qui la porterait.
  * - [simulee] : vrai si un fix est simulé (`Location.isMock()`, ou qualité GGA 8 « simulation »).
  */
 data class QualiteFix(val precisionM: Double?, val sourceGnss: String, val simulee: Boolean) {
     companion object {
+        /** Les cinq valeurs de `source_gnss` ([SourcesGnss]), du moins bon au meilleur. */
+        val SOURCES_GNSS: List<String> get() = SourcesGnss.RANG
+
         /**
          * La qualité d'une arrivée moyennée sur [fixes] : la plus mauvaise source, la plus mauvaise précision, simulée si
          * un seul fix l'est. `null` sans fix. Une précision non finie ou nulle est une précision inconnue (`null`).
          */
-        /** Les cinq valeurs de `source_gnss` ([SourcesGnss]), du moins bon au meilleur. */
-        val SOURCES_GNSS: List<String> get() = SourcesGnss.RANG
-
         fun deFix(fixes: List<FixGnss>): QualiteFix? {
             if (fixes.isEmpty()) return null
             val source = fixes.map(SourcesGnss::de).minBy { SourcesGnss.RANG.indexOf(it) }
