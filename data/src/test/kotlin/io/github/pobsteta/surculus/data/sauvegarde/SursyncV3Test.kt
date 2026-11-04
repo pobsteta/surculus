@@ -146,6 +146,19 @@ class SursyncV3Test {
         assertNull(c.getValue("P35-02").besoin)
     }
 
+    /**
+     * Décision de Pascal du 2026-11-04 : N-1 gardé. `docs/formats/sursync-v1.md`, table des refus, ligne « version
+     * inférieure à N-1 » : refusé, motif `version_illisible`.
+     */
+    @Test fun `un Surculus a jour refuse l'exemple v1 - version_illisible, journal local inchange`() {
+        assertEquals(MotifRefus.VERSION_ILLISIBLE, LectureSursync.lire(exemple("exemple-v1.sursync")).motif)
+        val local = depot("B", journalDe("journal/projection.json#JR-01"))
+        val avant = local.lignes()
+        val cr = Restauration.restaurer(exemple("exemple-v1.sursync"), local)
+        assertEquals(MotifRefus.VERSION_ILLISIBLE, cr.refus)
+        assertEquals(avant, local.lignes(), "rien n'a été ajouté ni changé")
+    }
+
     // ------------------------------------------------------------------ restaurer une v3 : rien n'est perdu
 
     @Test fun `une v3 se restaure a l'identique, relue apres redemarrage - besoin, concurrence et qualite du fix intacts`() {
