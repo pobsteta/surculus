@@ -31,7 +31,13 @@
 #  E3. Le champ ne dit pas la nature de la concurrence (herbacée, ligneuse, fougère aigle...) : GUIDE14 et DSF24 la nomment « végétation adventice » / « concurrence herbacée ». Un niveau unique mélange-t-il les deux ?
 #  E4. Les libellés d'écran ci-dessous (« Concurrence faible », etc.) ne viennent d'aucune source : ils reprennent le mot du code. Proposition de l'acquéreur, à valider ou à remplacer.
 #
+# DECISIONS DE PASCAL (2026-11-04)
+#  E1 à E3 : la définition des niveaux relève de sommieR, qui tient la nomenclature : brief vers sommieR
+#            (pilotage/briefs/vers-sommier/2026-11-04-niveaux-de-concurrence.md). En attendant, Surculus garde les trois
+#            codes sans définition à l'écran.
+#  E4 : libellés d'écran « Faible », « Moyenne », « Forte », sous un titre « Concurrence ».
+#
 code,libelle,ordre,definition,source_document,page,remarque
-"faible","Concurrence faible","1","non définie par les sources lues","SOMMIER","R/registre6.R l. 64 (tag v0.31.1)","Code de sommieR, exact. Libellé d'écran : proposition de l'acquéreur (écart E4). Ordre = rang dans le vecteur c(faible, moyenne, forte). Aucun critère publié (écarts E1 et E2)."
-"moyenne","Concurrence moyenne","2","non définie par les sources lues","SOMMIER","R/registre6.R l. 64 (tag v0.31.1)","Code de sommieR, exact ; « moyenne » au féminin. Aucun critère publié (écarts E1 et E2)."
-"forte","Concurrence forte","3","non définie par les sources lues","SOMMIER","R/registre6.R l. 64 (tag v0.31.1)","Code de sommieR, exact. Aucun critère publié (écarts E1 et E2). La seule référence à une concurrence « à maîtriser » est binaire (GUIDE14 p. 52 ; MRNF-QC p. 12)."
+"faible","Faible","1","non définie par les sources lues","SOMMIER","R/registre6.R l. 64 (tag v0.31.1)","Code de sommieR, exact. Libellé d'écran : décision de Pascal du 2026-11-04 (écart E4). Ordre = rang dans le vecteur c(faible, moyenne, forte). Aucun critère publié (écarts E1 et E2)."
+"moyenne","Moyenne","2","non définie par les sources lues","SOMMIER","R/registre6.R l. 64 (tag v0.31.1)","Code de sommieR, exact ; « moyenne » au féminin. Aucun critère publié (écarts E1 et E2)."
+"forte","Forte","3","non définie par les sources lues","SOMMIER","R/registre6.R l. 64 (tag v0.31.1)","Code de sommieR, exact. Aucun critère publié (écarts E1 et E2). La seule référence à une concurrence « à maîtriser » est binaire (GUIDE14 p. 52 ; MRNF-QC p. 12)."
