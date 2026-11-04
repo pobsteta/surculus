@@ -481,8 +481,8 @@ object TextesControle {
             plan, besoin(e.besoin, e.concurrence, codesBesoin),
         )
 
-    /** Libellés des trois niveaux à l'écran ; les valeurs écrites sont celles de [Concurrences.NIVEAUX]. */
-    private fun libelleConcurrence(niveau: String) = niveau.replaceFirstChar { it.uppercase() }
+    /** Libellé d'écran d'un niveau : colonne `libelle` de `docs/referentiels/concurrences.csv` ([Concurrences.LIBELLES]). */
+    private fun libelleConcurrence(niveau: String) = Concurrences.LIBELLES.getValue(niveau)
 
     /** Longueur du début de libellé sous le code, sur un bouton d'environ 80 dp. */
     const val LIBELLE_COURT_MAX = 18

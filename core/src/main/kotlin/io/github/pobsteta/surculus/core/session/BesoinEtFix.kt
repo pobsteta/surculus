@@ -80,12 +80,17 @@ object Besoins {
 }
 
 /**
- * Niveaux de concurrence d'une plantation : `SOMMIER_CONCURRENCES` de sommieR 0.31.1 (`R/registre6.R` l. 64), comparés
- * tels quels (`R/valider.R` l. 79-86). **Provisoire** jusqu'au référentiel `docs/referentiels/concurrences.csv`
- * (mission 092, décision de Pascal du 2026-11-04, point 7) : un test d'égalité avec ce fichier sera ajouté dès qu'il existe.
+ * Niveaux de concurrence d'une plantation : le référentiel `docs/referentiels/concurrences.csv` (mission 092, décision de
+ * Pascal du 2026-11-04), qui reflète `SOMMIER_CONCURRENCES` de sommieR 0.31.1 (`R/registre6.R` l. 64), comparés tels quels.
+ * Recopiés ici dans l'ordre du fichier : un test (`ConcurrencesReferentielTest`) vérifie l'égalité, codes, libellés et
+ * ordre, avec le fichier ; si l'un change sans l'autre, la construction échoue.
  */
 object Concurrences {
+    /** Codes écrits au journal et dans la couche `controles`, dans l'ordre de la colonne `ordre` du référentiel. */
     val NIVEAUX: List<String> = listOf("faible", "moyenne", "forte")
+
+    /** Libellés d'écran, colonne `libelle` du référentiel (décision de Pascal du 2026-11-04, écart E4). */
+    val LIBELLES: Map<String, String> = linkedMapOf("faible" to "Faible", "moyenne" to "Moyenne", "forte" to "Forte")
 
     fun permise(niveau: String): Boolean = niveau in NIVEAUX
 }
