@@ -7,6 +7,9 @@
 
 ## Bac à sable
 
+- **Libellés des codes rognés** (091, v0.7.109) : dans la grille « Terminer », la seconde ligne du libellé est coupée par le
+  bord du cercle (« Préparation / du… », « Cloisonneme / nt… »). Une ligne seule, ou une coupe aux mots.
+
 
 - **089** ouvrir sans position depuis le guidage (« Contrôler » et le code n'y viennent qu'avec un fix) : décision de
   Pascal du 2026-11-03, mission à part après la 088, avant l'essai en forêt ; fiche à écrire.
@@ -124,9 +127,6 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **090** rendre la tournée depuis le téléphone (`testeur` puis `dev`, tenir : plan d'abord) : fiche validée et
-  `testeur` lancé le 2026-11-03 ; la 089 suit.
-
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
@@ -187,6 +187,16 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **091** besoin, concurrence et qualité du fix (`testeur` puis `dev`, tenir, PR #156, deux reprises, 7e82a8a) et
+  **092** référentiel des concurrences (`acquereur`, #157, 957ced7) : fusionnées ; release v0.7.109 installée le
+  2026-11-05 (relancée une fois : émulateur de la CI non démarré). Écran « Terminer » de P35-03 capturé : besoin
+  « Aucun » et 15 codes, concurrence Faible, Moyenne, Forte, « Terminer » grisé avec « Choisir le besoin et la
+  concurrence pour terminer. » ; quitté par « Reprendre » sans rien écrire. Reste : l'essai de Pascal sur P35-01
+  (RG, Forte, rendu, import sommieR) et l'essai ganté des boutons de 64 dp.
+
+- **090** rendre la tournée depuis le téléphone : fusionnée (#155, 67ff17a), release v0.7.107 ; bouton et
+  confirmation vus le 2026-11-03. Reste : un vrai rendu, avec la 091.
 
 - **087** ouvrir un contrôle sans position et **088** `.sursync` v2 : fusionnées ensemble (#153 et #154 dans la
   branche 087, puis #152 dans `main`, 7c8f969), release v0.7.106 installée le 2026-11-03 ; essais : refus de la v2 par
