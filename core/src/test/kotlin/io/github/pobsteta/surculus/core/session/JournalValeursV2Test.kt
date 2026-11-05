@@ -87,7 +87,7 @@ class JournalValeursV2Test {
         for ((k, v) in exemple.entrySet()) if (k != "v") assertEquals(v, ecrit.get(k), "clé $k")
         val t = sansPosition.versJson()
         assertTrue("\"position_mesuree_x\":null,\"position_mesuree_y\":null" in t, t)
-        assertTrue("\"rattache_par_identite\":true,\"sans_position_mesuree\":true,\"repere_epsg\"" in t, t)
+        assertTrue("\"rattache_par_identite\":true,\"sans_position_mesuree\":true,\"precision_m\":null,\"source_gnss\":null,\"simulee\":null,\"repere_epsg\"" in t, t)
     }
 
     @Test
