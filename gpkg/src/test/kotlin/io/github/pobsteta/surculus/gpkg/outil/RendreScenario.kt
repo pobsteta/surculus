@@ -1,3 +1,10 @@
+/*
+ * Surculus — suivi des travaux de plantation en forêt.
+ * Copyright (C) 2026 Pascal Obstétar
+ *
+ * Ce fichier est un logiciel libre : vous pouvez le redistribuer et/ou le modifier selon
+ * les termes de la licence publique générale GNU (GPL), version 3 ou ultérieure (voir LICENSE).
+ */
 package io.github.pobsteta.surculus.gpkg.outil
 
 import com.google.gson.JsonObject
@@ -10,6 +17,7 @@ import io.github.pobsteta.surculus.core.reperes.Resultat
 import io.github.pobsteta.surculus.core.session.Arrivee
 import io.github.pobsteta.surculus.core.session.FixSession
 import io.github.pobsteta.surculus.core.session.HorlogeSession
+import io.github.pobsteta.surculus.core.session.QualiteFix
 import io.github.pobsteta.surculus.core.session.JournalControle
 import io.github.pobsteta.surculus.core.session.LigneCourante
 import io.github.pobsteta.surculus.core.session.OuvertureControle
@@ -102,7 +110,11 @@ object RendreScenario {
             } else {
                 val m = c.getAsJsonObject("position_mesuree")
                 val mesuree = PointLambert93(xMetres = piquet.xMetres + (m?.reel("decalage_est_m") ?: 0.0), yMetres = piquet.yMetres + (m?.reel("decalage_nord_m") ?: 0.0))
-                SessionControle.ouvrir(contexte, journal, horloge, essences, Arrivee.Lambert93(mesuree))
+                // Mission 091 : la qualité du fix dite à l'arrivée, reprise du scénario (precision_m, source_gnss, simulee).
+                val qualite = m?.let { q ->
+                    q.texte("source_gnss")?.let { QualiteFix(q.reel("precision_m"), it, q.get("simulee")?.takeUnless { x -> x.isJsonNull }?.asBoolean ?: false) }
+                }
+                SessionControle.ouvrir(contexte, journal, horloge, essences, Arrivee.Lambert93(mesuree, qualite))
             }
             val s = (ouverture as? OuvertureControle.Ouverte)?.session ?: error("$code : ouverture refusée ($ouverture)")
             for (p in c.getAsJsonArray("plants").map { it.asJsonObject }) {
@@ -112,7 +124,10 @@ object RendreScenario {
                 val dit = s.dire(p.get("etat").asString, p.texte("cause_groupe"), p.texte("cause_detail"), p.get("hauteur_cm")?.takeUnless { it.isJsonNull }?.asInt)
                 check(dit is SuiteSession.Fait) { "$code : $dit" }
             }
-            check(s.terminer() is SuiteSession.Fait) { "$code : non terminé" }
+            // Mission 091 : le besoin et la concurrence du scénario, dits avant « Terminer » (obligatoires).
+            c.texte("besoin")?.let { b -> s.direBesoin(b).let { r -> check(r is SuiteSession.Fait) { "$code : besoin $r" } } }
+            c.texte("concurrence")?.let { n -> s.direConcurrence(n).let { r -> check(r is SuiteSession.Fait) { "$code : concurrence $r" } } }
+            s.terminer().let { r -> check(r is SuiteSession.Fait) { "$code : non terminé ($r)" } }
         }
         val lignes = journal.lignesCourantes()
         val zip = sortie.resolve("$NOM.zip")

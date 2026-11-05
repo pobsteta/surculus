@@ -94,9 +94,11 @@ import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.gpkg.ContexteDeTournee
 import io.github.pobsteta.surculus.gpkg.RenduTournee
 import io.github.pobsteta.surculus.gnss.FixPourSession
-import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import io.github.pobsteta.surculus.gnss.SourcePosition
+import io.github.pobsteta.surculus.core.gnss.FixGnss
+import io.github.pobsteta.surculus.core.session.QualiteFix
+import io.github.pobsteta.surculus.core.session.Besoins
 import io.github.pobsteta.surculus.sauvegarde.SauvegardeApp
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.LigneTournee
@@ -127,11 +129,11 @@ object ControleursOuverts {
  * au choix et à « Refaire la mesure ».
  */
 object ChoixUgEnAttente {
-    private val attente = HashMap<String, Pair<EtatArrivee.UgAChoisir, List<Position>>>()
+    private val attente = HashMap<String, Pair<EtatArrivee.UgAChoisir, List<FixGnss>>>()
 
-    @Synchronized fun get(cle: String): Pair<EtatArrivee.UgAChoisir, List<Position>>? = attente[cle]
+    @Synchronized fun get(cle: String): Pair<EtatArrivee.UgAChoisir, List<FixGnss>>? = attente[cle]
 
-    @Synchronized fun poser(cle: String, etat: EtatArrivee.UgAChoisir, positions: List<Position>) { attente[cle] = etat to positions }
+    @Synchronized fun poser(cle: String, etat: EtatArrivee.UgAChoisir, fixes: List<FixGnss>) { attente[cle] = etat to fixes }
 
     @Synchronized fun liberer(cle: String) { attente.remove(cle) }
 }
@@ -193,9 +195,10 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
     var code by rememberSaveable(cle) { mutableStateOf(codeInitial) }
     val fixActuel = rememberUpdatedState(fix)
     // Les fix de l'arrivée sont gardés : le choix de l'UG rouvre avec la même position, sans refaire la moyenne.
-    var positionsArrivee by remember(cle) { mutableStateOf(ChoixUgEnAttente.get(cle)?.second ?: emptyList()) }
+    // Les fix entiers (mission 091) : leur position, et ce qu'ils disent d'eux-mêmes (précision, source, simulée).
+    var fixesArrivee by remember(cle) { mutableStateOf(ChoixUgEnAttente.get(cle)?.second ?: emptyList()) }
     val scope = rememberCoroutineScope()
-    suspend fun ouvrirArrivee(ouverte: TourneeOuverte, positions: List<Position>, ugChoisie: String?): EtatArrivee {
+    suspend fun ouvrirArrivee(ouverte: TourneeOuverte, fixes: List<FixGnss>, ugChoisie: String?): EtatArrivee {
         val resultat = withContext(Dispatchers.IO) {
             runCatching {
                 ArriveeControle.ouvrir(
@@ -203,16 +206,17 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
                     journal = SauvegardeApp.journal(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
                     horloge = SauvegardeApp.horloge(ctx) { FixPourSession.depuis(SourcePosition.fix.value) },
                     essences = ArriveeControle.essencesDe(ouverte.tournee),
-                    positions = positions,
+                    positions = fixes.map { it.position },
                     codeLu = code,
                     sauvegarde = SauvegardeApp.ecoute(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
                     ugChoisie = ugChoisie,
+                    qualite = QualiteFix.deFix(fixes),
                 )
             }
         }
         val v = resultat.getOrNull()
         if (v is EtatArrivee.Ouverte) ControleursOuverts.poser(cle, v.controleur)
-        if (v is EtatArrivee.UgAChoisir) ChoixUgEnAttente.poser(cle, v, positions) else ChoixUgEnAttente.liberer(cle)
+        if (v is EtatArrivee.UgAChoisir) ChoixUgEnAttente.poser(cle, v, fixes) else ChoixUgEnAttente.liberer(cle)
         return v ?: EtatArrivee.SansPosition
     }
 
@@ -259,11 +263,12 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
         // L'attente sans fix (30 s, mission 087) court dès la première moyenne sans position.
         SansPositionEnAttente.de(cle).let { if (it.debutMs == null) it.debutMs = SystemClock.elapsedRealtime() }
         // La moyenne de 5 s est celle du guidage : écrite une seule fois (`collecterPositionsArrivee`).
-        val positions = collecterPositionsArrivee(position = { fixActuel.value?.position }, surSeconde = { n -> arrivee = EtatArrivee.Moyenne(n) })
-        positionsArrivee = positions
+        val fixes = ArrayList<FixGnss>()
+        collecterPositionsArrivee(position = { fixActuel.value?.also { fixes += it }?.position }, surSeconde = { n -> arrivee = EtatArrivee.Moyenne(n) })
+        fixesArrivee = fixes
         // Un fix reçu : l'attente sans fix repart de zéro la prochaine fois.
-        if (positions.isNotEmpty()) SansPositionEnAttente.de(cle).debutMs = null
-        arrivee = ouvrirArrivee(ouverte, positions, null)
+        if (fixes.isNotEmpty()) SansPositionEnAttente.de(cle).debutMs = null
+        arrivee = ouvrirArrivee(ouverte, fixes, null)
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -295,7 +300,7 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
                     is EtatArrivee.UgAChoisir -> if (SansPositionEnAttente.etape(cle) != null) {
                         VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirSansPosition(ouverte!!, ug, confirmee = false) } }, onRecommencer = { SansPositionEnAttente.de(cle).etape = null; arrivee = EtatArrivee.SansPosition })
                     } else {
-                        VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, positionsArrivee, ug) } }, onRecommencer = { ChoixUgEnAttente.liberer(cle); arrivee = EtatArrivee.Moyenne(0); essai++ })
+                        VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, fixesArrivee, ug) } }, onRecommencer = { ChoixUgEnAttente.liberer(cle); arrivee = EtatArrivee.Moyenne(0); essai++ })
                     }
                     is EtatArrivee.ConfirmerSansPosition -> VueConfirmerSansPosition(
                         a,
@@ -869,11 +874,59 @@ private fun BoutonEtat(etat: EtatDsf, actif: Boolean, modifier: Modifier, onClic
 private fun VueTerminer(e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit) {
     Text(stringResource(R.string.controle_terminer_titre, e.codePlacette), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
     Totaux(e)
-    Button(onClick = { agir { terminer() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT)) {
+    ChoixBesoinEtConcurrence(e.besoin, agir)
+    // Grisé tant qu'il manque un choix (décision de Pascal du 2026-11-04, question 1), avec la phrase de ce qui manque.
+    Button(onClick = { agir { terminer() } }, enabled = e.besoin.terminerPermis, modifier = Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT)) {
         Text(stringResource(R.string.controle_terminer), style = MaterialTheme.typography.titleLarge)
     }
+    e.besoin.manque?.let { Text(it, style = MaterialTheme.typography.titleMedium, color = couleurNeutre()) }
     OutlinedButton(onClick = { agir { reprendre() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
         Text(stringResource(R.string.controle_reprendre), color = couleurNeutre())
+    }
+}
+
+/**
+ * Le besoin et la concurrence, à l'écran de « Terminer » (mission 091) : un grand bouton « Aucun », la grille des codes de
+ * la couche `codes` (4 par ligne, code en gros et début du libellé, environ 80 dp : faisable avec des gants), puis
+ * faible, moyenne, forte. Le choix fait est plein, les autres cernés ; aucun n'est choisi d'avance.
+ */
+@Composable
+private fun ChoixBesoinEtConcurrence(b: VueBesoin, agir: (ControleurPlacette.() -> EcranControle) -> Unit) {
+    Text(stringResource(R.string.controle_besoin_titre), style = MaterialTheme.typography.titleLarge, color = couleurNeutre())
+    BoutonChoix(b.aucunChoisi, Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT), { agir { direBesoin(Besoins.AUCUN) } }) {
+        Text(stringResource(R.string.controle_besoin_aucun), style = MaterialTheme.typography.titleLarge)
+    }
+    for (ligne in b.codes.chunked(DimensionsControle.CODES_PAR_LIGNE)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (c in ligne) {
+                BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_CODE), { agir { direBesoin(c.code) } }) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(c.code, style = MaterialTheme.typography.titleLarge, maxLines = 1)
+                        if (c.libelleCourt.isNotEmpty()) Text(c.libelleCourt, style = MaterialTheme.typography.labelSmall, maxLines = 2)
+                    }
+                }
+            }
+            repeat(DimensionsControle.CODES_PAR_LIGNE - ligne.size) { Spacer(Modifier.weight(1f)) }
+        }
+    }
+    Text(stringResource(R.string.controle_concurrence_titre), style = MaterialTheme.typography.titleLarge, color = couleurNeutre())
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (c in b.concurrences) {
+            BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_ETAT), { agir { direConcurrence(c.niveau) } }) {
+                Text(c.libelle, style = MaterialTheme.typography.titleMedium, maxLines = 1)
+            }
+        }
+    }
+}
+
+/** Un bouton de choix : plein s'il est choisi, cerné sinon (le choix se voit au soleil sans dépendre de la seule couleur). */
+@Composable
+private fun BoutonChoix(choisi: Boolean, modifier: Modifier, onClick: () -> Unit, contenu: @Composable () -> Unit) {
+    val padding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 4.dp)
+    if (choisi) {
+        Button(onClick = onClick, modifier = modifier, contentPadding = padding) { contenu() }
+    } else {
+        OutlinedButton(onClick = onClick, modifier = modifier, contentPadding = padding) { contenu() }
     }
 }
 

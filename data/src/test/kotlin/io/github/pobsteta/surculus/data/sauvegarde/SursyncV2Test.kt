@@ -95,11 +95,13 @@ class SursyncV2Test {
 
     // ------------------------------------------------------------------ une sauvegarde écrite après la 087 est en v2
 
-    @Test fun `la version courante du format est 2`() {
-        assertEquals(2, FormatSursync.VERSION_COURANTE)
+    // Mission 091, décision 3 de Pascal (2026-11-04) : la sauvegarde passe en v3 (SursyncV3Test). Les tests de ce fichier
+    // qui parlaient du « Surculus à jour » parlent désormais d'un lecteur v2 (`versionCourante = 2`) ; la v3 suit N-1.
+    @Test fun `la version courante du format est 3 depuis la mission 091`() {
+        assertEquals(3, FormatSursync.VERSION_COURANTE)
     }
 
-    @Test fun `le service ecrit une sauvegarde en version 2, meme pour un journal aux seules valeurs v1, nom inchange`() {
+    @Test fun `le service ecrit une sauvegarde en version 3, meme pour un journal aux seules valeurs v1, nom inchange`() {
         val fichiers = linkedMapOf<String, ByteArray>()
         val stockage = object : StockageSauvegardes {
             override fun noms() = fichiers.keys.toSet()
@@ -110,11 +112,11 @@ class SursyncV2Test {
         val service = ServiceSauvegarde(depot("A", journalDe("journal/projection.json#JR-02")), stockage, "a3f9c2d1", "0.31.1")
         val r = service.sauvegarder(tournee, 1_793_620_600_000L)
         assertEquals("COUCHEY-2026-a3f9c2d1-20261102T115640Z.sursync", r.nom, "nom : décisions de la 024 et de la 009, inchangées")
-        assertEquals(2, versionEnTete(fichiers.getValue(r.nom)))
+        assertEquals(3, versionEnTete(fichiers.getValue(r.nom)))
         assertTrue(LectureSursync.lire(fichiers.getValue(r.nom)).accepte)
     }
 
-    @Test fun `un journal avec un controle sans position se sauvegarde en v2 et se relit a la ligne pres`() {
+    @Test fun `un journal avec un controle sans position se sauvegarde en v3 et se relit a la ligne pres`() {
         val fichiers = linkedMapOf<String, ByteArray>()
         val stockage = object : StockageSauvegardes {
             override fun noms() = fichiers.keys.toSet()
@@ -123,7 +125,7 @@ class SursyncV2Test {
         }
         val service = ServiceSauvegarde(depot("A", attendues), stockage, "a3f9c2d1", "0.31.1")
         val octets = fichiers.getValue(service.sauvegarder(tournee, 1_793_620_600_000L).nom)
-        assertEquals(2, versionEnTete(octets))
+        assertEquals(3, versionEnTete(octets))
         val r = LectureSursync.lire(octets)
         assertTrue(r.accepte); assertEquals(emptySet(), r.signalements)
         assertEquals(attendues, r.lignes, "valeur recopiée au caractère près, null explicites compris")
@@ -143,21 +145,21 @@ class SursyncV2Test {
         assertEquals(attendues, r.lignes)
     }
 
-    @Test fun `une v1 relue par un Surculus a jour donne exactement ce qu'elle donnait avant`() {
+    @Test fun `une v1 relue par un lecteur v2 donne exactement ce qu'elle donnait avant`() {
         val jr02 = journalDe("journal/projection.json#JR-02").sortedWith(compareBy({ it.saisiLeUtcMs }, { it.appareil }, { it.sequence }, { it.uuid }))
-        val r = LectureSursync.lire(exemple("exemple-v1.sursync")) // lecteur par défaut : version courante
+        val r = LectureSursync.lire(exemple("exemple-v1.sursync"), versionCourante = 2)
         assertTrue(r.accepte, "motif : ${r.motif}"); assertEquals(emptySet(), r.signalements)
         assertEquals(jr02, r.lignes)
-        assertTrue(Signalement.FICHIER_TRONQUE in LectureSursync.lire(exemple("exemple-v1-tronque.sursync")).signalements)
-        val faux = LectureSursync.lire(exemple("exemple-v1-empreinte-fausse.sursync"))
+        assertTrue(Signalement.FICHIER_TRONQUE in LectureSursync.lire(exemple("exemple-v1-tronque.sursync"), versionCourante = 2).signalements)
+        val faux = LectureSursync.lire(exemple("exemple-v1-empreinte-fausse.sursync"), versionCourante = 2)
         assertEquals(setOf(Signalement.EMPREINTE_DIFFERENTE), faux.signalements); assertEquals(2, faux.lignes.size)
     }
 
-    @Test fun `une v1 se restaure dans un journal a jour comme avant`() {
+    @Test fun `une v1 se restaure par un lecteur v2 comme avant`() {
         val origine = depot("A", journalDe("journal/projection.json#JR-03"))
         val v1 = OutilsSursync.fichierDe(origine.lignes(), 1)
         val cible = depot("B")
-        val cr = Restauration.restaurer(v1, cible)
+        val cr = Restauration.restaurer(v1, cible, versionCourante = 2)
         assertTrue(cr.accepte, "refus : ${cr.refus}")
         assertEquals(origine.lignes(), cible.lignes())
         assertEquals(origine.projection(), cible.projection())
@@ -223,12 +225,12 @@ class SursyncV2Test {
 
     // ------------------------------------------------------------------ versions refusées par un Surculus à jour
 
-    @Test fun `une v3 est refusee en entier - version_future, journal local inchange`() {
+    @Test fun `une v4 est refusee en entier - version_future, journal local inchange`() {
         val local = depot("B", journalDe("journal/projection.json#JR-01"))
         val avant = local.lignes()
-        val v3 = OutilsSursync.fichier(listOf(OutilsSursync.entete(3, 2).toString()) + saisiesTexte)
-        assertEquals(MotifRefus.VERSION_FUTURE, LectureSursync.lire(v3).motif)
-        assertEquals(MotifRefus.VERSION_FUTURE, Restauration.restaurer(v3, local).refus)
+        val v4 = OutilsSursync.fichier(listOf(OutilsSursync.entete(4, 2).toString()) + saisiesTexte)
+        assertEquals(MotifRefus.VERSION_FUTURE, LectureSursync.lire(v4).motif)
+        assertEquals(MotifRefus.VERSION_FUTURE, Restauration.restaurer(v4, local).refus)
         assertEquals(avant, local.lignes())
     }
 

@@ -83,15 +83,22 @@ data class ContexteControle(
     val epsg: CodeEpsg,
     val empriseForet: EmpriseLambert93? = null,
     val plantsAnterieurs: Map<UuidPlacette, List<PlantAnterieur>> = emptyMap(),
+    /** Codes de la couche `codes` de la tournée (nomenclature de sommieR, jamais une liste de l'application) : les besoins permis, avec « aucun ». */
+    val codesTravaux: Set<String> = emptySet(),
+    /** Libellé de chaque code de [codesTravaux] (pour l'écran « Terminer ») ; vide si la couche n'en porte pas. */
+    val libellesCodes: Map<String, String> = emptyMap(),
 )
 
 /** Position de l'agent à l'arrivée, déjà moyennée par l'écran ; ordre et unités explicites. */
 sealed interface Arrivee {
-    /** Fix GNSS en degrés décimaux, **(latitude, longitude)** ; testé en France avant toute projection. */
-    data class Gnss(val position: PointGeographique) : Arrivee
+    /**
+     * Fix GNSS en degrés décimaux, **(latitude, longitude)** ; testé en France avant toute projection. [qualite] : ce que
+     * le récepteur a dit des fix moyennés (mission 091), `null` si l'écran ne le sait pas (jamais deviné).
+     */
+    data class Gnss(val position: PointGeographique, val qualite: QualiteFix? = null) : Arrivee
 
-    /** Position déjà en Lambert-93 (x = Est, y = Nord, mètres). */
-    data class Lambert93(val position: PointLambert93) : Arrivee
+    /** Position déjà en Lambert-93 (x = Est, y = Nord, mètres) ; [qualite] comme pour [Gnss]. */
+    data class Lambert93(val position: PointLambert93, val qualite: QualiteFix? = null) : Arrivee
 
     /**
      * Aucun fix reçu (ADR 0003, amendement du 2026-11-02) : le contrôle s'ouvre sur le seul code lu, à la position du
@@ -131,6 +138,12 @@ sealed interface SuiteSession {
 
     /** Le contrôle du jour est déjà terminé. */
     data object DejaTerminee : SuiteSession
+
+    /**
+     * « Terminer » sans besoin ou sans concurrence dits (décision de Pascal du 2026-11-04, question 1 : obligatoires, sans
+     * valeur par défaut) : rien n'est écrit ; [besoin] et [concurrence] disent ce qui manque.
+     */
+    data class ChoixManquant(val besoin: Boolean, val concurrence: Boolean) : SuiteSession
 
     /** Le geste « volume bas, appui long » : l'écran ouvre la dictée (012-D). */
     data object DicteeDemandee : SuiteSession
@@ -182,6 +195,10 @@ data class EtatSession(
     /** Plants de la placette (« 12 » de « 7 sur 12 »), hors remplacés. */
     val nbPlants: Int,
     val totaux: Verdict<Totaux>,
+    /** Besoin dit pour le contrôle du jour (mission 091) ; `null` : pas encore dit. */
+    val besoin: String? = null,
+    /** Concurrence dite pour le contrôle du jour ; `null` : pas encore dite. */
+    val concurrence: String? = null,
 )
 
 /**
@@ -204,6 +221,8 @@ class SessionControle private constructor(
     private val cible: PlacetteControlable,
     private val rattache: Rattache,
     private val diagnostic: (String) -> Unit,
+    /** Qualité du fix d'arrivée (mission 091) : `null` sans position mesurée ou si l'écran ne la sait pas. */
+    private val qualite: QualiteFix?,
 ) {
     /**
      * Le rattachement de l'arrivée : piquet, distance, « par identité », position du contrôle et position mesurée. Fixé à
@@ -372,9 +391,66 @@ class SessionControle private constructor(
     }
 
     /**
+     * Dit le besoin du contrôle du jour (mission 091) : un code de la couche `codes` de la tournée, ou « aucun », au
+     * caractère près ; sinon `hors_referentiel` et rien n'est écrit. Dit de nouveau, il remplace le précédent (la ligne
+     * `controle` est réécrite) ; permis aussi après « Terminer » (la saisie y reste permise, spec § 4.3).
+     */
+    fun direBesoin(code: String): SuiteSession {
+        if (!Besoins.permis(code, contexte.codesTravaux)) {
+            return SuiteSession.Refus(
+                CodesRefus.HORS_REFERENTIEL, CodesRefus.HORS_REFERENTIEL,
+                "Besoin « $code » absent de la couche codes de la tournée : choisir un code proposé, ou « aucun ».",
+            )
+        }
+        return reecrireControle({ besoinEnAttente = code }) { it.copy(besoin = code) }
+    }
+
+    /** Dit la concurrence du contrôle du jour : faible, moyenne ou forte ([Concurrences]) ; sinon `hors_referentiel`. */
+    fun direConcurrence(niveau: String): SuiteSession {
+        if (!Concurrences.permise(niveau)) {
+            return SuiteSession.Refus(
+                CodesRefus.HORS_REFERENTIEL, CodesRefus.HORS_REFERENTIEL,
+                "Concurrence « $niveau » inconnue : faible, moyenne ou forte.",
+            )
+        }
+        return reecrireControle({ concurrenceEnAttente = niveau }) { it.copy(concurrence = niveau) }
+    }
+
+    /**
+     * Réécrit la ligne `controle` du jour ; rien n'est écrit si rien ne change. Sans contrôle du jour (aucun plant pointé
+     * ni dit), le choix est gardé [enAttente] et écrit avec le contrôle, à la première saisie : un choix seul n'ouvre pas
+     * de contrôle au journal (« Terminer » sans état dit n'écrit rien, décision de Pascal sur la #108).
+     */
+    private fun reecrireControle(enAttente: () -> Unit, changer: (ValeurControle) -> ValeurControle): SuiteSession {
+        val (ligne, valeur) = lire().controleDuJour ?: run { enAttente(); return SuiteSession.Fait() }
+        val nouvelle = changer(valeur)
+        if (nouvelle == valeur) return SuiteSession.Fait()
+        val ecrite = ecrire(ligne.objetUuid, FormatValeurs.TYPE_CONTROLE, nouvelle.versJson(), remplace = ligne.uuid)
+        return SuiteSession.Fait(listOf(ecrite))
+    }
+
+    /**
+     * La qualité du fix à écrire : aucune sans position mesurée ; une source hors de [QualiteFix.SOURCES_GNSS] rendrait la
+     * valeur illisible (journal-valeurs-v3), elle n'est donc pas écrite : qualité inconnue (NULL au rendu), tracée au journal
+     * technique ; une précision nulle, négative ou non finie devient inconnue (jamais 0).
+     */
+    private fun qualiteEcrite(): QualiteFix? {
+        val q = qualite?.takeUnless { rattache.sansPositionMesuree } ?: return null
+        if (q.sourceGnss !in QualiteFix.SOURCES_GNSS) {
+            diagnostic("qualité du fix ignorée : source « ${q.sourceGnss} » hors du domaine de source_gnss")
+            return null
+        }
+        return q.copy(precisionM = q.precisionM?.takeIf { it.isFinite() && it > 0.0 })
+    }
+
+    /** Besoin et concurrence dits avant que le contrôle du jour n'existe : écrits avec lui (en mémoire jusque-là). */
+    private var besoinEnAttente: String? = null
+    private var concurrenceEnAttente: String? = null
+
+    /**
      * Termine la placette (décision de Pascal du 2026-10-27) : le contrôle devient « Contrôlé », les numéros sont
-     * **figés** et la sauvegarde reçoit une fin de placette. Refusé si aucun état n'est dit aujourd'hui, ou si le contrôle
-     * du jour est déjà terminé.
+     * **figés** et la sauvegarde reçoit une fin de placette. Refusé si aucun état n'est dit aujourd'hui, si le contrôle
+     * du jour est déjà terminé, ou s'il manque le besoin ou la concurrence ([SuiteSession.ChoixManquant], mission 091).
      */
     fun terminer(): SuiteSession {
         val vue = lire()
@@ -382,6 +458,9 @@ class SessionControle private constructor(
         if (ligneControle?.second?.termine == true) return SuiteSession.DejaTerminee
         if (vue.plants.none { it.duJour != null }) return SuiteSession.RienASaisir
         val (ligne, valeur) = ligneControle ?: error("un état dit suppose un contrôle écrit")
+        if (valeur.besoin == null || valeur.concurrence == null) {
+            return SuiteSession.ChoixManquant(besoin = valeur.besoin == null, concurrence = valeur.concurrence == null)
+        }
         val figes = when (val n = vue.numeros) {
             is NumerosPlacette.Provisoires -> Numerotation.figer(n).valeurOuEchec()
             is NumerosPlacette.Figes -> n
@@ -445,6 +524,8 @@ class SessionControle private constructor(
             positionX = rattache.positionControle.xMetres, positionY = rattache.positionControle.yMetres,
             positionMesureeX = rattache.positionMesuree?.xMetres, positionMesureeY = rattache.positionMesuree?.yMetres,
             rattacheParIdentite = rattache.parIdentite, repereEpsg = contexte.epsg.code, sansPositionMesuree = rattache.sansPositionMesuree,
+            qualite = qualiteEcrite(),
+            besoin = besoinEnAttente, concurrence = concurrenceEnAttente,
         )
         val ligne = ecrire(uuid, FormatValeurs.TYPE_CONTROLE, valeur.versJson(), remplace = null)
         return ControleAssure(uuid, listOf(ligne))
@@ -578,6 +659,8 @@ class SessionControle private constructor(
             plants = vue.plants, courant = courant?.takeIf { c -> vue.plants.any { it.uuid == c } }, regarniDe = regarniEnAttente?.first,
             nbDits = comptes.count { it.duJour != null }, nbPlants = comptes.size,
             totaux = Totaux.deduire(etatsDuJour, remplaces),
+            besoin = if (vue.controleDuJour != null) vue.controleDuJour.second.besoin else besoinEnAttente,
+            concurrence = if (vue.controleDuJour != null) vue.controleDuJour.second.concurrence else concurrenceEnAttente,
         )
     }
 
@@ -644,7 +727,12 @@ class SessionControle private constructor(
                 )
             }
             val cible = contexte.placettes.first { it.piquet.placette == rattache.piquet.placette }
-            return OuvertureControle.Ouverte(SessionControle(contexte, journal, horloge, essences, sauvegarde, cible, rattache, diagnostic))
+            val qualite = when (arrivee) {
+                is Arrivee.Gnss -> arrivee.qualite
+                is Arrivee.Lambert93 -> arrivee.qualite
+                Arrivee.SansPosition -> null
+            }
+            return OuvertureControle.Ouverte(SessionControle(contexte, journal, horloge, essences, sauvegarde, cible, rattache, diagnostic, qualite))
         }
 
         private fun horsFrance(position: String, axesInverses: Boolean) = SuiteSession.Refus(

@@ -42,7 +42,7 @@ class OuvrirSansPositionSessionTest {
         assertIs<SuiteSession.Fait>(s.pointe(1.0, 10.0))
         assertIs<SuiteSession.Fait>(s.dire("sain"))
         val brut = journal.deType(FormatValeurs.TYPE_CONTROLE).single().valeur!!
-        assertTrue(brut.startsWith("{\"v\":2,"), brut)
+        assertTrue(brut.startsWith("{\"v\":3,"), brut) // mission 091 : les valeurs du journal passent en v3
         assertTrue("\"position_mesuree_x\":null,\"position_mesuree_y\":null" in brut, brut)
         assertTrue("\"sans_position_mesuree\":true" in brut, brut)
         val c = controles().single()
@@ -142,6 +142,7 @@ class OuvrirSansPositionSessionTest {
         horloge.fixCourant = FixSession(heureUtcMs = horloge.maintenantMs, monotoneMs = horloge.monotoneMs)
         s.dire("sain")
         s.pointe(2.0, 200.0); s.dire("mort")
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         assertIs<SuiteSession.Fait>(s.terminer())
         val toutes = controles()
         assertTrue(toutes.size >= 2, "contrôle écrit puis réécrit à la fin")
@@ -168,6 +169,7 @@ class OuvrirSansPositionSessionTest {
         assertEquals(2, rouverte.etat().nbPlants)
         assertEquals(1, rouverte.etat().nbDits)
         rouverte.dire("atteint")
+        rouverte.direBesoin("aucun"); rouverte.direConcurrence("faible")
         assertIs<SuiteSession.Fait>(rouverte.terminer())
         assertEquals(1, journal.deType(FormatValeurs.TYPE_CONTROLE).map { it.objetUuid }.toSet().size, "un seul contrôle par placette et par jour")
         assertTrue(controles().all { it.sansPositionMesuree })
@@ -181,7 +183,7 @@ class OuvrirSansPositionSessionTest {
         val s = session()
         s.pointe(1.0, 10.0); s.dire("sain")
         val brut = journal.deType(FormatValeurs.TYPE_CONTROLE).single().valeur!!
-        assertTrue(brut.startsWith("{\"v\":2,"), brut)
+        assertTrue(brut.startsWith("{\"v\":3,"), brut) // mission 091 : les valeurs du journal passent en v3
         val c = controles().single()
         assertFalse(c.sansPositionMesuree)
         assertEquals(BancSession.POSITION_P1.xMetres, c.positionMesureeX)

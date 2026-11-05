@@ -77,6 +77,7 @@ class GestesControleurTest {
         val c = controleur()
         c.geste(Geste.VOLUME_HAUT_COURT)
         c.demanderTerminer()
+        c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         assertEquals(setOf(BancControle.P1.valeur), controlees())
         // Annuler la fin, puis l'état : la placette n'est plus Contrôlée.
@@ -90,6 +91,7 @@ class GestesControleurTest {
         val c = controleur()
         c.geste(Geste.VOLUME_HAUT_COURT)
         c.demanderTerminer()
+        c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         c.reprendre()
         val e = c.geste(Geste.VOLUME_HAUT_COURT)

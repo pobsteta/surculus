@@ -35,6 +35,8 @@ object ContexteDeTournee {
         epsg = t.epsg,
         empriseForet = t.empriseForet,
         plantsAnterieurs = plantsAnterieurs(t),
+        codesTravaux = t.codesTravaux,
+        libellesCodes = t.libellesCodes,
     )
 
     /**

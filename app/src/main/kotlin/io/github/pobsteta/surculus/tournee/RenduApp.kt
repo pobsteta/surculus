@@ -103,7 +103,7 @@ object RenduApp {
             }
         } catch (e: Exception) {
             JournalTechnique.avertir("Rendu", "rendu de la tournée $id impossible", e)
-            IssueRendu.Impossible(RenduTournee.TEXTE_ECRITURE)
+            IssueRendu.Impossible(RenduTournee.texteDePanne(e))
         }
     }
 

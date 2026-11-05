@@ -203,7 +203,7 @@ class ExportTravauxTest {
         val l = Sqlite.ouvrir(f, lectureSeule = true).use { it.lignes("SELECT * FROM positions_controles WHERE controle_uuid = '${v.uuid(3001)}'").single() }
         assertEquals(v.uuid(3001), l.texte("controle_uuid"))
         assertEquals(0.4, l.reel("precision_m"))
-        assertEquals("essai", l.texte("source_gnss"))
+        assertEquals("telephone", l.texte("source_gnss"))
         assertEquals("RGF93", l.texte("referentiel_source"))
         assertEquals(true, l.booleen("simulee"))
         assertEquals(false, l.booleen("rattache_par_identite"))

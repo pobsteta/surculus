@@ -341,6 +341,7 @@ class ApplicateurDicteeTest {
     fun `placette terminee - la phrase s'ecrit, avec l'alerte avant l'annonce`() {
         val (b, s) = bancAvec()
         ApplicateurDictee.appliquer("atteint", s)
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         assertIs<SuiteSession.Fait>(s.terminer())
         val avant = b.journal.lignes.size
         val issue = assertIs<IssueDictee.Ecrite>(ApplicateurDictee.appliquer("mort", s))

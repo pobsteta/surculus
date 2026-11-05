@@ -44,6 +44,13 @@ class JournalValeursV2Test {
         rattacheParIdentite = true, repereEpsg = 2154, numeros = numeros, sansPositionMesuree = true,
     )
 
+    /** La même valeur, avec `"v":n` en tête (mission 091 : indépendant de la version que Surculus écrit). */
+    private fun enVersion(texte: String, n: Int): String {
+        val r = Regex("^\\{\"v\":\\d+,").replaceFirst(texte, "{\"v\":$n,")
+        check(r.startsWith("{\"v\":$n,")) { "remplacement de version : $texte" }
+        return r
+    }
+
     private fun lireTrace(texte: String): Pair<ValeurControle?, List<String>> {
         val traces = ArrayList<String>()
         return ValeurControle.lire(texte) { traces += it } to traces
@@ -51,14 +58,15 @@ class JournalValeursV2Test {
 
     // ------------------------------------------------------------------ version
 
+    // Mission 091, décision 3 de Pascal (2026-11-04) : les valeurs passent en v3 ; ce test suit la version écrite.
     @Test
-    fun `Surculus ecrit la version 2, une seule version pour tout le format`() {
-        assertEquals(2L, FormatValeurs.VERSION.toLong())
-        assertTrue(sansPosition.versJson().startsWith("{\"v\":2,"), sansPosition.versJson())
+    fun `Surculus ecrit la version 3, une seule version pour tout le format`() {
+        assertEquals(3L, FormatValeurs.VERSION.toLong())
+        assertTrue(sansPosition.versJson().startsWith("{\"v\":3,"), sansPosition.versJson())
         val p = ValeurPointage("c", "p", 2.0, 250.0, "gr", "saisie", 1.7, 0.4, 105.9, 105.5, "2026-10-27", 846166.1, 6686122.0, 2154, "CHS", null, false, 1_790_000_000_000)
-        assertTrue(p.versJson().startsWith("{\"v\":2,"), "pointage aussi en v2 : ${p.versJson()}")
+        assertTrue(p.versJson().startsWith("{\"v\":3,"), "pointage aussi en v3 : ${p.versJson()}")
         val e = ValeurEtat("c", "u", "sain", null, null, 35)
-        assertTrue(e.versJson().startsWith("{\"v\":2,"), "état aussi en v2 : ${e.versJson()}")
+        assertTrue(e.versJson().startsWith("{\"v\":3,"), "état aussi en v3 : ${e.versJson()}")
     }
 
     // ------------------------------------------------------------------ l'exemple du format v2
@@ -72,10 +80,14 @@ class JournalValeursV2Test {
 
     @Test
     fun `le controle sans position s'ecrit au caractere pres comme l'exemple du format - null explicite, cle apres rattache_par_identite`() {
-        assertEquals(exempleV2, sansPosition.versJson())
+        // Mission 091 (v3) : l'écrivain n'écrit plus de v2. Chaque clé de l'exemple v2, hors `v`, est écrite avec la
+        // même valeur (null explicites compris) ; la comparaison au caractère près passe à l'exemple v3 (JournalValeursV3Test).
+        val ecrit = com.google.gson.JsonParser.parseString(sansPosition.versJson()).asJsonObject
+        val exemple = com.google.gson.JsonParser.parseString(exempleV2).asJsonObject
+        for ((k, v) in exemple.entrySet()) if (k != "v") assertEquals(v, ecrit.get(k), "clé $k")
         val t = sansPosition.versJson()
         assertTrue("\"position_mesuree_x\":null,\"position_mesuree_y\":null" in t, t)
-        assertTrue("\"rattache_par_identite\":true,\"sans_position_mesuree\":true,\"repere_epsg\"" in t, t)
+        assertTrue("\"rattache_par_identite\":true,\"sans_position_mesuree\":true,\"precision_m\":null,\"source_gnss\":null,\"simulee\":null,\"repere_epsg\"" in t, t)
     }
 
     @Test
@@ -117,9 +129,9 @@ class JournalValeursV2Test {
     @Test
     fun `pointage et etat v1 toujours relus`() {
         val p = ValeurPointage("c", "p", 2.0, 250.0, "gr", "saisie", 1.7, 0.4, 105.9, 105.5, "2026-10-27", 846166.1, 6686122.0, 2154, "CHS", "m1", true, 1_790_000_000_000)
-        assertEquals(p, ValeurPointage.lire(p.versJson().replace("{\"v\":2,", "{\"v\":1,")))
+        assertEquals(p, ValeurPointage.lire(enVersion(p.versJson(), 1)))
         val e = ValeurEtat("c", "u", "atteint", "animaux", "abroutissement", 35)
-        assertEquals(e, ValeurEtat.lire(e.versJson().replace("{\"v\":2,", "{\"v\":1,")))
+        assertEquals(e, ValeurEtat.lire(enVersion(e.versJson(), 1)))
     }
 
     // ------------------------------------------------------------------ cohérence, vérifiée à la lecture
@@ -159,8 +171,8 @@ class JournalValeursV2Test {
     // ------------------------------------------------------------------ autre version : illisible, ignorée, tracée
 
     @Test
-    fun `une valeur v3 est ignoree et tracee, jamais devinee`() {
-        val (lu, traces) = lireTrace(exempleV2.replace("{\"v\":2,", "{\"v\":3,"))
+    fun `une valeur v4 est ignoree et tracee, jamais devinee`() {
+        val (lu, traces) = lireTrace(enVersion(exempleV2, 4))
         assertNull(lu)
         assertEquals(1, traces.size, "une trace par valeur ignorée")
         assertTrue(traces.single().isNotBlank())
@@ -176,14 +188,14 @@ class JournalValeursV2Test {
     }
 
     @Test
-    fun `pointage et etat v3 ignores et traces`() {
+    fun `pointage et etat v4 ignores et traces`() {
         val p = ValeurPointage("c", "p", 2.0, 250.0, "gr", "saisie", 1.7, 0.4, 105.9, 105.5, "2026-10-27", 846166.1, 6686122.0, 2154, "CHS", null, false, 1_790_000_000_000)
         val tracesP = ArrayList<String>()
-        assertNull(ValeurPointage.lire(p.versJson().replace("{\"v\":2,", "{\"v\":3,")) { tracesP += it })
+        assertNull(ValeurPointage.lire(enVersion(p.versJson(), 4)) { tracesP += it })
         assertEquals(1, tracesP.size)
         val e = ValeurEtat("c", "u", "sain", null, null, 35)
         val tracesE = ArrayList<String>()
-        assertNull(ValeurEtat.lire(e.versJson().replace("{\"v\":2,", "{\"v\":3,")) { tracesE += it })
+        assertNull(ValeurEtat.lire(enVersion(e.versJson(), 4)) { tracesE += it })
         assertEquals(1, tracesE.size)
         // Lisibles : aucune trace.
         val rien = ArrayList<String>()
@@ -203,6 +215,6 @@ class JournalValeursV2Test {
     fun `un controle sans position termine compte comme Controlee - la valeur v2 n'est pas perdue`() {
         val lignes = listOf(LigneCourante("l1", "c1", FormatValeurs.TYPE_CONTROLE, sansPosition.versJson(), null))
         assertEquals(setOf("11111111-1111-4111-8111-111111111111"), PlacettesControlees.de(lignes))
-        assertFalse(PlacettesControlees.de(listOf(LigneCourante("l1", "c1", "controle", exempleV2.replace("{\"v\":2,", "{\"v\":3,"), null))).isNotEmpty())
+        assertFalse(PlacettesControlees.de(listOf(LigneCourante("l1", "c1", "controle", enVersion(exempleV2, 4), null))).isNotEmpty())
     }
 }

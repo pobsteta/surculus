@@ -92,7 +92,7 @@ class ExportSansPositionTest {
         assertEquals(0, l.entier("sans_position_mesuree"), "écrit 0, pas NULL")
         assertEquals(0, l.entier("geom_nulle"))
         assertEquals(0.4, l.reel("precision_m"))
-        assertEquals("essai", l.texte("source_gnss"))
+        assertEquals("telephone", l.texte("source_gnss"))
         assertEquals(true, l.booleen("simulee"))
         assertEquals(false, l.booleen("rattache_par_identite"))
     }

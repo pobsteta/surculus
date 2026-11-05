@@ -75,12 +75,13 @@ class SursyncV2DevTest {
         assertEquals(2, local.lignes().size)
     }
 
-    @Test fun `une sauvegarde v2 n'ecrit jamais de ligne photo`() {
+    @Test fun `une sauvegarde n'ecrit jamais de ligne photo, en version courante (3 depuis la mission 091)`() {
         val local = depot()
         Restauration.restaurer(fichierV2(saisies), local)
         val octets = OutilsSursync.ecrire(local.lignes())
         val types = OutilsSursync.lignesTexte(octets).drop(1).dropLast(1).map { OutilsSursync.json(it).get("type").asString }
-        assertEquals(2, OutilsSursync.json(OutilsSursync.lignesTexte(octets).first()).get("version").asInt)
+        assertEquals(FormatSursync.VERSION_COURANTE, OutilsSursync.json(OutilsSursync.lignesTexte(octets).first()).get("version").asInt)
+        assertEquals(3, FormatSursync.VERSION_COURANTE)
         assertTrue("photo" !in types, "$types")
     }
 }

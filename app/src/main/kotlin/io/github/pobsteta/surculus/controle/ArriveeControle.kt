@@ -18,6 +18,7 @@ import io.github.pobsteta.surculus.core.placette.Piquet
 import io.github.pobsteta.surculus.core.reperes.PointGeographique
 import io.github.pobsteta.surculus.core.reperes.Resultat
 import io.github.pobsteta.surculus.core.session.Arrivee
+import io.github.pobsteta.surculus.core.session.QualiteFix
 import io.github.pobsteta.surculus.core.session.ContexteControle
 import io.github.pobsteta.surculus.core.session.EcouteSauvegarde
 import io.github.pobsteta.surculus.core.session.HorlogeSession
@@ -62,20 +63,21 @@ object ArriveeControle {
     /**
      * La position d'arrivée à partir des fix reçus pendant la moyenne. Un fix **hors de France** n'est pas « pas de position » :
      * il est rendu tel quel (latitude, longitude) pour que la session le refuse avec `hors_france` (la placette en Somalie).
-     * Sinon, moyenne en Lambert-93 (x = Est, y = Nord, mètres). Aucun fix : `null`.
+     * Sinon, moyenne en Lambert-93 (x = Est, y = Nord, mètres). Aucun fix : `null`. [qualite] : ce que les fix moyennés
+     * disent d'eux-mêmes ([QualiteFix.de], mission 091), porté tel quel par l'arrivée.
      */
-    fun arrivee(positions: List<Position>): Arrivee? {
+    fun arrivee(positions: List<Position>, qualite: QualiteFix? = null): Arrivee? {
         if (positions.isEmpty()) return null
         val moyenne = MoyennePosition()
         for (p in positions) {
             val l93 = Guidage.versLambert93(p)
             if (l93 == null) {
                 val point = PointGeographique.de(p.latitude, p.longitude)
-                return if (point is Resultat.Accepte) Arrivee.Gnss(point.valeur) else null
+                return if (point is Resultat.Accepte) Arrivee.Gnss(point.valeur, qualite) else null
             }
             moyenne.ajouter(l93)
         }
-        return moyenne.moyenne()?.let { Arrivee.Lambert93(it) }
+        return moyenne.moyenne()?.let { Arrivee.Lambert93(it, qualite) }
     }
 
     /**
@@ -104,8 +106,9 @@ object ArriveeControle {
         sauvegarde: EcouteSauvegarde,
         ugChoisie: String? = null,
         diagnostic: (String) -> Unit = JOURNAL_TECHNIQUE,
+        qualite: QualiteFix? = null,
     ): EtatArrivee {
-        val arrivee = arrivee(positions) ?: return EtatArrivee.SansPosition
+        val arrivee = arrivee(positions, qualite) ?: return EtatArrivee.SansPosition
         val etat = etatDe(contexte, essences, SessionControle.ouvrir(contexte, journal, horloge, essences, arrivee, codeLu, sauvegarde, ugChoisie, diagnostic))
         if (etat is EtatArrivee.Refus && etat.refus.code == CodesRefus.HORS_FRANCE) {
             diagnostic("fix refusé à l'arrivée, hors de France : ${etat.refus.message}")
@@ -154,7 +157,7 @@ object ArriveeControle {
     private fun etatDe(contexte: ContexteControle, essences: Essences, o: OuvertureControle): EtatArrivee = when (o) {
         is OuvertureControle.Ouverte -> {
             val rayon = contexte.placettes.firstOrNull { it.piquet.placette == o.session.rattachement.piquet.placette }?.rayonM ?: RAYON_PAR_DEFAUT_M
-            EtatArrivee.Ouverte(ControleurPlacette(o.session, rayon, essences.liste()))
+            EtatArrivee.Ouverte(ControleurPlacette(o.session, rayon, essences.liste(), contexte.codesTravaux.map { it to contexte.libellesCodes[it].orEmpty() }))
         }
         is OuvertureControle.Refusee -> EtatArrivee.Refus(o.refus)
         is OuvertureControle.UgAChoisir -> EtatArrivee.UgAChoisir(o.code, o.candidats)

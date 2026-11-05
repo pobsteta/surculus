@@ -29,7 +29,7 @@ class FormatEtServiceTest {
     private val jr02 get() = journalDe("journal/projection.json#JR-02").sortedWith(compareBy({ it.saisiLeUtcMs }, { it.appareil }, { it.sequence }, { it.uuid }))
 
     @Test fun `l'exemple publie se lit et redonne le journal d'origine`() {
-        val r = LectureSursync.lire(exemple("exemple-v1.sursync"))
+        val r = LectureSursync.lire(exemple("exemple-v1.sursync"), versionCourante = 2)
         assertTrue(r.accepte); assertTrue(r.signalements.isEmpty())
         assertEquals(jr02, r.lignes)
         assertEquals("COUCHEY-2026", r.entete?.codeTournee)
@@ -42,8 +42,8 @@ class FormatEtServiceTest {
     }
 
     @Test fun `exemples tronque et a empreinte fausse`() {
-        assertTrue(Signalement.FICHIER_TRONQUE in LectureSursync.lire(exemple("exemple-v1-tronque.sursync")).signalements)
-        val faux = LectureSursync.lire(exemple("exemple-v1-empreinte-fausse.sursync"))
+        assertTrue(Signalement.FICHIER_TRONQUE in LectureSursync.lire(exemple("exemple-v1-tronque.sursync"), versionCourante = 2).signalements)
+        val faux = LectureSursync.lire(exemple("exemple-v1-empreinte-fausse.sursync"), versionCourante = 2)
         assertEquals(setOf(Signalement.EMPREINTE_DIFFERENTE), faux.signalements); assertEquals(2, faux.lignes.size)
     }
 

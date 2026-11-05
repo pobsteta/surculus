@@ -115,6 +115,21 @@ sealed interface RefusGpkg {
         override val message = "Le travail $travaux porte le code « $code », absent de la couche codes de la tournée."
     }
 
+    /**
+     * Besoin d'un contrôle qui n'est ni un code de la couche `codes` de la tournée, ni « aucun » (mission 091 ; sommieR
+     * 0.31.1, `R/registre6.R` l. 137-138, comparaison au caractère près, `R/valider.R` l. 79-86).
+     */
+    data class BesoinHorsReferentiel(val controle: String, val besoin: String) : RefusGpkg {
+        override val motif = "hors_referentiel"
+        override val message = "Le contrôle $controle porte le besoin « $besoin », absent de la couche codes de la tournée (ni « aucun »)."
+    }
+
+    /** Concurrence hors de faible, moyenne, forte (mission 091 ; `SOMMIER_CONCURRENCES`, `R/registre6.R` l. 64). */
+    data class ConcurrenceHorsReferentiel(val controle: String, val concurrence: String) : RefusGpkg {
+        override val motif = "hors_referentiel"
+        override val message = "Le contrôle $controle porte la concurrence « $concurrence » : faible, moyenne ou forte."
+    }
+
     /** Jour civil fourni qui contredit `visite_le` : l'export refuse, il ne corrige pas en silence. */
     data class JourIncoherent(val controle: String, val fourni: LocalDate, val attendu: LocalDate) : RefusGpkg {
         override val motif = "jour_incoherent"

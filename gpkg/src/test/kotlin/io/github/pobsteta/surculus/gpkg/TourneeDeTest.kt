@@ -75,6 +75,11 @@ object TourneeDeTest {
             cnx.createStatement().use { st ->
                 st.executeUpdate("INSERT INTO suivis (id, libelle, ug) VALUES ('$TRAVAUX_ID', 'Plantation 2022', '35')")
                 st.executeUpdate("INSERT INTO codes (code, libelle, unites, formes) VALUES ('PL', 'Plantation', 'ha', 'surface')")
+                // Mission 091 : le besoin « regarni » du scénario Couchey (P35-02). Ligne de SOMMIER_CODES_TRAVAUX de
+                // sommieR 0.31.1 (R/registre6.R l. 17-45 : code RG, unité plants, formes surface et point), que
+                // sommier_projet_qfield_travaux() verse dans la couche `codes` (R/travaux_qfield.R l. 59-65). La couche
+                // d'essai ne porte pas « aucun » : un test vérifie qu'il reste permis sans y être.
+                st.executeUpdate("INSERT INTO codes (code, libelle, unites, formes) VALUES ('RG', 'RG - Regarnis, compléments', 'plants', 'surface, point')")
             }
             for (k in 0..2) {
                 cnx.prepareStatement(
@@ -136,7 +141,7 @@ object TourneeDeTest {
             (Totaux.deduire(e.map { io.github.pobsteta.surculus.core.placette.EtatPlant(it.plant, it.observation) }) as Verdict.Accepte).valeur
         val c1 = ControleSaisi(
             UuidControle(uuid(3001)), UuidPlacette(placetteUuid(0)), INSTANT_CONTROLE, JourCivil.de(INSTANT_CONTROLE), centre(0),
-            PositionMesuree(centre(0), precisionM = 0.4, sourceGnss = "essai", referentielSource = "RGF93", simulee = true),
+            PositionMesuree(centre(0), precisionM = 0.4, sourceGnss = "telephone", referentielSource = "RGF93", simulee = true),
             etats1, totaux = totaux(etats1), operateur = "Agent d'essai", concurrence = "moyenne", besoin = "aucun",
         )
         val c2 = ControleSaisi(

@@ -19,6 +19,8 @@ import io.github.pobsteta.surculus.core.placette.Totaux
 import io.github.pobsteta.surculus.core.placette.UuidPlacette
 import io.github.pobsteta.surculus.core.placette.UuidPlant
 import io.github.pobsteta.surculus.core.placette.Verdict
+import io.github.pobsteta.surculus.core.session.Besoins
+import io.github.pobsteta.surculus.core.session.Concurrences
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -58,6 +60,7 @@ internal object ValidationExport {
         if (m.position == null && !m.sansPositionMesuree) refus("geom", "position absente sans « sans position mesurée »")
         if (m.position != null && m.sansPositionMesuree) refus("sans_position_mesuree", "« sans position mesurée » avec une position")
         if (m.sansPositionMesuree && m.precisionM != null) refus("precision_m", "précision donnée sans position mesurée")
+        if (m.precisionM != null && m.precisionM <= 0.0) refus("precision_m", "précision nulle ou négative (jamais 0 : ADR 0003)")
         if (m.sansPositionMesuree && !m.rattacheParIdentite) refus("rattache_par_identite", "sans position mesurée, le contrôle est rattaché par identité")
     }
 
@@ -133,6 +136,8 @@ internal object ValidationExport {
             m.position?.let { point(tournee, "positions_controles", id, it) }
             fini("positions_controles", "precision_m", m.precisionM)
             positionCoherente(id, m)
+            c.besoin?.let { if (!Besoins.permis(it, tournee.codesTravaux)) throw GpkgRefuse(RefusGpkg.BesoinHorsReferentiel(id, it)) }
+            c.concurrence?.let { if (!Concurrences.permise(it)) throw GpkgRefuse(RefusGpkg.ConcurrenceHorsReferentiel(id, it)) }
             verifierEtats(c, tousPlants, nouveaux.keys + existants.keys)
         }
         verifierUnParJour(tournee, controlesNouveaux.values, controlesExistants.keys)

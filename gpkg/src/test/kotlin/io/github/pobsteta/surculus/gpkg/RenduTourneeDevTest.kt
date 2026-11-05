@@ -91,7 +91,10 @@ class RenduTourneeDevTest {
             assertTrue(s.pointer(dist, (AzimutSaisi.valider(az, deg) as Resultat.Accepte).valeur, SourceAzimut.SAISIE, essence) is SuiteSession.Fait)
             assertTrue(s.dire("sain", null, null, 40) is SuiteSession.Fait)
         }
-        if (terminer) assertTrue(s.terminer() is SuiteSession.Fait)
+        if (terminer) {
+            s.direBesoin("aucun"); s.direConcurrence("faible")
+            assertTrue(s.terminer() is SuiteSession.Fait)
+        }
         return journal.lignes.last { it.type == FormatValeurs.TYPE_CONTROLE }.objet
     }
 

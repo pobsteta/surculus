@@ -73,6 +73,10 @@ internal object FautesDuRendu {
             }
             is RefusGpkg.UuidEnDouble, is RefusGpkg.UuidInvalide ->
                 deLaPlacette("une saisie porte un identifiant invalide ou en double", "l'annuler et la refaire")
+            is RefusGpkg.BesoinHorsReferentiel ->
+                FauteDeSaisie.de(duControle(refus.controle), null, "besoin « ${refus.besoin} » absent de la tournée", "dire de nouveau le besoin")
+            is RefusGpkg.ConcurrenceHorsReferentiel ->
+                FauteDeSaisie.de(duControle(refus.controle), null, "concurrence « ${refus.concurrence} » inconnue", "dire de nouveau la concurrence")
             is RefusGpkg.CodeTravauxHorsReferentiel ->
                 deLaPlacette("un travail porte un code absent de la tournée", "corriger le code du travail")
             is RefusGpkg.CodePlacetteEnDouble ->

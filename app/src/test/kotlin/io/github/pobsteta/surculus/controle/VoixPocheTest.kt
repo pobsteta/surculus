@@ -95,7 +95,7 @@ class VoixPocheTest {
     @Test fun `placette deja terminee - l'alerte avant le numero, a chaque geste`() = with(BancControle()) {
         val c = controleur()
         c.geste(Geste.VOLUME_HAUT_COURT)
-        c.demanderTerminer(); c.terminer(); c.reprendre()
+        c.demanderTerminer(); c.direBesoin("aucun"); c.direConcurrence("faible"); c.terminer(); c.reprendre()
         c.geste(Geste.VOLUME_HAUT_COURT)
         assertEquals("placette déjà terminée. Numéro 2, sain. Suivant, 3.", c.derniereAnnonce?.texte)
         assertContentEquals(MotifsVibration.DEJA_TERMINEE, c.derniereAnnonce?.motif)
@@ -106,7 +106,7 @@ class VoixPocheTest {
     @Test fun `double appui bas apres Terminer - la placette est rouverte, pas d'alerte de placette terminee`() = with(BancControle()) {
         val c = controleur()
         c.geste(Geste.VOLUME_HAUT_COURT)
-        c.demanderTerminer(); c.terminer(); c.reprendre()
+        c.demanderTerminer(); c.direBesoin("aucun"); c.direConcurrence("faible"); c.terminer(); c.reprendre()
         c.geste(Geste.VOLUME_BAS_DOUBLE_COURT)
         assertEquals("annulé.", c.derniereAnnonce?.texte)
         assertContentEquals(MotifsVibration.ANNULE, c.derniereAnnonce?.motif)

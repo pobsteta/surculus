@@ -8,7 +8,9 @@
 package io.github.pobsteta.surculus.gpkg
 
 import io.github.pobsteta.surculus.core.placette.Essences
+import io.github.pobsteta.surculus.core.session.FormatValeurs
 import io.github.pobsteta.surculus.core.session.LigneCourante
+import io.github.pobsteta.surculus.core.session.ValeurControle
 import java.io.IOException
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
@@ -73,7 +75,12 @@ object RenduTournee {
             return ResultatRendu.Refusee(listOf(FautesDuRendu.de(e.refus, ReperesSaisies(emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap()), null)))
         }
         val conversion = SaisiesDuJournal.construire(tournee, lignes)
-        val fautes = verifier(tournee, conversion, essences)
+        val fautes = ArrayList<FauteDeSaisie>()
+        // Décision de Pascal du 2026-11-03 (mission 091) : une tournée sans aucun contrôle terminé n'a rien à rendre.
+        if (lignes.none { it.type == FormatValeurs.TYPE_CONTROLE && ValeurControle.lire(it.valeur)?.termine == true }) {
+            fautes += FauteDeSaisie(null, null, TEXTE_TOURNEE_VIDE)
+        }
+        fautes += verifier(tournee, conversion, essences)
         if (fautes.isNotEmpty()) return ResultatRendu.Refusee(fautes)
 
         val travail = try {
@@ -87,6 +94,9 @@ object RenduTournee {
             val zip = travail.resolve(destination.fileName.toString())
             ExportZip.ecrireRendu(gpkg, dossierTournee.resolve(ExportZip.DCIM), zip)
             deplacer(zip, destination)
+            // Le zip est sur le disque avant que la marque ne dise « rendue » : une coupure de courant ne laisse jamais
+            // une tournée marquée rendue avec un zip vide ou tronqué.
+            synchroniser(destination)
             ecrireMarque(dossierTournee, destination, bilan, versionSurculus, exporteLe)
             return ResultatRendu.Rendue(destination, bilan)
         } catch (e: GpkgRefuse) {
@@ -111,6 +121,31 @@ object RenduTournee {
      */
     fun rouvrir(dossierTournee: Path) {
         Files.deleteIfExists(dossierTournee.resolve(MARQUE))
+    }
+
+    /** La phrase décidée par Pascal le 2026-11-03 (fiche 091) pour une tournée sans contrôle terminé. */
+    const val TEXTE_TOURNEE_VIDE = "Aucun contrôle terminé dans cette tournée : rien à rendre."
+
+    const val TEXTE_TOURNEE_ILLISIBLE = "la tournée n'a pas pu être relue : l'importer de nouveau depuis sommieR"
+    const val TEXTE_ACCES_REFUSE = "le téléphone a refusé l'écriture du fichier : redémarrer le téléphone, puis réessayer"
+    const val TEXTE_JOURNAL_ILLISIBLE = "le journal des saisies n'a pas pu être lu : fermer et rouvrir l'application, puis réessayer"
+    const val TEXTE_INATTENDU = "le rendu a échoué sur une erreur inattendue : réessayer ; si cela recommence, redémarrer le téléphone"
+
+    /**
+     * La vraie cause d'un rendu impossible, en français, pour l'écran (relecture de la 090 : « le fichier n'a pas pu être
+     * écrit » disait tout et rien). Le détail technique reste au journal technique.
+     */
+    fun texteDePanne(e: Throwable): String {
+        val chaine = generateSequence(e) { it.cause }.toList()
+        return when {
+            chaine.any { it is GpkgRefuse } -> TEXTE_TOURNEE_ILLISIBLE
+            estPlein(e) -> TEXTE_PLACE
+            chaine.any { it is java.nio.file.AccessDeniedException || it is SecurityException } -> TEXTE_ACCES_REFUSE
+            // android.database.sqlite.SQLiteException et ses filles : le journal (Room), lu avant toute écriture.
+            chaine.any { c -> generateSequence<Class<*>>(c.javaClass) { it.superclass }.any { it.simpleName.startsWith("SQLite") } } -> TEXTE_JOURNAL_ILLISIBLE
+            chaine.any { it is IOException } -> TEXTE_ECRITURE
+            else -> TEXTE_INATTENDU
+        }
     }
 
     const val TEXTE_ECRITURE = "le fichier n'a pas pu être écrit : réessayer ; si cela recommence, redémarrer le téléphone"
@@ -170,6 +205,10 @@ object RenduTournee {
         } finally {
             Files.deleteIfExists(tmp)
         }
+    }
+
+    private fun synchroniser(fichier: Path) {
+        java.nio.channels.FileChannel.open(fichier, java.nio.file.StandardOpenOption.WRITE).use { it.force(true) }
     }
 
     private fun estPlein(e: Throwable): Boolean =

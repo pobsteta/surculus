@@ -78,6 +78,7 @@ class SessionSurJournalRoomTest {
         s.pointe(2.0, 100.0)
         s.dire("sain")
         assertEquals(emptySet(), j.placettesControlees(), "commencée, pas terminée : à faire")
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         assertIs<SuiteSession.Fait>(s.terminer())
         assertEquals(setOf(p1.valeur), j.placettesControlees())
         // Le lendemain, toujours Contrôlée.
@@ -89,6 +90,7 @@ class SessionSurJournalRoomTest {
         assertEquals(emptySet(), j.placettesControlees(), "fin annulée : à faire")
         assertEquals(false, s.etat().termine)
         // Refaire la fin : Contrôlée de nouveau (le journal garde tout : saisie, annulation, nouvelle saisie).
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         assertIs<SuiteSession.Fait>(s.terminer())
         assertEquals(setOf(p1.valeur), j.placettesControlees())
     }
@@ -132,7 +134,7 @@ class SessionSurJournalRoomTest {
         val a = JournalDeTournee(depot, "A")
         val b = JournalDeTournee(depot, "B")
         val sa = session(a)
-        sa.pointe(2.0, 100.0); sa.dire("sain"); sa.terminer()
+        sa.pointe(2.0, 100.0); sa.dire("sain"); sa.direBesoin("aucun"); sa.direConcurrence("faible"); sa.terminer()
         assertEquals(setOf(p1.valeur), a.placettesControlees())
         assertEquals(emptySet(), b.placettesControlees(), "la tournée B n'a rien contrôlé")
         assertEquals(emptyList(), b.lignesCourantes())
@@ -161,7 +163,7 @@ class SessionSurJournalRoomTest {
         val depot = depot()
         val j = JournalDeTournee(depot, "COUCHEY-2026")
         val s = session(j)
-        s.pointe(2.0, 100.0); s.dire("sain"); s.terminer()
+        s.pointe(2.0, 100.0); s.dire("sain"); s.direBesoin("aucun"); s.direConcurrence("faible"); s.terminer()
         val lignes = depot.lignes()
         assertTrue(lignes.isNotEmpty())
         assertTrue(lignes.all { it.codeTournee == "COUCHEY-2026" && it.operateur == "Agent d'essai" })
@@ -212,6 +214,7 @@ class SessionSurJournalRoomTest {
         assertEquals(0, stockage.fichiers.size, "19 saisies : pas de sauvegarde")
         s.dire("sain") // la 20e
         assertEquals(1, stockage.fichiers.size, "N = ${RegleDeclenchement.N_SAISIES} saisies : une sauvegarde")
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         s.terminer() // une saisie de plus + fin de placette
         assertEquals(2, stockage.fichiers.size, "une seule sauvegarde à terminer (la saisie et la fin ne comptent pas deux fois)")
     }
@@ -226,6 +229,7 @@ class SessionSurJournalRoomTest {
         val s = session(JournalDeTournee(depot, "T"), declencheur)
         s.pointe(2.0, 100.0); s.dire("sain")
         assertEquals(0, stockage.fichiers.size)
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         s.terminer()
         assertEquals(1, stockage.fichiers.size)
         val nom = stockage.fichiers.keys.single()
