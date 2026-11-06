@@ -48,7 +48,7 @@ import kotlin.test.assertTrue
  * de `JournalValeursV3Test` (`ValeurControle.besoin`, `concurrence`, `qualite`).
  *
  * Le contrôle ancien est fabriqué ainsi : un contrôle complet est joué par la session (besoin et concurrence dits), puis
- * sa ligne `controle` courante est **ramenée en v2** dans le journal (les cinq clés de la v3 retirées, `"v":2`), comme si
+ * sa ligne `controle` courante est **ramenée en v2** dans le journal (les clés de la v3 retirées, `referentiel_source` de la 094 comprise, `"v":2`), comme si
  * elle avait été écrite par un Surculus d'avant la 091. Les lignes `pointage` et `etat` restent celles de la session.
  *
  * **Phrase** : celle de la fiche, au caractère près ; un point final est toléré (la fiche n'en met pas, la phrase de la
@@ -66,7 +66,7 @@ class RenduControleAncienTest {
     /** Décision 2 de Pascal (2026-11-04), fiche 091. */
     private fun phrase(code: String) = "$code : contrôle sans besoin ni concurrence : l'annuler et le refaire"
 
-    private val clesV3 = listOf("besoin", "concurrence", "precision_m", "source_gnss", "simulee")
+    private val clesV3 = listOf("besoin", "concurrence", "precision_m", "source_gnss", "simulee", "referentiel_source") // 094
 
     private class JournalMemoire : JournalControle {
         class L(val uuid: String, val objet: String, val type: String, var valeur: String?, val remplace: String?)
@@ -101,12 +101,12 @@ class RenduControleAncienTest {
     private val horloge = Horloge(0)
 
     /** Contrôle complet de [code] (deux plants sains), mesuré à 0,6 m E, -0,4 m N du piquet, avec la qualité dite. */
-    private fun controler(code: String, visiteLe: String) {
+    private fun controler(code: String, visiteLe: String, referentiel: String? = null) {
         val contexte = ContexteDeTournee.de(tournee).copy(operateur = "Agent d'essai")
         horloge.ms = Instant.parse(visiteLe).toEpochMilli()
         val p = tournee.placettes.single { it.code == code }.position!!
         val arrivee = Arrivee.Lambert93(PointLambert93(xMetres = p.xMetres + 0.6, yMetres = p.yMetres - 0.4),
-            qualite = QualiteFix(precisionM = 0.9, sourceGnss = "recepteur_dgps", simulee = false))
+            qualite = QualiteFix(precisionM = 0.9, sourceGnss = "recepteur_dgps", simulee = false, referentielSource = referentiel))
         val s = assertNotNull(SessionControle.ouvrir(contexte, journal, horloge, essences, arrivee) as? OuvertureControle.Ouverte, code).session
         for ((d, az) in listOf(1.2 to 10.0, 2.0 to 100.0)) {
             assertTrue(s.pointer(d, (AzimutSaisi.valider(az, UniteAzimut.DEGRES) as Resultat.Accepte).valeur, SourceAzimut.SAISIE, "CHS") is SuiteSession.Fait)
@@ -171,6 +171,34 @@ class RenduControleAncienTest {
             val f = assertNotNull(r.fautes.singleOrNull { it.placette == code && it.texte.removeSuffix(".") == phrase(code) }, "$code : ${r.fautes.map { it.texte }}")
             assertNull(f.plant)
         }
+    }
+
+    /**
+     * Mission 094 (décisions de Pascal du 2026-11-06, point 3) : un contrôle v3 écrit **avant la 094** (sans la clé
+     * `referentiel_source`, mais avec besoin et concurrence) se relit avec un référentiel inconnu et sort **NULL** au
+     * rendu, jamais deviné de `source_gnss`. Fabriqué en retirant la seule clé d'un contrôle joué avec « RGF93 ».
+     */
+    @Test
+    fun `094 - un controle v3 d'avant la 094, sans referentiel_source, est rendu avec referentiel_source NULL`() {
+        controler("P35-01", "2026-10-20T09:30:00Z", referentiel = "RGF93")
+        val courante = journal.lignesCourantes().single { it.type == FormatValeurs.TYPE_CONTROLE }
+        val o = JsonParser.parseString(courante.valeur).asJsonObject
+        assertEquals("RGF93", o.get("referentiel_source")?.takeUnless { it.isJsonNull }?.asString, "banc : la session a écrit RGF93 : $o")
+        o.remove("referentiel_source")
+        val v3 = o.toString()
+        assertTrue(v3.startsWith("{\"v\":3,"), "banc : $v3")
+        journal.lignes.single { it.uuid == courante.uuid }.valeur = v3
+        assertNull(assertNotNull(ValeurControle.lire(v3)?.qualite, "la qualité de la 091 reste lue : $v3").referentielSource)
+
+        val zip = dossier.resolve("v3-avant-094.zip")
+        assertTrue(rendre(zip) is ResultatRendu.Rendue, "un contrôle v3 avec besoin se rend")
+        val sortie = Files.createDirectories(dossier.resolve("zip"))
+        Files.newInputStream(zip).use { ImportTournee.extraireZip(it, sortie) }
+        val l = Sqlite.ouvrir(sortie.resolve("travaux.gpkg"), lectureSeule = true).use {
+            it.lignes("SELECT source_gnss, referentiel_source FROM positions_controles")
+        }.single()
+        assertEquals("recepteur_dgps", l["source_gnss"], "la source reste dite")
+        assertNull(l["referentiel_source"], "contrôle d'avant la 094 : référentiel NULL, jamais deviné")
     }
 
     @Test

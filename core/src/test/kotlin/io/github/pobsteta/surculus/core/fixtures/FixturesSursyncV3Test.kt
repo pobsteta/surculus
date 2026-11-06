@@ -91,9 +91,9 @@ class FixturesSursyncV3Test {
         val valeurs = saisies.map { json(it.get("valeur").asString) }
         assertEquals(listOf(2, 3, 3, 3), valeurs.map { it.get("v").asInt })
         val v2 = valeurs.first()
-        for (k in listOf("besoin", "concurrence", "precision_m", "source_gnss", "simulee")) assertFalse(v2.has(k), "la valeur v2 n'a pas $k")
+        for (k in listOf("besoin", "concurrence", "precision_m", "source_gnss", "simulee", "referentiel_source")) assertFalse(v2.has(k), "la valeur v2 n'a pas $k")
         for (v in valeurs.drop(1)) {
-            for (k in listOf("besoin", "concurrence", "precision_m", "source_gnss", "simulee")) assertTrue(v.has(k), "v3 sans $k : $v")
+            for (k in listOf("besoin", "concurrence", "precision_m", "source_gnss", "simulee", "referentiel_source")) assertTrue(v.has(k), "v3 sans $k : $v")
             // besoin : la couche `codes` de la tournée d'essai porte RG (sommieR 0.31.1, R/registre6.R l. 17-45), ou « aucun ».
             assertTrue(v.get("besoin").asString in setOf("aucun", "RG"), v.toString())
             assertTrue(v.get("concurrence").asString in setOf("faible", "moyenne", "forte"), v.toString())
@@ -101,9 +101,16 @@ class FixturesSursyncV3Test {
             if (!s.isJsonNull) assertTrue(s.asString in setOf("telephone", "recepteur_autonome", "recepteur_dgps", "recepteur_rtk_flottant", "recepteur_rtk_fixe"))
             val p = v.get("precision_m")
             if (!p.isJsonNull) assertTrue(p.asDouble > 0.0, "precision_m jamais 0 : $v")
+            // Mission 094 (décisions de Pascal du 2026-11-06, point 3) : RGF93, WGS84 ou null, dernière clé après concurrence.
+            val r = v.get("referentiel_source")
+            if (!r.isJsonNull) assertTrue(r.asString in setOf("RGF93", "WGS84"), v.toString())
+            assertEquals(listOf("concurrence", "referentiel_source"), v.keySet().toList().takeLast(2), v.toString())
         }
+        // 094 : l'exemple porte les trois cas, RGF93 (P35-01, RTK Centipède), WGS84 (P35-04, téléphone), null (P35-02).
+        assertEquals(mapOf("P35-01" to "RGF93", "P35-04" to "WGS84", "P35-02" to null),
+            valeurs.drop(1).associate { it.get("code_placette").asString to it.get("referentiel_source").takeUnless { r -> r.isJsonNull }?.asString })
         val sans = valeurs.single { it.get("sans_position_mesuree").asBoolean }
-        for (k in listOf("precision_m", "source_gnss", "simulee")) assertTrue(sans.get(k).isJsonNull, "sans position mesurée : $k null")
+        for (k in listOf("precision_m", "source_gnss", "simulee", "referentiel_source")) assertTrue(sans.get(k).isJsonNull, "sans position mesurée : $k null")
     }
 
     @Test
@@ -168,6 +175,6 @@ class FixturesSursyncV3Test {
         val t = sursync.readText()
         listOf("journal-valeurs-v3.md", "version_future", "exemple-v3").forEach { assertTrue(it in t, "sursync-v3.md ne cite pas $it") }
         val v = valeurs.readText()
-        listOf("besoin", "concurrence", "precision_m", "source_gnss", "simulee", "journal-valeurs-v2.md").forEach { assertTrue(it in v, "journal-valeurs-v3.md ne cite pas $it") }
+        listOf("besoin", "concurrence", "precision_m", "source_gnss", "simulee", "referentiel_source", "journal-valeurs-v2.md").forEach { assertTrue(it in v, "journal-valeurs-v3.md ne cite pas $it") }
     }
 }

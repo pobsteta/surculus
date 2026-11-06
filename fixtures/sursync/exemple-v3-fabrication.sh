@@ -9,14 +9,18 @@
 #                                        1. P35-03, valeur **v2** (contrôle ancien, terminé sans besoin ni concurrence :
 #                                           une sauvegarde v3 porte aussi les valeurs v1 et v2 du journal, sans perte) ;
 #                                        2. P35-01, valeur v3, récepteur RTK fixe, 0,02 m, non simulée, besoin « aucun »,
-#                                           concurrence « moyenne » ;
-#                                        3. P35-02, valeur v3, ouvert sans position mesurée : precision_m, source_gnss et
-#                                           simulee à null (jamais « faux »), besoin « RG », concurrence « forte » ;
+#                                           concurrence « moyenne », referentiel_source « RGF93 » (flux NTRIP Centipède) ;
+#                                        3. P35-02, valeur v3, ouvert sans position mesurée : precision_m, source_gnss,
+#                                           simulee et referentiel_source à null (jamais « faux »), besoin « RG »,
+#                                           concurrence « forte » ;
 #                                        4. P35-04, valeur v3, GNSS du téléphone, 3,8 m, position simulée (isMock), besoin
-#                                           « aucun », concurrence « faible ».
+#                                           « aucun », concurrence « faible », referentiel_source « WGS84 ».
+#                                        Mission 094 (testeur, décisions de Pascal du 2026-11-06, point 3) : ajout
+#                                        compatible en v3, la clé referentiel_source (RGF93, WGS84 ou null) est la
+#                                        dernière de la valeur, après concurrence ; P35-03 (v2) ne la porte pas.
 #                                        Écrit à la main (clés des saisies dans l'ordre de exemple-v2.jsonl). Dans la
 #                                        valeur v3, les clés nouvelles sont placées ainsi : precision_m, source_gnss,
-#                                        simulee après sans_position_mesuree ; besoin, concurrence en fin. C'est une
+#                                        simulee après sans_position_mesuree ; besoin, concurrence, referentiel_source en fin. C'est une
 #                                        proposition du testeur : docs/formats/journal-valeurs-v3.md (orchestrateur) fait
 #                                        foi ; la sauvegarde recopie la valeur au caractère près, quel que soit cet ordre.
 #                                        Domaines : besoin = un code de la couche `codes` de la tournée (RG, sommieR 0.31.1,
