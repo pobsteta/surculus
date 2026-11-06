@@ -82,11 +82,13 @@ object SourcesGnss {
  * tel quel, sans transformation.
  *
  * - fix du téléphone, ou du récepteur en qualité GGA autonome (1, et 3, 6, 7, 8 comme pour `source_gnss`) : [WGS84] ;
- * - fix DGPS ou RTK (flottant, fixe) corrigé par un flux NTRIP **Centipède vu par Surculus** ([FixGnss.casterNtrip] parmi
+ * - fix RTK (flottant, fixe) corrigé par un flux NTRIP **Centipède vu par Surculus** ([FixGnss.casterNtrip] parmi
  *   [CASTERS_CENTIPEDE]) et dont l'âge des corrections (GGA, champ 13) est connu et d'au plus 30 s
  *   (`PolitiqueFix.ageMaxCorrectionsS`) : [RGF93], parce que les bases Centipède diffusent des coordonnées RGF93
  *   (https://docs.centipede.fr/docs/base/param_positionnement.html, `docs/referentiels/referentiel-centipede.md`) ;
- * - sinon `null`, jamais deviné : DGPS ou RTK sans flux vu (NTRIP désactivé, corrections du récepteur seul, EGNOS), caster
+ * - fix DGPS : `null`, même avec un flux Centipède vu, car le récepteur peut se corriger par EGNOS (SBAS) plutôt que par
+ *   le flux (décision de Pascal du 2026-11-06, reprise 1 de la PR #159) ;
+ * - sinon `null`, jamais deviné : RTK sans flux vu (NTRIP désactivé, corrections du récepteur seul, EGNOS), caster
  *   qui n'est pas Centipède, corrections de plus de 30 s ou d'âge inconnu, RTK rétrogradé par `PolitiqueFix`.
  */
 object ReferentielsSource {
@@ -97,8 +99,10 @@ object ReferentielsSource {
     val DOMAINE: Set<String> = linkedSetOf(RGF93, WGS84)
 
     /**
-     * Hôtes du caster Centipède : `caster.centipede.fr` (réglage par défaut de `ConfigRtk`, repris de Groma) et `crtk.net`
-     * (https://docs.centipede.fr/docs/centipede/3_connect_caster.html). Comparés au caractère près, casse ignorée.
+     * Hôtes du caster Centipède, reconnus par leur nom seul, jamais par une adresse IP : `crtk.net`, nommé par la
+     * documentation Centipède (https://docs.centipede.fr/docs/centipede/3_connect_caster.html), et `caster.centipede.fr`,
+     * réglage par défaut de `ConfigRtk` (`app/.../gnss/ConfigRtk.kt`), hérité de Groma, que cette page ne nomme pas.
+     * Comparés au caractère près, casse ignorée.
      */
     val CASTERS_CENTIPEDE: Set<String> = linkedSetOf("caster.centipede.fr", "crtk.net")
 
@@ -126,7 +130,9 @@ object ReferentielsSource {
             // Rétrogradé : la position a été calculée avec des corrections trop vieilles, ni autonome ni corrigée sûre.
             fix.qualiteAnnoncee != null -> null
             fix.qualite == Gga.AUCUN -> null
-            fix.qualite == Gga.DGPS || fix.qualite.estRtk -> {
+            // DGPS : correction peut-être par EGNOS, même avec un flux Centipède vu ; le repère n'est pas sûr.
+            fix.qualite == Gga.DGPS -> null
+            fix.qualite.estRtk -> {
                 val age = fix.ageCorrectionsS
                 if (estCentipede(fix.casterNtrip) && age != null && age.isFinite() && age >= 0.0 && age <= AGE_MAX_CORRECTIONS_S) RGF93 else null
             }
