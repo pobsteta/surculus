@@ -122,6 +122,7 @@ class TerminerPlantSansEtatTest {
         val avant = journal.lignes.size
         val manque = assertIs<SuiteSession.ChoixManquant>(s.terminer(), "le besoin et la concurrence manquent aussi")
         assertTrue(manque.besoin); assertTrue(manque.concurrence)
+        assertEquals(1, manque.plantsSansEtat.size, "le plant n° 2 est aussi dit manquant, avec le besoin et la concurrence")
         assertEquals(avant, journal.lignes.size)
         assertIs<SuiteSession.Fait>(s.direBesoin("aucun"))
         assertFalse(s.terminer() is SuiteSession.Fait, "la concurrence et le plant n° 2 manquent encore")

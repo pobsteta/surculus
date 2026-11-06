@@ -125,6 +125,47 @@ class TerminerPlantSansEtatTest {
         assertEquals(VueControle.TERMINEE, c.terminer().vue)
     }
 
+    // Plafond de la phrase à 3 numéros (décision de Pascal du 2026-11-06) : jusqu'à 3 plants, tous nommés ; au-delà, le nombre
+    // et les 3 premiers numéros avec « dont ». Le refus porte toujours sur tous les plants. Le plant n° 1 est dit pour qu'il y ait un état.
+
+    private fun ControleurPlacette.disLePremier() { dire(EtatDsf.SAIN); direBesoin("aucun"); direConcurrence("faible") }
+
+    @Test
+    fun `exactement 3 plants sans etat - les trois sont nommes, sans dont`() = with(BancControle(nbPlantsAnterieurs = 4)) {
+        val c = controleur()
+        c.disLePremier()
+        val m = assertNotNull(c.terminer().message).texte
+        assertTrue(m.contains("sans état", ignoreCase = true), m)
+        assertEquals(listOf(2, 3, 4), mots(m), m)
+        assertFalse(m.contains("dont", ignoreCase = true), m)
+        val manque = assertNotNull(c.demanderTerminer().besoin.manque)
+        assertEquals(listOf(2, 3, 4), mots(manque), manque)
+        assertFalse(manque.contains("dont", ignoreCase = true), manque)
+    }
+
+    @Test
+    fun `4 plants sans etat - le nombre et les 3 premiers numeros seulement`() = with(BancControle(nbPlantsAnterieurs = 5)) {
+        val c = controleur()
+        c.disLePremier()
+        val avant = journal.nombreDeLignes
+        val m = assertNotNull(c.terminer().message).texte
+        assertTrue(m.contains("sans état", ignoreCase = true), m)
+        assertTrue(m.contains("dont", ignoreCase = true), m)
+        assertEquals(listOf(4, 2, 3, 4), mots(m), "le nombre 4, puis les n° 2, 3 et 4 (pas le 5) : $m")
+        val manque = assertNotNull(c.demanderTerminer().besoin.manque)
+        assertEquals(listOf(4, 2, 3, 4), mots(manque), manque)
+        assertEquals(avant, journal.nombreDeLignes, "le refus porte sur tous les plants et n'écrit rien")
+    }
+
+    @Test
+    fun `11 plants sans etat - 11 et les n° 2, 3 et 4`() = with(BancControle()) {
+        val c = controleur()
+        c.disLePremier()
+        val m = assertNotNull(c.terminer().message).texte
+        assertTrue(m.contains("sans état", ignoreCase = true) && m.contains("dont", ignoreCase = true), m)
+        assertEquals(listOf(11, 2, 3, 4), mots(m), m)
+    }
+
     @Test
     fun `le plant dit, Terminer est permis et la placette est Controlee`() = with(BancControle(nbPlantsAnterieurs = 0)) {
         val c = controleur()
