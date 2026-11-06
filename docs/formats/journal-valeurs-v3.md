@@ -23,7 +23,9 @@ mêlées, et aucune ne doit être perdue (plan de la 091, risque « journaux dé
 ## `controle` en v3
 
 Les clés de la v2, plus cinq. `precision_m`, `source_gnss` et `simulee` se placent juste après
-`sans_position_mesuree` ; `besoin` et `concurrence` à la fin de la valeur.
+`sans_position_mesuree` ; `besoin` et `concurrence` à la fin de la valeur. La mission 094 ajoute une sixième clé,
+`referentiel_source`, **en dernier**, après `concurrence` (ajout compatible, sans changer de version : décision de
+Pascal du 2026-11-06).
 
 | Clé | Type | Sens |
 |---|---|---|
@@ -33,14 +35,18 @@ Les clés de la v2, plus cinq. `precision_m`, `source_gnss` et `simulee` se plac
 | `simulee` | booléen, ou `null` | vrai si un fix moyenné est marqué simulé par Android (`Location.isMock`) ou porte la qualité GGA 8 ; `null` sans position mesurée |
 | `besoin` | texte, ou `null` | le travail qui s'impose : un code de la couche `codes` de la tournée, ou `aucun` (sommieR 0.31.1, `R/registre6.R` l. 137-138) ; obligatoire pour terminer un contrôle (décision de Pascal du 2026-11-04) |
 | `concurrence` | texte, ou `null` | `faible`, `moyenne` ou `forte` ([`docs/referentiels/concurrences.csv`](../referentiels/concurrences.csv), codes de sommieR 0.31.1, `R/registre6.R` l. 64) ; obligatoire pour terminer |
+| `referentiel_source` | texte, ou `null` | référentiel de la source de la position mesurée (spec § 3, ADR 0003) : `WGS84` pour un fix du téléphone ou d'un récepteur en qualité GGA autonome (1, et 3, 6, 7, 8) ; `RGF93` pour un fix DGPS ou RTK (flottant, fixe) corrigé par un flux NTRIP **Centipède vu par Surculus** (dernier message RTCM d'au plus 30 s, `PolitiqueFix.ageMaxCorrectionsS`) ; **`null`** quand on ne sait pas : DGPS ou RTK sans flux vu par Surculus (NTRIP désactivé, corrections du récepteur seul, EGNOS), corrections de plus de 30 s, caster qui n'est pas Centipède, et sans position mesurée. Position moyennée : un seul fix `null` donne `null`, sinon un seul `WGS84` donne `WGS84`, sinon `RGF93` (décisions de Pascal du 2026-11-06, mission 094) |
 
 **Cohérence**, vérifiée à la lecture ; une valeur incohérente ou hors domaine est illisible, ignorée et tracée, jamais
 complétée (proposition du `testeur` de la 091, retenue ici) :
 
 * les règles de cohérence de la v2 tiennent ;
-* `sans_position_mesuree` vrai ⇒ `precision_m`, `source_gnss` et `simulee` valent `null` ;
+* `sans_position_mesuree` vrai ⇒ `precision_m`, `source_gnss`, `simulee` et `referentiel_source` valent `null` ;
 * `precision_m` présente ⇒ strictement positive ;
-* `source_gnss`, `concurrence` hors de leur domaine ⇒ illisible ;
+* `source_gnss`, `concurrence`, `referentiel_source` hors de leur domaine ⇒ illisible (`referentiel_source` : exactement
+  `RGF93` ou `WGS84`, sans espace) ;
+* une valeur v3 écrite avant la 094, sans la clé `referentiel_source`, se lit avec `null`, jamais une valeur devinée ;
+  un Surculus d'avant la 094 ignore la clé et rend `null`, sans rien perdre du reste ;
 * `besoin` est un texte non vide sans espaces autour ; son appartenance à la couche `codes` se vérifie à la saisie et à
   l'export (`hors_referentiel`), pas à la lecture du journal.
 
@@ -48,10 +54,10 @@ Un contrôle peut être écrit en v3 sans `besoin` ni `concurrence` (`null`) tan
 **terminé** sans eux est refusé au rendu : « P35-01 : contrôle sans besoin ni concurrence : l'annuler et le refaire »
 (décision de Pascal du 2026-11-04).
 
-Exemple, contrôle terminé avec une position mesurée par un récepteur RTK fixe :
+Exemple, contrôle terminé avec une position mesurée par un récepteur RTK fixe corrigé par Centipède :
 
 ```json
-{"v":3,"placette_uuid":"11111111-1111-4111-8111-111111111111","code_placette":"P35-01","jour_civil":"2026-11-03","operateur":"Agent d'essai","termine":true,"visite_le_utc_ms":1793706400000,"position_x":846164.76,"position_y":6686123.26,"position_mesuree_x":846165.36,"position_mesuree_y":6686122.86,"rattache_par_identite":false,"sans_position_mesuree":false,"precision_m":0.02,"source_gnss":"recepteur_rtk_fixe","simulee":false,"repere_epsg":2154,"numeros":{"019...a":1,"019...b":2},"besoin":"aucun","concurrence":"faible"}
+{"v":3,"placette_uuid":"11111111-1111-4111-8111-111111111111","code_placette":"P35-01","jour_civil":"2026-11-03","operateur":"Agent d'essai","termine":true,"visite_le_utc_ms":1793706400000,"position_x":846164.76,"position_y":6686123.26,"position_mesuree_x":846165.36,"position_mesuree_y":6686122.86,"rattache_par_identite":false,"sans_position_mesuree":false,"precision_m":0.02,"source_gnss":"recepteur_rtk_fixe","simulee":false,"repere_epsg":2154,"numeros":{"019...a":1,"019...b":2},"besoin":"aucun","concurrence":"faible","referentiel_source":"RGF93"}
 ```
 
 Les positions restent en Lambert-93, dans le repère de la tournée (`repere_epsg`) : x = Est, y = Nord, en mètres.

@@ -30,6 +30,16 @@ référentiel de sa source (`RGF93` si un flux NTRIP Centipède corrigeait le fi
 fixe) ; `WGS84` sinon (téléphone, récepteur autonome, DGPS par EGNOS sans NTRIP). Pour une position moyennée, la règle
 de la 091 vaut : le plus mauvais des fix (un seul fix `WGS84` → `WGS84`), à confirmer par le plan.
 
+## Décisions de Pascal sur le plan du `dev` (2026-11-06)
+
+1. **DGPS ou RTK sans flux NTRIP vu par Surculus** (NTRIP désactivé, corrections reçues par le récepteur seul, EGNOS,
+   caster qui n'est pas Centipède) : `null`, jamais une valeur devinée. Cela remplace « `WGS84` sinon » pour ces cas.
+2. **Format** : ajout compatible en v3 ; clé `referentiel_source` à la fin de la valeur du contrôle ; journal et
+   `.sursync` restent en v3 ; une valeur sans la clé se lit `null`.
+3. **Corrections de plus de 30 s** (fix rétrogradé) : `null`.
+
+Le format est écrit par l'orchestrateur dans `docs/formats/journal-valeurs-v3.md` ; la spec § 3 (l. 88) est amendée.
+
 ## Les trois questions (règle de staffing)
 
 | Question | Réponse | Conséquence |
@@ -86,8 +96,9 @@ pas muet.**
 ## Tests
 
 - Une position mesurée au téléphone sort avec `referentiel_source` = `WGS84`.
-- Un fix corrigé par un flux NTRIP actif (DGPS, RTK flottant, RTK fixe) sort avec `RGF93` ; le même fix sans NTRIP
-  (DGPS par EGNOS) sort avec `WGS84`.
+- Un fix corrigé par un flux NTRIP actif (DGPS, RTK flottant, RTK fixe) sort avec `RGF93` ; le même fix sans flux vu
+  par Surculus (DGPS par EGNOS, corrections du récepteur seul, corrections de plus de 30 s) sort avec `null`
+  (décisions de Pascal du 2026-11-06 sur le plan, ci-dessous).
 - Une position moyennée qui mêle les deux sort avec la règle décidée.
 - Sans position mesurée : NULL (087). Contrôle d'un journal ancien : NULL, jamais deviné.
 - `.claude/test-command` au code 0 ; CI verte, import sommieR vert.
