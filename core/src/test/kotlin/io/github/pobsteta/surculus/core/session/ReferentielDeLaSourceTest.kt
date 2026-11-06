@@ -27,6 +27,10 @@ import io.github.pobsteta.surculus.core.gnss.QualiteFix as QualiteGga
  *    (flottant, fixe) avec un flux NTRIP **Centipède** actif vu par Surculus (dernier RTCM d'au plus 30 s,
  *    `PolitiqueFix.ageMaxCorrectionsS`) → `RGF93` ; DGPS ou RTK **sans** flux vu (NTRIP désactivé, corrections de plus de
  *    30 s, caster qui n'est pas Centipède) → **NULL**, jamais une valeur devinée. DGPS par EGNOS sans NTRIP → NULL.
+ *    **Amendée par Pascal le 2026-11-06 (relecture de la PR #159)** : un fix **DGPS** donne NULL, même avec un flux
+ *    Centipède vu (le récepteur peut se corriger par EGNOS : on ne sait pas d'où vient la correction) ; `RGF93`
+ *    seulement pour le RTK flottant ou fixe avec un flux Centipède vu (au plus 30 s). Le caster est reconnu par son nom
+ *    seul (`caster.centipede.fr`, `crtk.net`), jamais par son adresse IP (66.185.123.66 → NULL).
  * 2. Position moyennée : un seul fix NULL → NULL ; sinon un seul `WGS84` → `WGS84` ; sinon `RGF93`.
  *
  * Écrit par le `testeur` sans lire le code de la mission. API proposée par le `dev` (le paquet de `ReferentielsSource`
@@ -66,6 +70,9 @@ class ReferentielDeLaSourceTest {
     )
 
     private val corriges = listOf(QualiteGga.DGPS, QualiteGga.RTK_FLOTTANT, QualiteGga.RTK_FIXE)
+
+    /** Les seules qualités qui peuvent donner RGF93 (décision amendée du 2026-11-06). */
+    private val rtk = listOf(QualiteGga.RTK_FLOTTANT, QualiteGga.RTK_FIXE)
 
     /** Qualités GGA « autonomes » de la décision 1 : 1, et 3 (PPS), 6 (estimé), 7 (manuel), 8 (simulation). */
     private val autonomes: List<QualiteGga> by lazy {
@@ -120,15 +127,30 @@ class ReferentielDeLaSourceTest {
     // ------------------------------------------------------------------ décision 1 : RGF93
 
     @Test
-    fun `DGPS, RTK flottant et RTK fixe corriges par un flux Centipede actif sont en RGF93`() {
-        for (q in corriges) for (h in listOf("caster.centipede.fr", "crtk.net")) {
+    fun `RTK flottant et RTK fixe corriges par un flux Centipede actif sont en RGF93`() {
+        for (q in rtk) for (h in listOf("caster.centipede.fr", "crtk.net")) {
             assertEquals("RGF93", ReferentielsSource.de(fix(q, caster = h, ageCorrectionsS = 1.0)), "GGA ${q.codeNmea}, caster $h")
         }
     }
 
     @Test
     fun `au seuil de 30 s des corrections, le fix reste RGF93 (comme PolitiqueFix garde le RTK au seuil)`() {
-        for (q in corriges) assertEquals("RGF93", ReferentielsSource.de(fix(q, caster = centipede, ageCorrectionsS = 30.0)), "GGA ${q.codeNmea}")
+        for (q in rtk) assertEquals("RGF93", ReferentielsSource.de(fix(q, caster = centipede, ageCorrectionsS = 30.0)), "GGA ${q.codeNmea}")
+    }
+
+    @Test
+    fun `un DGPS reste NULL meme avec un flux Centipede vu - la correction peut venir d'EGNOS (decision du 2026-11-06)`() {
+        for (h in listOf("caster.centipede.fr", "crtk.net")) for (a in listOf(null, 1.0, 30.0)) {
+            assertNull(ReferentielsSource.de(fix(QualiteGga.DGPS, caster = h, ageCorrectionsS = a)), "DGPS, caster $h, corrections de $a s")
+        }
+    }
+
+    @Test
+    fun `un caster designe par son adresse IP (66_185_123_66) - NULL, reconnu par son nom seul`() {
+        for (q in rtk) {
+            assertNull(ReferentielsSource.de(fix(q, caster = "66.185.123.66")), "GGA ${q.codeNmea}, caster désigné par son IP")
+            assertEquals("RGF93", ReferentielsSource.de(fix(q, caster = "crtk.net")), "témoin : le même fix, caster nommé")
+        }
     }
 
     // ------------------------------------------------------------------ décision 1 : NULL, jamais deviné
@@ -187,7 +209,7 @@ class ReferentielDeLaSourceTest {
     @Test
     fun `tous les fix moyennes en RGF93 - RGF93`() {
         assertEquals("RGF93", moyenne(rgf93))
-        assertEquals("RGF93", moyenne(rgf93, fix(QualiteGga.DGPS, caster = "crtk.net"), rgf93))
+        assertEquals("RGF93", moyenne(rgf93, fix(QualiteGga.RTK_FLOTTANT, caster = "crtk.net"), rgf93))
     }
 
     @Test
@@ -209,6 +231,7 @@ class ReferentielDeLaSourceTest {
         assertNull(moyenne(rgf93, inconnu, rgf93))
         assertNull(moyenne(wgs84, inconnu))
         assertNull(moyenne(rgf93, wgs84, inconnu), "NULL l'emporte sur WGS84")
+        assertNull(moyenne(rgf93, fix(QualiteGga.DGPS, caster = centipede), rgf93), "un DGPS, même avec Centipède vu, rend le moyennage NULL")
     }
 
     @Test

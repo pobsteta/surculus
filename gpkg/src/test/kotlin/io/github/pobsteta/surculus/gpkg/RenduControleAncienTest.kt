@@ -106,7 +106,7 @@ class RenduControleAncienTest {
         horloge.ms = Instant.parse(visiteLe).toEpochMilli()
         val p = tournee.placettes.single { it.code == code }.position!!
         val arrivee = Arrivee.Lambert93(PointLambert93(xMetres = p.xMetres + 0.6, yMetres = p.yMetres - 0.4),
-            qualite = QualiteFix(precisionM = 0.9, sourceGnss = "recepteur_dgps", simulee = false, referentielSource = referentiel))
+            qualite = QualiteFix(precisionM = 0.9, sourceGnss = if (referentiel == "RGF93") "recepteur_rtk_flottant" else "recepteur_dgps", simulee = false, referentielSource = referentiel))
         val s = assertNotNull(SessionControle.ouvrir(contexte, journal, horloge, essences, arrivee) as? OuvertureControle.Ouverte, code).session
         for ((d, az) in listOf(1.2 to 10.0, 2.0 to 100.0)) {
             assertTrue(s.pointer(d, (AzimutSaisi.valider(az, UniteAzimut.DEGRES) as Resultat.Accepte).valeur, SourceAzimut.SAISIE, "CHS") is SuiteSession.Fait)
@@ -197,7 +197,7 @@ class RenduControleAncienTest {
         val l = Sqlite.ouvrir(sortie.resolve("travaux.gpkg"), lectureSeule = true).use {
             it.lignes("SELECT source_gnss, referentiel_source FROM positions_controles")
         }.single()
-        assertEquals("recepteur_dgps", l["source_gnss"], "la source reste dite")
+        assertEquals("recepteur_rtk_flottant", l["source_gnss"], "la source reste dite")
         assertNull(l["referentiel_source"], "contrôle d'avant la 094 : référentiel NULL, jamais deviné")
     }
 
