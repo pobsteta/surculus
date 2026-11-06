@@ -37,6 +37,7 @@ import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.gnss.QualiteFix
 import io.github.pobsteta.surculus.core.gnss.RaisonRefus
 import io.github.pobsteta.surculus.core.gnss.StatutNtrip
+import io.github.pobsteta.surculus.core.session.ReferentielsSource
 import io.github.pobsteta.surculus.messages.JournalTechnique
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -56,6 +57,7 @@ import java.time.LocalTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicLong
 
 /** Link state, for the badge and the diagnostic of the settings. */
 data class EtatRtk(
@@ -168,6 +170,8 @@ class ServiceGnssRtk : Service() {
         val ntrip = if (config.ntrip && config.pointMontage.isNotBlank()) {
             ClientNtrip(config.casterHote, config.casterPort, config.pointMontage, config.utilisateur, config.motDePasse)
         } else null
+        // Dernier RTCM relayé au récepteur (horloge monotone, ms ; -1 : aucun) : dit au fix si un flux était vu (mission 094).
+        val dernierRtcm = AtomicLong(-1L)
         val enfants = mutableListOf<Job>()
         // Un récepteur qui se tait ne laisse pas un vieux fix affiché : réévaluation chaque seconde.
         enfants += launch { while (isActive) { delay(1000L); publier() } }
@@ -178,6 +182,7 @@ class ServiceGnssRtk : Service() {
                     runCatching {
                         ntrip.corrections { s -> _etat.update { it.copy(ntripStatut = s, ntripErreur = null) } }.collect { rtcm ->
                             transport.ecrire(rtcm)
+                            dernierRtcm.set(SystemClock.elapsedRealtime())
                             _etat.update { it.copy(rtcmEnvoye = it.rtcmEnvoye + rtcm.size) }
                         }
                     }.onFailure { e ->
@@ -211,7 +216,11 @@ class ServiceGnssRtk : Service() {
                         tramesRecues = it.tramesRecues + trames.size, derniereTrame = trames.lastOrNull() ?: it.derniereTrame)
                 }
                 fixes.lastOrNull()?.let { f ->
-                    fixBrut = f
+                    // Le caster dont le flux était vu à l'arrivée du fix : il fonde le référentiel de la source (094).
+                    val caster = ntrip?.let { n ->
+                        ReferentielsSource.casterVu(config.casterHote, n.connecte, dernierRtcm.get().takeIf { it >= 0L }, SystemClock.elapsedRealtime())
+                    }
+                    fixBrut = f.copy(casterNtrip = caster)
                     publier()
                 }
             }

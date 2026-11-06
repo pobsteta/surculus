@@ -440,7 +440,12 @@ class SessionControle private constructor(
             diagnostic("qualité du fix ignorée : source « ${q.sourceGnss} » hors du domaine de source_gnss")
             return null
         }
-        return q.copy(precisionM = q.precisionM?.takeIf { it.isFinite() && it > 0.0 })
+        // Un référentiel hors de RGF93, WGS84 rendrait la valeur illisible : inconnu (NULL), tracé (mission 094).
+        val referentiel = q.referentielSource?.takeIf { it in ReferentielsSource.DOMAINE }
+        if (q.referentielSource != null && referentiel == null) {
+            diagnostic("référentiel de la source ignoré : « ${q.referentielSource} » hors du domaine de referentiel_source")
+        }
+        return q.copy(precisionM = q.precisionM?.takeIf { it.isFinite() && it > 0.0 }, referentielSource = referentiel)
     }
 
     /** Besoin et concurrence dits avant que le contrôle du jour n'existe : écrits avec lui (en mémoire jusque-là). */

@@ -8,7 +8,7 @@
  * Origine : dépôt Groma (https://github.com/pobsteta/groma), fichier android/groma-core/src/main/kotlin/groma/core/Gnss.kt,
  *           état au commit f12b644 (2026-10-16). Reprise provisoire (ADR 0003, mission 003)
  *           jusqu'à l'extraction en bibliothèque commune (ADR 0008).
- * Modifications : paquet ; horodatage et drapeau « simulé » dans FixGnss ; heure UTC complète et instant de réception sur l'horloge monotone dans FixGnss (heureUtcMs, recuMonotoneMs, mission 065) ; évaluation de l'âge du fix et des corrections (PolitiqueFix).
+ * Modifications : paquet ; horodatage et drapeau « simulé » dans FixGnss ; heure UTC complète et instant de réception sur l'horloge monotone dans FixGnss (heureUtcMs, recuMonotoneMs, mission 065) ; évaluation de l'âge du fix et des corrections (PolitiqueFix) ; caster NTRIP vu à l'arrivée du fix (casterNtrip, mission 094).
  */
 package io.github.pobsteta.surculus.core.gnss
 
@@ -103,6 +103,12 @@ data class FixGnss(
     val heureUtcMs: Long? = null,
     /** Instant (ms) où le fix a été reçu sur l'horloge monotone (`SystemClock.elapsedRealtime`) : l'âge du fix se mesure dessus. Null si inconnu. */
     val recuMonotoneMs: Long? = null,
+    /**
+     * Hôte du caster NTRIP dont Surculus relayait les corrections au récepteur quand ce fix est arrivé (client connecté,
+     * dernier message RTCM d'au plus `PolitiqueFix.ageMaxCorrectionsS`, horloge monotone) ; null si Surculus ne voyait
+     * aucun flux (NTRIP désactivé, coupé, ou fix du téléphone). Sert au référentiel de la source (mission 094).
+     */
+    val casterNtrip: String? = null,
 )
 
 /** Pourquoi un fix est refusé par [PolitiqueFix.evaluer]. */

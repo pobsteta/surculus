@@ -96,7 +96,7 @@ data class ValeurControle(
     /**
      * L'ordre des clés est celui de `docs/formats/journal-valeurs-v3.md` et de `fixtures/sursync/exemple-v3.jsonl` :
      * `precision_m`, `source_gnss`, `simulee` juste après `sans_position_mesuree`, puis `repere_epsg`, `numeros`, et
-     * `besoin`, `concurrence` à la fin.
+     * `besoin`, `concurrence`, puis `referentiel_source` en dernier (mission 094, ajout compatible en v3).
      */
     fun versJson(): String = Json.ecrire(
         linkedMapOf<String, Any?>(
@@ -111,6 +111,7 @@ data class ValeurControle(
             numeros?.let { m["numeros"] = LinkedHashMap<String, Any?>(it) }
             m["besoin"] = besoin
             m["concurrence"] = concurrence
+            m["referentiel_source"] = qualite?.referentielSource
         },
     )
 
@@ -148,7 +149,10 @@ data class ValeurControle(
                 val (okB, b) = texteOuNul("besoin")
                 val (okC, c) = texteOuNul("concurrence")
                 val (okS, source) = texteOuNul("source_gnss")
-                if (!okB || !okC || !okS) return null
+                // 094 : clé absente (v3 d'avant la 094) ou null : référentiel inconnu, jamais déduit de source_gnss.
+                val (okR, referentiel) = texteOuNul("referentiel_source")
+                if (!okB || !okC || !okS || !okR) return null
+                if (referentiel != null && referentiel !in ReferentielsSource.DOMAINE) return null
                 val p = m["precision_m"]
                 if (p != null && p !is Number) return null
                 val precision = (p as? Number)?.toDouble()
@@ -162,14 +166,14 @@ data class ValeurControle(
                 if (b != null && (b.isEmpty() || b != b.trim())) return null
                 besoin = b
                 concurrence = c
-                if (precision != null || source != null || simulee != null) {
+                if (precision != null || source != null || simulee != null || referentiel != null) {
                     // La qualité se dit en entier (source et « simulée » ensemble ; la précision peut manquer), et
                     // jamais pour un contrôle sans position mesurée.
                     if (sans || source == null || simulee == null) return null
                     // Une source hors du domaine décidé (QualiteFix.SOURCES_GNSS) n'a pas été écrite par Surculus.
                     if (source !in QualiteFix.SOURCES_GNSS) return null
                     if (precision != null && !(precision.isFinite() && precision > 0.0)) return null
-                    qualite = QualiteFix(precision, source, simulee)
+                    qualite = QualiteFix(precision, source, simulee, referentiel)
                 }
             }
             ValeurControle(

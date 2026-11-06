@@ -121,13 +121,13 @@ class RenduBesoinEtFixDevTest {
     fun `une qualite du fix inconnue sort NULL au rendu, jamais faux`() {
         val b = banc()
         val m = convertir(b).saisies.controles.single().positionMesuree!!
-        assertNull(m.precisionM); assertNull(m.sourceGnss); assertNull(m.simulee)
+        assertNull(m.precisionM); assertNull(m.sourceGnss); assertNull(m.simulee); assertNull(m.referentielSource)
         val zip = dossier.resolve("t.zip")
         assertIs<ResultatRendu.Rendue>(RenduTournee.rendre(b.dossier, b.journal.lignesCourantes(), zip, "0.0.0", Instant.parse("2026-10-20T12:00:00Z"), essences))
         val sortie = Files.createDirectories(dossier.resolve("zip"))
         Files.newInputStream(zip).use { ImportTournee.extraireZip(it, sortie) }
-        val l = Sqlite.ouvrir(sortie.resolve("travaux.gpkg"), lectureSeule = true).use { it.lignes("SELECT precision_m, source_gnss, simulee, sans_position_mesuree FROM positions_controles") }.single()
-        assertEquals(listOf<Any?>(null, null, null), listOf(l["precision_m"], l["source_gnss"], l["simulee"]))
+        val l = Sqlite.ouvrir(sortie.resolve("travaux.gpkg"), lectureSeule = true).use { it.lignes("SELECT precision_m, source_gnss, simulee, referentiel_source, sans_position_mesuree FROM positions_controles") }.single()
+        assertEquals(listOf<Any?>(null, null, null, null), listOf(l["precision_m"], l["source_gnss"], l["simulee"], l["referentiel_source"]))
         assertEquals(0, (l["sans_position_mesuree"] as Number).toInt())
     }
 
