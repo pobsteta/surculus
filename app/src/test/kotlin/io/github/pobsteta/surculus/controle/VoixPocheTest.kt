@@ -106,6 +106,7 @@ class VoixPocheTest {
     @Test fun `double appui bas apres Terminer - la placette est rouverte, pas d'alerte de placette terminee`() = with(BancControle()) {
         val c = controleur()
         c.geste(Geste.VOLUME_HAUT_COURT)
+        c.autresPlantsNonObserves()
         c.demanderTerminer(); c.direBesoin("aucun"); c.direConcurrence("faible"); c.terminer(); c.reprendre()
         c.geste(Geste.VOLUME_BAS_DOUBLE_COURT)
         assertEquals("annulé.", c.derniereAnnonce?.texte)

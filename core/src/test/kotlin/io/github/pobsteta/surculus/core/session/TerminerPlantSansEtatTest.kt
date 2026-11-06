@@ -8,6 +8,8 @@
 package io.github.pobsteta.surculus.core.session
 
 import io.github.pobsteta.surculus.core.placette.EmpriseEtFrance
+import io.github.pobsteta.surculus.core.placette.EtatDsf
+import io.github.pobsteta.surculus.core.placette.Observation
 import io.github.pobsteta.surculus.core.placette.UuidPlant
 import io.github.pobsteta.surculus.core.placette.Verdict
 import org.junit.jupiter.api.Test
@@ -109,7 +111,7 @@ class TerminerPlantSansEtatTest {
         assertFalse(s.terminer() is SuiteSession.Fait, "le n° 3 manque encore")
         assertEquals(enCours, journal.lignes.size, "le refus n'écrit rien")
         dis(s, u3, null)
-        assertIs<SuiteSession.Fait>(s.terminer())
+        assertTrue(s.terminer() is SuiteSession.Fait)
     }
 
     @Test
@@ -145,6 +147,74 @@ class TerminerPlantSansEtatTest {
             choixFaits(s2)
             assertIs<SuiteSession.Fait>(s2.terminer())
             assertTrue(s2.etat().termine)
+        }
+    }
+
+    // ------------------------------------------------------------------ plants anciens (décision de Pascal du 2026-11-06 :
+    // tous les plants actifs comptent, d'un passage précédent ou pointés ce jour, sauf un plant remplacé par un regarni)
+
+    private val anciens = listOf(1, 2, 3).map { PlantAnterieur(UuidPlant("ancien-$it"), it, "CHS", null, Observation.Observe(EtatDsf.SAIN)) }
+    private fun avecAnciens() = BancSession(plantsAnterieurs = mapOf(BancSession.P1 to anciens))
+    private fun ancien(n: Int) = UuidPlant("ancien-$n")
+
+    @Test
+    fun `un plant ancien sans etat ce jour - Terminer est refuse et rien n'est ecrit`() = with(avecAnciens()) {
+        val s = session()
+        assertEquals(3, s.etat().nbPlants)
+        dis(s, ancien(1), "sain"); dis(s, ancien(3), "mort") // l'ancien n° 2 n'a rien reçu aujourd'hui
+        choixFaits(s)
+        val avant = journal.lignes.size
+        assertFalse(s.terminer() is SuiteSession.Fait, "l'ancien n° 2 n'a ni état ni « non observé »")
+        assertEquals(avant, journal.lignes.size, "rien n'est écrit")
+        assertFalse(s.etat().termine)
+        assertTrue(controlees().isEmpty())
+        dis(s, ancien(2), "atteint")
+        assertTrue(s.terminer() is SuiteSession.Fait)
+    }
+
+    @Test
+    fun `un plant ancien dit non observe ne bloque plus et sort des totaux`() = with(avecAnciens()) {
+        val s = session()
+        dis(s, ancien(1), "sain"); dis(s, ancien(3), "mort")
+        choixFaits(s)
+        assertFalse(s.terminer() is SuiteSession.Fait)
+        dis(s, ancien(2), null)
+        assertIs<SuiteSession.Fait>(s.terminer())
+        assertEquals(2, (s.etat().totaux as Verdict.Accepte).valeur.nbTotal, "3 plants anciens, 2 comptés : le non observé sort des totaux")
+    }
+
+    @Test
+    fun `un ancien et un plant du jour sans etat bloquent chacun`() = with(avecAnciens()) {
+        val s = session()
+        dis(s, ancien(1), "sain"); dis(s, ancien(2), "sain")
+        assertIs<SuiteSession.Fait>(s.pointe(1.0, 10.0))
+        val nouveau = s.etat().courant!!
+        choixFaits(s)
+        assertFalse(s.terminer() is SuiteSession.Fait, "ancien n° 3 et plant du jour manquent")
+        dis(s, ancien(3), "sain")
+        assertFalse(s.terminer() is SuiteSession.Fait, "le plant du jour manque encore")
+        dis(s, nouveau, "sain")
+        assertTrue(s.terminer() is SuiteSession.Fait)
+    }
+
+    @Test
+    fun `un ancien remplace par un regarni ne bloque pas, un autre ancien sans etat bloque`() {
+        val b = BancSession("2026-10-26T09:00:00Z")
+        with(b) {
+            val s = session()
+            s.pointe(1.0, 10.0); val mort = s.etat().courant!!; s.dire("mort")
+            s.remplace(); s.pointe(1.1, 12.0); val regarni = s.etat().courant!!; s.dire("sain")
+            s.pointe(2.0, 100.0); val autre = s.etat().courant!!; s.dire("sain")
+            s.direBesoin("aucun"); s.direConcurrence("faible")
+            assertIs<SuiteSession.Fait>(s.terminer())
+            horloge.a("2026-10-27T09:00:00Z")
+            val s2 = session()
+            assertTrue(s2.etat().plants.first { it.uuid == mort }.remplaceAvant)
+            dis(s2, regarni, "sain")
+            choixFaits(s2)
+            assertFalse(s2.terminer() is SuiteSession.Fait, "l'autre ancien n'a pas d'état aujourd'hui ; le plant remplacé, lui, ne compte pas")
+            dis(s2, autre, null)
+            assertIs<SuiteSession.Fait>(s2.terminer())
         }
     }
 

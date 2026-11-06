@@ -87,6 +87,44 @@ class TerminerPlantSansEtatTest {
         assertEquals(avant, journal.nombreDeLignes, "rien n'est écrit")
     }
 
+    // Plants d'un passage précédent (décision de Pascal du 2026-11-06 : tous les plants actifs comptent).
+
+    @Test
+    fun `un plant ancien sans etat ce jour - Terminer grise, la phrase nomme son numero`() = with(BancControle(nbPlantsAnterieurs = 3)) {
+        val c = controleur()
+        c.dire(EtatDsf.SAIN)  // ancien n° 1
+        c.plantSuivant()      // on saute le n° 2
+        c.dire(EtatDsf.MORT)  // ancien n° 3
+        c.direBesoin("aucun"); c.direConcurrence("faible")
+        val vue = c.demanderTerminer()
+        assertFalse(vue.besoin.terminerPermis)
+        val manque = assertNotNull(vue.besoin.manque)
+        assertTrue(manque.contains("sans état", ignoreCase = true), manque)
+        assertEquals(listOf(2), mots(manque), manque)
+        val avant = journal.nombreDeLignes
+        val m = assertNotNull(c.terminer().message)
+        assertTrue(m.erreur)
+        assertEquals(listOf(2), mots(m.texte), m.texte)
+        assertEquals(avant, journal.nombreDeLignes)
+        assertTrue(controlees().isEmpty())
+    }
+
+    @Test
+    fun `un plant ancien dit non observe ne bloque plus, il sort des totaux`() = with(BancControle(nbPlantsAnterieurs = 3)) {
+        val c = controleur()
+        c.dire(EtatDsf.SAIN)
+        c.plantSuivant()
+        c.dire(EtatDsf.MORT)
+        c.direBesoin("aucun"); c.direConcurrence("faible")
+        assertFalse(c.demanderTerminer().besoin.terminerPermis)
+        c.plantPrecedent() // du n° 3 au n° 2
+        c.dicter("non observé")
+        val e = c.demanderTerminer()
+        assertTrue(e.besoin.terminerPermis)
+        assertEquals("2 plants · 1 vivant · 0 abrouti", e.totaux.texte, "le non observé sort des totaux")
+        assertEquals(VueControle.TERMINEE, c.terminer().vue)
+    }
+
     @Test
     fun `le plant dit, Terminer est permis et la placette est Controlee`() = with(BancControle(nbPlantsAnterieurs = 0)) {
         val c = controleur()

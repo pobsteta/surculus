@@ -78,6 +78,7 @@ class ControleurPlacetteTest {
         assertEquals(VueControle.TERMINER, confirmation.vue)
         assertEquals("2 plants · 1 vivant · 0 abrouti", confirmation.totaux.texte)
         assertTrue(controlees().isEmpty(), "pas encore terminée : encore à faire")
+        c.autresPlantsNonObserves()
         c.direBesoin("aucun"); c.direConcurrence("faible")
         val fini = c.terminer()
         assertEquals(VueControle.TERMINEE, fini.vue)
@@ -98,6 +99,7 @@ class ControleurPlacetteTest {
         val c = controleur()
         c.dire(EtatDsf.SAIN)
         c.demanderTerminer()
+        c.autresPlantsNonObserves()
         c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         assertTrue(c.instantane().plant.alerteTerminee, "l'alerte est vraie dès que la placette est terminée")
@@ -113,6 +115,7 @@ class ControleurPlacetteTest {
     @Test fun `terminer deux fois - la session refuse, l'ecran le dit`() = with(BancControle()) {
         val c = controleur()
         c.dire(EtatDsf.SAIN)
+        c.autresPlantsNonObserves()
         c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         val m = assertNotNull(c.terminer().message)

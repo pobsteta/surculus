@@ -53,6 +53,7 @@ class ArriveeSansPositionDevTest {
             ArriveeControle.ouvrirSansPosition(contexte, journal, horloge, Essences(emptySet()), "P35-01", sauvegarde, confirmee = true),
         ).controleur
         c.dire(EtatDsf.SAIN)
+        c.autresPlantsNonObserves()
         c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         val v = journal.lignesCourantes().filter { it.type == "controle" }.map { ValeurControle.lire(it.valeur)!! }
