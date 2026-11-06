@@ -8,6 +8,9 @@
 package io.github.pobsteta.surculus.gpkg
 
 import io.github.pobsteta.surculus.core.geo.PointLambert93
+import io.github.pobsteta.surculus.core.gnss.FixGnss
+import io.github.pobsteta.surculus.core.gnss.OrigineFix
+import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.geo.UniteAzimut
 import io.github.pobsteta.surculus.core.placette.Essences
 import io.github.pobsteta.surculus.core.placette.Verdict
@@ -38,6 +41,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import io.github.pobsteta.surculus.core.gnss.QualiteFix as QualiteGga
 
 /**
  * Mission 091 : besoin, concurrence et qualité du fix, du geste de l'agent au `.zip` rendu (fiche
@@ -303,6 +307,56 @@ class RenduBesoinEtFixTest {
         assertEquals(1, (l2["sans_position_mesuree"] as Number).toInt())
         assertEquals(listOf<Any?>(null, null, null, null), listOf(l2["precision_m"], l2["source_gnss"], l2["referentiel_source"], l2["simulee"]),
             "sans position mesurée : precision_m, source_gnss, referentiel_source, simulee NULL (spec § 5)")
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Mission 094 (décisions de Pascal du 2026-11-06, point 4) : positions_controles.referentiel_source porte la valeur
+    // du journal. Spec § 3 (l. 88) et § 5 (l. 481) ; ADR 0003, l. 94 (« enregistré tel quel »).
+
+    @Test
+    fun `094 - referentiel_source du rendu - RGF93, WGS84 ou NULL, tel que dit a l'arrivee`() {
+        val b = banc()
+        val rtk = QualiteFix(precisionM = 0.02, sourceGnss = "recepteur_rtk_fixe", simulee = false, referentielSource = "RGF93")
+        val tel = QualiteFix(precisionM = 3.79, sourceGnss = "telephone", simulee = false, referentielSource = "WGS84")
+        val inconnu = QualiteFix(precisionM = 0.9, sourceGnss = "recepteur_dgps", simulee = false, referentielSource = null)
+        val c1 = controler(b, "P35-01", "2026-10-20T09:30:00Z", b.mesuree("P35-01", rtk), "aucun", "moyenne")
+        val c2 = controler(b, "P35-02", "2026-10-20T10:15:00Z", b.mesuree("P35-02", inconnu), "aucun", "faible")
+        val c3 = controler(b, "P35-03", "2026-10-20T11:00:00Z", b.mesuree("P35-03", tel), "aucun", "forte")
+        val zip = dossier.resolve("referentiel.zip")
+        rendue(rendre(b, zip))
+        val p = positions(gpkgDu(zip, "referentiel"))
+        assertEquals("RGF93", p.getValue(c1)["referentiel_source"], "P35-01 : RTK corrigé par Centipède")
+        assertNull(p.getValue(c2)["referentiel_source"], "P35-02 : DGPS sans flux vu, NULL, jamais deviné")
+        assertEquals("recepteur_dgps", p.getValue(c2)["source_gnss"], "P35-02 : la source reste dite")
+        assertEquals("WGS84", p.getValue(c3)["referentiel_source"], "P35-03 : téléphone (la Colombière, 2026-11-06)")
+        for (l in p.values) {
+            val r = l["referentiel_source"]
+            assertTrue(r == null || r in setOf("RGF93", "WGS84"), "referentiel_source hors domaine : $r")
+        }
+    }
+
+    /** Un fix à Couchey (WGS 84, degrés, latitude d'abord), tel que le GNSS le donne après PolitiqueFix. */
+    private fun fixGnss(qualite: QualiteGga, origine: OrigineFix, precisionM: Double, caster: String?) = FixGnss(
+        position = Position(latitude = 47.26, longitude = 4.98), qualite = qualite, nbSatellites = 12, hdop = 0.8, altitudeM = 250.0,
+        ageCorrectionsS = if (qualite.estRtk || qualite == QualiteGga.DGPS) 1.0 else null, precisionHorizontaleM = precisionM,
+        horodatageMs = 1_793_706_400_000, origine = origine, casterNtrip = caster,
+    )
+
+    @Test
+    fun `094 - du fix au rendu - telephone WGS84, RTK Centipede RGF93, moyenne melee WGS84`() {
+        val b = banc()
+        val tel = fixGnss(QualiteGga.depuisPrecision(3.79), OrigineFix.TELEPHONE, 3.79, caster = null)
+        val rtk = fixGnss(QualiteGga.RTK_FIXE, OrigineFix.RECEPTEUR, 0.02, caster = "caster.centipede.fr")
+        val autonome = fixGnss(QualiteGga.AUTONOME, OrigineFix.RECEPTEUR, 2.5, caster = "caster.centipede.fr")
+        val c1 = controler(b, "P35-01", "2026-10-20T09:30:00Z", b.mesuree("P35-01", QualiteFix.deFix(listOf(tel, tel))), "aucun", "moyenne")
+        val c2 = controler(b, "P35-02", "2026-10-20T10:15:00Z", b.mesuree("P35-02", QualiteFix.deFix(listOf(rtk, autonome, rtk))), "aucun", "faible")
+        val c3 = controler(b, "P35-03", "2026-10-20T11:00:00Z", b.mesuree("P35-03", QualiteFix.deFix(listOf(rtk, rtk, rtk))), "aucun", "forte")
+        val zip = dossier.resolve("du-fix.zip")
+        rendue(rendre(b, zip))
+        val p = positions(gpkgDu(zip, "du-fix"))
+        assertEquals("WGS84", p.getValue(c1)["referentiel_source"], "téléphone (la Colombière, 2026-11-06)")
+        assertEquals("WGS84", p.getValue(c2)["referentiel_source"], "un seul fix WGS84 dans le moyennage")
+        assertEquals("RGF93", p.getValue(c3)["referentiel_source"], "RTK fixe corrigé par Centipède")
     }
 
     // ---------------------------------------------------------------------------------------------------------------

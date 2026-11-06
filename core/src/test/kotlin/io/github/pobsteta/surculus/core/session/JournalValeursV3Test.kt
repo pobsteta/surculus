@@ -76,7 +76,8 @@ class JournalValeursV3Test {
         operateur = "Agent d'essai", termine = true, visiteLeUtcMs = 1_793_706_400_000,
         positionX = 846164.76, positionY = 6686123.26, positionMesureeX = 846165.36, positionMesureeY = 6686122.86,
         rattacheParIdentite = false, repereEpsg = 2154, numeros = mapOf("019...a" to 1, "019...b" to 2), sansPositionMesuree = false,
-        besoin = "aucun", concurrence = "moyenne", qualite = QualiteFix(precisionM = 0.02, sourceGnss = "recepteur_rtk_fixe", simulee = false),
+        besoin = "aucun", concurrence = "moyenne",
+        qualite = QualiteFix(precisionM = 0.02, sourceGnss = "recepteur_rtk_fixe", simulee = false, referentielSource = "RGF93"),
     )
 
     /** P35-02, ouvert sans position mesurée : qualité du fix inconnue ; besoin « RG » (couche `codes` de la tournée). */
@@ -112,7 +113,7 @@ class JournalValeursV3Test {
         val t = sansPosition.versJson()
         assertTrue(t.startsWith("{\"v\":3,"), t)
         val o = json(t)
-        for (k in listOf("precision_m", "source_gnss", "simulee")) {
+        for (k in listOf("precision_m", "source_gnss", "simulee", "referentiel_source")) {
             assertTrue(o.has(k), "clé $k absente : $t (null explicite, comme position_mesuree_x en v2)")
             assertEquals(nulle, o.get(k), "clé $k : $t")
         }
@@ -192,7 +193,7 @@ class JournalValeursV3Test {
         val ancien = lu.getValue("P35-03")
         assertTrue(fixtureV3.getValue("P35-03").startsWith("{\"v\":2,"), "P35-03 est une valeur v2 dans une sauvegarde v3")
         assertTrue(ancien.termine); assertNull(ancien.besoin); assertNull(ancien.concurrence); assertNull(ancien.qualite)
-        assertEquals(QualiteFix(precisionM = 3.8, sourceGnss = "telephone", simulee = true), lu.getValue("P35-04").qualite)
+        assertEquals(QualiteFix(precisionM = 3.8, sourceGnss = "telephone", simulee = true, referentielSource = "WGS84"), lu.getValue("P35-04").qualite)
     }
 
     @Test
@@ -232,6 +233,107 @@ class JournalValeursV3Test {
         val t = fixtureV3.getValue("P35-02").replace("\"source_gnss\":null", "\"source_gnss\":\"telephone\"")
         assertTrue(t != fixtureV3.getValue("P35-02"))
         assertNull(lireTrace(t).first)
+    }
+
+    // ------------------------------------------------------------------ mission 094 : referentiel_source, ajout compatible en v3
+
+    /*
+     * Décisions de Pascal du 2026-11-06, point 3 : clé `referentiel_source` (« RGF93 », « WGS84 » ou null) **à la fin** de la
+     * valeur `controle`, après `concurrence` ; le journal reste en v3 ; une valeur v1, v2 ou v3 sans la clé se relit null ;
+     * une valeur hors domaine rend la ligne illisible ; `sans_position_mesuree` vrai impose null.
+     */
+
+    @Test
+    fun `094 - referentiel_source s'ecrit en v3, derniere cle apres concurrence, et se relit`() {
+        for (r in listOf("RGF93", "WGS84", null)) {
+            val v = rtk.copy(qualite = rtk.qualite!!.copy(referentielSource = r))
+            val t = v.versJson()
+            assertTrue(t.startsWith("{\"v\":3,"), "le journal reste en v3 : $t")
+            val cles = json(t).keySet().toList()
+            assertEquals("referentiel_source", cles.last(), t)
+            assertEquals("concurrence", cles[cles.size - 2], t)
+            assertEquals(if (r == null) nulle else com.google.gson.JsonPrimitive(r), json(t).get("referentiel_source"), t)
+            val (lu, traces) = lireTrace(t)
+            assertEquals(v, lu); assertEquals(emptyList(), traces)
+            assertEquals(r, lu!!.qualite!!.referentielSource)
+        }
+    }
+
+    @Test
+    fun `094 - sans position mesuree, referentiel_source ecrit null explicite, derniere cle`() {
+        val t = sansPosition.versJson()
+        val o = json(t)
+        assertTrue(o.has("referentiel_source"), t)
+        assertEquals(nulle, o.get("referentiel_source"), t)
+        assertEquals("referentiel_source", o.keySet().last(), t)
+    }
+
+    @Test
+    fun `094 - une valeur v3 ecrite avant la 094, sans la cle, se relit avec un referentiel null, jamais devine`() {
+        for (code in listOf("P35-01", "P35-04")) {
+            val avec = fixtureV3.getValue(code)
+            val sans = Regex(",\"referentiel_source\":(\"[A-Z0-9]+\"|null)").replace(avec, "")
+            assertTrue(sans != avec && "referentiel_source" !in sans, "banc : la clé est retirée ($code)")
+            val (lu, traces) = lireTrace(sans)
+            val c = assertNotNull(lu, "$code sans la clé illisible : $sans")
+            assertEquals(emptyList(), traces, code)
+            val q = assertNotNull(c.qualite, "$code : la qualité du fix de la 091 reste lue")
+            assertNull(q.referentielSource, "$code : référentiel inconnu, jamais déduit de source_gnss")
+            assertEquals(json(avec).get("source_gnss").asString, q.sourceGnss)
+        }
+        val p3502 = Regex(",\"referentiel_source\":null").replace(fixtureV3.getValue("P35-02"), "")
+        assertEquals(sansPosition, ValeurControle.lire(p3502), "P35-02 sans la clé")
+    }
+
+    @Test
+    fun `094 - v1 et v2 relues - referentiel null, et reecrites en v3 avec referentiel_source null`() {
+        for (ancien in listOf(exempleV1, exempleV2, fixtureV3.getValue("P35-03"))) {
+            val c = assertNotNull(ValeurControle.lire(ancien), ancien)
+            assertNull(c.qualite?.referentielSource)
+            val o = json(c.versJson())
+            assertTrue(o.has("referentiel_source"), "null explicite, comme simulee : ${c.versJson()}")
+            assertEquals(nulle, o.get("referentiel_source"), c.versJson())
+        }
+    }
+
+    @Test
+    fun `094 - referentiel_source hors domaine, valeur illisible et tracee`() {
+        val base = fixtureV3.getValue("P35-01")
+        val cle = "\"referentiel_source\":\"RGF93\""
+        assertTrue(cle in base, "banc : $base")
+        for (faux in listOf("\"rgf93\"", "\"RGF 93\"", "\"ETRS89\"", "\"WGS 84\"", "\"EPSG:4326\"", "\"\"", "2154", "4326", "true")) {
+            val t = base.replace(cle, "\"referentiel_source\":$faux")
+            val (lu, traces) = lireTrace(t)
+            assertNull(lu, "referentiel_source = $faux : $t")
+            assertEquals(1, traces.size, t)
+        }
+    }
+
+    @Test
+    fun `094 - sans position mesuree mais un referentiel dit, valeur incoherente ignoree`() {
+        val base = fixtureV3.getValue("P35-02")
+        for (r in listOf("RGF93", "WGS84")) {
+            val t = base.replace("\"referentiel_source\":null", "\"referentiel_source\":\"$r\"")
+            assertTrue(t != base, "banc : $base")
+            val (lu, traces) = lireTrace(t)
+            assertNull(lu, t)
+            assertEquals(1, traces.size, t)
+        }
+    }
+
+    @Test
+    fun `094 - la session ecrit au journal le referentiel dit a l'arrivee`() {
+        for (r in listOf("RGF93", "WGS84", null)) with(BancSession()) {
+            val q = QualiteFix(precisionM = 0.03, sourceGnss = "recepteur_rtk_fixe", simulee = false, referentielSource = r)
+            val o = SessionControle.ouvrir(contexte, journal, horloge, essences, Arrivee.Lambert93(BancSession.POSITION_P1, qualite = q), null, ecoute)
+            val s = assertIs<OuvertureControle.Ouverte>(o).session
+            s.pointe(1.0, 10.0); s.dire("sain")
+            s.direBesoin("aucun"); s.direConcurrence("faible")
+            assertIs<SuiteSession.Fait>(s.terminer())
+            val brut = journal.deType(FormatValeurs.TYPE_CONTROLE).last().valeur!!
+            assertEquals(r, dernierControle().qualite?.referentielSource, brut)
+            assertEquals("referentiel_source", json(brut).keySet().last(), brut)
+        }
     }
 
     // ------------------------------------------------------------------ par la session : le journal écrit la v3

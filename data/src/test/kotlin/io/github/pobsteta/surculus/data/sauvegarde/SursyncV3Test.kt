@@ -176,13 +176,13 @@ class SursyncV3Test {
         val c = controles(apres.lignes())
         val p1 = c.getValue("P35-01")
         assertEquals("aucun", p1.besoin); assertEquals("moyenne", p1.concurrence)
-        assertEquals(QualiteFix(precisionM = 0.02, sourceGnss = "recepteur_rtk_fixe", simulee = false), p1.qualite)
+        assertEquals(QualiteFix(precisionM = 0.02, sourceGnss = "recepteur_rtk_fixe", simulee = false, referentielSource = "RGF93"), p1.qualite)
         val p2 = c.getValue("P35-02")
         assertEquals("RG", p2.besoin); assertEquals("forte", p2.concurrence)
         assertTrue(p2.sansPositionMesuree); assertNull(p2.qualite, "sans position mesurée : qualité NULL")
         val p3 = c.getValue("P35-03")
         assertTrue(p3.termine); assertNull(p3.besoin); assertNull(p3.concurrence); assertNull(p3.qualite)
-        assertEquals(QualiteFix(precisionM = 3.8, sourceGnss = "telephone", simulee = true), c.getValue("P35-04").qualite)
+        assertEquals(QualiteFix(precisionM = 3.8, sourceGnss = "telephone", simulee = true, referentielSource = "WGS84"), c.getValue("P35-04").qualite)
     }
 
     @Test fun `restaurer une v3 sur un journal local non vide - union sur l'uuid, idempotent`() {

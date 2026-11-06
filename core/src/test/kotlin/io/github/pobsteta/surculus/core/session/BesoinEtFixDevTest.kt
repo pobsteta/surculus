@@ -267,9 +267,86 @@ class BesoinEtFixDevTest {
             .single { "\"code_placette\":\"P35-01\"" in it }
         val attendu = cles(p3501)
         assertTrue(attendu.indexOf("precision_m") == attendu.indexOf("sans_position_mesuree") + 1, "garde-fou : $attendu")
+        // 094 : referentiel_source en dernier, après concurrence (décision de Pascal du 2026-11-06).
+        assertEquals(listOf("concurrence", "referentiel_source"), attendu.takeLast(2), "garde-fou 094 : $attendu")
         val ecrit = ValeurControle.lire(p3501)!!
+        assertEquals("RGF93", ecrit.qualite?.referentielSource, "P35-01 de l'exemple : RTK corrigé par Centipède")
         assertEquals(attendu, cles(ecrit.versJson()))
         assertEquals(attendu, cles(v3.versJson()))
+        assertEquals(attendu, cles(v3.copy(qualite = v3.qualite!!.copy(referentielSource = ReferentielsSource.WGS84)).versJson()))
+    }
+
+    // ------------------------------------------------------------------ mission 094 : référentiel de la source (dev)
+
+    private fun recepteur(qualite: QualiteGga, caster: String?, age: Double?, annoncee: QualiteGga? = null) =
+        fix(OrigineFix.RECEPTEUR, qualite, precision = 0.02, annoncee = annoncee).copy(ageCorrectionsS = age, casterNtrip = caster)
+
+    @Test
+    fun `094 - le caster Centipede se reconnait sans tenir compte de la casse, jamais par un prefixe ou un suffixe`() {
+        assertTrue(ReferentielsSource.estCentipede("caster.centipede.fr"))
+        assertTrue(ReferentielsSource.estCentipede("CRTK.net"))
+        for (h in listOf(null, "", " caster.centipede.fr", "centipede.fr", "x.crtk.net", "crtk.net.example.org")) {
+            assertFalse(ReferentielsSource.estCentipede(h), "« $h »")
+        }
+    }
+
+    @Test
+    fun `094 - age des corrections inconnu, negatif ou non fini - NULL meme avec Centipede`() {
+        for (a in listOf(null, -1.0, Double.NaN, Double.POSITIVE_INFINITY)) {
+            assertNull(ReferentielsSource.de(recepteur(QualiteGga.RTK_FIXE, "caster.centipede.fr", a)), "âge $a")
+        }
+        assertEquals(ReferentielsSource.RGF93, ReferentielsSource.de(recepteur(QualiteGga.RTK_FIXE, "caster.centipede.fr", 0.0)))
+    }
+
+    @Test
+    fun `094 - un recepteur sans position (GGA 0) n'a pas de referentiel`() {
+        assertNull(ReferentielsSource.de(recepteur(QualiteGga.AUCUN, "caster.centipede.fr", 1.0)))
+    }
+
+    @Test
+    fun `094 - un fix retrograde avec Centipede reste NULL, meme si son age tient (la retrogradation prime)`() {
+        assertNull(ReferentielsSource.de(recepteur(QualiteGga.AUTONOME, "caster.centipede.fr", 1.0, annoncee = QualiteGga.RTK_FIXE)))
+    }
+
+    @Test
+    fun `094 - le caster est vu si le client est connecte et le dernier RTCM a au plus 30 s, horloge monotone`() {
+        val h = "caster.centipede.fr"
+        assertEquals(h, ReferentielsSource.casterVu(h, connecte = true, dernierRtcmMonotoneMs = 100_000, maintenantMonotoneMs = 100_000))
+        assertEquals(h, ReferentielsSource.casterVu(h, true, 100_000, 130_000), "au seuil de 30 s")
+        assertNull(ReferentielsSource.casterVu(h, true, 100_000, 130_001), "au-delà de 30 s")
+        assertNull(ReferentielsSource.casterVu(h, false, 100_000, 100_500), "client déconnecté")
+        assertNull(ReferentielsSource.casterVu(h, true, null, 100_500), "aucun RTCM encore relayé")
+        assertNull(ReferentielsSource.casterVu(h, true, 100_000, 99_000), "horloge qui recule")
+        assertNull(ReferentielsSource.casterVu(" ", true, 100_000, 100_500), "hôte vide")
+    }
+
+    @Test
+    fun `094 - moyenne vide - pas de referentiel`() {
+        assertNull(ReferentielsSource.deMoyenne(emptyList()))
+    }
+
+    @Test
+    fun `094 - un referentiel dit sans source GNSS rend la valeur illisible`() {
+        val t = v3.copy(qualite = null).versJson().replace("\"referentiel_source\":null", "\"referentiel_source\":\"WGS84\"")
+        assertTrue("\"referentiel_source\":\"WGS84\"" in t, t)
+        val traces = ArrayList<String>()
+        assertNull(ValeurControle.lire(t) { traces += it }, t)
+        assertEquals(1, traces.size)
+    }
+
+    @Test
+    fun `094 - la session n'ecrit pas un referentiel hors domaine - NULL, trace au journal technique`() {
+        val diag = ArrayList<String>()
+        val q = QualiteFix(0.02, SourcesGnss.RECEPTEUR_RTK_FIXE, false, referentielSource = "ETRS89")
+        val lu = with(BancSession()) {
+            val o = SessionControle.ouvrir(contexte, journal, horloge, essences, Arrivee.Lambert93(BancSession.POSITION_P1, q), null, ecoute, diagnostic = { diag += it })
+            val s = assertIs<OuvertureControle.Ouverte>(o).session
+            s.pointe(1.0, 10.0); s.dire("sain")
+            assertNotNull(ValeurControle.lire(journal.deType(FormatValeurs.TYPE_CONTROLE).last().valeur))
+        }
+        assertEquals(SourcesGnss.RECEPTEUR_RTK_FIXE, lu.qualite?.sourceGnss, "le reste de la qualité est gardé")
+        assertNull(lu.qualite?.referentielSource)
+        assertTrue(diag.any { "ETRS89" in it }, "tracé : $diag")
     }
 
     @Test

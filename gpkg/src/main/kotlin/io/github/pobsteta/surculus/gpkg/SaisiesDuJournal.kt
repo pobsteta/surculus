@@ -248,10 +248,11 @@ object SaisiesDuJournal {
                 PositionMesuree(position = null, rattacheParIdentite = true, sansPositionMesuree = true)
             } else {
                 // Qualité du fix : celle inscrite au journal (v3) ; inconnue (contrôle d'avant la 091) : NULL, jamais « faux ».
+                // Référentiel de la source : celui du journal (094) ; absent (v3 d'avant la 094) : NULL, jamais deviné.
                 val q = v.qualite
                 PositionMesuree(
                     PointLambert93(xMetres = v.positionMesureeX!!, yMetres = v.positionMesureeY!!),
-                    precisionM = q?.precisionM, sourceGnss = q?.sourceGnss, simulee = q?.simulee,
+                    precisionM = q?.precisionM, sourceGnss = q?.sourceGnss, referentielSource = q?.referentielSource, simulee = q?.simulee,
                     rattacheParIdentite = v.rattacheParIdentite,
                 )
             }
