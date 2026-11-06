@@ -304,6 +304,11 @@ point à Brest et à Strasbourg.
   `nb_total` (sains + atteints + morts + absents, **hors non observés et hors plants
   remplacés**), `nb_vivants` (sains + atteints : un plant atteint compte vivant, arbitrage
   de Pascal), `nb_abroutis` (vivants abroutis), `h_moy_cm`.
+* **« Terminer » exige un état pour chaque plant actif** (décision de Pascal du 2026-11-06, mission 095) : tout plant
+  de la placette, ancien ou pointé ce jour, sauf un plant remplacé par un regarni, doit avoir reçu un état (sain,
+  atteint, mort, absent) ou « non observé ». Sinon « Terminer » est grisé, rien n'est écrit, et la phrase nomme les
+  plants : « Plant n° 2 sans état : dire son état ou « non observé ». ». Ainsi aucun plant ne sort des totaux sans que
+  l'agent l'ait décidé. Le besoin et la concurrence sont exigés de la même façon (mission 091).
 * Un contrôle par placette et par jour ; on corrige le premier tant que la tournée n'est
   pas rendue.
 * **Photos** (amendé le 2026-10-28, décisions de Pascal du même jour, après critique du
