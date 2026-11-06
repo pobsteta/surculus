@@ -397,10 +397,118 @@ class ExportTravauxTest {
         assertTrue(r is RefusGpkg.PointHorsFrance && r.axesInverses, r.toString())
     }
 
+    // Mission 093 (décision de Pascal du 2026-11-06, « garder et signaler ») : un point hors de l'emprise de la forêt,
+    // mais en France, est écrit tel qu'il a été mesuré ; seul le refus hors de France reste. Tests du `testeur`, écrits
+    // depuis la fiche 093 et la spec (§ 5, § 6), sans lire le code de l'export. Le signalement lui-même (forme, phrase)
+    // n'est pas encore décidé : il n'est pas exigé ici. Coordonnées : Lambert-93 (EPSG:2154), x = Est, y = Nord, mètres.
+
+    /** Banc : la forêt de [TourneeDeTest.couchey] est le rectangle des trois centres ± 300 m ; P35-01 en est le plus à l'ouest. */
+    private fun horsEmpriseEnFrance(p: PointLambert93) {
+        assertTrue(io.github.pobsteta.surculus.core.placette.EmpriseEtFrance.enFrance(p), "banc : ($p) doit tomber en France")
+        val c = (0..2).map(v::centre)
+        val dedans = p.xMetres in (c.minOf { it.xMetres } - 300)..(c.maxOf { it.xMetres } + 300) &&
+            p.yMetres in (c.minOf { it.yMetres } - 300)..(c.maxOf { it.yMetres } + 300)
+        assertTrue(!dedans, "banc : ($p) doit tomber hors de l'emprise de la forêt")
+    }
+
+    /** P35-01 au piquet, sa position **mesurée** en [mesuree] : le fix du téléphone a erré sous couvert, contrôle rattaché par code. */
+    private fun mesureeA(mesuree: PointLambert93) = v.saisiesDeLaJournee().let { s ->
+        s.copy(
+            controles = listOf(
+                s.controles[0].copy(
+                    positionMesuree = PositionMesuree(
+                        mesuree, precisionM = 18.0, sourceGnss = "telephone", referentielSource = "RGF93", simulee = false,
+                        rattacheParIdentite = true,
+                    ),
+                ),
+                s.controles[1],
+            ),
+        )
+    }
+
     @Test
-    fun `un point en France mais hors de l emprise de la foret est refuse`() {
-        val r = refus(depart(), controleA(PointLambert93(652_000.0, 6_862_000.0))) // Paris
-        assertTrue(r is RefusGpkg.PointHorsForet, r.toString())
+    fun `un point en France mais hors de l emprise de la foret est ecrit tel qu il a ete mesure - garder et signaler`() {
+        val paris = PointLambert93(xMetres = 652_000.0, yMetres = 6_862_000.0)
+        horsEmpriseEnFrance(paris)
+        val f = exporter(depart(), controleA(paris)) // ne lève pas : décision de Pascal du 2026-11-06
+        val g = Sqlite.ouvrir(f, lectureSeule = true).use { it.lignes("SELECT geom FROM controles WHERE uuid = '${v.uuid(3001)}'").single() }
+        val p = GeometrieGpkg.point(g.blob("geom")!!)!!
+        assertEquals(paris.xMetres, p.xMetres, 0.0, "x (Est) écrit tel quel")
+        assertEquals(paris.yMetres, p.yMetres, 0.0, "y (Nord) écrit tel quel")
+    }
+
+    @Test
+    fun `une position mesuree hors de l emprise, en France, est ecrite telle quelle - coordonnees, precision, source`() {
+        val c = v.centre(0)
+        val erre = PointLambert93(xMetres = c.xMetres - 350.0, yMetres = c.yMetres + 12.5) // 50 m à l'ouest de la forêt
+        horsEmpriseEnFrance(erre)
+        val f = exporter(depart(), mesureeA(erre))
+        Sqlite.ouvrir(f, lectureSeule = true).use { cnx ->
+            val l = cnx.lignes("SELECT * FROM positions_controles WHERE controle_uuid = '${v.uuid(3001)}'").single()
+            val p = GeometrieGpkg.point(l.blob("geom")!!)!!
+            assertEquals(erre.xMetres, p.xMetres, 0.0, "x (Est) tel que mesuré")
+            assertEquals(erre.yMetres, p.yMetres, 0.0, "y (Nord) tel que mesuré")
+            assertEquals(18.0, l.reel("precision_m"), "même précision")
+            assertEquals("telephone", l.texte("source_gnss"), "même source")
+            assertEquals("RGF93", l.texte("referentiel_source"))
+            assertEquals(false, l.booleen("simulee"))
+            assertEquals(true, l.booleen("rattache_par_identite"))
+            assertEquals(false, l.booleen("sans_position_mesuree"))
+            // Le contrôle reste au piquet, dans la forêt : seule la position mesurée a erré.
+            val k = GeometrieGpkg.point(cnx.lignes("SELECT geom FROM controles WHERE uuid = '${v.uuid(3001)}'").single().blob("geom")!!)!!
+            assertEquals(c.xMetres, k.xMetres, 1e-6); assertEquals(c.yMetres, k.yMetres, 1e-6)
+        }
+    }
+
+    @Test
+    fun `un plant pointe hors de l emprise, en France, est ecrit avec sa position derivee`() {
+        val s = v.saisiesDeLaJournee()
+        // Pointé à 320 m plein ouest du piquet de P35-01 : 20 m hors de la forêt. Plant sans état dans le contrôle (comme un regarni).
+        val loin = v.plant(70, 0, 320.0, 270.0)
+        horsEmpriseEnFrance(loin.derive.position)
+        val f = exporter(depart(), s.copy(plants = s.plants + PlantNumerote(loin, 5)))
+        val lu = LecteurTournee.lire(f).plants.single { it.uuid == loin.uuid.valeur }
+        assertEquals(loin.derive.position.xMetres, lu.position!!.xMetres, 1e-9, "x (Est) tel que dérivé")
+        assertEquals(loin.derive.position.yMetres, lu.position!!.yMetres, 1e-9, "y (Nord) tel que dérivé")
+        assertEquals(5, lu.numero)
+        val ligne = Sqlite.ouvrir(f, lectureSeule = true).use { it.lignes("SELECT * FROM plants WHERE uuid = '${loin.uuid.valeur}'").single() }
+        assertEquals(320.0, ligne.reel("distance_m"), "l'observation brute est gardée")
+    }
+
+    @Test
+    fun `un export qui porte un point hors de l emprise se rejoue sur lui-meme sans changer`() {
+        val c = v.centre(0)
+        val s = mesureeA(PointLambert93(xMetres = c.xMetres - 350.0, yMetres = c.yMetres))
+        val premier = exporter(depart(), s, "a.gpkg")
+        val sortie = dossier.resolve("b.gpkg")
+        ExportTravaux.exporter(premier, sortie, s, v.VERSION, v.EXPORTE_LE)
+        assertEquals(Contenu.de(premier), Contenu.de(sortie), "spec § 5, « rejouable » : le point hors emprise relu ne bloque pas")
+    }
+
+    @Test
+    fun `une position mesuree en Somalie est toujours refusee - hors de France`() {
+        // Le piège de la Somalie : le piquet de P35-01 (lon 4,93250 ; lat 47,25910) lu à l'envers.
+        val (x, y) = Projections.versLambert93(lon = 47.25910, lat = 4.93250)
+        val r = refus(depart(), mesureeA(PointLambert93(xMetres = x, yMetres = y)))
+        assertTrue(r is RefusGpkg.PointHorsFrance, r.toString())
+        assertEquals("hors_france", r.motif)
+    }
+
+    @Test
+    fun `une position mesuree aux axes inverses (y, x) est refusee et l inversion signalee`() {
+        val c = v.centre(0)
+        val r = refus(depart(), mesureeA(PointLambert93(xMetres = c.yMetres, yMetres = c.xMetres)))
+        assertTrue(r is RefusGpkg.PointHorsFrance && r.axesInverses, r.toString())
+    }
+
+    @Test
+    fun `un plant hors de France est toujours refuse, meme pres d un point hors emprise garde`() {
+        val s = v.saisiesDeLaJournee()
+        val c = v.centre(0)
+        val avecErre = mesureeA(PointLambert93(xMetres = c.xMetres - 350.0, yMetres = c.yMetres))
+        val mauvais = s.plants[0].plant.let { p -> p.copy(derive = p.derive.copy(position = PointLambert93(xMetres = c.yMetres, yMetres = c.xMetres))) }
+        val r = refus(depart(), avecErre.copy(plants = listOf(PlantNumerote(mauvais, 1)) + s.plants.drop(1)))
+        assertTrue(r is RefusGpkg.PointHorsFrance && r.axesInverses, r.toString())
     }
 
     @Test
