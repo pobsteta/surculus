@@ -35,7 +35,7 @@ Pascal du 2026-11-06).
 | `simulee` | booléen, ou `null` | vrai si un fix moyenné est marqué simulé par Android (`Location.isMock`) ou porte la qualité GGA 8 ; `null` sans position mesurée |
 | `besoin` | texte, ou `null` | le travail qui s'impose : un code de la couche `codes` de la tournée, ou `aucun` (sommieR 0.31.1, `R/registre6.R` l. 137-138) ; obligatoire pour terminer un contrôle (décision de Pascal du 2026-11-04) |
 | `concurrence` | texte, ou `null` | `faible`, `moyenne` ou `forte` ([`docs/referentiels/concurrences.csv`](../referentiels/concurrences.csv), codes de sommieR 0.31.1, `R/registre6.R` l. 64) ; obligatoire pour terminer |
-| `referentiel_source` | texte, ou `null` | référentiel de la source de la position mesurée (spec § 3, ADR 0003) : `WGS84` pour un fix du téléphone ou d'un récepteur en qualité GGA autonome (1, et 3, 6, 7, 8) ; `RGF93` pour un fix DGPS ou RTK (flottant, fixe) corrigé par un flux NTRIP **Centipède vu par Surculus** (dernier message RTCM d'au plus 30 s, `PolitiqueFix.ageMaxCorrectionsS`) ; **`null`** quand on ne sait pas : DGPS ou RTK sans flux vu par Surculus (NTRIP désactivé, corrections du récepteur seul, EGNOS), corrections de plus de 30 s, caster qui n'est pas Centipède, et sans position mesurée. Position moyennée : un seul fix `null` donne `null`, sinon un seul `WGS84` donne `WGS84`, sinon `RGF93` (décisions de Pascal du 2026-11-06, mission 094) |
+| `referentiel_source` | texte, ou `null` | référentiel de la source de la position mesurée (spec § 3, ADR 0003) : `WGS84` pour un fix du téléphone ou d'un récepteur en qualité GGA autonome (1, et 3, 6, 7, 8) ; `RGF93` pour un fix RTK (flottant, fixe) corrigé par un flux NTRIP **Centipède vu par Surculus** (dernier message RTCM d'au plus 30 s, `PolitiqueFix.ageMaxCorrectionsS`) ; **`null`** quand on ne sait pas : tout fix DGPS, même avec un flux Centipède vu (il peut se corriger par EGNOS) ; RTK sans flux vu par Surculus (NTRIP désactivé, corrections du récepteur seul, EGNOS), corrections de plus de 30 s ou d'âge inconnu (champ 13 de la trame GGA vide), caster qui n'est pas Centipède (reconnu par son nom, `crtk.net` ou `caster.centipede.fr`, jamais par son adresse IP), et sans position mesurée. Position moyennée : un seul fix `null` donne `null`, sinon un seul `WGS84` donne `WGS84`, sinon `RGF93` (décisions de Pascal du 2026-11-06, mission 094) |
 
 **Cohérence**, vérifiée à la lecture ; une valeur incohérente ou hors domaine est illisible, ignorée et tracée, jamais
 complétée (proposition du `testeur` de la 091, retenue ici) :
@@ -45,6 +45,7 @@ complétée (proposition du `testeur` de la 091, retenue ici) :
 * `precision_m` présente ⇒ strictement positive ;
 * `source_gnss`, `concurrence`, `referentiel_source` hors de leur domaine ⇒ illisible (`referentiel_source` : exactement
   `RGF93` ou `WGS84`, sans espace) ;
+* `referentiel_source` présent sans `source_gnss` ⇒ illisible (la qualité du fix se dit en entier, 091) ;
 * une valeur v3 écrite avant la 094, sans la clé `referentiel_source`, se lit avec `null`, jamais une valeur devinée ;
   un Surculus d'avant la 094 ignore la clé et rend `null`, sans rien perdre du reste ;
 * `besoin` est un texte non vide sans espaces autour ; son appartenance à la couche `codes` se vérifie à la saisie et à
