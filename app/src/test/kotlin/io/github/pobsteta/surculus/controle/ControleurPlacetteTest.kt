@@ -78,6 +78,7 @@ class ControleurPlacetteTest {
         assertEquals(VueControle.TERMINER, confirmation.vue)
         assertEquals("2 plants · 1 vivant · 0 abrouti", confirmation.totaux.texte)
         assertTrue(controlees().isEmpty(), "pas encore terminée : encore à faire")
+        c.autresPlantsNonObserves()
         c.direBesoin("aucun"); c.direConcurrence("faible")
         val fini = c.terminer()
         assertEquals(VueControle.TERMINEE, fini.vue)
@@ -98,6 +99,7 @@ class ControleurPlacetteTest {
         val c = controleur()
         c.dire(EtatDsf.SAIN)
         c.demanderTerminer()
+        c.autresPlantsNonObserves()
         c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         assertTrue(c.instantane().plant.alerteTerminee, "l'alerte est vraie dès que la placette est terminée")
@@ -113,13 +115,16 @@ class ControleurPlacetteTest {
     @Test fun `terminer deux fois - la session refuse, l'ecran le dit`() = with(BancControle()) {
         val c = controleur()
         c.dire(EtatDsf.SAIN)
+        c.autresPlantsNonObserves()
         c.direBesoin("aucun"); c.direConcurrence("faible")
         c.terminer()
         val m = assertNotNull(c.terminer().message)
         assertEquals("Placette déjà terminée aujourd'hui.", m.texte)
     }
 
-    @Test fun `annuler defait la derniere saisie et annuler la fin rend la placette a faire`() = with(BancControle()) {
+    // Mission 095 (décision de Pascal du 2026-11-06) : « Terminer » exige un état ou « non observé » sur tous les plants. Le banc passe donc
+    // à 1 plant (le seul est dit sain), et le compteur final « 0 sur 12 » devient « 0 sur 1 ». Ce que le test vérifie ne change pas.
+    @Test fun `annuler defait la derniere saisie et annuler la fin rend la placette a faire`() = with(BancControle(nbPlantsAnterieurs = 1)) {
         val c = controleur()
         c.dire(EtatDsf.SAIN)
         c.direBesoin("aucun"); c.direConcurrence("faible")
@@ -127,7 +132,7 @@ class ControleurPlacetteTest {
         c.annuler()
         assertTrue(controlees().isEmpty())
         c.annuler()
-        assertEquals("0 sur 12", c.instantane().plant.compteur)
+        assertEquals("0 sur 1", c.instantane().plant.compteur)
     }
 
     @Test fun `la cause sur un plant sain est un refus montre avec son code`() = with(BancControle()) {

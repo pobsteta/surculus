@@ -359,8 +359,8 @@ class SessionControleTest {
         s.pointe(1.0, 100.0) // un azimut plus petit : il prend le n° 1, le premier passe n° 2 (provisoire)
         assertEquals(2, s.etat().plants.first { it.uuid == u200 }.numero)
         assertFalse(s.etat().plants.any { it.numeroFige })
-        s.suivant(); s.suivant()
-        s.dire("sain"); s.suivant(); s.dire("sain")
+        // Mission 095 : « Terminer » exige un état pour chaque plant ; on le dit aux deux, explicitement.
+        s.etat().plants.forEach { s.choisir(it.uuid); s.dire("sain") }
         s.direBesoin("aucun"); s.direConcurrence("faible")
         s.terminer()
         val avant = s.etat().plants.associate { it.uuid to it.numero }

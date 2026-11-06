@@ -348,7 +348,7 @@ class ControleurPlacette(
     fun terminer(): EcranControle {
         when (val suite = session.terminer()) {
             is SuiteSession.Fait -> { vue = VueControle.TERMINEE; message = null }
-            // Il manque le besoin ou la concurrence : on reste sur la vue « Terminer », qui dit ce qui manque.
+            // Il manque le besoin, la concurrence ou l'état d'un plant : on reste sur la vue « Terminer », qui dit ce qui manque.
             is SuiteSession.ChoixManquant -> { vue = VueControle.TERMINER; message = TextesControle.message(suite) }
             else -> { vue = VueControle.PLANT; message = TextesControle.message(suite) }
         }
@@ -460,7 +460,7 @@ object TextesControle {
         SuiteSession.RienAAnnuler -> MessageControle("Rien à annuler.", erreur = false)
         SuiteSession.RienASaisir -> MessageControle("Aucun état dit aujourd'hui : rien à terminer.", erreur = true)
         SuiteSession.DejaTerminee -> MessageControle("Placette déjà terminée aujourd'hui.", erreur = true)
-        is SuiteSession.ChoixManquant -> MessageControle(manque(suite.besoin, suite.concurrence) ?: "", erreur = true)
+        is SuiteSession.ChoixManquant -> MessageControle(manque(suite.besoin, suite.concurrence, suite.plantsSansEtat) ?: "", erreur = true)
         SuiteSession.DicteeDemandee -> MessageControle("La dictée n'est pas encore disponible.", erreur = false)
     }
 
@@ -478,7 +478,7 @@ object TextesControle {
         EcranControle(
             e.codePlacette, e.jour.toString(), vue, plant(e), totaux(e.totaux), message,
             VuePointage(regarniDe = e.regarniDe?.let { r -> e.plants.firstOrNull { it.uuid == r }?.numero }, aConfirmer = aConfirmer, essenceChoisie = essenceChoisie, essencesTournee = essencesTournee),
-            plan, besoin(e.besoin, e.concurrence, codesBesoin),
+            plan, besoin(e.besoin, e.concurrence, codesBesoin, e.plantsSansEtat),
         )
 
     /** Libellé d'écran d'un niveau : colonne `libelle` de `docs/referentiels/concurrences.csv` ([Concurrences.LIBELLES]). */
@@ -498,19 +498,38 @@ object TextesControle {
         return (coupe.ifEmpty { sans.take(LIBELLE_COURT_MAX) }) + "…"
     }
 
-    /** La phrase de ce qui manque pour terminer ; `null` si rien ne manque. */
-    fun manque(besoin: Boolean, concurrence: Boolean): String? = when {
-        besoin && concurrence -> "Choisir le besoin et la concurrence pour terminer."
-        besoin -> "Choisir le besoin pour terminer."
-        concurrence -> "Choisir la concurrence pour terminer."
-        else -> null
+    /**
+     * La phrase de ce qui manque pour terminer ; `null` si rien ne manque. Les plants sans état sont nommés par leur
+     * numéro (mission 095) : « Plant n° 2 sans état : dire son état ou « non observé ». »
+     */
+    /** Au-delà de ce nombre de plants sans état, la phrase donne le total et les premiers numéros seulement (décision de Pascal du 2026-11-06). */
+    const val NUMEROS_NOMMES_MAX = 3
+
+    private fun nommes(numeros: List<Int>) = if (numeros.size == 1) "${numeros[0]}" else "${numeros.dropLast(1).joinToString(", ")} et ${numeros.last()}"
+
+    fun manque(besoin: Boolean, concurrence: Boolean, plantsSansEtat: List<Int> = emptyList()): String? {
+        val choix = when {
+            besoin && concurrence -> "Choisir le besoin et la concurrence pour terminer."
+            besoin -> "Choisir le besoin pour terminer."
+            concurrence -> "Choisir la concurrence pour terminer."
+            else -> null
+        }
+        val plants = when {
+            plantsSansEtat.isEmpty() -> null
+            plantsSansEtat.size == 1 -> "Plant n° ${plantsSansEtat[0]} sans état : dire son état ou « non observé »."
+            plantsSansEtat.size <= NUMEROS_NOMMES_MAX ->
+                "Plants n° ${nommes(plantsSansEtat)} sans état : dire leur état ou « non observé »."
+            else ->
+                "${plantsSansEtat.size} plants sans état, dont n° ${nommes(plantsSansEtat.take(NUMEROS_NOMMES_MAX))} : dire leur état ou « non observé »."
+        }
+        return listOfNotNull(choix, plants).joinToString(" ").ifEmpty { null }
     }
 
-    fun besoin(besoinDit: String?, concurrenceDite: String?, codes: List<Pair<String, String>>): VueBesoin = VueBesoin(
+    fun besoin(besoinDit: String?, concurrenceDite: String?, codes: List<Pair<String, String>>, plantsSansEtat: List<Int> = emptyList()): VueBesoin = VueBesoin(
         aucunChoisi = besoinDit == Besoins.AUCUN,
         codes = codes.filter { it.first != Besoins.AUCUN }.map { (code, libelle) -> ChoixBesoin(code, libelleCourt(code, libelle), code == besoinDit) },
         concurrences = Concurrences.NIVEAUX.map { ChoixConcurrence(it, libelleConcurrence(it), it == concurrenceDite) },
-        manque = manque(besoinDit == null, concurrenceDite == null),
+        manque = manque(besoinDit == null, concurrenceDite == null, plantsSansEtat),
     )
 
     fun plant(e: EtatSession): VuePlant {
