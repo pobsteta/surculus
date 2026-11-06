@@ -183,6 +183,10 @@ data class PlantSession(
     val remplaceAvant: Boolean,
 )
 
+/** Numéros, dans l'ordre, des plants actifs (non remplacés par un regarni) sans état ni « non observé » dit aujourd'hui (mission 095). */
+private fun numerosSansEtat(plants: List<PlantSession>): List<Int> =
+    plants.filter { it.duJour == null && !it.remplaceAvant }.map { it.numero }.sorted()
+
 data class EtatSession(
     val placette: UuidPlacette,
     val codePlacette: String,
@@ -210,7 +214,7 @@ data class EtatSession(
      * Numéros des plants actifs (ni remplacés par un regarni) sans état ni « non observé » dit aujourd'hui, anciens ou
      * pointés ce jour (mission 095, décision de Pascal du 2026-11-06). « Terminer » exige que la liste soit vide.
      */
-    val plantsSansEtat: List<Int> get() = plants.filter { it.duJour == null && !it.remplaceAvant }.map { it.numero }.sorted()
+    val plantsSansEtat: List<Int> get() = numerosSansEtat(plants)
 }
 
 /**
@@ -470,7 +474,7 @@ class SessionControle private constructor(
         if (ligneControle?.second?.termine == true) return SuiteSession.DejaTerminee
         if (vue.plants.none { it.duJour != null }) return SuiteSession.RienASaisir
         val (ligne, valeur) = ligneControle ?: error("un état dit suppose un contrôle écrit")
-        val sansEtat = vue.plants.filter { it.duJour == null && !it.remplaceAvant }.map { it.numero }.sorted()
+        val sansEtat = numerosSansEtat(vue.plants)
         if (valeur.besoin == null || valeur.concurrence == null || sansEtat.isNotEmpty()) {
             return SuiteSession.ChoixManquant(besoin = valeur.besoin == null, concurrence = valeur.concurrence == null, plantsSansEtat = sansEtat)
         }

@@ -502,6 +502,11 @@ object TextesControle {
      * La phrase de ce qui manque pour terminer ; `null` si rien ne manque. Les plants sans état sont nommés par leur
      * numéro (mission 095) : « Plant n° 2 sans état : dire son état ou « non observé ». »
      */
+    /** Au-delà de ce nombre de plants sans état, la phrase donne le total et les premiers numéros seulement (décision de Pascal du 2026-11-06). */
+    const val NUMEROS_NOMMES_MAX = 3
+
+    private fun nommes(numeros: List<Int>) = if (numeros.size == 1) "${numeros[0]}" else "${numeros.dropLast(1).joinToString(", ")} et ${numeros.last()}"
+
     fun manque(besoin: Boolean, concurrence: Boolean, plantsSansEtat: List<Int> = emptyList()): String? {
         val choix = when {
             besoin && concurrence -> "Choisir le besoin et la concurrence pour terminer."
@@ -509,10 +514,13 @@ object TextesControle {
             concurrence -> "Choisir la concurrence pour terminer."
             else -> null
         }
-        val plants = when (plantsSansEtat.size) {
-            0 -> null
-            1 -> "Plant n° ${plantsSansEtat[0]} sans état : dire son état ou « non observé »."
-            else -> "Plants n° ${plantsSansEtat.dropLast(1).joinToString(", ")} et ${plantsSansEtat.last()} sans état : dire leur état ou « non observé »."
+        val plants = when {
+            plantsSansEtat.isEmpty() -> null
+            plantsSansEtat.size == 1 -> "Plant n° ${plantsSansEtat[0]} sans état : dire son état ou « non observé »."
+            plantsSansEtat.size <= NUMEROS_NOMMES_MAX ->
+                "Plants n° ${nommes(plantsSansEtat)} sans état : dire leur état ou « non observé »."
+            else ->
+                "${plantsSansEtat.size} plants sans état, dont n° ${nommes(plantsSansEtat.take(NUMEROS_NOMMES_MAX))} : dire leur état ou « non observé »."
         }
         return listOfNotNull(choix, plants).joinToString(" ").ifEmpty { null }
     }
