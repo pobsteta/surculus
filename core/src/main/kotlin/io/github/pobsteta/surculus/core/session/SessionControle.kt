@@ -141,9 +141,15 @@ sealed interface SuiteSession {
 
     /**
      * « Terminer » sans besoin ou sans concurrence dits (décision de Pascal du 2026-11-04, question 1 : obligatoires, sans
-     * valeur par défaut) : rien n'est écrit ; [besoin] et [concurrence] disent ce qui manque.
+     * valeur par défaut) ou avec un plant actif sans état (mission 095) : rien n'est écrit ; [besoin], [concurrence] et
+     * [plantsSansEtat] disent ce qui manque.
      */
-    data class ChoixManquant(val besoin: Boolean, val concurrence: Boolean) : SuiteSession
+    data class ChoixManquant(
+        val besoin: Boolean,
+        val concurrence: Boolean,
+        /** Numéros des plants actifs sans état ni « non observé » (mission 095, décision de Pascal du 2026-11-06). */
+        val plantsSansEtat: List<Int> = emptyList(),
+    ) : SuiteSession
 
     /** Le geste « volume bas, appui long » : l'écran ouvre la dictée (012-D). */
     data object DicteeDemandee : SuiteSession
@@ -199,7 +205,13 @@ data class EtatSession(
     val besoin: String? = null,
     /** Concurrence dite pour le contrôle du jour ; `null` : pas encore dite. */
     val concurrence: String? = null,
-)
+) {
+    /**
+     * Numéros des plants actifs (ni remplacés par un regarni) sans état ni « non observé » dit aujourd'hui, anciens ou
+     * pointés ce jour (mission 095, décision de Pascal du 2026-11-06). « Terminer » exige que la liste soit vide.
+     */
+    val plantsSansEtat: List<Int> get() = plants.filter { it.duJour == null && !it.remplaceAvant }.map { it.numero }.sorted()
+}
 
 /**
  * La session de contrôle d'une placette, sur le journal de la tournée ouverte (mission 012-A, spec § 4.3).
@@ -450,7 +462,7 @@ class SessionControle private constructor(
     /**
      * Termine la placette (décision de Pascal du 2026-10-27) : le contrôle devient « Contrôlé », les numéros sont
      * **figés** et la sauvegarde reçoit une fin de placette. Refusé si aucun état n'est dit aujourd'hui, si le contrôle
-     * du jour est déjà terminé, ou s'il manque le besoin ou la concurrence ([SuiteSession.ChoixManquant], mission 091).
+     * du jour est déjà terminé, ou s'il manque le besoin, la concurrence ou l'état d'un plant actif ([SuiteSession.ChoixManquant], missions 091 et 095).
      */
     fun terminer(): SuiteSession {
         val vue = lire()
@@ -458,8 +470,9 @@ class SessionControle private constructor(
         if (ligneControle?.second?.termine == true) return SuiteSession.DejaTerminee
         if (vue.plants.none { it.duJour != null }) return SuiteSession.RienASaisir
         val (ligne, valeur) = ligneControle ?: error("un état dit suppose un contrôle écrit")
-        if (valeur.besoin == null || valeur.concurrence == null) {
-            return SuiteSession.ChoixManquant(besoin = valeur.besoin == null, concurrence = valeur.concurrence == null)
+        val sansEtat = vue.plants.filter { it.duJour == null && !it.remplaceAvant }.map { it.numero }.sorted()
+        if (valeur.besoin == null || valeur.concurrence == null || sansEtat.isNotEmpty()) {
+            return SuiteSession.ChoixManquant(besoin = valeur.besoin == null, concurrence = valeur.concurrence == null, plantsSansEtat = sansEtat)
         }
         val figes = when (val n = vue.numeros) {
             is NumerosPlacette.Provisoires -> Numerotation.figer(n).valeurOuEchec()
