@@ -11,7 +11,9 @@
 aucun fix n'arrive, comme le bouton « Contrôler » de la carte, pour que l'agent sous couvert ne reste pas bloqué
 sur un écran qui attend une distance qui ne viendra pas.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent (testeur) :** écrire les tests qui diront si, au guidage sans fix, l'agent peut saisir le code et
+ouvrir sans position après 30 s selon la règle de la 087 (code requis, placette confirmée, localisation exigée, retour
+aux 15 m dès qu'un fix arrive), sans rien changer avec un fix.
 
 ## Le constat
 
