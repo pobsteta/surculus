@@ -186,6 +186,7 @@ class SessionControleTest {
         assertEquals(SuiteSession.EtatDAbord, s.preciser(hauteurCm = 40))
         s.dire("mort")
         assertIs<SuiteSession.Fait>(s.preciser(hauteurCm = 40))
+        Unit // le test doit rendre Unit, sinon JUnit 5 ne le lance pas
     }
 
     @Test
@@ -218,6 +219,7 @@ class SessionControleTest {
         assertTrue(ValeurPointage.lire(journal.deType("pointage").single().valeur)!!.horsRayonConfirme)
         // À la borne (3,99 + 0,10), pas d'alerte.
         assertIs<SuiteSession.Fait>(s.pointe(4.09, 190.0))
+        Unit // le test doit rendre Unit, sinon JUnit 5 ne le lance pas
     }
 
     // ------------------------------------------------------------ Terminer, « Contrôlée »
@@ -228,6 +230,7 @@ class SessionControleTest {
         s.pointe(1.0, 10.0)
         s.dire("sain")
         assertEquals(emptySet(), controlees(), "commencée, pas terminée : à faire")
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         assertIs<SuiteSession.Fait>(s.terminer())
         assertEquals(setOf(BancSession.P1.valeur), controlees())
         assertTrue(s.etat().termine)
@@ -240,6 +243,7 @@ class SessionControleTest {
         s.pointe(1.5, 200.0)
         s.suivant(); s.suivant()
         s.dire("sain"); s.suivant(); s.dire("mort")
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         val avant = ecoute.saisies
         assertIs<SuiteSession.Fait>(s.terminer())
         assertEquals(avant + 1, ecoute.saisies)
@@ -253,10 +257,13 @@ class SessionControleTest {
     @Test
     fun `terminer sans aucun etat dit est refuse, terminer deux fois aussi`() = with(BancSession()) {
         val s = session()
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         assertEquals(SuiteSession.RienASaisir, s.terminer())
         s.pointe(1.0, 10.0)
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         assertEquals(SuiteSession.RienASaisir, s.terminer(), "un pointage sans état n'est pas un contrôle")
         s.dire("sain")
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         assertIs<SuiteSession.Fait>(s.terminer())
         assertEquals(SuiteSession.DejaTerminee, s.terminer())
         assertEquals(1, ecoute.fins)
@@ -269,6 +276,7 @@ class SessionControleTest {
             val s = session()
             s.pointe(1.0, 10.0)
             s.dire("sain")
+            s.direBesoin("aucun"); s.direConcurrence("faible")
             s.terminer()
             horloge.a("2026-10-27T09:00:00Z")
             assertEquals(setOf(BancSession.P1.valeur), controlees(), "toujours Contrôlée le lendemain")
@@ -288,6 +296,7 @@ class SessionControleTest {
         val s = session()
         s.pointe(1.0, 10.0)
         s.dire("sain")
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         s.terminer()
         assertEquals(setOf(BancSession.P1.valeur), controlees())
         assertIs<SuiteSession.Fait>(s.annuler())
@@ -302,7 +311,7 @@ class SessionControleTest {
         val b = BancSession()
         with(b) {
             val s = session()
-            s.pointe(1.0, 10.0); s.dire("sain"); s.terminer()
+            s.pointe(1.0, 10.0); s.dire("sain"); s.direBesoin("aucun"); s.direConcurrence("faible"); s.terminer()
             assertEquals(setOf(BancSession.P1.valeur), controlees())
             assertFalse(BancSession.P2.valeur in controlees())
         }
@@ -352,8 +361,9 @@ class SessionControleTest {
         s.pointe(1.0, 100.0) // un azimut plus petit : il prend le n° 1, le premier passe n° 2 (provisoire)
         assertEquals(2, s.etat().plants.first { it.uuid == u200 }.numero)
         assertFalse(s.etat().plants.any { it.numeroFige })
-        s.suivant(); s.suivant()
-        s.dire("sain"); s.suivant(); s.dire("sain")
+        // Mission 095 : « Terminer » exige un état pour chaque plant ; on le dit aux deux, explicitement.
+        s.etat().plants.forEach { s.choisir(it.uuid); s.dire("sain") }
+        s.direBesoin("aucun"); s.direConcurrence("faible")
         s.terminer()
         val avant = s.etat().plants.associate { it.uuid to it.numero }
         s.pointe(1.0, 5.0) // azimut plus petit encore, mais après la fin : numéro suivant, sans renuméroter
@@ -393,7 +403,7 @@ class SessionControleTest {
         val b = BancSession("2026-10-26T09:00:00Z")
         with(b) {
             val s = session()
-            s.pointe(1.0, 10.0); s.dire("mort"); s.terminer()
+            s.pointe(1.0, 10.0); s.dire("mort"); s.direBesoin("aucun"); s.direConcurrence("faible"); s.terminer()
             horloge.a("2026-10-27T09:00:00Z")
             val s2 = session()
             val p = s2.etat().plants.single()
@@ -428,6 +438,7 @@ class SessionControleTest {
         assertEquals("plant_remplace_ni_mort_ni_absent", refus(s.remplace()).code)
         s.dire("absent")
         assertIs<SuiteSession.Fait>(s.remplace())
+        Unit // le test doit rendre Unit, sinon JUnit 5 ne le lance pas
     }
 
     @Test
@@ -450,6 +461,7 @@ class SessionControleTest {
             val s = session()
             s.pointe(1.0, 10.0); val mort = s.etat().courant!!; s.dire("mort")
             s.remplace(); s.pointe(1.1, 12.0); s.dire("sain")
+            s.direBesoin("aucun"); s.direConcurrence("faible")
             s.terminer()
             horloge.a("2026-10-27T09:00:00Z")
             val s2 = session()
@@ -514,7 +526,7 @@ class SessionControleTest {
         val c = ValeurControle.lire(journal.deType("controle").single().valeur)!!
         assertTrue(c.rattacheParIdentite)
         assertEquals(BancSession.POSITION_P1.yMetres, c.positionY, "le contrôle prend la position du piquet")
-        assertEquals(BancSession.POSITION_P1.yMetres + 15.1, c.positionMesureeY, 1e-9, "la position mesurée est gardée à part")
+        assertEquals(BancSession.POSITION_P1.yMetres + 15.1, c.positionMesureeY!!, 1e-9, "la position mesurée est gardée à part")
     }
 
     @Test
@@ -596,8 +608,9 @@ class SessionControleTest {
     @Test
     fun `le contexte pose l'operateur de la tournee sur chaque ligne`() = with(BancSession()) {
         val s = session()
-        s.pointe(1.0, 10.0); s.dire("sain"); s.terminer(); s.annuler()
+        s.pointe(1.0, 10.0); s.dire("sain"); s.direBesoin("aucun"); s.direConcurrence("faible"); s.terminer(); s.annuler()
         assertTrue(journal.lignes.all { it.operateur == "Agent d'essai" })
         assertNotNull(journal.lignes.firstOrNull { it.type == "annulation" })
+        Unit // le test doit rendre Unit, sinon JUnit 5 ne le lance pas
     }
 }

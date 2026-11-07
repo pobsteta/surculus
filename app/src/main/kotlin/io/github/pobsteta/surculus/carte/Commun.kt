@@ -32,6 +32,9 @@ import io.github.pobsteta.surculus.R
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.gnss.SourcePosition
 import io.github.pobsteta.surculus.gnss.libelleFix
+import io.github.pobsteta.surculus.gpkg.GpkgRefuse
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_TOURNEE_ILLISIBLE
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import kotlinx.coroutines.Dispatchers
@@ -88,10 +91,12 @@ fun chargerTournee(id: String): Chargement {
         value = withContext(Dispatchers.IO) {
             try {
                 Chargement.Pret(DepotTournees.ouvrir(File(DepotTournees.racine(ctx), id)))
-            } catch (e: io.github.pobsteta.surculus.gpkg.GpkgRefuse) {
+            } catch (e: GpkgRefuse) {
+                JournalTechnique.avertir("Carte", "tournée refusée", e)
                 Chargement.Refus(e.refus.message)
             } catch (e: Exception) {
-                Chargement.Refus(e.message ?: e.javaClass.simpleName)
+                JournalTechnique.avertir("Carte", "chargement de la tournée impossible", e)
+                Chargement.Refus(TEXTE_TOURNEE_ILLISIBLE)
             }
         }
     }

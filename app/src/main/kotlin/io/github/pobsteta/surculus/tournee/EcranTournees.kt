@@ -68,6 +68,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_IMPORT_ECHOUE
 import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.carte.couleurErreur
 import io.github.pobsteta.surculus.carte.couleurNeutre
@@ -139,9 +141,11 @@ fun EcranTournees(
                 val dossier = withContext(Dispatchers.IO) { travail() }
                 MessageTournees(ressources.getString(R.string.tournees_import_ok, dossier.name), refus = false)
             } catch (e: GpkgRefuse) {
+                JournalTechnique.avertir("Tournees", "import refusé", e)
                 MessageTournees(ressources.getString(R.string.tournees_import_refus, e.refus.message), refus = true)
             } catch (e: Exception) {
-                MessageTournees(ressources.getString(R.string.tournees_import_refus, e.message ?: e.javaClass.simpleName), refus = true)
+                JournalTechnique.avertir("Tournees", "import impossible", e)
+                MessageTournees(ressources.getString(R.string.tournees_import_refus, TEXTE_IMPORT_ECHOUE), refus = true)
             }
             occupe = false
             version++

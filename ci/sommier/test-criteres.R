@@ -213,17 +213,51 @@ controles_ok <- data.frame(
   nb_vivants = c(att1$nb_vivants, att2$nb_vivants),
   nb_abroutis = c(att1$nb_abroutis, att2$nb_abroutis),
   h_moy_cm = c(att1$h_moy_cm, att2$h_moy_cm),
-  releve_uuid = c("r1", "r2"), stringsAsFactors = FALSE)
+  releve_uuid = c("r1", "r2"),
+  # Mission 091 : besoin et concurrence lus au registre.
+  besoin = c(att1$besoin, att2$besoin), concurrence = c(att1$concurrence, att2$concurrence),
+  stringsAsFactors = FALSE)
+# Mission 091 : l'état de suivi lu après l'import (etats_suivi_apres_import()),
+# conforme au JSON attendu. Les bancs ci-dessous appellent controle_f4() à trois
+# arguments : on lui donne ici, par défaut, ces états conformes ; la fonction
+# de la CI reste `controle_f4_ci`, appelée telle quelle là où l'état de suivi
+# est l'objet du test.
+etats_ok <- data.frame(code_placette = names(attendu[["etats_suivi", exact = TRUE]]),
+                       etat_suivi = unlist(attendu[["etats_suivi", exact = TRUE]], use.names = FALSE),
+                       stringsAsFactors = FALSE)
+controle_f4_ci <- controle_f4
+controle_f4 <- function(attendu, controles, points, etats_suivi = etats_ok)
+  controle_f4_ci(attendu, controles, points, etats_suivi)
+# Mission 087 (décision de Pascal du 2026-11-02, « en faire le cas sans position ») :
+# P35-02 est un contrôle ouvert sans position mesurée. API supposée de
+# lire_points_export(), à confirmer par le dev :
+#   positions : data.frame(controle_uuid, lon, lat, sans_position_mesuree,
+#               rattache_par_identite, precision_m) ; lon et lat NA quand la
+#               géométrie est NULL ;
+#   controles : data.frame(uuid, lon, lat), la couche `controles` de l'export
+#               (le point du contrôle ; pour P35-02, le piquet) ;
+#   piquets   : inchangé.
+verifier(isTRUE(att2$point$sans_position_mesuree) && !isTRUE(att1$point$sans_position_mesuree),
+         "F4 : le JSON attendu marque P35-02, et lui seul, sans position mesurée (mission 087)")
 points_ok <- list(
-  positions = data.frame(controle_uuid = "r1", lon = att1$point$lon,
-                         lat = att1$point$lat, stringsAsFactors = FALSE),
+  positions = data.frame(controle_uuid = c("r1", "r2"), lon = c(att1$point$lon, NA),
+                         lat = c(att1$point$lat, NA),
+                         sans_position_mesuree = c(FALSE, TRUE),
+                         rattache_par_identite = c(FALSE, TRUE),
+                         precision_m = c(0.4, NA),
+                         source_gnss = c(att1$point$source_gnss, NA), simulee = c(TRUE, NA),
+                         stringsAsFactors = FALSE),
+  controles = data.frame(uuid = c("r1", "r2"), lon = c(att1$point$lon, att2$point$lon),
+                         lat = c(att1$point$lat, att2$point$lat), stringsAsFactors = FALSE),
   piquets = data.frame(code_placette = c("P35-01", "P35-02"),
                        lon = c(4.9325, att2$point$lon),
                        lat = c(47.2591, att2$point$lat), stringsAsFactors = FALSE))
 f4 <- controle_f4(attendu, controles_ok, points_ok)
 verifier(length(f4$fautes) == 0L, "F4 : registre et points conformes, sans faute")
-verifier(nrow(f4$lignes) == 12L && all(f4$lignes$verdict == "conforme"),
-         "F4 : 12 lignes comparées (2 x (visite_le, 4 totaux, point)), toutes conformes")
+verifier(nrow(f4$lignes) >= 12L && all(f4$lignes$verdict == "conforme"),
+         "F4 : au moins 12 lignes comparées (2 x (visite_le, 4 totaux, point)), toutes conformes")
+verifier(any(f4$lignes$placette == "P35-02" & grepl("positions_controles", f4$lignes$champ)),
+         "F4 : le résumé porte une ligne sur la ligne de positions_controles de P35-02 (mission 087)")
 verifier(att1$point$tolerance_m == 0.5, "F4 : tolérance du JSON = 0,5 m (décision de Pascal, mission 027)")
 
 change <- function(df, i, k, v) { df[[k]][i] <- v; df }
@@ -267,11 +301,11 @@ f <- controle_f4(attendu, rbind(controles_ok, extra), points_ok)
 verifier(contient(f$fautes, "sans attente"), "F4 : contrôle écrit sans attente refusé")
 
 # Le point : tolérance de 0,5 m, en mètres, lon puis lat.
-decale <- function(m_est, m_nord) {   # m_est vers l'est, m_nord vers le nord
+decale <- function(m_est, m_nord) {   # m_est vers l'est, m_nord vers le nord ; ligne de P35-01 seule
   p <- points_ok
-  p$positions$lon <- att1$point$lon +
+  p$positions$lon[1L] <- att1$point$lon +
     m_est / (distance_wgs84_m(att1$point$lon, att1$point$lat, att1$point$lon + 1, att1$point$lat))
-  p$positions$lat <- att1$point$lat +
+  p$positions$lat[1L] <- att1$point$lat +
     m_nord / (distance_wgs84_m(att1$point$lon, att1$point$lat, att1$point$lon, att1$point$lat + 1))
   p
 }
@@ -289,11 +323,11 @@ f <- controle_f4(attendu, controles_ok, decale(0, 5))
 verifier(contient(f$fautes, "5.000 m"), "F4 : point déplacé de 5 m refusé")
 # La position mesurée de P35-01 (+0,6 m est, -0,4 m nord) n'est PAS le piquet
 # (decision de Pascal, mission 027) : le piquet seul est à 0,72 m, refusé.
-p <- points_ok; p$positions$lon <- 4.9325; p$positions$lat <- 47.2591
+p <- points_ok; p$positions$lon[1L] <- 4.9325; p$positions$lat[1L] <- 47.2591
 verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "0.72"),
          "F4 : le piquet à la place de la position mesurée (0,72 m) est refusé")
 # Latitude et longitude inversées : placette en Somalie.
-p <- points_ok; p$positions$lon <- att1$point$lat; p$positions$lat <- att1$point$lon
+p <- points_ok; p$positions$lon[1L] <- att1$point$lat; p$positions$lat[1L] <- att1$point$lon
 f <- controle_f4(attendu, controles_ok, p)
 verifier(contient(f$fautes, "P35-01, point de positions_controles"), "F4 : lon et lat inversées refusées")
 verifier(!dans_france(47.2591, 4.9325, attendu$france_metropolitaine) &&
@@ -303,10 +337,55 @@ verifier(!dans_france(47.2591, 4.9325, attendu$france_metropolitaine) &&
 p <- points_ok; p$positions <- p$positions[0L, ]
 verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "aucune ligne de positions_controles"),
          "F4 : positions_controles sans ligne pour P35-01 refusé")
-# Piquet de P35-02 déplacé.
+# --- F4, P35-02 sans position mesurée (mission 087 ; ADR 0003, amendement du
+# 2026-11-02, point 7 ; décision de Pascal du 2026-11-02) ---------------------
+# Le point de P35-02 est lu dans la couche `controles` de l'export (le piquet de
+# sommieR), plus dans `placettes`.
+p <- points_ok; p$controles$lon[2L] <- p$controles$lon[2L] + 1e-4   # 7,5 m vers l'est
+verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-02, point de controles"),
+         "F4 : contrôle de P35-02 déplacé de 7 m du piquet refusé (point lu dans controles)")
+p <- points_ok; p$controles <- p$controles[1L, ]
+verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-02"),
+         "F4 : contrôle de P35-02 absent de la couche controles de l'export refusé")
+# La ligne de positions_controles de P35-02 : présente, une seule, géométrie
+# NULL, sans_position_mesuree et rattache_par_identite vrais, precision_m NULL.
+f2 <- function(p) controle_f4(attendu, controles_ok, p)$fautes
+p <- points_ok; p$positions <- p$positions[1L, ]
+f <- f2(p)
+verifier(any(grepl("P35-02", f, fixed = TRUE) & grepl("aucune ligne de positions_controles", f, fixed = TRUE)),
+         "F4 : ligne sans position de P35-02 retirée refusée (une ligne par contrôle)")
+p <- points_ok; p$positions <- p$positions[c(1L, 2L, 2L), ]
+verifier(any(grepl("P35-02", f2(p), fixed = TRUE) & grepl("positions_controles", f2(p), fixed = TRUE)),
+         "F4 : deux lignes de positions_controles pour P35-02 refusées")
+p <- points_ok; p$positions$lon[2L] <- att2$point$lon; p$positions$lat[2L] <- att2$point$lat
+f <- f2(p)
+verifier(any(grepl("P35-02", f, fixed = TRUE) & grepl("NULL", f, fixed = TRUE)),
+         "F4 : géométrie remplie (le piquet) sur la ligne sans position refusée : elle doit être NULL")
+p <- points_ok; p$positions$sans_position_mesuree[2L] <- FALSE
+f <- f2(p)
+verifier(any(grepl("P35-02", f, fixed = TRUE) & grepl("sans_position_mesuree", f, fixed = TRUE)),
+         "F4 : sans_position_mesuree faux sur P35-02 refusé")
+p <- points_ok; p$positions$sans_position_mesuree[2L] <- NA
+verifier(any(grepl("P35-02", f2(p), fixed = TRUE) & grepl("sans_position_mesuree", f2(p), fixed = TRUE)),
+         "F4 : sans_position_mesuree absent (NA) sur P35-02 refusé, jamais pris pour vrai")
+p <- points_ok; p$positions$rattache_par_identite[2L] <- FALSE
+f <- f2(p)
+verifier(any(grepl("P35-02", f, fixed = TRUE) & grepl("rattache_par_identite", f, fixed = TRUE)),
+         "F4 : rattache_par_identite faux sur P35-02 refusé (définition élargie)")
+p <- points_ok; p$positions$precision_m[2L] <- 0
+f <- f2(p)
+verifier(any(grepl("P35-02", f, fixed = TRUE) & grepl("precision_m", f, fixed = TRUE)),
+         "F4 : precision_m à 0 sur P35-02 refusé (NULL, jamais 0 : Darwin Core)")
+# P35-01 a une position mesurée : sa ligne ne peut pas se dire sans position.
+p <- points_ok; p$positions$sans_position_mesuree[1L] <- TRUE
+f <- f2(p)
+verifier(any(grepl("P35-01", f, fixed = TRUE) & grepl("sans_position_mesuree", f, fixed = TRUE)),
+         "F4 : P35-01 marqué sans position alors qu'une position est attendue refusé")
+# Le piquet de P35-02 dans `placettes` ne sert plus de point : le déplacer seul
+# ne change rien (le point est celui du contrôle).
 p <- points_ok; p$piquets$lon[2L] <- p$piquets$lon[2L] + 1e-4
-verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-02, point de placettes (piquet)"),
-         "F4 : piquet de P35-02 déplacé de 7 m refusé")
+verifier(!any(grepl("P35-02, point de controles", f2(p), fixed = TRUE)),
+         "F4 : le point de P35-02 est celui de la couche controles, pas de placettes")
 # Point attendu lui-même hors de France : le JSON serait faux.
 att_faux <- attendu; att_faux$controles[[1L]]$point$lon <- 47.2591; att_faux$controles[[1L]]$point$lat <- 4.9325
 verifier(contient(controle_f4(att_faux, controles_ok, points_ok)$fautes, "hors de la France métropolitaine"),
@@ -337,6 +416,56 @@ sf::st_write(sf::st_as_sf(data.frame(code_placette = "P35-02", x = 846162, y = 6
                           coords = c("x", "y"), crs = 2154), sans_pos,
              layer = "placettes", quiet = TRUE, layer_options = "SPATIAL_INDEX=NO")
 verifier(nrow(lire_points_export(sans_pos)$positions) == 0L, "lire_points_export : sans couche positions_controles, aucune ligne")
+
+# --- Mission 087 : un export de fabrication avec une ligne sans position -----
+# Points posés en (lon, lat) WGS 84, convertis en EPSG:2154 (x = est, y = nord,
+# mètres) comme l'export de Surculus. r1 : P35-01, position mesurée attendue ;
+# r2 : P35-02, contrôle sans position mesurée (géométrie NULL dans
+# positions_controles, piquet dans controles). UUID en minuscules.
+en_l93 <- function(df) sf::st_transform(sf::st_as_sf(df, coords = c("lon", "lat"), crs = 4326), 2154)
+export_sp <- file.path(travail, "export-sans-position.gpkg")
+sf::st_write(en_l93(data.frame(controle_uuid = c("r1", "r2"),
+                               precision_m = c(0.4, NA), sans_position_mesuree = c(FALSE, TRUE),
+                               rattache_par_identite = c(FALSE, TRUE),
+                               # Mission 091 : qualité du fix de P35-01 ; vide sans position (P35-02).
+                               source_gnss = c(att1$point$source_gnss, NA), simulee = c(TRUE, NA),
+                               lon = c(att1$point$lon, att2$point$lon), lat = c(att1$point$lat, att2$point$lat))),
+             export_sp, layer = "positions_controles", quiet = TRUE, layer_options = "SPATIAL_INDEX=NO")
+sf::st_write(en_l93(data.frame(uuid = c("r1", "r2"),
+                               lon = c(att1$point$lon, att2$point$lon), lat = c(att1$point$lat, att2$point$lat))),
+             export_sp, layer = "controles", quiet = TRUE, layer_options = "SPATIAL_INDEX=NO")
+sf::st_write(en_l93(data.frame(code_placette = c("P35-01", "P35-02"),
+                               lon = c(4.9325, att2$point$lon), lat = c(47.2591, att2$point$lat))),
+             export_sp, layer = "placettes", quiet = TRUE, layer_options = "SPATIAL_INDEX=NO")
+# Géométrie NULL (pas un POINT EMPTY), comme l'écrit l'export (ADR 0003, point 7).
+sql_sur(export_sp, "UPDATE positions_controles SET geom = NULL WHERE controle_uuid = 'r2'")
+db_sp <- DBI::dbConnect(RSQLite::SQLite(), export_sp)
+verifier(DBI::dbGetQuery(db_sp, "SELECT geom IS NULL AS n FROM positions_controles WHERE controle_uuid = 'r2'")$n == 1L,
+         "fabrication : la ligne r2 a bien une géométrie NULL")
+DBI::dbDisconnect(db_sp)
+# Ce que l'ADR 0003 laisse « non vérifié » : sf lit une géométrie NULL de
+# GeoPackage sans erreur, comme une géométrie vide.
+lu_sf <- sf::st_read(export_sp, "positions_controles", quiet = TRUE)
+verifier(nrow(lu_sf) == 2L && sf::st_is_empty(sf::st_geometry(lu_sf))[lu_sf$controle_uuid == "r2"],
+         "sf lit la géométrie NULL de positions_controles comme vide, sans perdre la ligne")
+
+pts_sp <- lire_points_export(export_sp)
+verifier(nrow(pts_sp$positions) == 2L, "lire_points_export : la ligne sans position n'est pas perdue")
+r2 <- pts_sp$positions[pts_sp$positions$controle_uuid == "r2", ]
+verifier(nrow(r2) == 1L && is.na(r2$lon) && is.na(r2$lat),
+         "lire_points_export : géométrie NULL -> lon et lat NA, jamais (0, 0)")
+verifier(isTRUE(as.logical(r2$sans_position_mesuree)) && isTRUE(as.logical(r2$rattache_par_identite)) && is.na(r2$precision_m),
+         "lire_points_export : sans_position_mesuree, rattache_par_identite et precision_m lus")
+r1 <- pts_sp$positions[pts_sp$positions$controle_uuid == "r1", ]
+verifier(isFALSE(as.logical(r1$sans_position_mesuree)) && abs(r1$precision_m - 0.4) < 1e-9,
+         "lire_points_export : P35-01 avec position, sans_position_mesuree faux")
+c2 <- pts_sp$controles[pts_sp$controles$uuid == "r2", ]
+verifier(nrow(c2) == 1L && abs(c2$lon - 4.9330) < 1e-6 && abs(c2$lat - 47.2594) < 1e-6,
+         "lire_points_export : point du contrôle de P35-02 lu dans controles, en (lon, lat)")
+verifier(dans_france(c2$lon, c2$lat, attendu$france_metropolitaine),
+         "lire_points_export : le contrôle sans position tombe en France (pas en Somalie)")
+verifier(length(controle_f4(attendu, controles_ok, pts_sp)$fautes) == 0L,
+         "F4 de bout en bout sur l'export de fabrication : conforme")
 
 # controles_ecrits : lecture du registre (payload JSON) et du code de placette.
 reg <- data.frame(
@@ -396,7 +525,156 @@ apres <- lire_points_export(file.path(dossier_s, "travaux.gpkg"))
 verifier(abs(distance_wgs84_m(pts_export$positions$lon, pts_export$positions$lat,
                               apres$positions$lon, apres$positions$lat) - DEPLACEMENT_POINT_M) < 0.05,
          "F5 : le point sabotage est à 5 m de l'original, en Lambert-93 conservé")
-verifier(length(sab) == 5L && setequal(vapply(sab, function(s) s$controle, ""), c("F1", "F2", "F3", "F4")),
-         "F5 : un sabotage au moins par contrôle F1 à F4")
+verifier(length(sab) == 8L && setequal(vapply(sab, function(s) s$controle, ""), c("F1", "F2", "F3", "F4")),
+         "F5 : un sabotage au moins par contrôle F1 à F4, plus les deux de la ligne sans position (mission 087) et le besoin vidé (mission 091)")
+
+# --- F5, mission 087 : la ligne sans position de P35-02 (sabotages 6 et 7) ---
+# `controle_autre` est le contrôle de P35-02 (verifier.R), ici « r2 ».
+sab_sp <- liste_sabotages("r2", "r1")
+rejouer_f4 <- function(s) {
+  d <- file.path(travail, paste0("export-sp-sabotage-", gsub("[^a-z0-9]", "-", tolower(s$nom))))
+  dir.create(d, showWarnings = FALSE)
+  g <- file.path(d, "travaux.gpkg")
+  invisible(file.copy(export_sp, g, overwrite = TRUE))
+  s$modifier(g)
+  f <- controle_f4(attendu, controles_ok, lire_points_export(g))$fautes
+  list(fautes = f, vues = grep(s$motif, f, value = TRUE))
+}
+s6 <- sab_sp[[6L]]
+verifier(identical(s6$controle, "F4") && !isTRUE(s6$import) && grepl("retirée", s6$nom) && grepl("sans position", s6$nom),
+         "F5 : le 6e sabotage retire la ligne sans position de positions_controles (F4, sans import)")
+r6 <- rejouer_f4(s6)
+verifier(length(r6$vues) > 0L, paste("F5 : ligne sans position retirée -> F4 rouge pour son motif ; fautes :",
+                                     paste(r6$fautes, collapse = " | ")))
+s7 <- sab_sp[[7L]]
+verifier(identical(s7$controle, "F4") && !isTRUE(s7$import) && grepl("remplie", s7$nom),
+         "F5 : le 7e sabotage remplit la géométrie de la ligne sans position (F4, sans import)")
+r7 <- rejouer_f4(s7)
+verifier(length(r7$vues) > 0L, paste("F5 : géométrie remplie -> F4 rouge pour son motif ; fautes :",
+                                     paste(r7$fautes, collapse = " | ")))
+verifier(!grepl("P35-01", s6$motif) && !grepl("P35-01", s7$motif) && grepl("P35-02", s6$motif) && grepl("P35-02", s7$motif),
+         "F5 : les deux sabotages visent P35-02, pas P35-01")
+# Sans sabotage, la copie reste verte : les deux motifs ne sont pas vus.
+r0 <- rejouer_f4(list(nom = "intacte", modifier = function(g) invisible(g), motif = s6$motif))
+verifier(length(r0$fautes) == 0L, "F5 : l'export de fabrication non saboté reste vert")
+# Le sabotage du point (5e) ne touche pas la ligne sans position.
+d5 <- file.path(travail, "export-sp-sabotage-5"); dir.create(d5, showWarnings = FALSE)
+g5 <- file.path(d5, "travaux.gpkg"); invisible(file.copy(export_sp, g5, overwrite = TRUE))
+sab_sp[[5L]]$modifier(g5)
+apres5 <- lire_points_export(g5)
+verifier(nrow(apres5$positions) == 2L && all(is.na(apres5$positions$lon[apres5$positions$controle_uuid == "r2"])),
+         "F5 : déplacer le point de P35-01 laisse la ligne sans position sans géométrie")
+verifier(contient(controle_f4(attendu, controles_ok, apres5)$fautes, "P35-01, point de positions_controles"),
+         "F5 : le 5e sabotage rougit toujours F4 sur P35-01 quand une ligne sans position existe")
+
+# --- Mission 091 : besoin, concurrence, état de suivi, qualité du fix ---------
+# Écrit par le testeur de la 091 (fiche, section « Tests »), sans lire le code
+# de l'export, du journal ni du rendu. Sources : sommieR 0.31.1, R/registre6.R
+# l. 64 et 137-138, R/travaux_qfield.R l. 61-64 et 334-337 ; R/demo.R l. 373-391.
+verifier(identical(att1$besoin, "aucun") && identical(att2$besoin, "RG") &&
+           att1$concurrence %in% c("faible", "moyenne", "forte") &&
+           att2$concurrence %in% c("faible", "moyenne", "forte"),
+         "091 : le JSON attendu porte un besoin (« aucun », « RG ») et une concurrence du domaine de sommieR")
+verifier(identical(attendu$etats_suivi[["P35-02"]], "a_programmer") &&
+           identical(attendu$etats_suivi[["P35-01"]], "a_jour"),
+         "091 : besoin dit (RG) -> a_programmer ; « aucun » -> a_jour (R/travaux_qfield.R l. 334-337)")
+verifier(identical(attendu$etats_suivi_avant_import[["P35-02"]], "a_jour"),
+         "091 : P35-02 était « a_jour » avant l'import (démo 2025, besoin « aucun ») : son passage se mesure")
+f <- controle_f4(attendu, controles_ok, points_ok)
+verifier(length(f$fautes) == 0L &&
+           all(c("besoin", "concurrence", "etat_suivi", "positions_controles, precision_m",
+                 "positions_controles, source_gnss", "positions_controles, simulee") %in% f$lignes$champ),
+         paste("091 : F4 conforme compare besoin, concurrence, état de suivi et qualité du fix ; fautes :",
+               paste(f$fautes, collapse = " | ")))
+# Le besoin : absent du registre (le défaut de la 090), ou autre que dit.
+f <- controle_f4(attendu, change(controles_ok, 2L, "besoin", NA), points_ok)$fautes
+verifier(contient(f, "F4 : P35-02, besoin : attendu RG"), "091 : besoin de P35-02 absent du registre refusé")
+f <- controle_f4(attendu, change(controles_ok, 2L, "besoin", "aucun"), points_ok)$fautes
+verifier(contient(f, "F4 : P35-02, besoin : attendu RG"), "091 : besoin « aucun » au lieu de RG refusé")
+f <- controle_f4(attendu, change(controles_ok, 2L, "besoin", "rg"), points_ok)$fautes
+verifier(contient(f, "F4 : P35-02, besoin"), "091 : besoin « rg » (casse changée) refusé : tel quel, jamais normalisé")
+f <- controle_f4(attendu, change(controles_ok, 1L, "besoin", NA), points_ok)$fautes
+verifier(contient(f, "F4 : P35-01, besoin : attendu aucun"),
+         "091 : « aucun » non écrit (NA) refusé, même si sommieR le lirait aussi « a_jour »")
+f <- controle_f4(attendu, change(controles_ok, 1L, "concurrence", NA), points_ok)$fautes
+verifier(contient(f, "F4 : P35-01, concurrence : attendu moyenne"), "091 : concurrence absente refusée")
+f <- controle_f4(attendu, change(controles_ok, 2L, "concurrence", "moyenne"), points_ok)$fautes
+verifier(contient(f, "F4 : P35-02, concurrence : attendu forte"), "091 : concurrence autre que dite refusée")
+f <- controle_f4(attendu, controles_ok[, setdiff(names(controles_ok), c("besoin", "concurrence"))], points_ok)$fautes
+verifier(contient(f, "P35-01, besoin") && contient(f, "P35-02, concurrence"),
+         "091 : registre sans colonnes besoin ni concurrence : écart, jamais une égalité")
+# L'état de suivi : non mesuré, faux, en double, absent.
+f <- controle_f4_ci(attendu, controles_ok, points_ok)$fautes
+verifier(contient(f, "état de suivi non mesuré"), "091 : état de suivi non mesuré (NULL) = écart, pas un vert")
+e <- etats_ok; e$etat_suivi[e$code_placette == "P35-02"] <- "a_jour"
+f <- controle_f4(attendu, controles_ok, points_ok, e)$fautes
+verifier(contient(f, "F4 : état de suivi de P35-02 après l'import : attendu a_programmer, lu a_jour"),
+         "091 : P35-02 resté « a_jour » après l'import refusé (le défaut de la PR #155)")
+e <- etats_ok[etats_ok$code_placette != "P35-02", ]
+verifier(contient(controle_f4(attendu, controles_ok, points_ok, e)$fautes, "P35-02 après l'import : attendu a_programmer, lu 0 ligne"),
+         "091 : placette absente de la tournée régénérée refusée")
+e <- rbind(etats_ok, etats_ok[etats_ok$code_placette == "P35-01", ])
+verifier(contient(controle_f4(attendu, controles_ok, points_ok, e)$fautes, "P35-01 après l'import : attendu a_jour, lu 2 ligne"),
+         "091 : placette en double refusée")
+att_sans <- attendu; att_sans$etats_suivi <- NULL
+verifier(length(controle_f4_ci(att_sans, controles_ok, points_ok)$fautes) == 0L,
+         "091 : un JSON sans etats_suivi ne demande pas de mesure (compatibilité des bancs)")
+# La qualité du fix de la position mesurée (P35-01).
+p <- points_ok; p$positions$precision_m[1L] <- NA
+verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-01, positions_controles : precision_m vaut vide, 0.4 attendu"),
+         "091 : precision_m vide sur une position mesurée refusé")
+p <- points_ok; p$positions$precision_m[1L] <- 0
+verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-01, positions_controles : precision_m vaut 0"),
+         "091 : precision_m à 0 refusé (jamais 0 : Darwin Core)")
+p <- points_ok; p$positions$source_gnss[1L] <- NA
+verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-01, positions_controles : source_gnss vaut vide"),
+         "091 : source_gnss vide sur une position mesurée refusé")
+p <- points_ok; p$positions$simulee[1L] <- FALSE
+verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-01, positions_controles : simulee vaut FALSE, TRUE attendu"),
+         "091 : simulee écrit à faux alors que la position est simulée refusé (le défaut de la PR #155)")
+p <- points_ok; p$positions$simulee[1L] <- NA
+verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-01, positions_controles : simulee vaut vide"),
+         "091 : simulee vide sur une position mesurée refusé")
+# Sans position mesurée (P35-02) : source_gnss et simulee vides (spec § 5).
+p <- points_ok; p$positions$source_gnss[2L] <- "telephone"
+verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-02, positions_controles : source_gnss vaut telephone, vide attendu"),
+         "091 : source_gnss rempli sur une ligne sans position refusé")
+p <- points_ok; p$positions$simulee[2L] <- FALSE
+verifier(contient(controle_f4(attendu, controles_ok, p)$fautes, "P35-02, positions_controles : simulee vaut FALSE, vide attendu"),
+         "091 : simulee écrit à faux sur une ligne sans position refusé (rien n'est su)")
+# controles_ecrits lit besoin et concurrence dans le payload.
+reg91 <- data.frame(id = c("e1", "e2"), payload = c(
+  '{"type_entree":"controle","placette_id":"p-a","nb_total":5,"nb_vivants":3,"visite_le":"2026-10-20T09:30:00Z","besoin":"aucun","concurrence":"moyenne"}',
+  '{"type_entree":"controle","placette_id":"p-b","nb_total":2,"nb_vivants":2,"visite_le":"2026-10-20T10:15:00Z"}'),
+  stringsAsFactors = FALSE)
+ce91 <- controles_ecrits(reg91, c("e1", "e2"), codes_reg)
+verifier(identical(ce91$besoin, c("aucun", NA)) && identical(ce91$concurrence, c("moyenne", NA)),
+         "091 : controles_ecrits lit besoin et concurrence ; absents = NA, jamais devinés")
+# lire_points_export lit source_gnss et simulee ; P35-02 sans position : NA.
+r1 <- pts_sp$positions[pts_sp$positions$controle_uuid == "r1", ]
+r2 <- pts_sp$positions[pts_sp$positions$controle_uuid == "r2", ]
+verifier(identical(r1$source_gnss, att1$point$source_gnss) && isTRUE(r1$simulee) && is.na(r2$source_gnss) && is.na(r2$simulee),
+         "091 : lire_points_export lit source_gnss et simulee (vides sans position mesurée)")
+# F5 : le 8e sabotage vide le besoin de P35-02 et passe par l'import.
+s8 <- liste_sabotages("r2", "r1")[[8L]]
+verifier(identical(s8$controle, "F4") && isTRUE(s8$import) && grepl("besoin", s8$nom) &&
+           grepl("P35-02", s8$motif) && grepl("a_programmer", s8$motif),
+         "091 : le 8e sabotage vide le besoin de P35-02, importe, et vise l'état de suivi")
+d8 <- file.path(travail, "export-sp-sabotage-8"); dir.create(d8, showWarnings = FALSE)
+g8 <- file.path(d8, "travaux.gpkg"); invisible(file.copy(export_sp, g8, overwrite = TRUE))
+db8 <- DBI::dbConnect(RSQLite::SQLite(), g8)
+invisible(DBI::dbExecute(db8, "ALTER TABLE controles ADD COLUMN besoin TEXT"))
+invisible(DBI::dbExecute(db8, "UPDATE controles SET besoin = 'RG' WHERE uuid = 'r2'"))
+DBI::dbDisconnect(db8)
+s8$modifier(g8)
+db8 <- DBI::dbConnect(RSQLite::SQLite(), g8)
+verifier(is.na(DBI::dbGetQuery(db8, "SELECT besoin FROM controles WHERE uuid = 'r2'")$besoin) &&
+           identical(DBI::dbGetQuery(db8, "SELECT count(*) AS n FROM controles")$n, 2L),
+         "091 : le 8e sabotage vide le besoin de r2 seulement, sans retirer de ligne")
+DBI::dbDisconnect(db8)
+# Ce que sommieR ferait de ce sabotage : P35-02 « a_jour » ; F4 le voit pour le motif visé.
+e <- etats_ok; e$etat_suivi[e$code_placette == "P35-02"] <- "a_jour"
+verifier(length(grep(s8$motif, controle_f4(attendu, controles_ok, points_ok, e)$fautes)) > 0L,
+         "091 : le motif du 8e sabotage est celui que F4 écrit quand P35-02 reste « a_jour »")
 
 cat(n_tests, "vérifications réussies.\n")

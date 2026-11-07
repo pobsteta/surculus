@@ -66,3 +66,22 @@ tasks.register<JavaExec>("exporterScenario") {
     }
     args(chemin("tournee", null).get(), chemin("scenario", "fixtures/export/scenario-couchey.json").get(), chemin("sortie", null).get())
 }
+
+// Outil de la CI (mission 090) : le chemin du rendu de l'application (session de contrôle → journal → RenduTournee →
+// zip), joué sur la tournée de départ de sommieR. Usage, depuis la racine du dépôt :
+//   ./gradlew :gpkg:rendreScenario -Ptournee=<dossier de travaux.gpkg> -Psortie=<dossier>
+//   [-Pscenario=fixtures/export/scenario-couchey.json]
+tasks.register<JavaExec>("rendreScenario") {
+    group = "verification"
+    description = "Joue un scénario par la session de contrôle et rend la tournée comme l'application (zip et dossier)."
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("io.github.pobsteta.surculus.gpkg.outil.RendreScenario")
+    val racine = rootProject.layout.projectDirectory
+    workingDir = racine.asFile
+    val chemin = { nom: String, defaut: String? ->
+        providers.gradleProperty(nom).orElse(providers.provider { defaut ?: throw GradleException("Option -P$nom=<chemin> manquante") })
+            .map { racine.file(it).asFile.path }
+    }
+    args(chemin("tournee", null).get(), chemin("scenario", "fixtures/export/scenario-couchey.json").get(), chemin("sortie", null).get())
+}

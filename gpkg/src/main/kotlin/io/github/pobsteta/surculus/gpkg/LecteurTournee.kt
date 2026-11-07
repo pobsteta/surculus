@@ -53,11 +53,17 @@ internal fun Ligne.blob(nom: String): ByteArray? = this[nom] as? ByteArray
  * 2154 et 9794 mêlés (ADR 0003, ADR 0007).
  */
 object LecteurTournee {
+    /**
+     * Ce que le forestier lit : « ce n'est pas une tournée de sommieR : l'exporter de nouveau depuis sommieR », jamais le
+     * détail technique. Le texte de SQLite (anglais) et les noms de tables restent dans la cause de l'exception, pour le journal.
+     */
+    private fun pasUneTournee() = RefusGpkg.PasUnGeoPackage(detail = "l'exporter de nouveau depuis sommieR", constat = "ce n'est pas une tournée de sommieR")
+
     fun lire(chemin: Path): Tournee {
         val cnx = try {
             Sqlite.ouvrir(chemin, lectureSeule = true)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "ouverture impossible"))
+            throw GpkgRefuse(pasUneTournee(), e)
         }
         cnx.use { return lire(it) }
     }
@@ -66,7 +72,7 @@ object LecteurTournee {
         try {
             return lireSansTraduction(cnx)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "lecture impossible"))
+            throw GpkgRefuse(pasUneTournee(), e)
         }
     }
 
@@ -83,7 +89,7 @@ object LecteurTournee {
         val cnx = try {
             Sqlite.ouvrir(chemin, lectureSeule = true)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "ouverture impossible"))
+            throw GpkgRefuse(pasUneTournee(), e)
         }
         cnx.use { return lireCartographie(it) }
     }
@@ -98,17 +104,23 @@ object LecteurTournee {
             }
             return LectureCartographie.lire(cnx, geometries)
         } catch (e: SQLException) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage(e.message ?: "lecture impossible"))
+            throw GpkgRefuse(pasUneTournee(), e)
         }
     }
 
     private fun lireSansTraduction(cnx: Connection): Tournee {
         val applicationId = cnx.createStatement().use { st -> st.executeQuery("PRAGMA application_id").use { it.next(); it.getInt(1) } }
         if (applicationId != APPLICATION_ID_GPKG && !cnx.existeTable("gpkg_contents")) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage("ni identifiant d'application GPKG, ni table gpkg_contents"))
+            throw GpkgRefuse(
+                pasUneTournee(),
+                IllegalStateException("ni identifiant d'application GPKG, ni table gpkg_contents"),
+            )
         }
         if (!cnx.existeTable("gpkg_contents") || !cnx.existeTable("gpkg_spatial_ref_sys")) {
-            throw GpkgRefuse(RefusGpkg.PasUnGeoPackage("tables gpkg_contents ou gpkg_spatial_ref_sys absentes"))
+            throw GpkgRefuse(
+                pasUneTournee(),
+                IllegalStateException("tables gpkg_contents ou gpkg_spatial_ref_sys absentes"),
+            )
         }
         val geometries: Map<String, Pair<String, String>> = if (cnx.existeTable("gpkg_geometry_columns")) {
             cnx.lignes("SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns").associate {
@@ -213,9 +225,19 @@ object LecteurTournee {
             emptyList()
         }
         val codesTravaux = if (cnx.existeTable("codes")) {
-            cnx.lignes("SELECT code FROM \"codes\"").mapNotNull { it.texte("code") }.toSet()
+            cnx.lignes("SELECT code FROM \"codes\" ORDER BY rowid").mapNotNull { it.texte("code") }.toSet()
         } else {
             emptySet()
+        }
+        // Libellés des codes (mission 091 : l'écran « Terminer » montre le début du libellé sous le code). Une couche sans
+        // colonne `libelle` donne des libellés vides, jamais inventés.
+        val libellesCodes = if (cnx.existeTable("codes")) {
+            runCatching {
+                cnx.lignes("SELECT code, libelle FROM \"codes\" ORDER BY rowid")
+                    .mapNotNull { l -> l.texte("code")?.let { it to l.texte("libelle").orEmpty() } }.toMap()
+            }.getOrElse { codesTravaux.associateWith { "" } }
+        } else {
+            emptyMap()
         }
         // Nom de la forêt (mission 061) : `foret.nom`, que sommieR écrit (`R/travaux_qfield.R` l. 96-98). Sert de titre quand `projet.foret` est vide.
         val nomForet = if (cnx.existeTable("foret")) {
@@ -223,6 +245,6 @@ object LecteurTournee {
         } else {
             null
         }
-        return Tournee(epsg, srsId, couches, placettes, controles, empriseForet, projet, plants, etats, codesTravaux, nomForet)
+        return Tournee(epsg, srsId, couches, placettes, controles, empriseForet, projet, plants, etats, codesTravaux, nomForet, libellesCodes)
     }
 }

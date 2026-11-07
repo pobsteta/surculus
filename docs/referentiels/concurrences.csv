@@ -1,0 +1,43 @@
+# Niveaux de concurrence d'une plantation, dits à la fin d'un contrôle
+# Propriétaire : Pascal Obstétar
+# Date de consultation : 2026-11-04
+# Constitué par : agent `acquereur` (mission 092)
+# Décision éclairée : le niveau de concurrence (code) que l'agent de terrain dit à la fin d'un contrôle, écrit dans la colonne `concurrence` de la couche `controles` (docs/spec.md l. 472) et validé à l'import par sommieR ; la 091 reprend ce fichier pour son test d'égalité.
+# Format : CSV UTF-8, virgule, champs entre guillemets, lignes commençant par # = commentaires.
+#
+# SOURCE DES CODES (référence unique : le contrat de sommieR, pas Surculus)
+#  SOMMIER  sommieR, tag v0.31.1, fichier R/registre6.R, ligne 64 : `SOMMIER_CONCURRENCES <- c("faible", "moyenne", "forte")` (roxygen : « Niveaux de concurrence d'une plantation »). Lu le 2026-11-04 (extrait des lignes 55-70 du tag). L'import valide ces trois valeurs (`valider_choix`, d'après la fiche de mission 092 ; la fonction n'a pas été relue ici). Les codes ci-dessous sont recopiés à l'identique : minuscules, sans accent, « moyenne » au féminin.
+#           Le dépôt sommieR tient la nomenclature : ce fichier ne la crée pas, il la reflète. Si sommieR la change, ce fichier est faux (voir la 091).
+#           Ce que SOMMIER ne dit pas : ni définition des niveaux, ni critère de mesure, ni ordre autre que celui du vecteur (faible, moyenne, forte).
+#
+# SOURCES PUBLIEES CONSULTEES (aucune ne définit trois niveaux)
+#  GUIDE14  « Réussir la plantation forestière », guide technique, 3e éd., décembre 2014, ministère de l'agriculture, https://www.oise.gouv.fr/contenu/telechargement/67699/411339/file/GUIDE_reussir%20plantation%20forestiere_2015.pdf ; numéros imprimés (PDF = imprimé). Lu en images, p. 52-55 (chapitre 7, réception des entretiens).
+#  DSF24    DSF, Bilan de la santé des forêts en 2024 (réussite des plantations), https://agriculture.gouv.fr/telecharger/148150 ; page 16 (fiche d'observation « Suivi plantation, notation de printemps / notation d'automne », mai 2016, lue en image) et p. 13 (voir etats-plants.yaml).
+#  RENFOR   M. Puyal (INRAE), H. Chevalier, J.-P. Renaud, J. Pitaud (ONF), 2021, « Protocoles de constat de reprise des plantations », https://renfor.hub.inrae.fr/ressources/articles-techniques/protocole-constat-de-reprise (création 2021-03-30, modification 2023-09-14). Lu par résumé (outil de lecture), non mot à mot.
+#  CONQUETH CNPF, J. Rosa, « Protocole expérimental Plantation », mars 2021, https://www.cnpf.fr/sites/socle/files/cnpf-old/protocole_plantation_conqueth.pdf ; table des matières p. 2 et p. 3-4 lues (13 pages au total ; p. 5-13 NON lues).
+#  MRNF-QC  Ministère des Ressources naturelles et des Forêts du Québec, « Cahier de références techniques en forêt privée, mise à jour mars 2024 », 59 p., https://www.foretprivee.ca/wp-content/uploads/2024/04/Cahier_references_tech_Mars_2024.pdf ; p. 11-12 (numéros imprimés ; PDF = imprimé + 6). Convention étrangère (Québec), citée pour comparaison seulement.
+#
+# COMPARAISON AVEC LES CONVENTIONS PUBLIEES
+#  Constat : aucune des cinq sources lues ne publie une échelle faible / moyenne / forte de la concurrence au contrôle d'une plantation. Les trois niveaux de sommieR n'ont donc, dans ce qui a été lu, ni définition ni seuil publiés. Ils ne sont pas contredits non plus.
+#  1. GUIDE14 p. 52 (7.1.1, dégagement manuel) : le critère de réception est binaire, sur le plant : vérifier « que l'ensemble des plants a bien été dégagé » et « qu'il ne subsiste aucune touffe de végétation concurrente au pied des plants ». L'objectif du dégagement (p. 52) : « limiter la concurrence de la végétation adventice spontanée » (eau, éléments minéraux, lumière). Pas de niveaux.
+#  2. DSF24 p. 16 : la fiche d'observation ne note aucune concurrence ; ses cinq lignes « autres problèmes » sont défoliateurs, rongeurs, gibier, autre insecte ou champignon déterminé, cause inexpliquée / abiotique / anthropique. La concurrence n'apparaît qu'en détail d'une cause de MORTALITE abiotique : « concurrence herbacée (3 %) » des 6 987 plants morts abiotiques (p. 13, relevé dans etats-plants.yaml, non relu ici). C'est une cause de mort d'un plant, pas un niveau de concurrence d'une plantation.
+#  3. RENFOR : d'après le résumé, la page ne traite pas de la concurrence comme objet de notation ; la seule mention est une explication possible de l'hétérogénéité spatiale de la mortalité (« la végétation concurrente »). Les mesures de recouvrement trouvées par la recherche dans d'autres documents RENFOR/INRAE (essais ALTER, Doncquenay) sont des recouvrements en % de la végétation, sans classes ni seuils : NON lus en détail, non cités comme convention.
+#  4. CONQUETH : table des matières et p. 3-4 sans notation de concurrence ; une « fiche de relevé floristique » (annexe 2, p. 11) existe : NON LUE. Protocole d'expérimentation (chêne pubescent), pas de contrôle de plantation.
+#  5. MRNF-QC p. 11-12 : critère de conformité du dégagement (p. 12) : « Il ne doit pas y avoir d'espèces concurrentes à maîtriser d'une hauteur supérieure à la mi-hauteur de la tige évaluée, et ce, dans un rayon d'un mètre autour de l'axe central de cette dernière. » Critère oui / non, mesuré sur la tige. Le résumé d'une recherche web (non vérifié dans le document) évoquait aussi des classes de recouvrement de 0-25 %, 26-50 %, plus de 50 % : NON retrouvé aux p. 11-12, donc NON cité ; autre page (annexe ?) à lire si Pascal veut cette piste.
+#
+# ECARTS ET QUESTIONS POUR PASCAL (à arbitrer ; l'acquéreur ne tranche pas)
+#  E1. Les trois niveaux de sommieR n'ont aucune définition publiée. Qui définit « faible », « moyenne », « forte » sur le terrain (recouvrement en %, hauteur de la végétation par rapport au plant, nombre de plants dégagés) : sommieR, ou Surculus par un brief vers sommieR ? Tant que ce n'est pas dit, deux contrôleurs peuvent noter différemment la même placette (justesse des données).
+#  E2. Ce que les conventions lues mesurent est BINAIRE et porte sur le plant (aucune touffe au pied : GUIDE14 ; pas d'espèce au-dessus de la mi-hauteur dans 1 m : MRNF-QC). Ce que sommieR attend est un NIVEAU à trois valeurs sur la placette. Les deux ne se déduisent pas l'un de l'autre sans règle.
+#  E3. Le champ ne dit pas la nature de la concurrence (herbacée, ligneuse, fougère aigle...) : GUIDE14 et DSF24 la nomment « végétation adventice » / « concurrence herbacée ». Un niveau unique mélange-t-il les deux ?
+#  E4. Les libellés d'écran ci-dessous (« Concurrence faible », etc.) ne viennent d'aucune source : ils reprennent le mot du code. Proposition de l'acquéreur, à valider ou à remplacer.
+#
+# DECISIONS DE PASCAL (2026-11-04)
+#  E1 à E3 : la définition des niveaux relève de sommieR, qui tient la nomenclature : brief vers sommieR
+#            (pilotage/briefs/vers-sommier/2026-11-04-niveaux-de-concurrence.md). En attendant, Surculus garde les trois
+#            codes sans définition à l'écran.
+#  E4 : libellés d'écran « Faible », « Moyenne », « Forte », sous un titre « Concurrence ».
+#
+code,libelle,ordre,definition,source_document,page,remarque
+"faible","Faible","1","non définie par les sources lues","SOMMIER","R/registre6.R l. 64 (tag v0.31.1)","Code de sommieR, exact. Libellé d'écran : décision de Pascal du 2026-11-04 (écart E4). Ordre = rang dans le vecteur c(faible, moyenne, forte). Aucun critère publié (écarts E1 et E2)."
+"moyenne","Moyenne","2","non définie par les sources lues","SOMMIER","R/registre6.R l. 64 (tag v0.31.1)","Code de sommieR, exact ; « moyenne » au féminin. Aucun critère publié (écarts E1 et E2)."
+"forte","Forte","3","non définie par les sources lues","SOMMIER","R/registre6.R l. 64 (tag v0.31.1)","Code de sommieR, exact. Aucun critère publié (écarts E1 et E2). La seule référence à une concurrence « à maîtriser » est binaire (GUIDE14 p. 52 ; MRNF-QC p. 12)."

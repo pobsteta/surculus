@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mission 090 : seul le dossier des .zip rendus est partageable (FileProvider), jamais les tournées ni le journal. -->
+<paths>
+    <files-path name="rendus" path="rendus/" />
+</paths>

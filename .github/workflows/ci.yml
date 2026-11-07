@@ -38,6 +38,14 @@ jobs:
         # La commande est lue dans le fichier, seule source (ADR 0004).
         run: sh -c "$(cat .claude/test-command) --no-daemon"
 
+      - name: Publier la sortie du test de rendu (mission 080)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rendu-des-ecrans
+          path: app/build/reports/rendu/
+          if-no-files-found: warn
+
       - name: Contrôle des pages de 16 Ko (zipalign -P 16 et ELF)
         run: bash scripts/verifier-16ko.sh app/build/outputs/apk/debug/app-debug.apk
 

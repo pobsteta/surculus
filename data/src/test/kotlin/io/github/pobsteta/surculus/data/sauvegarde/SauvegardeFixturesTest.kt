@@ -207,15 +207,15 @@ class SauvegardeFixturesTest {
     }
 
     @Test fun `SV-24 uuid en double - identique ignore, different refuse et signale`() {
-        val ident = LectureSursync.lire(OutilsSursync.fichierDe(journalDe("journal/projection.json#JR-12")))
+        val ident = LectureSursync.lire(OutilsSursync.fichierDe(journalDe("journal/projection.json#JR-12")), versionCourante = 2)
         assertTrue(ident.accepte); assertEquals(1, ident.lignesIgnorees); assertTrue(ident.signalements.isEmpty())
         assertEquals(1, ident.lignes.size)
 
-        val diff = LectureSursync.lire(OutilsSursync.fichierDe(journalDe("journal/projection.json#JR-13")))
+        val diff = LectureSursync.lire(OutilsSursync.fichierDe(journalDe("journal/projection.json#JR-13")), versionCourante = 2)
         assertTrue(diff.accepte); assertEquals(listOf("U1"), diff.uuidRefuses)
         assertEquals(setOf(Signalement.UUID_CONTENU_DIFFERENT), diff.signalements); assertEquals(0, diff.lignes.size)
 
-        val entre = LectureSursync.lire(OutilsSursync.fichierDe(journalDe("journal/projection.json#JR-14")))
+        val entre = LectureSursync.lire(OutilsSursync.fichierDe(journalDe("journal/projection.json#JR-14")), versionCourante = 2)
         assertEquals(listOf("U1"), entre.uuidRefuses)
         assertEquals(setOf(Signalement.UUID_CONTENU_DIFFERENT), entre.signalements)
         assertEquals(listOf("U2"), entre.lignes.map { it.uuid })
@@ -236,7 +236,7 @@ class SauvegardeFixturesTest {
     @Test fun `pied absent - fichier_tronque, lignes lues`() {
         val l = journalDe("journal/projection.json#JR-02")
         val sansPied = fichier(listOf(OutilsSursync.entete(1, 2).toString()) + l.map { EcritureSursync.versJson(it).toString() }, pied = false)
-        val r = LectureSursync.lire(sansPied)
+        val r = LectureSursync.lire(sansPied, versionCourante = 2)
         assertTrue(r.accepte); assertEquals(setOf(Signalement.FICHIER_TRONQUE), r.signalements); assertEquals(l, r.lignes)
     }
 
@@ -255,7 +255,7 @@ class SauvegardeFixturesTest {
         // Le fichier a toutes les lignes locales sauf U2, et une ligne de plus.
         val enPlus = locales[0].copy(uuid = "U9", sequence = 9, saisiLeUtcMs = locales[0].saisiLeUtcMs + 1000)
         val fichier = OutilsSursync.fichierDe(listOf(locales[0], enPlus))
-        val cr = Restauration.restaurer(fichier, local)
+        val cr = Restauration.restaurer(fichier, local, versionCourante = 2)
         assertTrue(cr.accepte)
         assertEquals(1, cr.ajoutees)
         assertEquals(1, cr.dejaPresentes)

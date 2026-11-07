@@ -1,5 +1,10 @@
 # Format de la `valeur` des lignes du journal, version 1
 
+> **Version suivante : [`journal-valeurs-v2.md`](journal-valeurs-v2.md)** (décision de Pascal du 2026-11-02, mission
+> 085, codée par la 087). La v2 admet un contrôle **sans position mesurée** (`sans_position_mesuree` vrai). Ce
+> document reste la définition de la v1, inchangée : toute valeur `"v":1` déjà écrite se lit avec lui, et Surculus la
+> relit toujours (principe N-1). Ce que Surculus écrit à partir de la 087, et ce qui change : voir la v2.
+
 Ce que porte la colonne `valeur` des lignes que la session de contrôle écrit (mission 012-A, spec § 5, « Journal des
 saisies »). Format ouvert : du JSON, lisible sans Surculus (test du successeur). C'est la note que la **mission
 d'export** relit pour transformer le journal en couches `controles`, `plants` et `etats_plants` : elle n'a pas à
@@ -105,6 +110,6 @@ La session annule la dernière ligne annulable : un pointage, un état, ou la fi
 
 Un refus de la session porte un code stable (`CodesRefus`, `core/.../core/placette/Verdict.kt`), celui de la spec § 6 et
 de l'export : `hors_referentiel` (état, cause ou essence hors des référentiels), `uuid_en_double`, `hors_france`,
-`point_hors_foret`, et sinon le motif du domaine (`hors_15_m`, `code_inconnu`, `cause_sur_etat`, `hauteur_sur_absent`,
+`point_hors_foret`, et sinon le motif du domaine (`hors_15_m`, `code_inconnu`, `code_requis` (v2, mission 087), `cause_sur_etat`, `hauteur_sur_absent`,
 `plant_remplace_ni_mort_ni_absent`, `plant_deja_remplace`, `date_hors_validite`...). « vide » n'a pas de code : la
 session répond « pas encore disponible » et ne trace rien.

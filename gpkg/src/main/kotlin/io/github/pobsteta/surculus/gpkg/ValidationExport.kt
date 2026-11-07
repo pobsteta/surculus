@@ -19,6 +19,8 @@ import io.github.pobsteta.surculus.core.placette.Totaux
 import io.github.pobsteta.surculus.core.placette.UuidPlacette
 import io.github.pobsteta.surculus.core.placette.UuidPlant
 import io.github.pobsteta.surculus.core.placette.Verdict
+import io.github.pobsteta.surculus.core.session.Besoins
+import io.github.pobsteta.surculus.core.session.Concurrences
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -46,6 +48,20 @@ internal object ValidationExport {
 
     private fun fini(couche: String, champ: String, v: Double?) {
         if (v != null && !v.isFinite()) throw GpkgRefuse(RefusGpkg.ChampInvalide(couche, champ, "valeur non finie ($v)"))
+    }
+
+    /**
+     * Une ligne de `positions_controles` ne ment pas (ADR 0003, amendement du 2026-11-02, point 7 ; spec § 5) : sans
+     * position mesurée, le drapeau est vrai, la précision absente et le contrôle rattaché par identité ; avec une
+     * position, le drapeau est faux.
+     */
+    private fun positionCoherente(id: String, m: PositionMesuree) {
+        fun refus(champ: String, detail: String): Nothing = throw GpkgRefuse(RefusGpkg.ChampInvalide("positions_controles", champ, "contrôle $id : $detail"))
+        if (m.position == null && !m.sansPositionMesuree) refus("geom", "position absente sans « sans position mesurée »")
+        if (m.position != null && m.sansPositionMesuree) refus("sans_position_mesuree", "« sans position mesurée » avec une position")
+        if (m.sansPositionMesuree && m.precisionM != null) refus("precision_m", "précision donnée sans position mesurée")
+        if (m.precisionM != null && m.precisionM <= 0.0) refus("precision_m", "précision nulle ou négative (jamais 0 : ADR 0003)")
+        if (m.sansPositionMesuree && !m.rattacheParIdentite) refus("rattache_par_identite", "sans position mesurée, le contrôle est rattaché par identité")
     }
 
     /** Résultat : les plants déjà dans le fichier, pour ne pas les réécrire. */
@@ -116,8 +132,12 @@ internal object ValidationExport {
             val attendu = JourCivil.de(c.visiteLe)
             if (c.jour != attendu) throw GpkgRefuse(RefusGpkg.JourIncoherent(id, c.jour, attendu))
             point(tournee, "controles", id, c.position)
-            c.positionMesuree?.let { point(tournee, "positions_controles", id, it.position) }
-            fini("positions_controles", "precision_m", c.positionMesuree?.precisionM)
+            val m = c.positionMesuree ?: throw GpkgRefuse(RefusGpkg.ChampInvalide("positions_controles", "controle_uuid", "le contrôle $id n'a pas de ligne de position (une par contrôle)"))
+            m.position?.let { point(tournee, "positions_controles", id, it) }
+            fini("positions_controles", "precision_m", m.precisionM)
+            positionCoherente(id, m)
+            c.besoin?.let { if (!Besoins.permis(it, tournee.codesTravaux)) throw GpkgRefuse(RefusGpkg.BesoinHorsReferentiel(id, it)) }
+            c.concurrence?.let { if (!Concurrences.permise(it)) throw GpkgRefuse(RefusGpkg.ConcurrenceHorsReferentiel(id, it)) }
             verifierEtats(c, tousPlants, nouveaux.keys + existants.keys)
         }
         verifierUnParJour(tournee, controlesNouveaux.values, controlesExistants.keys)

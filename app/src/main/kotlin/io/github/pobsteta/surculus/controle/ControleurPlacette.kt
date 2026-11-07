@@ -10,10 +10,14 @@ package io.github.pobsteta.surculus.controle
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.core.placette.Observation
+import io.github.pobsteta.surculus.core.placette.Piquet
+import io.github.pobsteta.surculus.core.placette.RefusPlacette
 import io.github.pobsteta.surculus.core.placette.Totaux
 import io.github.pobsteta.surculus.core.placette.Verdict
 import io.github.pobsteta.surculus.core.session.ActionGeste
 import io.github.pobsteta.surculus.core.session.ApplicateurDictee
+import io.github.pobsteta.surculus.core.session.Besoins
+import io.github.pobsteta.surculus.core.session.Concurrences
 import io.github.pobsteta.surculus.core.session.EtatSession
 import io.github.pobsteta.surculus.core.session.Geste
 import io.github.pobsteta.surculus.core.session.GestesPlacette
@@ -22,6 +26,7 @@ import io.github.pobsteta.surculus.core.session.PlantSession
 import io.github.pobsteta.surculus.core.placette.UuidPlant
 import io.github.pobsteta.surculus.core.reperes.AzimutSaisi
 import io.github.pobsteta.surculus.core.geo.UniteAzimut
+import io.github.pobsteta.surculus.core.guidage.Libelles
 import io.github.pobsteta.surculus.core.session.SessionControle
 import io.github.pobsteta.surculus.core.session.SourceAzimut
 import io.github.pobsteta.surculus.core.session.SuiteSession
@@ -91,6 +96,27 @@ data class VuePointage(
     val aConfirmer: String?,
 )
 
+/** Un bouton de la grille du besoin : le code de la couche `codes`, en gros, et le début de son libellé. */
+data class ChoixBesoin(val code: String, val libelleCourt: String, val choisi: Boolean)
+
+/** Un bouton de la concurrence : faible, moyenne ou forte. */
+data class ChoixConcurrence(val niveau: String, val libelle: String, val choisi: Boolean)
+
+/**
+ * La vue « Terminer » du besoin et de la concurrence (mission 091, décision de Pascal du 2026-11-04, question 1) :
+ * obligatoires, **sans valeur par défaut** ; « Terminer » est grisé tant qu'il manque un choix, et [manque] dit lequel.
+ */
+data class VueBesoin(
+    val aucunChoisi: Boolean,
+    /** Les codes de la couche `codes` de la tournée, dans l'ordre de la couche, « aucun » à part (son grand bouton). */
+    val codes: List<ChoixBesoin>,
+    val concurrences: List<ChoixConcurrence>,
+    /** La phrase de ce qui manque ; `null` : tout est dit, « Terminer » est permis. */
+    val manque: String?,
+) {
+    val terminerPermis: Boolean get() = manque == null
+}
+
 /** Tout ce que l'écran lit : fonction pure de l'état de la session, de la vue et du message. */
 data class EcranControle(
     val codePlacette: String,
@@ -101,6 +127,7 @@ data class EcranControle(
     val message: MessageControle?,
     val pointage: VuePointage,
     val plan: PlanPlants,
+    val besoin: VueBesoin = TextesControle.besoin(null, null, emptyList()),
 )
 
 /**
@@ -113,6 +140,8 @@ class ControleurPlacette(
     private val rayonM: Double = RAYON_PAR_DEFAUT_M,
     /** Les essences de la tournée (codes déjà portés par ses plants) : seules offertes au regarni. */
     private val essencesTournee: List<String> = emptyList(),
+    /** Les codes de la couche `codes` de la tournée et leur libellé, dans l'ordre de la couche (mission 091). */
+    private val codesBesoin: List<Pair<String, String>> = emptyList(),
 ) {
     private var vue = VueControle.PLANT
     private var message: MessageControle? = null
@@ -132,7 +161,7 @@ class ControleurPlacette(
         val regarni = etat.regarniDe != null
         return TextesControle.ecran(
             etat, vue, message, enAttente?.alerte, PlanPlants.depuis(etat, session.rattachement.piquet.position, rayonM),
-            essenceRegarni.takeIf { regarni }, if (regarni) essencesTournee else emptyList(),
+            essenceRegarni.takeIf { regarni }, if (regarni) essencesTournee else emptyList(), codesBesoin,
         )
     }
 
@@ -319,8 +348,22 @@ class ControleurPlacette(
     fun terminer(): EcranControle {
         when (val suite = session.terminer()) {
             is SuiteSession.Fait -> { vue = VueControle.TERMINEE; message = null }
+            // Il manque le besoin, la concurrence ou l'état d'un plant : on reste sur la vue « Terminer », qui dit ce qui manque.
+            is SuiteSession.ChoixManquant -> { vue = VueControle.TERMINER; message = TextesControle.message(suite) }
             else -> { vue = VueControle.PLANT; message = TextesControle.message(suite) }
         }
+        return instantane()
+    }
+
+    /** Le besoin touché dans la vue « Terminer » : un code de la couche `codes`, ou « aucun » (mission 091). */
+    fun direBesoin(code: String): EcranControle {
+        message = TextesControle.message(session.direBesoin(code))
+        return instantane()
+    }
+
+    /** La concurrence touchée dans la vue « Terminer » : faible, moyenne ou forte. */
+    fun direConcurrence(niveau: String): EcranControle {
+        message = TextesControle.message(session.direConcurrence(niveau))
         return instantane()
     }
 
@@ -368,6 +411,41 @@ object TextesControle {
 
     fun compteur(dits: Int, total: Int) = "$dits sur $total"
 
+    // ------------------------------------------------------------ arrivée sans position (mission 087)
+
+    /** Fix hors de France à l'arrivée : la phrase qui dit quoi faire (ADR 0003, amendement du 2026-11-02, point 6). */
+    const val POSITION_ABERRANTE = "Position aberrante : couper puis rallumer la localisation."
+
+    /** Rien n'écoute : localisation coupée, permission refusée et aucun récepteur branché (décision de Pascal du 2026-11-03). */
+    const val ACTIVER_LOCALISATION = "Activez la localisation ou reconnectez le récepteur."
+
+    /** Sous le bouton « Ouvrir sans position » grisé, tant que le champ du code est vide (décision de Pascal du 2026-11-03). */
+    val CODE_REQUIS: String get() = RefusPlacette.CodeRequis.message
+
+    const val OUVRIR_SANS_POSITION = "Ouvrir sans position"
+    const val ANNULER = "Annuler"
+
+    /** L'attente sans fix : « Aucune position depuis 12 s sur 30. » */
+    fun attenteSansFix(secondes: Int, total: Int = ArriveeSansPosition.SECONDES_SANS_FIX): String =
+        "Aucune position depuis ${minOf(secondes, total)} s sur $total."
+
+    /** Proposé après l'attente : ce que fait le bouton, en clair. */
+    const val SANS_FIX_PROPOSE = "Aucune position reçue. Saisissez le code lu sur le piquet pour ouvrir le contrôle à la position de la placette."
+
+    /**
+     * La placette à confirmer avant d'ouvrir sans position (ADR 0003, amendement du 2026-11-02, point 4 ; **sans parcelle** :
+     * la tournée ne la porte pas, décision de Pascal du 2026-11-02 ; UG omise quand la tournée n'en donne pas, décision du
+     * 2026-11-03) : « P35-01 · UG 12 · 25 plants pointés : ouvrir sans position ? ».
+     */
+    fun confirmationSansPosition(piquet: Piquet, plantsPointes: Int): String {
+        val parties = listOfNotNull(
+            piquet.code,
+            piquet.ug?.takeIf { it.isNotBlank() }?.let { "UG $it" },
+            "$plantsPointes ${if (plantsPointes > 1) "plants pointés" else "plant pointé"}",
+        )
+        return parties.joinToString(" · ") + " : ouvrir sans position ?"
+    }
+
     /** Le bouton sous « Code lu sur le piquet » suit le champ (mission 068, décision de Pascal) : « Rattacher » dès qu'un code est lu (non vide après `trim`), « Recommencer » sinon. Même action dans les deux cas. */
     fun boutonArrivee(code: String): String = if (code.isBlank()) "Recommencer" else "Rattacher"
 
@@ -382,6 +460,7 @@ object TextesControle {
         SuiteSession.RienAAnnuler -> MessageControle("Rien à annuler.", erreur = false)
         SuiteSession.RienASaisir -> MessageControle("Aucun état dit aujourd'hui : rien à terminer.", erreur = true)
         SuiteSession.DejaTerminee -> MessageControle("Placette déjà terminée aujourd'hui.", erreur = true)
+        is SuiteSession.ChoixManquant -> MessageControle(manque(suite.besoin, suite.concurrence, suite.plantsSansEtat) ?: "", erreur = true)
         SuiteSession.DicteeDemandee -> MessageControle("La dictée n'est pas encore disponible.", erreur = false)
     }
 
@@ -389,19 +468,69 @@ object TextesControle {
 
     /** « Plant n° 7 pointé : 143°, 6,2 m » (virgule décimale française). */
     fun pointe(numero: Int?, azimutDeg: Double, distanceM: Double): String {
-        val d = String.format(Locale.FRANCE, "%.1f", distanceM)
-        return "Plant n° ${numero ?: "?"} pointé : ${azimutDeg.roundToInt()}°, $d m"
+        return "Plant n° ${numero ?: "?"} pointé : ${azimutDeg.roundToInt()}°, ${Libelles.decimetres(distanceM)} m"
     }
 
     fun ecran(
         e: EtatSession, vue: VueControle, message: MessageControle?, aConfirmer: String? = null, plan: PlanPlants,
-        essenceChoisie: String? = null, essencesTournee: List<String> = emptyList(),
+        essenceChoisie: String? = null, essencesTournee: List<String> = emptyList(), codesBesoin: List<Pair<String, String>> = emptyList(),
     ): EcranControle =
         EcranControle(
             e.codePlacette, e.jour.toString(), vue, plant(e), totaux(e.totaux), message,
             VuePointage(regarniDe = e.regarniDe?.let { r -> e.plants.firstOrNull { it.uuid == r }?.numero }, aConfirmer = aConfirmer, essenceChoisie = essenceChoisie, essencesTournee = essencesTournee),
-            plan,
+            plan, besoin(e.besoin, e.concurrence, codesBesoin, e.plantsSansEtat),
         )
+
+    /** Libellé d'écran d'un niveau : colonne `libelle` de `docs/referentiels/concurrences.csv` ([Concurrences.LIBELLES]). */
+    private fun libelleConcurrence(niveau: String) = Concurrences.LIBELLES.getValue(niveau)
+
+    /** Longueur du début de libellé sous le code, sur un bouton d'environ 80 dp. */
+    const val LIBELLE_COURT_MAX = 18
+
+    /**
+     * Le début du libellé d'un code : sommieR écrit « RG - Regarnis, compléments » (`R/travaux_qfield.R` l. 61) ; on
+     * retire « RG - » et on coupe au dernier mot entier qui tient en [LIBELLE_COURT_MAX] caractères.
+     */
+    fun libelleCourt(code: String, libelle: String): String {
+        val sans = libelle.removePrefix("$code - ").trim()
+        if (sans.length <= LIBELLE_COURT_MAX) return sans
+        val coupe = sans.take(LIBELLE_COURT_MAX).substringBeforeLast(' ').trimEnd(',', ' ', '(')
+        return (coupe.ifEmpty { sans.take(LIBELLE_COURT_MAX) }) + "…"
+    }
+
+    /**
+     * La phrase de ce qui manque pour terminer ; `null` si rien ne manque. Les plants sans état sont nommés par leur
+     * numéro (mission 095) : « Plant n° 2 sans état : dire son état ou « non observé ». »
+     */
+    /** Au-delà de ce nombre de plants sans état, la phrase donne le total et les premiers numéros seulement (décision de Pascal du 2026-11-06). */
+    const val NUMEROS_NOMMES_MAX = 3
+
+    private fun nommes(numeros: List<Int>) = if (numeros.size == 1) "${numeros[0]}" else "${numeros.dropLast(1).joinToString(", ")} et ${numeros.last()}"
+
+    fun manque(besoin: Boolean, concurrence: Boolean, plantsSansEtat: List<Int> = emptyList()): String? {
+        val choix = when {
+            besoin && concurrence -> "Choisir le besoin et la concurrence pour terminer."
+            besoin -> "Choisir le besoin pour terminer."
+            concurrence -> "Choisir la concurrence pour terminer."
+            else -> null
+        }
+        val plants = when {
+            plantsSansEtat.isEmpty() -> null
+            plantsSansEtat.size == 1 -> "Plant n° ${plantsSansEtat[0]} sans état : dire son état ou « non observé »."
+            plantsSansEtat.size <= NUMEROS_NOMMES_MAX ->
+                "Plants n° ${nommes(plantsSansEtat)} sans état : dire leur état ou « non observé »."
+            else ->
+                "${plantsSansEtat.size} plants sans état, dont n° ${nommes(plantsSansEtat.take(NUMEROS_NOMMES_MAX))} : dire leur état ou « non observé »."
+        }
+        return listOfNotNull(choix, plants).joinToString(" ").ifEmpty { null }
+    }
+
+    fun besoin(besoinDit: String?, concurrenceDite: String?, codes: List<Pair<String, String>>, plantsSansEtat: List<Int> = emptyList()): VueBesoin = VueBesoin(
+        aucunChoisi = besoinDit == Besoins.AUCUN,
+        codes = codes.filter { it.first != Besoins.AUCUN }.map { (code, libelle) -> ChoixBesoin(code, libelleCourt(code, libelle), code == besoinDit) },
+        concurrences = Concurrences.NIVEAUX.map { ChoixConcurrence(it, libelleConcurrence(it), it == concurrenceDite) },
+        manque = manque(besoinDit == null, concurrenceDite == null, plantsSansEtat),
+    )
 
     fun plant(e: EtatSession): VuePlant {
         val courant: PlantSession? = e.plants.firstOrNull { it.uuid == e.courant }
@@ -449,5 +578,6 @@ object TextesControle {
         }
         is Verdict.Refuse -> VueTotaux("", v.refus.message)
         is Verdict.AConfirmer -> VueTotaux("", v.alerte.message)
+        is Verdict.AChoisirUg -> VueTotaux("", "")
     }
 }

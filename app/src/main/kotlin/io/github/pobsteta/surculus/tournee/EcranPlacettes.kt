@@ -32,13 +32,30 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.window.DialogProperties
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_TOURNEE_ILLISIBLE
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -87,7 +104,7 @@ fun EcranPlacettes(id: String, onRetour: () -> Unit, onCarte: () -> Unit, onPlac
             val ordre = remember(t, controlees) { ordonnerPlacettes(t.placettes, controlees) }
             Column(Modifier.fillMaxSize()) {
                 BandeauPlacettes(titre, onRetour, onCarte)
-                Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
+                Column(Modifier.weight(1f).windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
                     Text(
                         pluralStringResource(R.plurals.placettes_compte, ordre.nombre, ordre.nombre, ordre.aFaire.size),
                         style = MaterialTheme.typography.bodyMedium,
@@ -98,12 +115,15 @@ fun EcranPlacettes(id: String, onRetour: () -> Unit, onCarte: () -> Unit, onPlac
                         Text(stringResource(R.string.placettes_vide), modifier = Modifier.padding(16.dp))
                     }
                     LazyColumn(
+                        modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(ordre.aFaire, key = { it.uuid }) { p -> LignePlacette(p, statutLigne(p, controlees)) { onPlacette(p.uuid) } }
                         items(ordre.autres, key = { it.uuid }) { p -> LignePlacette(p, statutLigne(p, controlees)) { onPlacette(p.uuid) } }
                     }
+                    // Mission 090 : « Rendre la tournée », en bas de l'écran des placettes (décision de Pascal du 2026-11-03).
+                    BasRendu(id, onPlacetteCode = { code -> t.placettes.firstOrNull { it.code == code }?.let { onPlacette(it.uuid) } })
                 }
             }
         }
@@ -160,6 +180,164 @@ private fun LignePlacette(p: PlacetteTournee, statut: StatutLigne, onClick: () -
         }
     }
 }
+
+/** Ce que montre le bas de l'écran pendant un rendu (mission 090). */
+private sealed interface EtapeEcranRendu {
+    data object Repos : EtapeEcranRendu
+    data object Decompte : EtapeEcranRendu
+    data class Confirmer(val controles: Int, val plants: Int) : EtapeEcranRendu
+    data class EnCours(val etape: EtapeRendu) : EtapeEcranRendu
+    data class Fini(val issue: IssueRendu) : EtapeEcranRendu
+    data object Rouvrir : EtapeEcranRendu
+}
+
+/**
+ * Mission 090 (décisions de Pascal du 2026-11-03) : un grand bouton « Rendre la tournée » (56 dp, gants), la confirmation
+ * avec le décompte, « Vérification… » puis « Écriture… », la fin (« Tournée rendue : 2 contrôles, 8 plants,
+ * Documents/Surculus/….zip » et « Partager »), ou la liste des fautes dont chaque ligne ouvre sa placette. Tournée rendue :
+ * lecture seule, « Rouvrir la tournée » avec son avertissement.
+ */
+@Composable
+private fun BasRendu(id: String, onPlacetteCode: (String) -> Unit) {
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var version by remember(id) { mutableIntStateOf(0) }
+    val rendue by produceState<Boolean?>(null, id, version) { value = withContext(Dispatchers.IO) { RenduApp.estRendue(ctx, id) } }
+    var etape by remember(id) { mutableStateOf<EtapeEcranRendu>(EtapeEcranRendu.Repos) }
+
+    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        when (rendue) {
+            null -> {}
+            true -> {
+                Text(stringResource(R.string.rendu_lecture_seule), style = MaterialTheme.typography.bodyMedium)
+                OutlinedButton(onClick = { etape = EtapeEcranRendu.Rouvrir }, modifier = Modifier.fillMaxWidth().heightIn(min = HAUTEUR_BOUTON)) {
+                    Text(stringResource(R.string.rendu_rouvrir), style = MaterialTheme.typography.titleMedium)
+                }
+            }
+            false -> Button(
+                onClick = {
+                    etape = EtapeEcranRendu.Decompte
+                    scope.launch {
+                        etape = withContext(Dispatchers.IO) {
+                            runCatching { RenduApp.decompter(ctx, id) }
+                                .map { EtapeEcranRendu.Confirmer(it.controles, it.plants) as EtapeEcranRendu }
+                                .getOrElse { e ->
+                                    JournalTechnique.avertir("Rendu", "décompte impossible", e)
+                                    EtapeEcranRendu.Fini(IssueRendu.Impossible(TEXTE_TOURNEE_ILLISIBLE))
+                                }
+                        }
+                    }
+                },
+                enabled = etape == EtapeEcranRendu.Repos,
+                modifier = Modifier.fillMaxWidth().heightIn(min = HAUTEUR_BOUTON),
+            ) { Text(stringResource(R.string.rendu_bouton), style = MaterialTheme.typography.titleMedium) }
+        }
+    }
+
+    when (val e = etape) {
+        EtapeEcranRendu.Repos, EtapeEcranRendu.Decompte -> {}
+        is EtapeEcranRendu.Confirmer -> AlertDialog(
+            onDismissRequest = { etape = EtapeEcranRendu.Repos },
+            title = { Text(stringResource(R.string.rendu_confirmer_titre)) },
+            text = { Text(stringResource(R.string.rendu_confirmer_texte, compte(e.controles, e.plants))) },
+            confirmButton = {
+                Button(onClick = {
+                    etape = EtapeEcranRendu.EnCours(EtapeRendu.VERIFICATION)
+                    scope.launch {
+                        val issue = withContext(Dispatchers.IO) {
+                            RenduApp.rendre(ctx, id) { s -> scope.launch { if (etape is EtapeEcranRendu.EnCours) etape = EtapeEcranRendu.EnCours(s) } }
+                        }
+                        etape = EtapeEcranRendu.Fini(issue)
+                        version++
+                    }
+                }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.rendu_confirmer)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { etape = EtapeEcranRendu.Repos }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.rendu_annuler)) }
+            },
+        )
+        is EtapeEcranRendu.EnCours -> AlertDialog(
+            onDismissRequest = {},
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
+            title = { Text(stringResource(R.string.rendu_bouton)) },
+            text = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    CircularProgressIndicator(Modifier.size(32.dp))
+                    Text(stringResource(if (e.etape == EtapeRendu.VERIFICATION) R.string.rendu_verification else R.string.rendu_ecriture))
+                }
+            },
+            confirmButton = {},
+        )
+        is EtapeEcranRendu.Fini -> FinRendu(e.issue, onFermer = { etape = EtapeEcranRendu.Repos }, onPlacetteCode = { etape = EtapeEcranRendu.Repos; onPlacetteCode(it) })
+        EtapeEcranRendu.Rouvrir -> AlertDialog(
+            onDismissRequest = { etape = EtapeEcranRendu.Repos },
+            title = { Text(stringResource(R.string.rendu_rouvrir_titre)) },
+            text = { Text(stringResource(R.string.rendu_rouvrir_texte)) },
+            confirmButton = {
+                Button(onClick = {
+                    scope.launch {
+                        withContext(Dispatchers.IO) { runCatching { RenduApp.rouvrir(ctx, id) }.onFailure { JournalTechnique.avertir("Rendu", "réouverture impossible", it) } }
+                        etape = EtapeEcranRendu.Repos
+                        version++
+                    }
+                }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.rendu_rouvrir_confirmer)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { etape = EtapeEcranRendu.Repos }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.rendu_annuler)) }
+            },
+        )
+    }
+}
+
+@Composable
+private fun compte(controles: Int, plants: Int): String =
+    pluralStringResource(R.plurals.rendu_controles, controles, controles) + ", " + pluralStringResource(R.plurals.rendu_plants, plants, plants)
+
+/** La fin d'un rendu : rendue (avec « Partager »), refusée (les fautes, chacune ouvre sa placette) ou impossible. */
+@Composable
+private fun FinRendu(issue: IssueRendu, onFermer: () -> Unit, onPlacetteCode: (String) -> Unit) {
+    val ctx = LocalContext.current
+    when (issue) {
+        is IssueRendu.Rendue -> AlertDialog(
+            onDismissRequest = onFermer,
+            title = { Text(stringResource(R.string.rendu_bouton)) },
+            text = { Text(stringResource(R.string.rendu_fait, compte(issue.controles, issue.plants), issue.chemin)) },
+            confirmButton = {
+                Button(onClick = { runCatching { RenduApp.partager(ctx, issue.prive) }.onFailure { JournalTechnique.avertir("Rendu", "partage impossible", it) } },
+                    modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.rendu_partager)) }
+            },
+            dismissButton = { TextButton(onClick = onFermer, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.rendu_fermer)) } },
+        )
+        is IssueRendu.Refusee -> AlertDialog(
+            onDismissRequest = onFermer,
+            title = { Text(stringResource(R.string.rendu_fautes_titre)) },
+            text = {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(issue.fautes) { f ->
+                        val code = f.placette
+                        Text(
+                            f.texte,
+                            color = couleurErreur(),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .then(if (code != null) Modifier.clickable { onPlacetteCode(code) } else Modifier)
+                                .padding(vertical = 4.dp),
+                        )
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = onFermer, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.rendu_fermer)) } },
+        )
+        is IssueRendu.Impossible -> AlertDialog(
+            onDismissRequest = onFermer,
+            title = { Text(stringResource(R.string.rendu_bouton)) },
+            text = { Text(stringResource(R.string.rendu_impossible, issue.texte), color = couleurErreur()) },
+            confirmButton = { TextButton(onClick = onFermer, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.rendu_fermer)) } },
+        )
+    }
+}
+
+/** Le bouton du rendu : 56 dp, au-dessus du minimum de 48 dp (gants ; décision de Pascal du 2026-11-03). */
+private val HAUTEUR_BOUTON = 56.dp
 
 private fun libelleEtat(e: EtatSuivi): Int = when (e) {
     EtatSuivi.JAMAIS -> R.string.placettes_etat_jamais

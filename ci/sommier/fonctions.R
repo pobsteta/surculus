@@ -246,6 +246,26 @@ etat_registre <- function(con, foret_id) {
 # Importe `dossier` dans une base clonée de la base modèle (qui porte la forêt
 # de la démo, dont la tournée a besoin pour rattacher ses placettes) ; rend le
 # bilan, trié, prêt à être écrit en JSON.
+# Mission 091 : l'état de suivi des placettes tel que le forestier le reçoit
+# dans sa tournée suivante. On passe par la voie publique de sommieR : la
+# tournée est régénérée (sommier_projet_qfield_travaux(), la même fonction que
+# l'étape « preparer ») et on lit la couche `placettes`, qui porte
+# `etat_suivi` et `dernier_besoin` (R/travaux_qfield.R l. 83-88, calculés par
+# placettes_du_projet(), l. 317-339). Rend data.frame(code_placette,
+# etat_suivi, dernier_besoin).
+etats_suivi_apres_import <- function(con, foret_id) {
+  dossier <- tempfile("tournee-apres-import-")
+  on.exit(unlink(dossier, recursive = TRUE), add = TRUE)
+  sommieR::sommier_projet_qfield_travaux(con, foret_id, dossier,
+                                         operateur = "ci-import-sommier")
+  p <- sf::st_drop_geometry(sf::st_read(file.path(dossier, "travaux.gpkg"),
+                                        "placettes", quiet = TRUE))
+  data.frame(code_placette = as.character(p$code_placette),
+             etat_suivi = as.character(p$etat_suivi),
+             dernier_besoin = as.character(p$dernier_besoin),
+             stringsAsFactors = FALSE)
+}
+
 importer_et_bilanter <- function(dossier, nom_base, base_modele, foret_id) {
   admin <- connecter("postgres")
   DBI::dbExecute(admin, sprintf('DROP DATABASE IF EXISTS "%s"', nom_base))
@@ -266,6 +286,8 @@ importer_et_bilanter <- function(dossier, nom_base, base_modele, foret_id) {
            WHERE foret_id = $1 ORDER BY code_placette", params = list(foret_id))
   list(
     codes_placettes = codes_placettes,
+    # Mission 091 : l'état de suivi de chaque placette après l'import (F4).
+    etats_suivi = etats_suivi_apres_import(con, foret_id),
     dossier_importe = basename(normalizePath(dossier)),
     travaux = bilan$travaux, placettes = bilan$placettes,
     controles = bilan$controles, deja_presents = bilan$deja_presents,

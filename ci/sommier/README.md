@@ -52,6 +52,10 @@ monte un service PostGIS éphémère et lance `verifier.R`.
      couche `positions_controles` du GeoPackage exporté (docs/spec.md l. 259), avec la
      tolérance de 0,5 m (décision de Pascal, mission 027, `tolerance_m` du JSON) ;
      pour P35-02, sans mesure, au piquet, lu dans la couche `placettes` de l'export.
+     **Depuis la mission 087** (décision de Pascal du 2026-11-02), P35-02 est un contrôle
+     **sans position mesurée** : F4 exige une seule ligne de `positions_controles` à géométrie NULL,
+     `sans_position_mesuree` et `rattache_par_identite` vrais et `precision_m` vide, et lit
+     son point (le piquet) dans la couche `controles` de l'export.
      Source de ce choix : pilotage/journal.md, 2026-10-22, décision de Pascal
      (mission 028). Coordonnées : `lon` puis `lat`, degrés WGS 84 ; les couches de
      l'export (EPSG:2154) sont converties par sf ; chaque point doit tomber dans le
@@ -79,6 +83,16 @@ monte un service PostGIS éphémère et lance `verifier.R`.
      | un déclencheur ajouté (sur `codes`) | F3 |
      | `nb_total` de P35-01 + 1, puis import par sommieR | F4 (total) |
      | point de `positions_controles` déplacé de 5 m (> 0,5 m) | F4 (point) |
+     | besoin de P35-02 vidé dans `controles`, puis import (mission 091) | F4 (état de suivi : P35-02 reste `a_jour`) |
+
+     **Mission 091** (fiche `pilotage/missions/091-besoin-concurrence-et-qualite-du-fix.md`) : F4 compare aussi
+     `besoin` et `concurrence` de chaque contrôle au registre, l'**état de suivi** de chaque placette après
+     l'import (`etats_suivi` du JSON attendu ; lu dans la couche `placettes` d'une tournée régénérée par
+     `sommier_projet_qfield_travaux()`, `etats_suivi_apres_import()` de `fonctions.R` ; règle de sommieR 0.31.1,
+     `R/travaux_qfield.R` l. 317-339), et `precision_m`, `source_gnss`, `simulee` de la position mesurée de
+     P35-01 dans `positions_controles` ; sur la ligne sans position de P35-02, `source_gnss` et `simulee` vides.
+     Seul P35-02 change d'état par l'import (la démo contrôle déjà les trois placettes en 2025, `R/demo.R`
+     l. 373-391) : il passe `a_programmer` si et seulement si le besoin « RG » arrive au registre.
 
      Le sabotage « total faux » retire d'abord les déclencheurs R-tree d'UPDATE de
      `controles` de la **copie** (RSQLite n'a pas `ST_IsEmpty`) ; F3 n'y est pas rejoué.
@@ -151,3 +165,18 @@ Le workflow, entre « Préparer » et « Rejouer », installe le JDK 21 et lance
 exige l'export et son bilan : s'ils manquent, le travail échoue. Le résumé du job
 affiche F1 à F4 avec leur verdict, le registre ligne à ligne, les sabotages de F5, les compteurs de F1 (attendu et mesuré) et les
 lignes ajoutées par couche ; le détail reste dans l'artefact `bilans-import-sommier`.
+
+## Seconde passe : le chemin du rendu de l'application (mission 090)
+
+Après l'export direct du scénario, le workflow lance `./gradlew :gpkg:rendreScenario
+-Ptournee=ci/sommier/sortie/tournee-depart -Pscenario=fixtures/export/scenario-couchey.json
+-Psortie=ci/sommier/rendu`. L'outil (classes de test de `:gpkg`, jamais dans l'APK) joue le même
+scénario **geste par geste par la session de contrôle** sur un journal en mémoire, puis rend la
+tournée par `RenduTournee.rendre`, comme le bouton « Rendre la tournée » : `rendu-surculus.zip`
+(`travaux.gpkg` et `DCIM/` seuls), `rendu-surculus/` (le zip décompressé) et `bilan-export.json`.
+Une seconde passe de `verifier.R --etape comparer`, dans `ci/sommier/sortie-rendu` (où sont copiés
+`tournee-depart/` et `foret_id.txt` de l'étape « preparer »), mesure F1 à F4 et rejoue les sabotages
+de F5 sur ce zip ; son résumé suit celui de la première passe. Ce qui n'y passe pas : le journal Room
+de l'appareil et la publication du fichier par MediaStore. Écart connu : le journal ne porte ni
+`precision_m`, ni `source_gnss`, ni `concurrence`, ni `besoin` ; le rendu les laisse vides là où
+l'export direct du scénario les remplit (aucun de F1 à F4 ne les compare).

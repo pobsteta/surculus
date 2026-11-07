@@ -30,11 +30,13 @@ object ContexteDeTournee {
         placettes = t.placettes.mapNotNull { p ->
             val position = p.position ?: return@mapNotNull null
             val rayon = p.rayonM?.takeIf { it > 0.0 } ?: return@mapNotNull null
-            PlacetteControlable(Piquet(UuidPlacette(p.uuid), p.code.orEmpty(), position), rayon)
+            PlacetteControlable(Piquet(UuidPlacette(p.uuid), p.code.orEmpty(), position, p.ug), rayon)
         },
         epsg = t.epsg,
         empriseForet = t.empriseForet,
         plantsAnterieurs = plantsAnterieurs(t),
+        codesTravaux = t.codesTravaux,
+        libellesCodes = t.libellesCodes,
     )
 
     /**

@@ -12,7 +12,7 @@ package io.github.pobsteta.surculus.dictee
 import io.github.pobsteta.surculus.core.dictee.FluxArchive
 import io.github.pobsteta.surculus.core.dictee.SourceArchive
 import java.io.FilterInputStream
-import java.io.IOException
+import io.github.pobsteta.surculus.core.dictee.EchecInstallation
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -22,6 +22,9 @@ import java.net.URL
  * est celle de [io.github.pobsteta.surculus.core.dictee.VerificationModele] : une archive autre est refusée.
  */
 object ModeleVoskTelechargement {
+    /** Réponse du serveur autre que 200 : une phrase qui dit quoi faire (mission 081). */
+    fun refusServeur(code: Int) = EchecInstallation("le serveur ne donne pas le modèle (réponse $code) : réessayer plus tard, ou importer le fichier")
+
     const val URL_MODELE = "https://alphacephei.com/vosk/models/vosk-model-small-fr-0.22.zip"
     const val TAILLE_MO = 42
 
@@ -32,7 +35,7 @@ object ModeleVoskTelechargement {
             instanceFollowRedirects = true
         }
         try {
-            if (connexion.responseCode != HttpURLConnection.HTTP_OK) throw IOException("serveur : code ${connexion.responseCode}")
+            if (connexion.responseCode != HttpURLConnection.HTTP_OK) throw refusServeur(connexion.responseCode)
             val flux = object : FilterInputStream(connexion.inputStream) {
                 override fun close() {
                     try {

@@ -9,17 +9,28 @@ package io.github.pobsteta.surculus.core.session
 
 /**
  * Format de la `valeur` des lignes du journal écrites par la session de contrôle : **unique endroit du code** qui
- * connaît les clés. Le même format est décrit dans `docs/formats/journal-valeurs-v1.md`, que la mission d'export
- * relira. Les clés suivent les noms de colonnes de la spec § 5 quand ils existent (`placette_uuid`, `jour_civil`,
- * `etat`, `cause_groupe`, `cause_detail`, `hauteur_cm`, `azimut_mag`, `unite_azimut`, `remplace_uuid`...).
+ * connaît les clés. Le format est décrit dans `docs/formats/journal-valeurs-v1.md` et, pour ce qui change en version 2,
+ * dans `docs/formats/journal-valeurs-v2.md` (mission 087) ; la version 3 (mission 091, décision de Pascal du 2026-11-04,
+ * question 3) ajoute à la valeur `controle` le besoin, la concurrence et la qualité du fix d'arrivée. Les clés suivent les noms de colonnes de la spec § 5 quand
+ * ils existent (`placette_uuid`, `jour_civil`, `etat`, `cause_groupe`, `cause_detail`, `hauteur_cm`, `azimut_mag`,
+ * `unite_azimut`, `remplace_uuid`...).
  *
  * Unités : distances en mètres (distance **horizontale**), azimuts en degrés [0, 360[ sauf `azimut_mag` qui est
  * dans `unite_azimut` (`deg` ou `gr`), positions en Lambert-93 (`x` = Est, `y` = Nord, mètres), instants en
  * millisecondes Unix UTC.
+ *
+ * Lecture : `"v":1` se lit selon la v1, `"v":2` selon la v2, `"v":3` selon la v3 ; toute autre valeur de `v` (absente,
+ * 0, 4...) rend la valeur illisible. Le journal relit **toutes** les versions qu'il a écrites (v1 à v3, décision de Pascal
+ * du 2026-11-04) : un journal déjà sur un téléphone ne perd jamais une valeur ancienne (la règle N-1 est celle de la
+ * sauvegarde `.sursync`, pas du journal). Une valeur illisible, incomplète ou incohérente est **ignorée, jamais complétée**, et
+ * signalée une fois à la fonction `trace` des lecteurs (le journal technique : choix de format de la v2).
  */
 object FormatValeurs {
-    /** Version du format de `valeur`, écrite dans chaque ligne sous la clé `v`. */
-    const val VERSION = 1L
+    /** Version du format de `valeur`, écrite dans chaque ligne sous la clé `v` : une seule pour tout le format (v3). */
+    const val VERSION = 3L
+
+    /** Versions relues : toutes celles que Surculus a écrites (v1 à v3), pour qu'aucun journal ancien ne perde rien. */
+    val VERSIONS_LUES: Set<Long> = setOf(1L, 2L, 3L)
 
     const val TYPE_CONTROLE = "controle"
     const val TYPE_POINTAGE = "pointage"
@@ -30,6 +41,26 @@ object FormatValeurs {
     internal fun Map<String, Any?>.reel(cle: String): Double? = (this[cle] as? Number)?.toDouble()
     internal fun Map<String, Any?>.entier(cle: String): Long? = (this[cle] as? Number)?.takeIf { it.toDouble() == it.toLong().toDouble() }?.toLong()
     internal fun Map<String, Any?>.booleen(cle: String): Boolean? = this[cle] as? Boolean
+
+    /**
+     * Le cadre commun des lecteurs : JSON lisible, version 1, 2 ou 3, puis [lecture] ; à chaque échec, une seule trace
+     * (sans le contenu de la valeur, qui porte le nom de l'opérateur), et `null`.
+     */
+    internal fun <T> lire(texte: String?, type: String, trace: (String) -> Unit, lecture: (Map<String, Any?>, Long) -> T?): T? {
+        val m = Json.lire(texte)
+        if (m == null) {
+            trace("journal : valeur « $type » illisible (pas un objet JSON), ignorée")
+            return null
+        }
+        val v = m.entier("v")
+        if (v == null || v !in VERSIONS_LUES) {
+            trace("journal : valeur « $type » de version ${m["v"] ?: "absente"}, ignorée (versions lues : 1, 2 et 3)")
+            return null
+        }
+        val lu = lecture(m, v)
+        if (lu == null) trace("journal : valeur « $type » v$v incomplète ou incohérente, ignorée")
+        return lu
+    }
 }
 
 /** Valeur d'une ligne `controle` (objet : l'UUID du contrôle). « Terminer » la placette réécrit la ligne avec `termine = true`. */
@@ -42,36 +73,114 @@ data class ValeurControle(
     val termine: Boolean,
     /** L'instant qui fonde [jourCivil] (heure GNSS ou du téléphone) : il ne peut pas contredire le jour. */
     val visiteLeUtcMs: Long,
+    /** Position du contrôle : le piquet si rattaché par identité ou sans position mesurée, la position mesurée sinon. */
     val positionX: Double,
     val positionY: Double,
-    val positionMesureeX: Double,
-    val positionMesureeY: Double,
+    /** Position GNSS mesurée (moyennée) ; `null` si et seulement si [sansPositionMesuree]. */
+    val positionMesureeX: Double?,
+    val positionMesureeY: Double?,
+    /** Le code lu a désigné la placette, pas la position mesurée (au-delà de 15 m, et toujours sans position mesurée). */
     val rattacheParIdentite: Boolean,
     val repereEpsg: Int,
     /** Numéros figés des plants de la placette (UUID de plant vers numéro), seulement quand [termine]. */
     val numeros: Map<String, Int>? = null,
+    /** Ouvert sans aucun fix, sur le code lu confirmé (ADR 0003, amendement du 2026-11-02 ; v2). Faux pour toute valeur v1. */
+    val sansPositionMesuree: Boolean = false,
+    /** Le travail qui s'impose : un code de la couche `codes` de la tournée, ou « aucun » (v3) ; `null` : pas encore dit. */
+    val besoin: String? = null,
+    /** faible, moyenne ou forte (v3) ; `null` : pas encore dite. */
+    val concurrence: String? = null,
+    /** Qualité du fix d'arrivée (v3) : `null` sans position mesurée, et pour toute valeur v1 ou v2 (inconnue, jamais devinée). */
+    val qualite: QualiteFix? = null,
 ) {
+    /**
+     * L'ordre des clés est celui de `docs/formats/journal-valeurs-v3.md` et de `fixtures/sursync/exemple-v3.jsonl` :
+     * `precision_m`, `source_gnss`, `simulee` juste après `sans_position_mesuree`, puis `repere_epsg`, `numeros`, et
+     * `besoin`, `concurrence`, puis `referentiel_source` en dernier (mission 094, ajout compatible en v3).
+     */
     fun versJson(): String = Json.ecrire(
         linkedMapOf<String, Any?>(
             "v" to FormatValeurs.VERSION, "placette_uuid" to placetteUuid, "code_placette" to codePlacette, "jour_civil" to jourCivil,
             "operateur" to operateur, "termine" to termine, "visite_le_utc_ms" to visiteLeUtcMs,
             "position_x" to positionX, "position_y" to positionY,
             "position_mesuree_x" to positionMesureeX, "position_mesuree_y" to positionMesureeY,
-            "rattache_par_identite" to rattacheParIdentite, "repere_epsg" to repereEpsg,
-        ).also { m -> numeros?.let { m["numeros"] = LinkedHashMap<String, Any?>(it) } },
+            "rattache_par_identite" to rattacheParIdentite, "sans_position_mesuree" to sansPositionMesuree,
+            "precision_m" to qualite?.precisionM, "source_gnss" to qualite?.sourceGnss, "simulee" to qualite?.simulee,
+            "repere_epsg" to repereEpsg,
+        ).also { m ->
+            numeros?.let { m["numeros"] = LinkedHashMap<String, Any?>(it) }
+            m["besoin"] = besoin
+            m["concurrence"] = concurrence
+            m["referentiel_source"] = qualite?.referentielSource
+        },
     )
 
     companion object {
-        fun lire(texte: String?): ValeurControle? = with(FormatValeurs) {
-            val m = Json.lire(texte) ?: return null
+        /** [trace] : appelée une fois si la valeur est ignorée (illisible, autre version, incomplète ou incohérente). */
+        fun lire(texte: String?, trace: (String) -> Unit = {}): ValeurControle? =
+            FormatValeurs.lire(texte, FormatValeurs.TYPE_CONTROLE, trace, ::deCarte)
+
+        private fun deCarte(m: Map<String, Any?>, v: Long): ValeurControle? = with(FormatValeurs) {
             @Suppress("UNCHECKED_CAST")
             val numeros = (m["numeros"] as? Map<String, Any?>)?.mapValues { (it.value as? Number)?.toInt() ?: return null }
+            val identite = m.booleen("rattache_par_identite") ?: return null
+            val mx = m.reel("position_mesuree_x")
+            val my = m.reel("position_mesuree_y")
+            // v1 : position mesurée obligatoire ; v2 : `sans_position_mesuree` obligatoire et cohérent (journal-valeurs-v2.md).
+            val sans = if (v == 1L) false else m.booleen("sans_position_mesuree") ?: return null
+            if (sans) {
+                val nulles = m.containsKey("position_mesuree_x") && m["position_mesuree_x"] == null &&
+                    m.containsKey("position_mesuree_y") && m["position_mesuree_y"] == null
+                if (!nulles || !identite) return null
+            } else if (mx == null || my == null) {
+                return null
+            }
+            // v3 : besoin, concurrence et qualité du fix (journal-valeurs-v3). Une clé absente vaut `null` ; une clé présente
+            // d'un autre type rend la valeur incohérente. Sans position mesurée, la qualité du fix est forcément vide.
+            fun texteOuNul(cle: String): Pair<Boolean, String?> = when (val x = m[cle]) {
+                null -> true to null
+                is String -> true to x
+                else -> false to null
+            }
+            var besoin: String? = null
+            var concurrence: String? = null
+            var qualite: QualiteFix? = null
+            if (v >= 3L) {
+                val (okB, b) = texteOuNul("besoin")
+                val (okC, c) = texteOuNul("concurrence")
+                val (okS, source) = texteOuNul("source_gnss")
+                // 094 : clé absente (v3 d'avant la 094) ou null : référentiel inconnu, jamais déduit de source_gnss.
+                val (okR, referentiel) = texteOuNul("referentiel_source")
+                if (!okB || !okC || !okS || !okR) return null
+                if (referentiel != null && referentiel !in ReferentielsSource.DOMAINE) return null
+                val p = m["precision_m"]
+                if (p != null && p !is Number) return null
+                val precision = (p as? Number)?.toDouble()
+                val s = m["simulee"]
+                if (s != null && s !is Boolean) return null
+                val simulee = s as? Boolean
+                // Une concurrence hors de faible, moyenne, forte n'a pas été écrite par Surculus : ignorée, tracée.
+                if (c != null && !Concurrences.permise(c)) return null
+                // Un besoin est un texte non vide sans espaces autour (journal-valeurs-v3.md, « Cohérence ») ; son
+                // appartenance à la couche codes se vérifie à la saisie et à l'export, pas ici.
+                if (b != null && (b.isEmpty() || b != b.trim())) return null
+                besoin = b
+                concurrence = c
+                if (precision != null || source != null || simulee != null || referentiel != null) {
+                    // La qualité se dit en entier (source et « simulée » ensemble ; la précision peut manquer), et
+                    // jamais pour un contrôle sans position mesurée.
+                    if (sans || source == null || simulee == null) return null
+                    // Une source hors du domaine décidé (QualiteFix.SOURCES_GNSS) n'a pas été écrite par Surculus.
+                    if (source !in QualiteFix.SOURCES_GNSS) return null
+                    if (precision != null && !(precision.isFinite() && precision > 0.0)) return null
+                    qualite = QualiteFix(precision, source, simulee, referentiel)
+                }
+            }
             ValeurControle(
                 m.texte("placette_uuid") ?: return null, m.texte("code_placette") ?: return null, m.texte("jour_civil") ?: return null,
                 m.texte("operateur") ?: return null, m.booleen("termine") ?: return null, m.entier("visite_le_utc_ms") ?: return null,
                 m.reel("position_x") ?: return null, m.reel("position_y") ?: return null,
-                m.reel("position_mesuree_x") ?: return null, m.reel("position_mesuree_y") ?: return null,
-                m.booleen("rattache_par_identite") ?: return null, m.entier("repere_epsg")?.toInt() ?: return null, numeros,
+                mx, my, identite, m.entier("repere_epsg")?.toInt() ?: return null, numeros, sans, besoin, concurrence, qualite,
             )
         }
     }
@@ -118,8 +227,11 @@ data class ValeurPointage(
     )
 
     companion object {
-        fun lire(texte: String?): ValeurPointage? = with(FormatValeurs) {
-            val m = Json.lire(texte) ?: return null
+        /** [trace] : appelée une fois si la valeur est ignorée (illisible, autre version, incomplète). */
+        fun lire(texte: String?, trace: (String) -> Unit = {}): ValeurPointage? =
+            FormatValeurs.lire(texte, FormatValeurs.TYPE_POINTAGE, trace) { m, _ -> deCarte(m) }
+
+        private fun deCarte(m: Map<String, Any?>): ValeurPointage? = with(FormatValeurs) {
             ValeurPointage(
                 m.texte("controle_uuid") ?: return null, m.texte("placette_uuid") ?: return null,
                 m.reel("distance_horizontale_m") ?: return null, m.reel("azimut_mag") ?: return null,
@@ -151,8 +263,11 @@ data class ValeurEtat(
     )
 
     companion object {
-        fun lire(texte: String?): ValeurEtat? = with(FormatValeurs) {
-            val m = Json.lire(texte) ?: return null
+        /** [trace] : appelée une fois si la valeur est ignorée (illisible, autre version, incomplète). */
+        fun lire(texte: String?, trace: (String) -> Unit = {}): ValeurEtat? =
+            FormatValeurs.lire(texte, FormatValeurs.TYPE_ETAT, trace) { m, _ -> deCarte(m) }
+
+        private fun deCarte(m: Map<String, Any?>): ValeurEtat? = with(FormatValeurs) {
             ValeurEtat(
                 m.texte("controle_uuid") ?: return null, m.texte("plant_uuid") ?: return null, m.texte("etat") ?: return null,
                 m.texte("cause_groupe"), m.texte("cause_detail"), m.entier("hauteur_cm")?.toInt(),

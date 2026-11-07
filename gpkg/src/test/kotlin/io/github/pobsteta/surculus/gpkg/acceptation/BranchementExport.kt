@@ -22,6 +22,7 @@ import io.github.pobsteta.surculus.core.reperes.CodesUniteAzimut
 import io.github.pobsteta.surculus.core.reperes.PointDerive
 import io.github.pobsteta.surculus.core.reperes.Resultat
 import io.github.pobsteta.surculus.gpkg.ControleSaisi
+import io.github.pobsteta.surculus.gpkg.PositionMesuree
 import io.github.pobsteta.surculus.gpkg.ExportTravaux
 import io.github.pobsteta.surculus.gpkg.ExportZip
 import io.github.pobsteta.surculus.gpkg.Geometrie
@@ -230,8 +231,11 @@ private object ExportReel : ExportTournee {
                 is Verdict.Refuse -> throw RefusAvantExport(CodesRefus.code(v.refus))
                 else -> error("Verdict inattendu : $v")
             }
+            // Mission 087 (décision de Pascal du 2026-11-03, une ligne de positions_controles par contrôle) : les cas
+            // d'acceptation ne donnent aucune position mesurée ; le contrôle est donc « sans position mesurée ».
             controles += ControleSaisi(
                 UuidControle(uuidControle), UuidPlacette(placetteUuid), visite, LocalDate.parse(c.get("jour_civil").asString), position,
+                PositionMesuree(position = null, rattacheParIdentite = true, sansPositionMesuree = true),
                 etats = lignes, remplaces = remplaces, totaux = totaux, operateur = operateur, repere = repere,
             )
         }

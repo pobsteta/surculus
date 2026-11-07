@@ -11,6 +11,7 @@ package io.github.pobsteta.surculus.dictee
 
 import android.content.Context
 import android.net.Uri
+import io.github.pobsteta.surculus.core.dictee.EchecInstallation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +22,30 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
+
+/** Ce que l'écran dit d'un échec d'installation : une phrase en français, jamais le message de l'exception (mission 081). */
+const val TEXTE_PAS_DE_RESEAU = "pas de réseau : réessayer au bureau, ou importer le fichier du modèle"
+const val TEXTE_DISQUE_PLEIN = "plus de place sur le téléphone : libérer de la place puis réessayer"
+const val TEXTE_ECHEC = "le téléchargement ou l'installation du modèle de voix n'a pas abouti"
+
+/**
+ * La phrase que l'écran montre après « Échec : » (toujours en minuscule) : celle d'un échec connu ([EchecInstallation]),
+ * « pas de réseau » (hôte introuvable, délai dépassé, connexion refusée), « plus de place » (disque plein), sinon la
+ * phrase générique. Jamais le message brut de l'exception (mission 081).
+ */
+internal fun causeAffichee(e: Throwable?): String {
+    var t: Throwable? = e
+    var profondeur = 0
+    while (t != null && profondeur++ < 8) {
+        when {
+            t is EchecInstallation -> return t.message ?: TEXTE_ECHEC
+            t is java.net.UnknownHostException || t is java.net.SocketTimeoutException || t is java.net.ConnectException -> return TEXTE_PAS_DE_RESEAU
+            t.message?.let { "ENOSPC" in it || "No space left on device" in it } == true -> return TEXTE_DISQUE_PLEIN
+        }
+        t = t.cause
+    }
+    return TEXTE_ECHEC
+}
 
 /** Ce que l'écran montre pendant une installation. */
 enum class PhaseInstallation { RIEN, RESEAU, FICHIER, INSTALLATION }
@@ -48,7 +73,11 @@ data class EtatInstallation(
  * le contexte. Toute fin du travail, **Error comprise** (une bibliothèque native absente lève une Error), rend l'écran
  * au repos avec une issue : jamais « en cours » pour toujours.
  */
-class SuiviInstallation(private val portee: CoroutineScope) {
+class SuiviInstallation(
+    private val portee: CoroutineScope,
+    /** Journal technique : reçoit l'exception d'un échec. L'écran, lui, n'en montre jamais le message (mission 081). */
+    private val journaliser: (Throwable) -> Unit = {},
+) {
     private val _etat = MutableStateFlow(EtatInstallation())
     private val annulation = AtomicBoolean(false)
 
@@ -90,7 +119,15 @@ class SuiviInstallation(private val portee: CoroutineScope) {
             val issue = when {
                 r.isSuccess -> IssueInstallation.Ok
                 annulation.get() -> IssueInstallation.Annule(modeleAvant)
-                else -> IssueInstallation.Echec(r.exceptionOrNull()?.message ?: "erreur inconnue", modeleAvant)
+                else -> {
+                    val e = r.exceptionOrNull()
+                    // Un échec connu garde sa phrase française ; tout autre dit la phrase générique (mission 081).
+                    val cause = causeAffichee(e)
+                    _etat.value = EtatInstallation(PhaseInstallation.RIEN, null, IssueInstallation.Echec(cause, modeleAvant))
+                    // Le journal technique passe après le retour au repos : il ne peut pas bloquer l'écran.
+                    if (e != null) runCatching { journaliser(e) }
+                    return@launch
+                }
             }
             _etat.value = EtatInstallation(PhaseInstallation.RIEN, null, issue)
         }
@@ -100,7 +137,7 @@ class SuiviInstallation(private val portee: CoroutineScope) {
 
 /** Le suivi du processus : portée du processus, entrées et sorties d'Android. */
 object SuiviInstallationVosk {
-    private val suivi = SuiviInstallation(CoroutineScope(SupervisorJob() + Dispatchers.IO))
+    private val suivi = SuiviInstallation(CoroutineScope(SupervisorJob() + Dispatchers.IO)) { android.util.Log.w("SuiviInstallation", "échec de l'installation de Vosk", it) }
 
     val etat: StateFlow<EtatInstallation> get() = suivi.etat
 

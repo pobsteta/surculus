@@ -181,7 +181,8 @@ if (!is.null(avec)) {
       bilan_entree$registre, bilan_entree$entrees_ecrites,
       bilan_entree$codes_placettes)
     f4 <- controle_f4(attendu, controles_registre,
-                      lire_points_export(gpkg_entree))
+                      lire_points_export(gpkg_entree),
+                      bilan_entree$etats_suivi)   # mission 091
   }
   tous_fautes <- c(f1$fautes, f2$fautes, f3$fautes, f4$fautes)
   for (x in tous_fautes) signaler(x)

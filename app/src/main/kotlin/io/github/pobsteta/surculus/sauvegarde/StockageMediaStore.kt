@@ -81,6 +81,58 @@ class StockageMediaStore(context: Context) : StockageSauvegardes {
         }
     }
 
+    /**
+     * Mission 090 : vrai si un fichier [nom] existe déjà dans `Documents/Surculus/` (tous types, pas seulement les
+     * `.sursync`) ; sert à ne jamais remplacer un `.zip` rendu (décision de Pascal du 2026-11-03).
+     */
+    fun existe(nom: String): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return File(dossierLegacy, nom).exists()
+        return resolver.query(
+            MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+            arrayOf(MediaStore.MediaColumns.DISPLAY_NAME),
+            "${MediaStore.MediaColumns.RELATIVE_PATH} = ? AND ${MediaStore.MediaColumns.DISPLAY_NAME} = ?", arrayOf("Documents/$DOSSIER/", nom), null,
+        )?.use { it.count > 0 } ?: false
+    }
+
+    /**
+     * Mission 090 : publie [source] sous `Documents/Surculus/<nom>` **par flux** (un `.zip` ne passe pas en mémoire), avec
+     * `IS_PENDING` (visible seulement une fois complet) ; avant l'API 29, `.part` renommé. Jamais de remplacement : un nom
+     * pris est refusé (API 28 et moins) ou suffixé par le système (API 29 et plus). Rend le chemin affiché à l'agent.
+     */
+    fun publier(nom: String, mime: String, source: File): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            val dossier = dossierLegacy
+            if (!dossier.isDirectory && !dossier.mkdirs()) throw IOException("dossier $dossier non créé")
+            val cible = File(dossier, nom)
+            if (cible.exists()) throw IOException("$nom existe déjà : jamais écrasé")
+            val partiel = File(dossier, "$nom.part")
+            try {
+                partiel.outputStream().use { out -> source.inputStream().use { it.copyTo(out) }; out.fd.sync() }
+                if (!partiel.renameTo(cible)) throw IOException("renommage de $nom impossible")
+            } finally {
+                partiel.delete()
+            }
+            return "Documents/$DOSSIER/$nom"
+        }
+        val valeurs = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, nom)
+            put(MediaStore.MediaColumns.MIME_TYPE, mime)
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "Documents/$DOSSIER/")
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+        val uri = resolver.insert(MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), valeurs) ?: throw IOException("MediaStore a refusé $nom")
+        try {
+            resolver.openOutputStream(uri)!!.use { out -> source.inputStream().use { it.copyTo(out) }; out.flush() }
+            resolver.update(uri, ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }, null, null)
+        } catch (e: Exception) {
+            resolver.delete(uri, null, null) // jamais de fichier à moitié écrit
+            throw e
+        }
+        val affiche = resolver.query(uri, arrayOf(MediaStore.MediaColumns.DISPLAY_NAME), null, null, null)
+            ?.use { c -> if (c.moveToFirst()) c.getString(0) else null } ?: nom
+        return "Documents/$DOSSIER/$affiche"
+    }
+
     override fun supprimer(nom: String) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             File(dossierLegacy, nom).delete()

@@ -72,6 +72,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -84,14 +85,20 @@ import io.github.pobsteta.surculus.carte.PastilleDisque
 import io.github.pobsteta.surculus.carte.Palette
 import io.github.pobsteta.surculus.carte.chargerTournee
 import io.github.pobsteta.surculus.carte.collecterPositionsArrivee
+import io.github.pobsteta.surculus.carte.uneSecondeArrivee
 import io.github.pobsteta.surculus.carte.couleurErreur
 import io.github.pobsteta.surculus.carte.couleurNeutre
 import io.github.pobsteta.surculus.carte.rememberFix
 import io.github.pobsteta.surculus.core.placette.EtatDsf
 import io.github.pobsteta.surculus.core.placette.GroupeCause
 import io.github.pobsteta.surculus.gpkg.ContexteDeTournee
+import io.github.pobsteta.surculus.gpkg.RenduTournee
 import io.github.pobsteta.surculus.gnss.FixPourSession
+import io.github.pobsteta.surculus.tournee.TourneeOuverte
 import io.github.pobsteta.surculus.gnss.SourcePosition
+import io.github.pobsteta.surculus.core.gnss.FixGnss
+import io.github.pobsteta.surculus.core.session.QualiteFix
+import io.github.pobsteta.surculus.core.session.Besoins
 import io.github.pobsteta.surculus.sauvegarde.SauvegardeApp
 import io.github.pobsteta.surculus.tournee.DepotTournees
 import io.github.pobsteta.surculus.tournee.LigneTournee
@@ -117,19 +124,54 @@ object ControleursOuverts {
 }
 
 /**
+ * Choix de l'UG en attente, par tournée et placette (mission 086, reprise 1/3) : survit à la rotation avec les positions de
+ * la moyenne, pour que tourner l'écran pendant le choix ne relance pas la moyenne de 5 s. Libéré en quittant vraiment l'écran,
+ * au choix et à « Refaire la mesure ».
+ */
+object ChoixUgEnAttente {
+    private val attente = HashMap<String, Pair<EtatArrivee.UgAChoisir, List<FixGnss>>>()
+
+    @Synchronized fun get(cle: String): Pair<EtatArrivee.UgAChoisir, List<FixGnss>>? = attente[cle]
+
+    @Synchronized fun poser(cle: String, etat: EtatArrivee.UgAChoisir, fixes: List<FixGnss>) { attente[cle] = etat to fixes }
+
+    @Synchronized fun liberer(cle: String) { attente.remove(cle) }
+}
+
+/**
+ * Arrivée sans position en attente, par tournée et placette (mission 087) : début de l'attente sans fix (horloge monotone),
+ * et, une fois « Ouvrir sans position » demandé, l'étape en cours (choix de l'UG, puis confirmation) et l'UG choisie.
+ * Survit à la rotation, comme [ChoixUgEnAttente] ; libéré en quittant vraiment l'écran, à l'ouverture et quand un fix arrive.
+ */
+object SansPositionEnAttente {
+    class Etat(var debutMs: Long? = null, var etape: EtatArrivee? = null, var ugChoisie: String? = null)
+
+    private val attente = HashMap<String, Etat>()
+
+    @Synchronized fun de(cle: String): Etat = attente.getOrPut(cle) { Etat() }
+
+    @Synchronized fun etape(cle: String): EtatArrivee? = attente[cle]?.etape
+
+    @Synchronized fun liberer(cle: String) { attente.remove(cle) }
+}
+
+/**
  * Écran du contrôle d'une placette (mission 012-B1, spec § 4.3). Une question : « sur quel plant suis-je, dans quel état,
  * combien en reste-t-il ? » En grand : « Plant n° 7 » et son état. Une comparaison : « 7 sur 12 », l'état d'avant en petit.
  * Source et jour dans le bandeau. Tout ce que l'agent dit est écrit au journal de la tournée tout de suite : sortir sans
  * « Terminer » ne perd rien, la placette reste « à faire ».
  */
 @Composable
-fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onParametres: () -> Unit = {}) {
+fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", onRetour: () -> Unit, onParametres: () -> Unit = {}) {
     val ctx = LocalContext.current
     val chargement = chargerTournee(id)
     val (fix, _) = rememberFix()
     val ouverte = (chargement as? Chargement.Pret)?.tournee
     val placette = ouverte?.tournee?.placettes?.firstOrNull { it.uuid == placetteUuid }
     val cle = ControleursOuverts.cle(id, placetteUuid)
+    // Mission 090 : une tournée rendue est en lecture seule (décision de Pascal du 2026-11-03) ; aucun contrôle ne s'ouvre,
+    // rien n'est écrit au journal. On la rouvre depuis la liste de ses placettes.
+    val rendue = remember(ouverte) { ouverte != null && RenduTournee.estRendue(ouverte.dossier.toPath()) }
 
     // Permission de stockage, Android 8 et 9 seulement : demandée **une seule fois** (le réglage s'en souvient) ; tant qu'elle
     // manque, une ligne en petit l'explique, et rien n'est bloqué.
@@ -146,18 +188,17 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onPara
     }
     // On libère le contrôleur en quittant vraiment l'écran, pas à la rotation.
     val activite = ctx as? android.app.Activity
-    DisposableEffect(cle) { onDispose { if (activite?.isChangingConfigurations != true) ControleursOuverts.liberer(cle) } }
+    DisposableEffect(cle) { onDispose { if (activite?.isChangingConfigurations != true) { ControleursOuverts.liberer(cle); ChoixUgEnAttente.liberer(cle); SansPositionEnAttente.liberer(cle) } } }
 
-    var arrivee by remember(cle) { mutableStateOf<EtatArrivee>(ControleursOuverts.get(cle)?.let { EtatArrivee.Ouverte(it) } ?: EtatArrivee.Moyenne(0)) }
+    var arrivee by remember(cle) { mutableStateOf<EtatArrivee>(ControleursOuverts.get(cle)?.let { EtatArrivee.Ouverte(it) } ?: ChoixUgEnAttente.get(cle)?.first ?: SansPositionEnAttente.etape(cle) ?: EtatArrivee.Moyenne(0)) }
     var essai by rememberSaveable(cle) { mutableIntStateOf(0) }
-    var code by rememberSaveable(cle) { mutableStateOf("") }
+    var code by rememberSaveable(cle) { mutableStateOf(codeInitial) }
     val fixActuel = rememberUpdatedState(fix)
-
-    // L'arrivée (décisions de Pascal du 2026-10-27) : la moyenne de 5 s part toute seule, avec son décompte, puis la règle des 15 m.
-    LaunchedEffect(cle, essai, ouverte) {
-        if (ouverte == null || ControleursOuverts.get(cle) != null) return@LaunchedEffect
-        // La moyenne de 5 s est celle du guidage : écrite une seule fois (`collecterPositionsArrivee`).
-        val positions = collecterPositionsArrivee(position = { fixActuel.value?.position }, surSeconde = { n -> arrivee = EtatArrivee.Moyenne(n) })
+    // Les fix de l'arrivée sont gardés : le choix de l'UG rouvre avec la même position, sans refaire la moyenne.
+    // Les fix entiers (mission 091) : leur position, et ce qu'ils disent d'eux-mêmes (précision, source, simulée).
+    var fixesArrivee by remember(cle) { mutableStateOf(ChoixUgEnAttente.get(cle)?.second ?: emptyList()) }
+    val scope = rememberCoroutineScope()
+    suspend fun ouvrirArrivee(ouverte: TourneeOuverte, fixes: List<FixGnss>, ugChoisie: String?): EtatArrivee {
         val resultat = withContext(Dispatchers.IO) {
             runCatching {
                 ArriveeControle.ouvrir(
@@ -165,15 +206,56 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onPara
                     journal = SauvegardeApp.journal(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
                     horloge = SauvegardeApp.horloge(ctx) { FixPourSession.depuis(SourcePosition.fix.value) },
                     essences = ArriveeControle.essencesDe(ouverte.tournee),
-                    positions = positions,
+                    positions = fixes.map { it.position },
                     codeLu = code,
                     sauvegarde = SauvegardeApp.ecoute(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
+                    ugChoisie = ugChoisie,
+                    qualite = QualiteFix.deFix(fixes),
                 )
             }
         }
         val v = resultat.getOrNull()
         if (v is EtatArrivee.Ouverte) ControleursOuverts.poser(cle, v.controleur)
-        arrivee = v ?: EtatArrivee.SansPosition
+        if (v is EtatArrivee.UgAChoisir) ChoixUgEnAttente.poser(cle, v, fixes) else ChoixUgEnAttente.liberer(cle)
+        return v ?: EtatArrivee.SansPosition
+    }
+
+    /** « Ouvrir sans position » (mission 087) : choix de l'UG si le code se répète, puis confirmation, puis ouverture. */
+    suspend fun ouvrirSansPosition(ouverte: TourneeOuverte, ugChoisie: String?, confirmee: Boolean): EtatArrivee {
+        // L'habillage de l'appel est partagé avec le guidage (mission 089) ; l'écran ne garde ici que l'étape en cours.
+        val v = OuvertureSansPosition.ouvrir(ctx, ouverte, code, ugChoisie, confirmee)
+        val attente = SansPositionEnAttente.de(cle)
+        when (v) {
+            is EtatArrivee.Ouverte -> { ControleursOuverts.poser(cle, v.controleur); SansPositionEnAttente.liberer(cle) }
+            is EtatArrivee.UgAChoisir, is EtatArrivee.ConfirmerSansPosition -> { attente.etape = v; attente.ugChoisie = ugChoisie }
+            else -> { attente.etape = null; attente.ugChoisie = null }
+        }
+        return v
+    }
+
+    // Un fix reçu pendant le choix de l'UG ou la confirmation sans position : on abandonne et on refait la moyenne (ADR 0003,
+    // amendement du 2026-11-02, point 6 ; le point 10 ne vaut qu'après l'ouverture ; décision de Pascal du 2026-11-03).
+    val enSansPosition = SansPositionEnAttente.etape(cle) != null && (arrivee is EtatArrivee.ConfirmerSansPosition || arrivee is EtatArrivee.UgAChoisir)
+    LaunchedEffect(cle, enSansPosition, fix != null) {
+        if (enSansPosition && fix != null) {
+            SansPositionEnAttente.liberer(cle)
+            arrivee = EtatArrivee.Moyenne(0)
+            essai++
+        }
+    }
+
+    // L'arrivée (décisions de Pascal du 2026-10-27) : la moyenne de 5 s part toute seule, avec son décompte, puis la règle des 15 m.
+    LaunchedEffect(cle, essai, ouverte) {
+        if (ouverte == null || rendue || ControleursOuverts.get(cle) != null || ChoixUgEnAttente.get(cle) != null || SansPositionEnAttente.etape(cle) != null) return@LaunchedEffect
+        // L'attente sans fix (30 s, mission 087) court dès la première moyenne sans position.
+        SansPositionEnAttente.de(cle).let { if (it.debutMs == null) it.debutMs = SystemClock.elapsedRealtime() }
+        // La moyenne de 5 s est celle du guidage : écrite une seule fois (`collecterPositionsArrivee`).
+        val fixes = ArrayList<FixGnss>()
+        collecterPositionsArrivee(position = { fixActuel.value?.also { fixes += it }?.position }, surSeconde = { n -> arrivee = EtatArrivee.Moyenne(n) })
+        fixesArrivee = fixes
+        // Un fix reçu : l'attente sans fix repart de zéro la prochaine fois.
+        if (fixes.isNotEmpty()) SansPositionEnAttente.de(cle).debutMs = null
+        arrivee = ouvrirArrivee(ouverte, fixes, null)
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -191,10 +273,27 @@ fun EcranControle(id: String, placetteUuid: String, onRetour: () -> Unit, onPara
                 chargement == Chargement.EnCours -> Texte(stringResource(R.string.carte_ouverture))
                 chargement is Chargement.Refus -> Texte(stringResource(R.string.carte_refus, chargement.message), erreur = true)
                 placette == null -> Texte(stringResource(R.string.carte_refus, "placette $placetteUuid"), erreur = true)
+                rendue -> Texte(stringResource(R.string.controle_tournee_rendue))
                 else -> when (val a = arrivee) {
                     is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)
                     is EtatArrivee.Refus -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
-                    EtatArrivee.SansPosition -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ })
+                    EtatArrivee.SansPosition -> VueSansFix(
+                        debutMs = SansPositionEnAttente.de(cle).debutMs ?: SystemClock.elapsedRealtime(),
+                        fixRecu = fix != null,
+                        code = code, onCode = { code = it },
+                        onOuvrir = { scope.launch { arrivee = ouvrirSansPosition(ouverte!!, null, confirmee = false) } },
+                        onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ },
+                    )
+                    is EtatArrivee.UgAChoisir -> if (SansPositionEnAttente.etape(cle) != null) {
+                        VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirSansPosition(ouverte!!, ug, confirmee = false) } }, onRecommencer = { SansPositionEnAttente.de(cle).etape = null; arrivee = EtatArrivee.SansPosition })
+                    } else {
+                        VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, fixesArrivee, ug) } }, onRecommencer = { ChoixUgEnAttente.liberer(cle); arrivee = EtatArrivee.Moyenne(0); essai++ })
+                    }
+                    is EtatArrivee.ConfirmerSansPosition -> VueConfirmerSansPosition(
+                        a,
+                        onOuvrir = { scope.launch { arrivee = ouvrirSansPosition(ouverte!!, SansPositionEnAttente.de(cle).ugChoisie, confirmee = true) } },
+                        onAnnuler = { SansPositionEnAttente.de(cle).let { it.etape = null; it.ugChoisie = null }; arrivee = EtatArrivee.SansPosition },
+                    )
                     is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour, onParametres)
                 }
             }
@@ -217,8 +316,8 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
                 Text(stringResource(R.string.controle_moyenne_aide), style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
             }
             is EtatArrivee.Refus -> Text(TextesControle.message(etat.refus)!!.texte, style = MaterialTheme.typography.titleMedium, color = couleurErreur())
-            EtatArrivee.SansPosition -> Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurErreur())
-            is EtatArrivee.Ouverte -> {}
+            // L'attente sans position a sa propre vue (`VueSansFix`, mission 087) : cette vue n'est jamais appelée pour elle.
+            EtatArrivee.SansPosition, is EtatArrivee.UgAChoisir, is EtatArrivee.Ouverte, is EtatArrivee.ConfirmerSansPosition -> {}
         }
         OutlinedTextField(
             value = code,
@@ -233,9 +332,72 @@ private fun VueArrivee(etat: EtatArrivee, code: String, onCode: (String) -> Unit
     }
 }
 
+/**
+ * Aucune position (mission 087 ; ADR 0003, amendement du 2026-11-02, point 1) : l'attente de 30 s sans fix, puis
+ * « Ouvrir sans position », grisé tant que le champ du code est vide. Si rien n'écoute (localisation coupée, permission
+ * refusée, aucun récepteur branché) : on demande de l'activer, jamais d'ouverture sans position. Un fix reçu : la moyenne
+ * repart (c'est une position, point 6).
+ */
+@Composable
+private fun VueSansFix(debutMs: Long, fixRecu: Boolean, code: String, onCode: (String) -> Unit, onOuvrir: () -> Unit, onRecommencer: () -> Unit) {
+    val ctx = LocalContext.current
+    var maintenant by remember { mutableStateOf(SystemClock.elapsedRealtime()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            maintenant = SystemClock.elapsedRealtime()
+            uneSecondeArrivee()
+        }
+    }
+    // « Récepteur actif » et le délai : la règle de la 087, lue par l'habillage partagé avec le guidage (mission 089).
+    val suite = OuvertureSansPosition.suite(ctx, msSansFix = maintenant - debutMs, fixRecu = fixRecu)
+    val relancer = rememberUpdatedState(onRecommencer)
+    LaunchedEffect(suite) { if (suite == SuiteSansFix.POSITION_RECUE) relancer.value() }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Titre « Recherche de la position… » pendant le décompte seulement, en couleur normale (décisions de Pascal du 2026-11-03).
+        if (ArriveeSansPosition.titreVisible(suite)) {
+            Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
+        }
+        AttenteSansFix(suite, ((maintenant - debutMs) / 1000).toInt(), code, onCode, onOuvrir)
+        OutlinedButton(onClick = onRecommencer, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+            Text(stringResource(R.string.controle_ug_recommencer))
+        }
+    }
+}
+
+/** La placette à confirmer avant d'ouvrir sans position (point 4) : rien n'est ouvert tant que l'agent n'a pas confirmé. */
+@Composable
+private fun VueConfirmerSansPosition(etat: EtatArrivee.ConfirmerSansPosition, onOuvrir: () -> Unit, onAnnuler: () -> Unit) {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        ConfirmationSansPosition(etat, onOuvrir, onAnnuler)
+    }
+}
+
+/**
+ * Le code lu existe dans plusieurs UG et la position ne tranche pas : une ligne par candidate, un gros bouton chacune
+ * (gants, soleil, une main). Rien n'est ouvert tant que l'agent n'a pas choisi ; aucune n'est présélectionnée.
+ */
+@Composable
+private fun VueChoixUg(etat: EtatArrivee.UgAChoisir, onChoix: (String) -> Unit, onRecommencer: () -> Unit) {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(stringResource(R.string.controle_ug_question, etat.code), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
+        Text(stringResource(R.string.controle_ug_aide), style = MaterialTheme.typography.bodyLarge, color = couleurNeutre())
+        for (c in etat.candidats) {
+            val ug = c.ug
+            Button(
+                onClick = { onChoix(ug.orEmpty()) },
+                enabled = ug != null,
+                modifier = Modifier.fillMaxWidth().height(DimensionsControle.GRAND_CHOIX),
+            ) { Text(stringResource(R.string.controle_ug_choix, c.code, ug ?: "?"), style = MaterialTheme.typography.titleLarge) }
+        }
+        OutlinedButton(onClick = onRecommencer, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
+            Text(stringResource(R.string.controle_ug_recommencer))
+        }
+    }
+}
+
 /** La session ouverte : la vue Plant, la confirmation de fin, ou « Contrôlée ». */
 @Composable
-private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages: ReglagesControle, stockageRefuse: Boolean, onRetour: () -> Unit, onParametres: () -> Unit) {
+internal fun VueSession(controleur: ControleurPlacette, tournee: String, reglages: ReglagesControle, stockageRefuse: Boolean, onRetour: () -> Unit, onParametres: () -> Unit) {
     var ecran by remember(controleur) { mutableStateOf<EcranControle?>(null) }
     val scope = rememberCoroutineScope()
     LaunchedEffect(controleur) { ecran = withContext(Dispatchers.IO) { controleur.instantane() } }
@@ -343,7 +505,7 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
             }
         }
         // Mission 075 : le micro est HORS de la zone qui défile (pied debout, colonne couché) ; le bloc J'ÉCOUTE est posé PAR-DESSUS
-        // le haut de cette zone. Rien ne pousse rien : le micro et les boutons ne bougent pas quand l'écoute commence.
+        // (couché : le haut de la zone, étendu à droite sur la colonne du micro ; debout : du pied, vers le haut, 083). Rien ne pousse rien : le micro et les boutons ne bougent pas quand l'écoute commence.
         val config = LocalConfiguration.current
         val emplacement = DispositionMicro.emplacement(config.screenWidthDp.toFloat(), config.screenHeightDp.toFloat())
         val avecMicro = e.vue == VueControle.PLANT && !poche
@@ -389,29 +551,48 @@ private fun VueSession(controleur: ControleurPlacette, tournee: String, reglages
                     e.message?.let { Text(it.texte, style = MaterialTheme.typography.bodyLarge, color = if (it.erreur) couleurErreur() else couleurNeutre()) }
                     if (stockageRefuse) Text(stringResource(R.string.controle_stockage_refuse), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                if (!poche && blocEcouteVisible()) {
-                    Box(Modifier.align(Alignment.TopCenter).padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
-                }
             }
         }
         // La disposition ne dépend que de l'écran (couché ou debout), jamais de la vue : la zone garde sa place dans la composition
         // en passant de Plant à Pointer ou Terminer, et le micro n'est qu'un frère conditionnel à côté d'elle.
         if (emplacement == EmplacementMicro.COLONNE) {
-            Row(Modifier.weight(1f).fillMaxWidth()) {
-                zone(Modifier.weight(1f).fillMaxHeight())
-                if (avecMicro) {
-                    Column(Modifier.width(DimensionsMicro.ZONE).fillMaxHeight().padding(8.dp), verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally) { micro() }
+            // Couché (083, reprise 2/3, décision « Bloc plus large, à droite ») : le bloc est un frère de la zone et de la colonne du micro,
+            // dans un Box qui les contient. Il part du haut de la zone et s'étend vers la droite, par-dessus le haut de la colonne du micro
+            // (vide : le micro est en bas), de la largeur de l'écran moins 16 dp de chaque côté ; « entendu » et « compris » y tiennent sur
+            // une ligne. Il reste sous « Mode poche » et au-dessus de la flèche et du numéro. Largeur et marges : PROVISOIRES jusqu'à l'essai ganté.
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                Row(Modifier.fillMaxSize()) {
+                    zone(Modifier.weight(1f).fillMaxHeight())
+                    if (avecMicro) {
+                        Column(Modifier.width(DimensionsMicro.ZONE).fillMaxHeight().padding(8.dp), verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally) { micro() }
+                    }
+                }
+                if (!poche && blocEcouteVisible()) {
+                    Box(Modifier.align(Alignment.TopStart).fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) { BlocEcouteEncadre() }
                 }
             }
         } else {
-            Column(Modifier.weight(1f).fillMaxWidth()) {
-                zone(Modifier.weight(1f).fillMaxWidth())
-                if (avecMicro) {
-                    Row(Modifier.fillMaxWidth().height(DimensionsMicro.ZONE).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        BoutonPoche(surPoche, Modifier.weight(1f))
-                        Spacer(Modifier.width(12.dp))
-                        micro()
+            // Debout (083) : le bloc d'écoute est un frère du pied et de la zone, dans un Box qui les contient : il part du bas du pied, à
+            // gauche du micro, et monte sur le bas de la zone qui défile (débord vers le haut). Il ne pousse rien : le Column dessous ne
+            // dépend pas de lui.
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                Column(Modifier.fillMaxSize()) {
+                    zone(Modifier.weight(1f).fillMaxWidth())
+                    if (avecMicro) {
+                        Row(Modifier.fillMaxWidth().height(DimensionsMicro.ZONE).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) { BoutonPoche(surPoche, Modifier.fillMaxWidth()) }
+                            Spacer(Modifier.width(12.dp))
+                            micro()
+                        }
                     }
+                }
+                // Même cadre que le pied : 16 dp de chaque côté, 8 dp sous, micro (112 dp) et 12 dp d'écart à droite. Largeur et pied
+                // : valeurs PROVISOIRES jusqu'à l'essai ganté. La hauteur est celle du texte : le bloc monte de ce qu'il lui faut.
+                if (avecMicro && !poche && blocEcouteVisible()) {
+                    Box(
+                        Modifier.align(Alignment.BottomStart).fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp + DimensionsMicro.BOUTON + 12.dp, bottom = 8.dp),
+                    ) { BlocEcouteEncadre(cote = false) }
                 }
             }
         }
@@ -544,31 +725,48 @@ private fun blocEcouteVisible(): Boolean = EcouteApp.bandeauVisible()
 private fun blocEcouteEnPoche(): Boolean = EcouteApp.affichage != AffichageEcoute.RIEN || EcouteApp.compris != null
 
 /**
- * L'écoute, en deux lignes : en grand « J'ÉCOUTE » / « ÉCOUTE FERMÉE », puis la comparaison entendu / compris (ou refusé, en
- * couleur d'erreur) : le forestier compare ce qu'il a dit à ce que la machine a retenu (plan § 2).
+ * L'écoute : en grand « J'ÉCOUTE » / « ÉCOUTE FERMÉE », puis la comparaison entendu / compris (ou refusé, en couleur d'erreur) : le
+ * forestier compare ce qu'il a dit à ce que la machine a retenu (plan § 2). Avec [cote], « entendu » et « compris » partagent une
+ * ligne (couché : large mais bas, pour ne pas descendre sur « Plant précédent », 083) ; sinon l'un sous l'autre.
  */
 @Composable
-private fun BlocEcoute() {
+private fun BlocEcoute(cote: Boolean = false) {
     EcouteApp.version // lu pour se redessiner à chaque changement
     val grand = TextesEcoute.grand(EcouteApp.affichage)
     val entendu = EcouteApp.entendu
     val compris = EcouteApp.compris
-    grand?.let { Text(it, style = MaterialTheme.typography.headlineMedium, color = couleurNeutre()) }
-    entendu?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre()) }
-    compris?.let {
-        val erreur = EcouteApp.comprisErreur
-        Text(TextesEcoute.compris(it, erreur), style = MaterialTheme.typography.titleMedium, color = if (erreur) couleurErreur() else couleurNeutre())
+    val titre: @Composable () -> Unit = { grand?.let { Text(it, style = MaterialTheme.typography.headlineMedium, color = couleurNeutre()) } }
+    val ligneEntendu: @Composable (Modifier) -> Unit = { m -> entendu?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre(), modifier = m) } }
+    val ligneCompris: @Composable (Modifier) -> Unit = { m ->
+        compris?.let {
+            val erreur = EcouteApp.comprisErreur
+            Text(TextesEcoute.compris(it, erreur), style = MaterialTheme.typography.titleMedium, color = if (erreur) couleurErreur() else couleurNeutre(), modifier = m)
+        }
     }
+    if (cote && entendu != null && compris != null) {
+        // Deux colonnes : à gauche le titre et « entendu » (une ligne), à droite « compris » ou le refus, libre de prendre 2 ou 3 lignes
+        // sans descendre plus bas que la colonne de gauche (083, reprise 2/3).
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
+            Column(Modifier.weight(1.2f), verticalArrangement = Arrangement.spacedBy(4.dp)) { titre(); ligneEntendu(Modifier) }
+            ligneCompris(Modifier.weight(1f))
+        }
+    } else { titre(); ligneEntendu(Modifier); ligneCompris(Modifier) }
 }
 
-/** Hors du mode poche, le même bloc dans son cadre, sur fond opaque : posé par-dessus le haut de la zone qui défile (075). */
+/**
+ * Hors du mode poche, le même bloc dans son cadre, sur fond opaque, posé par-dessus ce qu'il couvre (075, 083) : debout, du pied
+ * (à gauche du micro) vers le haut ; couché, en tête de la zone et étendu à droite sur la colonne du micro. Il **absorbe le toucher** (décision de Pascal du 2026-11-02) : pendant
+ * l'écoute et les 6 s, un appui sur lui ne déclenche aucun bouton caché dessous. [cote] : voir [BlocEcoute].
+ */
 @Composable
-private fun BlocEcouteEncadre() {
+private fun BlocEcouteEncadre(cote: Boolean = true) {
     Column(
         Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.small)
-            .border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small).padding(12.dp),
+            .border(2.dp, MaterialTheme.colorScheme.onSurface, MaterialTheme.shapes.small)
+            .pointerInput(Unit) { awaitPointerEventScope { while (true) awaitPointerEvent().changes.forEach { it.consume() } } }
+            .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) { BlocEcoute() }
+    ) { BlocEcoute(cote) }
 }
 
 /** « Mode poche », hors de la zone qui défile (debout : à gauche du micro, dans le pied ; couché : en tête de la zone). */
@@ -631,11 +829,59 @@ private fun BoutonEtat(etat: EtatDsf, actif: Boolean, modifier: Modifier, onClic
 private fun VueTerminer(e: EcranControle, agir: (ControleurPlacette.() -> EcranControle) -> Unit) {
     Text(stringResource(R.string.controle_terminer_titre, e.codePlacette), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
     Totaux(e)
-    Button(onClick = { agir { terminer() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT)) {
+    ChoixBesoinEtConcurrence(e.besoin, agir)
+    // Grisé tant qu'il manque un choix (décision de Pascal du 2026-11-04, question 1), avec la phrase de ce qui manque.
+    Button(onClick = { agir { terminer() } }, enabled = e.besoin.terminerPermis, modifier = Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT)) {
         Text(stringResource(R.string.controle_terminer), style = MaterialTheme.typography.titleLarge)
     }
+    e.besoin.manque?.let { Text(it, style = MaterialTheme.typography.titleMedium, color = couleurNeutre()) }
     OutlinedButton(onClick = { agir { reprendre() } }, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
         Text(stringResource(R.string.controle_reprendre), color = couleurNeutre())
+    }
+}
+
+/**
+ * Le besoin et la concurrence, à l'écran de « Terminer » (mission 091) : un grand bouton « Aucun », la grille des codes de
+ * la couche `codes` (4 par ligne, code en gros et début du libellé, environ 80 dp : faisable avec des gants), puis
+ * faible, moyenne, forte. Le choix fait est plein, les autres cernés ; aucun n'est choisi d'avance.
+ */
+@Composable
+private fun ChoixBesoinEtConcurrence(b: VueBesoin, agir: (ControleurPlacette.() -> EcranControle) -> Unit) {
+    Text(stringResource(R.string.controle_besoin_titre), style = MaterialTheme.typography.titleLarge, color = couleurNeutre())
+    BoutonChoix(b.aucunChoisi, Modifier.fillMaxWidth().height(DimensionsControle.BOUTON_ETAT), { agir { direBesoin(Besoins.AUCUN) } }) {
+        Text(stringResource(R.string.controle_besoin_aucun), style = MaterialTheme.typography.titleLarge)
+    }
+    for (ligne in b.codes.chunked(DimensionsControle.CODES_PAR_LIGNE)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (c in ligne) {
+                BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_CODE), { agir { direBesoin(c.code) } }) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(c.code, style = MaterialTheme.typography.titleLarge, maxLines = 1)
+                        if (c.libelleCourt.isNotEmpty()) Text(c.libelleCourt, style = MaterialTheme.typography.labelSmall, maxLines = 2)
+                    }
+                }
+            }
+            repeat(DimensionsControle.CODES_PAR_LIGNE - ligne.size) { Spacer(Modifier.weight(1f)) }
+        }
+    }
+    Text(stringResource(R.string.controle_concurrence_titre), style = MaterialTheme.typography.titleLarge, color = couleurNeutre())
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (c in b.concurrences) {
+            BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_ETAT), { agir { direConcurrence(c.niveau) } }) {
+                Text(c.libelle, style = MaterialTheme.typography.titleMedium, maxLines = 1)
+            }
+        }
+    }
+}
+
+/** Un bouton de choix : plein s'il est choisi, cerné sinon (le choix se voit au soleil sans dépendre de la seule couleur). */
+@Composable
+private fun BoutonChoix(choisi: Boolean, modifier: Modifier, onClick: () -> Unit, contenu: @Composable () -> Unit) {
+    val padding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 4.dp)
+    if (choisi) {
+        Button(onClick = onClick, modifier = modifier, contentPadding = padding) { contenu() }
+    } else {
+        OutlinedButton(onClick = onClick, modifier = modifier, contentPadding = padding) { contenu() }
     }
 }
 

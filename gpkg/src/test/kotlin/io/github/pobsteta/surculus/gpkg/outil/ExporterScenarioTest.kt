@@ -58,6 +58,31 @@ class ExporterScenarioTest {
         }
     }
 
+    /**
+     * Mission 087 (décision de Pascal du 2026-11-02, « en faire le cas sans position ») : P35-02 du scénario est ouvert
+     * sans position mesurée ; l'export de la CI lui écrit une ligne de `positions_controles` à géométrie NULL, et son
+     * contrôle est au piquet. C'est ce que F4 vérifie ensuite dans la CI d'import (`ci/sommier/f4.R`).
+     */
+    @Test
+    fun `P35-02 du scenario est un controle sans position - ligne a geometrie NULL, controle au piquet`() {
+        val sortie = dossier.resolve("sortie")
+        ExporterScenario.jouer(tourneeDeDepart(), scenario, sortie)
+        val gpkg = sortie.resolve("export-surculus/travaux.gpkg")
+        val t = LecteurTournee.lire(gpkg)
+        val p2 = t.placettes.single { it.code == "P35-02" }
+        val uuidP2 = Contenu.colonnes(gpkg, "controles", "uuid", "placette_uuid").single { it[1] == p2.uuid }[0]
+        val lignes = Contenu.colonnes(gpkg, "positions_controles", "controle_uuid", "precision_m", "sans_position_mesuree", "rattache_par_identite", "source_gnss", "simulee")
+        assertEquals(2, lignes.size, "une ligne par contrôle")
+        val l = lignes.single { it[0] == uuidP2 }
+        assertEquals(listOf<Any?>(uuidP2, null, 1, 1, null, null), l)
+        val nulle = io.github.pobsteta.surculus.gpkg.Sqlite.ouvrir(gpkg, lectureSeule = true).use { c ->
+            c.createStatement().use { st -> st.executeQuery("SELECT geom IS NULL FROM positions_controles WHERE controle_uuid = '$uuidP2'").use { it.next(); it.getInt(1) } }
+        }
+        assertEquals(1, nulle, "géométrie NULL, pas un POINT EMPTY")
+        // P35-01 garde sa position mesurée.
+        assertEquals(0, (lignes.single { it[0] != uuidP2 }[2] as Number).toInt())
+    }
+
     @Test
     fun `le bilan d'export en JSON redit ce que l'export contient`() {
         val sortie = dossier.resolve("sortie")

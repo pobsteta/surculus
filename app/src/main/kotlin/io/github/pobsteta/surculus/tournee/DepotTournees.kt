@@ -15,9 +15,12 @@ import io.github.pobsteta.surculus.gpkg.Cartographie
 import io.github.pobsteta.surculus.gpkg.GpkgRefuse
 import io.github.pobsteta.surculus.gpkg.ImportTournee
 import io.github.pobsteta.surculus.gpkg.LecteurTournee
+import io.github.pobsteta.surculus.gpkg.RenduTournee
 import io.github.pobsteta.surculus.gpkg.Tournee
 import io.github.pobsteta.surculus.data.session.JournalDeTournee
 import io.github.pobsteta.surculus.gpkg.titreForet
+import io.github.pobsteta.surculus.messages.JournalTechnique
+import io.github.pobsteta.surculus.messages.TEXTE_LIGNE_ILLISIBLE
 import io.github.pobsteta.surculus.sauvegarde.JournalApp
 import java.io.File
 import java.time.Instant
@@ -28,6 +31,11 @@ data class LigneTournee(
     /** `null` si le `travaux.gpkg` est refusé : [refus] dit pourquoi. */
     val tournee: Tournee?,
     val refus: String?,
+    /**
+     * Tournée rendue ? Point unique de l'état (mission 041) : vrai quand la marque « rendue » du rendu (mission 090,
+     * [RenduTournee.MARQUE]) est dans le dossier de la tournée ; « Rouvrir la tournée » la retire. Lue par [DepotTournees.ligne].
+     */
+    val rendue: Boolean = false,
 ) {
     val id: String get() = dossier.name
     /**
@@ -35,12 +43,6 @@ data class LigneTournee(
      * pour la tournée de sommieR), sinon le nom du dossier. `null` si le fichier est refusé.
      */
     val foret: String? get() = tournee?.let { titreForet(it.projet?.foret, it.nomForet, dossier.name) }
-
-    /**
-     * Tournée rendue ? Point unique de l'état (mission 041). Toutes sont « ouvertes » tant que l'export n'écrit pas la
-     * marque « rendue » (spec § 4.1) : on ne l'invente pas.
-     */
-    val rendue: Boolean get() = false
 
     val champs: ChampsTournee
         get() = ChampsTournee(foret, tournee?.projet?.operateur, tournee?.projet?.prepareLe, dossier.name, tournee?.projet?.nom)
@@ -138,11 +140,13 @@ object DepotTournees {
         val gpkg = File(dossier, ImportTournee.NOM_GPKG)
         return try {
             val t = LecteurTournee.lire(gpkg.toPath())
-            LigneTournee(dossier, t, null)
+            LigneTournee(dossier, t, null, rendue = RenduTournee.estRendue(dossier.toPath()))
         } catch (e: GpkgRefuse) {
+            JournalTechnique.avertir("Tournees", "tournée refusée : ${dossier.name}", e)
             LigneTournee(dossier, null, e.refus.message)
         } catch (e: Exception) {
-            LigneTournee(dossier, null, e.message ?: e.javaClass.simpleName)
+            JournalTechnique.avertir("Tournees", "tournée illisible : ${dossier.name}", e)
+            LigneTournee(dossier, null, TEXTE_LIGNE_ILLISIBLE)
         }
     }
 

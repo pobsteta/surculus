@@ -11,12 +11,28 @@
 # attendu est comparé à la couche `positions_controles` du GeoPackage EXPORTÉ
 # par Surculus (docs/spec.md l. 259), sans passer par le registre, avec la
 # tolérance de 0,5 m (décision de Pascal, mission 027, lue dans le JSON ;
-# `tolerance_m`). Sans mesure dans le scénario (P35-02), le point attendu est
-# le piquet : il est lu dans la couche `placettes` de l'export.
+# `tolerance_m`). P35-02 est ouvert sans position mesurée (mission 087 ; ADR
+# 0003, amendement du 2026-11-02, point 7 ; décision de Pascal du 2026-11-02,
+# « en faire le cas sans position ») : sa ligne de `positions_controles` est
+# vérifiée (une seule, géométrie NULL, sans_position_mesuree et
+# rattache_par_identite vrais, precision_m vide), et son point attendu, le
+# piquet, est lu dans la couche `controles` de l'export.
 # Pourquoi hors registre : sommieR 0.31.1 (fd92078) n'inscrit aucune position
 # sur un contrôle : R/registre6.R:150-180, R/travaux_terrain.R:156,
 # R/travaux_qfield.R:262-277, inst/sql/003_geometrie.sql:26-31 (voir
 # LIMITE_POSITION_SOMMIER, reprise dans le résumé du job).
+#
+# Mission 091 (relecture de la PR #155 ; fiche
+# pilotage/missions/091-besoin-concurrence-et-qualite-du-fix.md) : F4 compare
+# aussi au registre le `besoin` et la `concurrence` de chaque contrôle, et
+# l'ÉTAT DE SUIVI de chaque placette après l'import, tel que sommieR le verse
+# dans la couche `placettes` de la tournée suivante (R/travaux_qfield.R
+# l. 317-339 : `a_jour` si le dernier besoin est vide ou « aucun »,
+# `a_programmer` sinon, `jamais` sans contrôle). Il lit enfin `precision_m`,
+# `source_gnss` et `simulee` de la position mesurée dans `positions_controles`
+# (spec § 5 ; ADR 0003, ligne « Fix »), et les veut vides sur une ligne sans
+# position mesurée. Écrit par le testeur de la 091, sans lire le code de
+# l'export, du journal ni du rendu.
 #
 # Coordonnées : toujours (lon, lat) en degrés décimaux WGS 84 (EPSG:4326), noms
 # explicites ; les couches de l'export sont en EPSG:2154, converties par sf.
@@ -29,10 +45,11 @@ LIMITE_POSITION_SOMMIER <- paste0(
   "`positions_controles` de l'export (pilotage/journal.md, 2026-10-22, décision ",
   "de Pascal, mission 028).")
 
-# Ligne du résumé sur le point de P35-02 (sans mesure : le piquet).
+# Ligne du résumé sur le point de P35-02 (contrôle sans position mesurée).
 LIGNE_PIQUET <- paste0(
-  "Le point de P35-02 est le piquet de la tournée de départ : il vient de ",
-  "sommieR (couche `placettes`) et ne mesure rien de Surculus.")
+  "P35-02 est un contrôle ouvert sans position mesurée (mission 087) : sa ligne de ",
+  "`positions_controles` a une géométrie NULL, et son point, lu dans la couche ",
+  "`controles` de l'export, est le piquet de sommieR.")
 
 # Distance en mètres entre deux points (lon, lat) en degrés WGS 84, au plan
 # tangent à (lon1, lat1) : dlon * N cos(lat), dlat * M (ellipsoïde WGS 84,
@@ -55,22 +72,50 @@ dans_france <- function(lon, lat, rect)
     lon >= rect$lon_min & lon <= rect$lon_max
 
 # Positions de l'export de Surculus, en (lon, lat) WGS 84, lues avec sf.
-# Rend list(positions = data.frame(controle_uuid, lon, lat),
+# Une géométrie NULL ou vide (contrôle sans position mesurée, mission 087)
+# donne lon et lat NA, jamais (0, 0) ; la ligne n'est pas perdue.
+# Rend list(positions = data.frame(controle_uuid, lon, lat,
+#             sans_position_mesuree, rattache_par_identite, precision_m,
+#             source_gnss, simulee),   (source_gnss et simulee : mission 091)
+#           controles = data.frame(uuid, lon, lat)   (couche `controles`),
 #           piquets = data.frame(code_placette, lon, lat)).
 lire_points_export <- function(export_gpkg) {
   en_wgs84 <- function(couche) {
     x <- sf::st_read(export_gpkg, couche, quiet = TRUE)
-    xy <- sf::st_coordinates(sf::st_transform(x, 4326))  # X = lon, Y = lat
-    list(x = sf::st_drop_geometry(x), lon = unname(xy[, "X"]),
-         lat = unname(xy[, "Y"]))
+    g <- sf::st_geometry(x)
+    vide <- sf::st_is_empty(g)
+    lon <- rep(NA_real_, length(g)); lat <- rep(NA_real_, length(g))
+    if (any(!vide)) {
+      xy <- sf::st_coordinates(sf::st_transform(g[!vide], 4326))  # X = lon, Y = lat
+      lon[!vide] <- unname(xy[, "X"]); lat[!vide] <- unname(xy[, "Y"])
+    }
+    list(x = sf::st_drop_geometry(x), lon = lon, lat = lat)
   }
+  # Colonne absente (export d'avant la 087) : NA, jamais une valeur devinée.
+  colonne <- function(df, k, vide) if (k %in% names(df)) df[[k]] else rep(vide, nrow(df))
   couches <- sf::st_layers(export_gpkg)$name
   positions <- data.frame(controle_uuid = character(0), lon = numeric(0),
-                          lat = numeric(0), stringsAsFactors = FALSE)
+                          lat = numeric(0), sans_position_mesuree = logical(0),
+                          rattache_par_identite = logical(0),
+                          precision_m = numeric(0), source_gnss = character(0),
+                          simulee = logical(0), stringsAsFactors = FALSE)
   if ("positions_controles" %in% couches) {
     p <- en_wgs84("positions_controles")
     positions <- data.frame(controle_uuid = tolower(as.character(p$x$controle_uuid)),
-                            lon = p$lon, lat = p$lat, stringsAsFactors = FALSE)
+                            lon = p$lon, lat = p$lat,
+                            sans_position_mesuree = as.logical(colonne(p$x, "sans_position_mesuree", NA)),
+                            rattache_par_identite = as.logical(colonne(p$x, "rattache_par_identite", NA)),
+                            precision_m = as.numeric(colonne(p$x, "precision_m", NA_real_)),
+                            source_gnss = as.character(colonne(p$x, "source_gnss", NA_character_)),
+                            simulee = as.logical(colonne(p$x, "simulee", NA)),
+                            stringsAsFactors = FALSE)
+  }
+  controles <- data.frame(uuid = character(0), lon = numeric(0),
+                          lat = numeric(0), stringsAsFactors = FALSE)
+  if ("controles" %in% couches) {
+    k <- en_wgs84("controles")
+    controles <- data.frame(uuid = tolower(as.character(k$x$uuid)),
+                            lon = k$lon, lat = k$lat, stringsAsFactors = FALSE)
   }
   piquets <- data.frame(code_placette = character(0), lon = numeric(0),
                         lat = numeric(0), stringsAsFactors = FALSE)
@@ -79,7 +124,7 @@ lire_points_export <- function(export_gpkg) {
     piquets <- data.frame(code_placette = as.character(p$x$code_placette),
                           lon = p$lon, lat = p$lat, stringsAsFactors = FALSE)
   }
-  list(positions = positions, piquets = piquets)
+  list(positions = positions, controles = controles, piquets = piquets)
 }
 
 # Instant ISO 8601 en UTC (« 2026-10-20T09:30:00Z », millisecondes admises) en
@@ -103,6 +148,7 @@ controles_ecrits <- function(registre, ecrites, codes) {
                      visite_le = character(0), nb_total = numeric(0),
                      nb_vivants = numeric(0), nb_abroutis = numeric(0),
                      h_moy_cm = numeric(0), releve_uuid = character(0),
+                     besoin = character(0), concurrence = character(0),
                      stringsAsFactors = FALSE)
   lignes <- registre[tolower(registre$id) %in% tolower(unlist(ecrites)), ,
                      drop = FALSE]
@@ -121,13 +167,18 @@ controles_ecrits <- function(registre, ecrites, codes) {
              nb_total = num("nb_total"), nb_vivants = num("nb_vivants"),
              nb_abroutis = num("nb_abroutis"), h_moy_cm = num("h_moy_cm"),
              releve_uuid = tolower(champ("releve_uuid")),
+             besoin = champ("besoin"), concurrence = champ("concurrence"),
              stringsAsFactors = FALSE)
 }
 
 # `attendu` : registre-attendu-couchey.json lu (simplifyVector = FALSE) ;
-# `controles` : controles_ecrits() ; `points` : lire_points_export().
+# `controles` : controles_ecrits() ; `points` : lire_points_export() ;
+# `etats_suivi` (mission 091) : data.frame(code_placette, etat_suivi) lu après
+# l'import (etats_suivi_apres_import(), fonctions.R) ; NULL = non mesuré, ce
+# qui est un écart dès que le JSON attendu porte `etats_suivi` (un vert qui ne
+# mesure rien doit le dire).
 # Rend list(fautes, lignes) ; `lignes` : placette, champ, attendu, mesure, verdict.
-controle_f4 <- function(attendu, controles, points) {
+controle_f4 <- function(attendu, controles, points, etats_suivi = NULL) {
   fautes <- character(0)
   lignes <- list()
   noter <- function(placette, champ, att, mes, ok, faute = NULL) {
@@ -168,6 +219,15 @@ controle_f4 <- function(attendu, controles, points) {
       mes <- cible[[k]]
       noter(pl, k, att[[k]], mes, !is.na(mes) && mes == att[[k]])
     }
+    # Mission 091 : le besoin et la concurrence dits par l'agent arrivent au
+    # registre tels quels (R/registre6.R l. 176-179 : valider_choix, sans
+    # normalisation). Une valeur absente (NA) n'est jamais une égalité.
+    for (k in c("besoin", "concurrence")) {
+      if (is.null(att[[k]])) next
+      mes <- if (k %in% names(cible)) cible[[k]] else NA_character_
+      noter(pl, k, att[[k]], if (is.na(mes)) "absent" else mes,
+            !is.na(mes) && identical(as.character(mes), att[[k]]))
+    }
     # Le point : hors registre (voir l'en-tête).
     p <- att$point
     if (!dans_france(p$lon, p$lat, rect))
@@ -176,8 +236,28 @@ controle_f4 <- function(attendu, controles, points) {
                     pl, p$lon, p$lat))
     ligne_pos <- points$positions[points$positions$controle_uuid %in%
                                     cible$releve_uuid, , drop = FALSE]
-    if (nrow(ligne_pos) > 0L) {
+    if (isTRUE(p$sans_position_mesuree)) {
+      # Mission 087 : contrôle ouvert sans position mesurée. Sa ligne de
+      # positions_controles : une seule, géométrie NULL, drapeaux vrais,
+      # precision_m vide (Darwin Core : jamais 0) ; son point : `controles`.
+      if (!verifier_sans_position(pl, cible$releve_uuid, ligne_pos, noter)) next
+      src <- "controles"
+      mes <- if (is.null(points$controles)) data.frame(lon = NA_real_, lat = NA_real_) else
+        points$controles[points$controles$uuid %in% cible$releve_uuid, , drop = FALSE]
+      if (nrow(mes) != 1L) {
+        noter(pl, "point (controles)", "une ligne", paste(nrow(mes), "trouvée(s)"), FALSE,
+              sprintf("F4 : %s, contrôle %s : %d ligne(s) dans la couche controles de l'export, 1 attendue",
+                      pl, cible$releve_uuid, nrow(mes)))
+        next
+      }
+    } else if (nrow(ligne_pos) > 0L) {
+      if ("sans_position_mesuree" %in% names(ligne_pos) && !isFALSE(as.logical(ligne_pos$sans_position_mesuree[1L])))
+        noter(pl, "positions_controles, sans_position_mesuree", "faux",
+              ligne_pos$sans_position_mesuree[1L], FALSE,
+              sprintf("F4 : %s, positions_controles : sans_position_mesuree vaut %s, faux attendu (une position mesurée est attendue)",
+                      pl, ligne_pos$sans_position_mesuree[1L]))
       src <- "positions_controles"; mes <- ligne_pos[1L, ]
+      verifier_qualite_fix(pl, p, mes, noter)
     } else if (grepl("^position mesur", p$origine)) {
       noter(pl, "point (positions_controles)", "une ligne", "aucune", FALSE,
             sprintf("F4 : %s, aucune ligne de positions_controles pour le contrôle %s alors que le point attendu est une position mesurée",
@@ -201,6 +281,9 @@ controle_f4 <- function(attendu, controles, points) {
           sprintf("F4 : %s, point de %s à %.3f m du point attendu (tolérance %s m ; lon %.7f, lat %.7f)",
                   pl, src, d, p$tolerance_m, mes$lon, mes$lat))
   }
+  # [[ ]] exact : `$` ferait correspondre « etats_suivi » absent à
+  # « etats_suivi_avant_import » (correspondance partielle de R).
+  verifier_etats_suivi(attendu[["etats_suivi", exact = TRUE]], etats_suivi, noter)
   en_trop <- setdiff(controles$id, utilises)
   if (length(en_trop))
     fautes <- c(fautes, sprintf("F4 : %d contrôle(s) écrit(s) au registre sans attente : %s",
@@ -210,6 +293,112 @@ controle_f4 <- function(attendu, controles, points) {
          data.frame(placette = character(0), champ = character(0),
                     attendu = character(0), mesure = character(0),
                     verdict = character(0)))
+}
+
+# La ligne de positions_controles d'un contrôle ouvert sans position mesurée
+# (mission 087 ; ADR 0003, amendement du 2026-11-02, point 7). Note chaque
+# vérification ; rend FALSE si la ligne manque ou est en double (le point ne
+# se compare pas), TRUE sinon.
+verifier_sans_position <- function(pl, releve, ligne_pos, noter) {
+  champ <- "positions_controles (contrôle sans position mesurée)"
+  if (nrow(ligne_pos) == 0L) {
+    noter(pl, champ, "une ligne", "aucune", FALSE,
+          sprintf("F4 : %s, aucune ligne de positions_controles pour le contrôle %s, ouvert sans position mesurée (une ligne par contrôle)",
+                  pl, releve))
+    return(FALSE)
+  }
+  if (nrow(ligne_pos) > 1L) {
+    noter(pl, champ, "une ligne", paste(nrow(ligne_pos), "lignes"), FALSE,
+          sprintf("F4 : %s, %d lignes de positions_controles pour le contrôle %s, une attendue",
+                  pl, nrow(ligne_pos), releve))
+    return(FALSE)
+  }
+  l <- ligne_pos[1L, ]
+  noter(pl, "positions_controles, géométrie", "NULL",
+        if (is.na(l$lon)) "NULL" else sprintf("lon %.7f, lat %.7f", l$lon, l$lat),
+        is.na(l$lon) && is.na(l$lat),
+        sprintf("F4 : %s, positions_controles : géométrie présente (lon %s, lat %s), NULL attendue (contrôle sans position mesurée)",
+                pl, l$lon, l$lat))
+  noter(pl, "positions_controles, sans_position_mesuree", "vrai",
+        l$sans_position_mesuree, isTRUE(as.logical(l$sans_position_mesuree)),
+        sprintf("F4 : %s, positions_controles : sans_position_mesuree vaut %s, vrai attendu",
+                pl, l$sans_position_mesuree))
+  noter(pl, "positions_controles, rattache_par_identite", "vrai",
+        l$rattache_par_identite, isTRUE(as.logical(l$rattache_par_identite)),
+        sprintf("F4 : %s, positions_controles : rattache_par_identite vaut %s, vrai attendu (définition élargie)",
+                pl, l$rattache_par_identite))
+  noter(pl, "positions_controles, precision_m", "vide",
+        if (is.na(l$precision_m)) "vide" else l$precision_m, is.na(l$precision_m),
+        sprintf("F4 : %s, positions_controles : precision_m vaut %s, vide attendu (jamais 0 : Darwin Core)",
+                pl, l$precision_m))
+  # Mission 091 (spec § 5, ligne `positions_controles` : sans position mesurée,
+  # source_gnss, referentiel_source et simulee sont NULL). Colonne absente : NA.
+  for (k in c("source_gnss", "simulee")) {
+    v <- if (k %in% names(l)) l[[k]] else NA
+    noter(pl, paste0("positions_controles, ", k), "vide",
+          if (is.na(v)) "vide" else as.character(v), is.na(v),
+          sprintf("F4 : %s, positions_controles : %s vaut %s, vide attendu (aucun fix : rien n'est su de sa source)",
+                  pl, k, v))
+  }
+  TRUE
+}
+
+# Mission 091 : precision_m, source_gnss et simulee de la position mesurée
+# (spec § 5 ; ADR 0003, ligne « Fix » : une position simulée est « détectée et
+# enregistrée »). `p` : le point attendu du JSON ; ne compare que les clés qu'il
+# porte. `mes` : la ligne de positions_controles. Une valeur absente n'est
+# jamais une égalité ; precision_m à 1e-9 m près.
+verifier_qualite_fix <- function(pl, p, mes, noter) {
+  lu <- function(k) if (k %in% names(mes)) mes[[k]][1L] else NA
+  if (!is.null(p$precision_m)) {
+    v <- suppressWarnings(as.numeric(lu("precision_m")))
+    noter(pl, "positions_controles, precision_m", p$precision_m,
+          if (is.na(v)) "vide" else v,
+          !is.na(v) && abs(v - p$precision_m) < 1e-9,
+          sprintf("F4 : %s, positions_controles : precision_m vaut %s, %s attendu",
+                  pl, if (is.na(v)) "vide" else v, p$precision_m))
+  }
+  if (!is.null(p$source_gnss)) {
+    v <- as.character(lu("source_gnss"))
+    noter(pl, "positions_controles, source_gnss", p$source_gnss,
+          if (is.na(v)) "vide" else v,
+          !is.na(v) && identical(v, p$source_gnss),
+          sprintf("F4 : %s, positions_controles : source_gnss vaut %s, « %s » attendu",
+                  pl, if (is.na(v)) "vide" else v, p$source_gnss))
+  }
+  if (!is.null(p$simulee)) {
+    v <- as.logical(lu("simulee"))
+    noter(pl, "positions_controles, simulee", p$simulee,
+          if (is.na(v)) "vide" else v,
+          !is.na(v) && identical(v, isTRUE(p$simulee)),
+          sprintf("F4 : %s, positions_controles : simulee vaut %s, %s attendu",
+                  pl, if (is.na(v)) "vide" else v, p$simulee))
+  }
+  invisible(NULL)
+}
+
+# Mission 091 : l'état de suivi de chaque placette après l'import.
+# `attendus` : la liste nommée `etats_suivi` du JSON (code -> état), NULL si le
+# JSON n'en porte pas (rien à vérifier) ; `etats` : data.frame(code_placette,
+# etat_suivi) lu après l'import, NULL s'il n'a pas été mesuré (écart).
+verifier_etats_suivi <- function(attendus, etats, noter) {
+  if (is.null(attendus)) return(invisible(NULL))
+  if (is.null(etats)) {
+    noter("(toutes)", "etat_suivi", "mesuré", "non mesuré", FALSE,
+          "F4 : état de suivi non mesuré après l'import (etats_suivi absent)")
+    return(invisible(NULL))
+  }
+  for (code in names(attendus)) {
+    att <- attendus[[code]]
+    lu <- etats$etat_suivi[etats$code_placette %in% code]
+    mes <- if (length(lu) == 1L) as.character(lu) else
+      sprintf("%d ligne(s)", length(lu))
+    noter(code, "etat_suivi", att, mes,
+          length(lu) == 1L && identical(as.character(lu), att),
+          sprintf("F4 : état de suivi de %s après l'import : attendu %s, lu %s",
+                  code, att, mes))
+  }
+  invisible(NULL)
 }
 
 # Avertissement du témoin « sans couches » (mission 026) : pas un écart.

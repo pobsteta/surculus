@@ -19,26 +19,38 @@ import kotlin.math.hypot
 
 /**
  * Piquet d'une placette de la tournée : UUID de la placette (`placettes.uuid`), code lu sur le piquet
- * (`placettes.code_placette`) et position stockée (EPSG:2154, x = E, y = N, mètres).
+ * (`placettes.code_placette`), position stockée (EPSG:2154, x = E, y = N, mètres) et UG (`placettes.ug`, `null` si la
+ * tournée n'en porte pas). Le code n'est unique que dans une UG (sommieR `R/registre6.R` l. 85) : l'UG départage les homonymes.
  */
-data class Piquet(val placette: UuidPlacette, val code: String, val position: PointLambert93)
+data class Piquet(val placette: UuidPlacette, val code: String, val position: PointLambert93, val ug: String? = null)
 
 /** Contrôle rattaché à une placette (ADR 0003, spec § 4.3). */
 data class Rattache(
     val piquet: Piquet,
-    /** Distance horizontale, en mètres de Lambert-93, entre la position mesurée et le piquet. */
-    val distanceM: Double,
-    /** Vrai seulement si le code lu a rattaché le contrôle à un piquet à plus de 15 m (le code lu l'emporte sur le GNSS ; arbitrage de Pascal du 2026-10-16 (spec § 6)). */
+    /**
+     * Distance horizontale, en mètres de Lambert-93, entre la position mesurée et le piquet ; `null` sans position
+     * mesurée (ni 0 ni NaN : décision de Pascal du 2026-11-03, mission 087).
+     */
+    val distanceM: Double?,
+    /**
+     * Vrai si le code lu a désigné la placette et que la position mesurée ne l'a pas fait : au-delà de 15 m (le code lu
+     * l'emporte sur le GNSS ; arbitrage de Pascal du 2026-10-16, spec § 6), et toujours sans position mesurée
+     * (définition élargie, ADR 0003, amendement du 2026-11-02, point 7).
+     */
     val parIdentite: Boolean,
     /** Position portée par le contrôle : celle du piquet si rattaché par identité, la position mesurée sinon. */
     val positionControle: PointLambert93,
-    /** Position GNSS mesurée (moyennée), toujours gardée à part (`positions_controles`). */
-    val positionMesuree: PointLambert93,
-)
+    /** Position GNSS mesurée (moyennée), gardée à part (`positions_controles`) ; `null` : ouvert sans position mesurée. */
+    val positionMesuree: PointLambert93?,
+) {
+    /** Ouvert sans aucune position mesurée, sur le seul code lu (ADR 0003, amendement du 2026-11-02). */
+    val sansPositionMesuree: Boolean get() = positionMesuree == null
+}
 
 /**
- * Règle des 15 m de l'import sommieR 0.31.1 (`distances <= 15`, `R/travaux_qfield.R` l. 303), borne incluse.
- * Distances planes en Lambert-93 (mètres) ; la position mesurée est déjà convertie en EPSG:2154.
+ * Règle des 15 m, reprise de l'import sommieR 0.31.1 (`distances <= 15`, `R/travaux_qfield.R` l. 303), borne incluse ;
+ * c'est une règle de Surculus (ADR 0003, correction du 2026-11-02). Distances planes en Lambert-93 (mètres) ; la
+ * position mesurée est déjà convertie en EPSG:2154.
  */
 object Rattachement {
     const val DISTANCE_MAX_M = 15.0
@@ -48,15 +60,38 @@ object Rattachement {
     /**
      * [codeLu] : code du piquet confirmé par l'agent, `null` s'il n'a rien confirmé. Le code lu l'emporte sur
      * le GNSS ; sans code, la placette la plus proche, une égalité de distance départagée par le code.
+     *
+     * Code présent dans plusieurs placettes (ADR 0003, amendement du 2026-11-02, point 3) : si une seule est à 15 m au
+     * plus (borne incluse), c'est elle ; sinon [Verdict.AChoisirUg], et l'agent choisit l'UG ([ugChoisie]) : la placette
+     * choisie est alors rattachée (par identité si elle est à plus de 15 m). Jamais « la première trouvée ».
+     *
+     * [mesuree] `null` : aucun fix reçu (ADR 0003, amendement du 2026-11-02, points 2, 3 et 5). Le code lu est alors
+     * obligatoire ([RefusPlacette.CodeRequis] sinon) ; la placette est rattachée par identité, à la position de son
+     * piquet, sans position mesurée ; sans position, rien ne tranche entre homonymes : l'agent choisit l'UG.
      */
-    fun rattacher(piquets: List<Piquet>, mesuree: PointLambert93, codeLu: String? = null): Verdict<Rattache> {
+    fun rattacher(piquets: List<Piquet>, mesuree: PointLambert93?, codeLu: String? = null, ugChoisie: String? = null): Verdict<Rattache> {
         if (piquets.isEmpty()) return Verdict.Refuse(RefusPlacette.AucunePlacette)
+        if (mesuree == null && codeLu == null) return Verdict.Refuse(RefusPlacette.CodeRequis)
         if (codeLu != null) {
-            val p = piquets.firstOrNull { it.code == codeLu } ?: return Verdict.Refuse(RefusPlacette.CodeInconnu(codeLu))
+            val homonymes = piquets.filter { it.code == codeLu }
+            if (homonymes.isEmpty()) return Verdict.Refuse(RefusPlacette.CodeInconnu(codeLu))
+            val p = if (homonymes.size == 1) {
+                homonymes.single()
+            } else {
+                val choisie = ugChoisie?.let { ug -> homonymes.filter { it.ug == ug } }.orEmpty()
+                val proches = if (mesuree == null) emptyList() else homonymes.filter { distanceM(it.position, mesuree) <= DISTANCE_MAX_M }
+                when {
+                    choisie.size == 1 -> choisie.single()
+                    proches.size == 1 -> proches.single()
+                    else -> return Verdict.AChoisirUg(homonymes.sortedWith(OrdreUg))
+                }
+            }
+            if (mesuree == null) return Verdict.Accepte(Rattache(p, null, true, p.position, null))
             val d = distanceM(p.position, mesuree)
             val parIdentite = d > DISTANCE_MAX_M
             return Verdict.Accepte(Rattache(p, d, parIdentite, if (parIdentite) p.position else mesuree, mesuree))
         }
+        checkNotNull(mesuree)
         val plusProche = piquets.minWith(compareBy<Piquet>({ distanceM(it.position, mesuree) }, { it.code }))
         val d = distanceM(plusProche.position, mesuree)
         if (d > DISTANCE_MAX_M) return Verdict.Refuse(RefusPlacette.HorsQuinzeMetres(d))

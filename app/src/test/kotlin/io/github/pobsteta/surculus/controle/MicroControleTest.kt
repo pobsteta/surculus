@@ -15,6 +15,10 @@ import kotlin.test.assertTrue
  * Mission 075 : le bouton micro comme celui de Marculus. Sans Compose : la place (fonction pure de l'écran, jamais de l'écoute),
  * l'aspect (fonction pure de l'écoute et de « prêt ») et les contrastes. « Il ne bouge pas sous le doigt » et « visible sans défiler »
  * ne se prouvent qu'à la capture.
+ *
+ * Le bloc d'écoute (`BlocEcouteEncadre`) : couché, il est posé par-dessus le haut de la zone qui défile (gardes ci-dessous, sur le
+ * `Box` de zone). Debout (mission 083), il n'est plus dans la zone : il part du pied, à gauche du micro, et monte sur le bas de la
+ * zone ; sa place est jugée par le test de rendu (`RenduControleTest`), pas ici.
  */
 class MicroControleTest {
     @Test fun `couche, le micro est dans une colonne fixe de 128 dp a droite`() {
@@ -58,26 +62,32 @@ class MicroControleTest {
         assertEquals(1, Regex("AspectMicro\\.pour\\(").findAll(source).count(), "un seul calcul de l'aspect, dans BoutonMicro")
     }
 
+    /**
+     * Couché (083, reprise 2/3) : le bloc n'est plus dans le `Box` de zone mais frère de la `Row` (zone + colonne du micro), dans un `Box`
+     * qui les contient : il s'étend vers la droite, sur la colonne du micro. L'appel debout (`BlocEcouteEncadre(cote = false)`) n'est pas compté.
+     */
     @Test fun `le bloc J'ECOUTE est pose hors de la colonne qui defile`() {
         val defile = corps("Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp))")
-        assertFalse(defile.contains("BlocEcouteEncadre()"), "le bloc ne doit pas être dans la colonne qui défile")
-        // Surimpression : le bloc est un frère de la Column, dans le corps du Box de zone, APRÈS elle, posé avec Modifier.align(.
+        assertFalse(defile.contains("BlocEcouteEncadre("), "le bloc ne doit pas être dans la colonne qui défile")
         val zone = corps("Box(m) {")
-        val debutColonne = zone.indexOf("Column(Modifier.fillMaxSize().verticalScroll(")
-        assertTrue(debutColonne >= 0, "la Column qui défile doit être dans le Box de zone")
-        val ouvreColonne = zone.indexOf('{', zone.indexOf("verticalArrangement", debutColonne))
+        assertFalse(zone.contains("BlocEcouteEncadre("), "couché, le bloc n'est plus dans le Box de zone : il déborde à droite, sur la colonne du micro")
+        // Surimpression : le bloc est un frère de la Row (zone + micro), APRÈS elle, posé avec Modifier.align(.
+        val couche = corps("if (emplacement == EmplacementMicro.COLONNE) {")
+        val ligneRow = couche.indexOf("Row(Modifier.fillMaxSize()) {")
+        assertTrue(ligneRow >= 0, "la Row (zone + colonne du micro) doit être dans le Box couché")
+        val ouvreRow = couche.indexOf('{', ligneRow)
         var prof = 0
-        var finColonne = -1
-        for (k in ouvreColonne until zone.length) {
-            if (zone[k] == '{') prof++
-            if (zone[k] == '}' && --prof == 0) { finColonne = k; break }
+        var finRow = -1
+        for (k in ouvreRow until couche.length) {
+            if (couche[k] == '{') prof++
+            if (couche[k] == '}' && --prof == 0) { finRow = k; break }
         }
-        assertTrue(finColonne > 0, "accolade de la Column non fermée")
-        val bloc = zone.indexOf("BlocEcouteEncadre()")
-        assertTrue(bloc >= 0, "BlocEcouteEncadre() doit être dans le corps du Box de zone")
-        assertEquals(1, Regex("BlocEcouteEncadre\\(\\)").findAll(zone).count(), "un seul appel dans la zone")
-        assertTrue(bloc > finColonne, "le bloc doit venir APRÈS la Column (frère au-dessus), pas avant ni dedans")
-        val ligne = zone.substring(zone.lastIndexOf('\n', bloc) + 1, zone.indexOf('\n', bloc))
+        assertTrue(finRow > 0, "accolade de la Row non fermée")
+        val bloc = couche.indexOf("BlocEcouteEncadre()")
+        assertTrue(bloc >= 0, "BlocEcouteEncadre() doit être dans le Box couché")
+        assertEquals(1, Regex("BlocEcouteEncadre\\(\\)").findAll(couche).count(), "un seul appel couché")
+        assertTrue(bloc > finRow, "le bloc doit venir APRÈS la Row (frère au-dessus), pas avant ni dedans")
+        val ligne = couche.substring(couche.lastIndexOf('\n', bloc) + 1, couche.indexOf('\n', bloc))
         assertTrue(ligne.contains("Modifier.align("), "le bloc est posé avec Modifier.align( : $ligne")
     }
 

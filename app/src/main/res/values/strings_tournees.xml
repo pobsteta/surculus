@@ -110,6 +110,7 @@
     <string name="carte_recepteur_non_demarre">Récepteur GNSS non démarré : voir Paramètres, Récepteur GNSS.</string>
     <string name="carte_recepteur_liaison_perdue">Liaison avec le récepteur GNSS perdue : nouvelle tentative en cours.</string>
     <string name="carte_recepteur_corrections">Corrections RTK indisponibles : la position est moins précise.</string>
+    <string name="carte_recepteur_service_interrompu">Le service du récepteur GNSS s\'est interrompu : le libérer avec le bouton de la notification, puis rouvrir la carte.</string>
 
     <!-- Écran Guidage (spec § 4.2 et 4.3) -->
     <string name="guidage_vers">Vers %1$s</string>
@@ -121,10 +122,39 @@
     <string name="guidage_code">Code lu sur le piquet</string>
     <string name="guidage_rattacher">Rattacher la placette</string>
     <string name="guidage_moyenne">Moyenne de la position : %1$d / %2$d s</string>
+    <string name="guidage_ug_a_choisir">%1$s existe dans plusieurs UG (%2$s). Cliquez sur le bouton « Contrôler » : si la position ne suffit pas, l\'écran suivant vous demandera l\'UG.</string>
     <string name="guidage_rattache">Placette %1$s retrouvée, à %2$s du piquet.</string>
     <string name="guidage_rattache_identite">Placette %1$s rattachée par le code. Mesure à %2$s : position du piquet retenue, mesure gardée à part.</string>
     <string name="guidage_refus_15m">À %1$s de la placette la plus proche (plus de 15 m). Lisez le code sur le piquet, saisissez-le, puis rattachez.</string>
     <string name="guidage_refus_code">Code « %1$s » inconnu de la tournée.</string>
     <string name="guidage_rien_enregistre">Rien n\'est enregistré à ce stade.</string>
     <string name="guidage_nord">Nord en haut</string>
+
+    <!-- Rendre la tournée (mission 090, décisions de Pascal du 2026-11-03) -->
+    <string name="rendu_bouton">Rendre la tournée</string>
+    <string name="rendu_rouvrir">Rouvrir la tournée</string>
+    <plurals name="rendu_controles">
+        <item quantity="one">%1$d contrôle</item>
+        <item quantity="other">%1$d contrôles</item>
+    </plurals>
+    <plurals name="rendu_plants">
+        <item quantity="one">%1$d plant</item>
+        <item quantity="other">%1$d plants</item>
+    </plurals>
+    <string name="rendu_confirmer_titre">Rendre la tournée ?</string>
+    <string name="rendu_confirmer_texte">%1$s : rendre ? La tournée passera en lecture seule.</string>
+    <string name="rendu_confirmer">Rendre</string>
+    <string name="rendu_annuler">Annuler</string>
+    <string name="rendu_verification">Vérification…</string>
+    <string name="rendu_ecriture">Écriture…</string>
+    <string name="rendu_fait">Tournée rendue : %1$s, %2$s</string>
+    <string name="rendu_partager">Partager</string>
+    <string name="rendu_fermer">Fermer</string>
+    <string name="rendu_fautes_titre">Rendu impossible : à corriger d\'abord</string>
+    <string name="rendu_impossible">Rendu impossible : %1$s</string>
+    <string name="rendu_lecture_seule">Tournée rendue : en lecture seule.</string>
+    <string name="rendu_rouvrir_titre">Rouvrir la tournée ?</string>
+    <string name="rendu_rouvrir_texte">Un contrôle déjà importé dans sommieR ne sera pas mis à jour : sommieR ignore ce qu\'il a déjà reçu. Les nouveaux contrôles partiront au prochain rendu, dans un nouveau fichier.</string>
+    <string name="rendu_rouvrir_confirmer">Rouvrir</string>
+    <string name="controle_tournee_rendue">Tournée rendue : en lecture seule. Pour saisir, la rouvrir depuis la liste de ses placettes.</string>
 </resources>

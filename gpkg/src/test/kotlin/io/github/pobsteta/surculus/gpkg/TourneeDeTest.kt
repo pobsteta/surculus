@@ -75,6 +75,11 @@ object TourneeDeTest {
             cnx.createStatement().use { st ->
                 st.executeUpdate("INSERT INTO suivis (id, libelle, ug) VALUES ('$TRAVAUX_ID', 'Plantation 2022', '35')")
                 st.executeUpdate("INSERT INTO codes (code, libelle, unites, formes) VALUES ('PL', 'Plantation', 'ha', 'surface')")
+                // Mission 091 : le besoin « regarni » du scénario Couchey (P35-02). Ligne de SOMMIER_CODES_TRAVAUX de
+                // sommieR 0.31.1 (R/registre6.R l. 17-45 : code RG, unité plants, formes surface et point), que
+                // sommier_projet_qfield_travaux() verse dans la couche `codes` (R/travaux_qfield.R l. 59-65). La couche
+                // d'essai ne porte pas « aucun » : un test vérifie qu'il reste permis sans y être.
+                st.executeUpdate("INSERT INTO codes (code, libelle, unites, formes) VALUES ('RG', 'RG - Regarnis, compléments', 'plants', 'surface, point')")
             }
             for (k in 0..2) {
                 cnx.prepareStatement(
@@ -114,7 +119,7 @@ object TourneeDeTest {
 
     /**
      * Saisies d'une journée : contrôle de P35-01 (4 plants : sain, atteint abrouti de 40 cm, mort, absent) et de
-     * P35-02 (2 plants sains), avec leur position mesurée. Totaux déduits des états, comme l'application.
+     * P35-02 (2 plants, un sain, un non observé) ; P35-01 avec sa position mesurée, P35-02 ouvert sans position (mission 087). Totaux déduits des états, comme l'application.
      */
     fun saisiesDeLaJournee(epsg: CodeEpsg = CodeEpsg.RGF93_V1_LAMBERT93): Saisies {
         val p1 = listOf(
@@ -136,12 +141,14 @@ object TourneeDeTest {
             (Totaux.deduire(e.map { io.github.pobsteta.surculus.core.placette.EtatPlant(it.plant, it.observation) }) as Verdict.Accepte).valeur
         val c1 = ControleSaisi(
             UuidControle(uuid(3001)), UuidPlacette(placetteUuid(0)), INSTANT_CONTROLE, JourCivil.de(INSTANT_CONTROLE), centre(0),
-            PositionMesuree(centre(0), precisionM = 0.4, sourceGnss = "essai", referentielSource = "RGF93", simulee = true),
+            PositionMesuree(centre(0), precisionM = 0.4, sourceGnss = "telephone", referentielSource = "RGF93", simulee = true),
             etats1, totaux = totaux(etats1), operateur = "Agent d'essai", concurrence = "moyenne", besoin = "aucun",
         )
         val c2 = ControleSaisi(
             UuidControle(uuid(3002)), UuidPlacette(placetteUuid(1)), INSTANT_CONTROLE.plusSeconds(3600), JourCivil.de(INSTANT_CONTROLE.plusSeconds(3600)), centre(1),
-            null, etats2, totaux = totaux(etats2), operateur = "Agent d'essai",
+            // Mission 087 (décision de Pascal du 2026-11-03, une ligne par contrôle) : P35-02 est ouvert sans position mesurée.
+            PositionMesuree(position = null, rattacheParIdentite = true, sansPositionMesuree = true),
+            etats2, totaux = totaux(etats2), operateur = "Agent d'essai",
         )
         return Saisies(
             operateur = "Agent d'essai",

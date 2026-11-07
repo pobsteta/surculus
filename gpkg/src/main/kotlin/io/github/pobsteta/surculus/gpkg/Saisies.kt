@@ -67,19 +67,29 @@ data class PlantNumerote(val plant: Plant, val numero: Int) {
 /** Ligne d'état d'un plant à un contrôle : une ligne de `etats_plants`. */
 data class LigneEtat(val uuid: String, val plant: UuidPlant, val observation: Observation)
 
-/** Position GNSS mesurée (moyennée) d'un contrôle : une ligne de `positions_controles`. */
+/**
+ * Position GNSS mesurée (moyennée) d'un contrôle : une ligne de `positions_controles`, une par contrôle (spec § 5).
+ *
+ * Contrôle ouvert sans aucun fix (ADR 0003, amendement du 2026-11-02, point 7) : [position] `null` et
+ * [sansPositionMesuree] vrai ; la ligne est écrite avec une géométrie NULL, et `precision_m`, `source_gnss`,
+ * `referentiel_source` et `simulee` NULL (choix de format) ; [rattacheParIdentite] est alors vrai. L'export refuse une
+ * ligne qui mentirait (position absente sans le drapeau, drapeau avec une position).
+ */
 data class PositionMesuree(
-    val position: PointLambert93,
+    val position: PointLambert93?,
     val precisionM: Double? = null,
     val sourceGnss: String? = null,
     val referentielSource: String? = null,
-    val simulee: Boolean = false,
+    /** Vrai si la position est simulée (ADR 0003) ; `null` : on ne le sait pas (contrôle d'avant la mission 091), jamais « faux » par défaut. */
+    val simulee: Boolean? = null,
     val rattacheParIdentite: Boolean = false,
+    val sansPositionMesuree: Boolean = false,
 )
 
 /**
  * Un contrôle de placette : une ligne de `controles` (totaux, lus par l'import de sommieR 0.31.1), une ligne
- * de `positions_controles` si [positionMesuree] est donnée, et une ligne d'`etats_plants` par plant.
+ * de `positions_controles` ([positionMesuree], obligatoire à l'export : une ligne par contrôle, décision de Pascal du
+ * 2026-11-03), et une ligne d'`etats_plants` par plant.
  */
 data class ControleSaisi(
     val uuid: UuidControle,

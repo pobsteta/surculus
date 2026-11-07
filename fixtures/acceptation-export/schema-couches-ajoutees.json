@@ -117,8 +117,13 @@
         {
           "nom": "rattache_par_identite",
           "classe": "BOOLEAN"
+        },
+        {
+          "nom": "sans_position_mesuree",
+          "classe": "BOOLEAN"
         }
-      ]
+      ],
+      "source_sans_position_mesuree": "ADR 0003, amendement du 2026-11-02, point 7 ; docs/spec.md § 5 (mission 087) ; géométrie NULL permise pour un contrôle sans position mesurée"
     },
     "etats_plants": {
       "data_type": "attributes",

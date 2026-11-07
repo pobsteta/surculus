@@ -81,23 +81,34 @@ object AdaptateurReglesPlacette : ReglesPlacette {
 
     // --- familles ---
 
+    /**
+     * Mission 087, API supposée (à confirmer par le dev) : `Rattachement.rattacher(piquets, mesuree: PointLambert93?,
+     * codeLu, ugChoisie)` ; `Rattache.positionMesuree: PointLambert93?` (null sans position mesurée).
+     */
     private fun rattachement(e: JsonObject): JsonObject {
-        val mesuree = e.getAsJsonObject("position_mesuree")
-        check(mesuree.texte("crs") == "EPSG:2154") { "position mesurée attendue en EPSG:2154" }
-        // Les fixtures ne donnent que le code du piquet : l'UUID de la placette en est tiré, pour le test seulement.
-        val piquets = e.objets("piquets_stockes").map { Piquet(UuidPlacette("uuid-${it.texte("code")}"), it.texte("code")!!, xy(it)) }
+        // Mission 087 : `position_mesuree` à null = aucun fix reçu (ADR 0003, amendement du 2026-11-02).
+        val mesuree = e.get("position_mesuree")?.takeUnless { it.isJsonNull }?.asJsonObject
+        if (mesuree != null) check(mesuree.texte("crs") == "EPSG:2154") { "position mesurée attendue en EPSG:2154" }
+        // Les fixtures ne donnent que le code du piquet (et son UG, mission 087) : l'UUID de la placette en est tiré,
+        // pour le test seulement.
+        val piquets = e.objets("piquets_stockes").map {
+            val ug = it.texte("ug")
+            Piquet(UuidPlacette("uuid-${it.texte("code")}" + (ug?.let { u -> "-ug$u" } ?: "")), it.texte("code")!!, xy(it), ug = ug)
+        }
         val codeLu = if (e["identite_confirmee"].asBoolean) e.texte("code_lu") else null
         return JsonObject().apply {
-            when (val r = Rattachement.rattacher(piquets, xy(mesuree), codeLu)) {
+            when (val r = Rattachement.rattacher(piquets, mesuree?.let(::xy), codeLu, ugChoisie = e.texte("ug_choisie"))) {
                 is Verdict.Accepte -> {
                     addProperty("issue", "rattache")
                     addProperty("placette", r.valeur.piquet.code)
-                    addProperty("distance_m", r.valeur.distanceM)
+                    r.valeur.piquet.ug?.let { addProperty("ug", it) }
+                    if (mesuree != null) addProperty("distance_m", r.valeur.distanceM)
                     addProperty("rattache_par_identite", r.valeur.parIdentite)
                     add("position_controle", json(r.valeur.positionControle))
-                    add("position_mesuree_conservee", json(r.valeur.positionMesuree))
+                    add("position_mesuree_conservee", r.valeur.positionMesuree?.let(::json) ?: com.google.gson.JsonNull.INSTANCE)
                 }
                 is Verdict.Refuse -> { addProperty("issue", "refus"); addProperty("motif", r.refus.motif) }
+                is Verdict.AChoisirUg -> addProperty("issue", "ug_a_choisir")
                 is Verdict.AConfirmer -> error("pas d'alerte attendue au rattachement")
             }
         }

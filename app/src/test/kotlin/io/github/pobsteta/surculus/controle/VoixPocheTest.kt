@@ -92,13 +92,18 @@ class VoixPocheTest {
         assertTrue(a.erreur)
     }
 
-    @Test fun `placette deja terminee - l'alerte avant le numero, a chaque geste`() = with(BancControle()) {
+    // Mission 095 (décision de Pascal du 2026-11-06) : « Terminer » exige un état ou « non observé » sur tous les plants. Le banc passe donc
+    // à 3 plants, les n° 2 et 3 sont dits « non observé » avant Terminer ; plus aucun plant sans état après : « Suivant, 3. » devient
+    // « Tous les plants sont dits. ». Ce que le test vérifie ne change pas : l'alerte « placette déjà terminée » passe avant le numéro.
+    @Test fun `placette deja terminee - l'alerte avant le numero, a chaque geste`() = with(BancControle(nbPlantsAnterieurs = 3)) {
         val c = controleur()
         c.geste(Geste.VOLUME_HAUT_COURT)
-        c.demanderTerminer(); c.terminer(); c.reprendre()
+        c.autresPlantsNonObserves(); c.demanderTerminer(); c.direBesoin("aucun"); c.direConcurrence("faible"); c.terminer(); c.reprendre()
         c.geste(Geste.VOLUME_HAUT_COURT)
-        assertEquals("placette déjà terminée. Numéro 2, sain. Suivant, 3.", c.derniereAnnonce?.texte)
+        assertEquals("placette déjà terminée. Numéro 2, sain. Tous les plants sont dits.", c.derniereAnnonce?.texte)
         assertContentEquals(MotifsVibration.DEJA_TERMINEE, c.derniereAnnonce?.motif)
+        // Tous les plants étant dits, le curseur n'avance plus seul au n° 3 : on y revient à la main (même 3e plant qu'avant).
+        c.choisir(io.github.pobsteta.surculus.core.placette.UuidPlant("ancien-3"))
         c.geste(Geste.VOLUME_BAS_COURT)
         assertTrue(c.derniereAnnonce!!.texte.startsWith("placette déjà terminée. Numéro 3, mort."), c.derniereAnnonce!!.texte)
     }
@@ -106,7 +111,8 @@ class VoixPocheTest {
     @Test fun `double appui bas apres Terminer - la placette est rouverte, pas d'alerte de placette terminee`() = with(BancControle()) {
         val c = controleur()
         c.geste(Geste.VOLUME_HAUT_COURT)
-        c.demanderTerminer(); c.terminer(); c.reprendre()
+        c.autresPlantsNonObserves()
+        c.demanderTerminer(); c.direBesoin("aucun"); c.direConcurrence("faible"); c.terminer(); c.reprendre()
         c.geste(Geste.VOLUME_BAS_DOUBLE_COURT)
         assertEquals("annulé.", c.derniereAnnonce?.texte)
         assertContentEquals(MotifsVibration.ANNULE, c.derniereAnnonce?.motif)

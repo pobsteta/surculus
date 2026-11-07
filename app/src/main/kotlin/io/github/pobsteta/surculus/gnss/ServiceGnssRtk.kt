@@ -24,24 +24,28 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.location.LocationManager
 import android.os.IBinder
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.core.gnss.EvaluationFix
 import io.github.pobsteta.surculus.core.gnss.FixGnss
 import io.github.pobsteta.surculus.core.gnss.LecteurNmea
 import io.github.pobsteta.surculus.core.gnss.Ntrip
-import io.github.pobsteta.surculus.core.gnss.EvaluationFix
 import io.github.pobsteta.surculus.core.gnss.Position
 import io.github.pobsteta.surculus.core.gnss.QualiteFix
 import io.github.pobsteta.surculus.core.gnss.RaisonRefus
 import io.github.pobsteta.surculus.core.gnss.StatutNtrip
+import io.github.pobsteta.surculus.core.session.ReferentielsSource
+import io.github.pobsteta.surculus.messages.JournalTechnique
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,6 +57,7 @@ import java.time.LocalTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicLong
 
 /** Link state, for the badge and the diagnostic of the settings. */
 data class EtatRtk(
@@ -81,7 +86,8 @@ data class EtatRtk(
  */
 class ServiceGnssRtk : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, e ->
-        _etat.update { it.copy(erreur = e.message ?: e.toString()) }
+        JournalTechnique.avertir("GnssRtk", "erreur non rattrapée du service", e)
+        _etat.update { it.copy(erreur = getString(R.string.rtk_service_interrompu)) }
     })
     private var travail: Job? = null
 
@@ -110,6 +116,12 @@ class ServiceGnssRtk : Service() {
         }
     }
 
+    /** Même phrase que la carte, plus l'action : la boucle de [onStartCommand] retente, la promesse est vraie. */
+    private fun liaisonPerdue() = "${getString(R.string.carte_recepteur_liaison_perdue)} ${getString(R.string.rtk_liaison_action)}"
+
+    /** Même phrase que la carte, plus l'action : la boucle NTRIP retente. */
+    private fun correctionsPerdues() = "${getString(R.string.carte_recepteur_corrections)} ${getString(R.string.rtk_corrections_action)}"
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -128,7 +140,7 @@ class ServiceGnssRtk : Service() {
         val config = ConfigRtk.lire(this)
         val transport = transport(this, config)
         if (transport == null || !premier) {
-            _etat.value = EtatRtk(erreur = getString(R.string.rtk_config_incomplete))
+            _etat.value = EtatRtk(erreur = getString(R.string.carte_recepteur_non_demarre))
             arreterInterne()
             return START_NOT_STICKY
         }
@@ -137,7 +149,10 @@ class ServiceGnssRtk : Service() {
         travail = scope.launch {
             while (isActive) {
                 runCatching { relier(transport, config) }
-                    .onFailure { e -> _etat.update { it.copy(erreur = e.message ?: e.toString()) } }
+                    .onFailure { e ->
+                        JournalTechnique.avertir("GnssRtk", "liaison avec le récepteur coupée", e)
+                        _etat.update { it.copy(erreur = liaisonPerdue()) }
+                    }
                 if (!isActive) break
                 fixBrut = null
                 _fix.value = null
@@ -150,11 +165,13 @@ class ServiceGnssRtk : Service() {
     }
 
     /** One connection to the receiver (and the caster), until either closes. */
-    private suspend fun relier(transport: Transport, config: ConfigRtk) = kotlinx.coroutines.coroutineScope {
-        val lecteur = LecteurNmea(horlogeMonotone = android.os.SystemClock::elapsedRealtime)
+    private suspend fun relier(transport: Transport, config: ConfigRtk) = coroutineScope {
+        val lecteur = LecteurNmea(horlogeMonotone = SystemClock::elapsedRealtime)
         val ntrip = if (config.ntrip && config.pointMontage.isNotBlank()) {
             ClientNtrip(config.casterHote, config.casterPort, config.pointMontage, config.utilisateur, config.motDePasse)
         } else null
+        // Dernier RTCM relayé au récepteur (horloge monotone, ms ; -1 : aucun) : dit au fix si un flux était vu (mission 094).
+        val dernierRtcm = AtomicLong(-1L)
         val enfants = mutableListOf<Job>()
         // Un récepteur qui se tait ne laisse pas un vieux fix affiché : réévaluation chaque seconde.
         enfants += launch { while (isActive) { delay(1000L); publier() } }
@@ -165,9 +182,13 @@ class ServiceGnssRtk : Service() {
                     runCatching {
                         ntrip.corrections { s -> _etat.update { it.copy(ntripStatut = s, ntripErreur = null) } }.collect { rtcm ->
                             transport.ecrire(rtcm)
+                            dernierRtcm.set(SystemClock.elapsedRealtime())
                             _etat.update { it.copy(rtcmEnvoye = it.rtcmEnvoye + rtcm.size) }
                         }
-                    }.onFailure { e -> _etat.update { it.copy(ntripErreur = e.message ?: e.toString()) } }
+                    }.onFailure { e ->
+                        JournalTechnique.avertir("GnssRtk", "serveur de corrections NTRIP en échec", e)
+                        _etat.update { it.copy(ntripErreur = correctionsPerdues()) }
+                    }
                     delay(RECONNEXION_MS * 2)
                 }
             }
@@ -195,7 +216,11 @@ class ServiceGnssRtk : Service() {
                         tramesRecues = it.tramesRecues + trames.size, derniereTrame = trames.lastOrNull() ?: it.derniereTrame)
                 }
                 fixes.lastOrNull()?.let { f ->
-                    fixBrut = f
+                    // Le caster dont le flux était vu à l'arrivée du fix : il fonde le référentiel de la source (094).
+                    val caster = ntrip?.let { n ->
+                        ReferentielsSource.casterVu(config.casterHote, n.connecte, dernierRtcm.get().takeIf { it >= 0L }, SystemClock.elapsedRealtime())
+                    }
+                    fixBrut = f.copy(casterNtrip = caster)
                     publier()
                 }
             }

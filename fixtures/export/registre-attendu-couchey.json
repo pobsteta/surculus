@@ -11,12 +11,25 @@
   },
   "methode_decalage": {
     "decision": "Pascal, 2026-10-21 : pour P35-01 le point attendu est la position mesurée (piquet + décalage), tolérance 0,5 m ; pour P35-02, sans mesure, c'est le piquet, même tolérance.",
+    "decision_2026_11_02": "Pascal, 2026-11-02 (mission 087, « en faire le cas sans position ») : P35-02 devient un contrôle ouvert sans position sur son code ; F4 vérifie sa ligne de positions_controles (géométrie NULL, sans_position_mesuree et rattache_par_identite vrais) et la position du piquet dans la couche controles, même tolérance.",
     "approximation": "locale (plan tangent à la placette) : dlon = decalage_est / (N cos(lat)), dlat = decalage_nord / M, en radians puis degrés ; le décalage est lu comme est et nord géographiques (le scénario le nomme decalage_est_m, decalage_nord_m).",
     "rayons": "ellipsoïde WGS 84 (a = 6 378 137 m, f = 1/298,257223563, e² = f(2 - f)) ; N = a / sqrt(1 - e² sin²lat) = 6 389 683,58 m ; M = a(1 - e²) / (1 - e² sin²lat)^1,5 = 6 369 909,51 m, à lat 47,25910.",
     "calcul_P35-01": "dlon = 0,6 / (6 389 683,58 × cos 47,25910°) rad = 7,9273e-6 degrés ; dlat = -0,4 / 6 369 909,51 rad = -3,5979e-6 degrés ; lon = 4,93250 + 0,0000079273 = 4,9325079273 ; lat = 47,25910 - 0,0000035979 = 47,2590964021.",
     "ecart_avec_la_sphere": "un rayon sphérique de 6 371 008,8 m (IUGG) donnerait des écarts d'environ 2,3e-8 degré en longitude, soit à peu près 1,7 mm : sans effet devant la tolérance de 0,5 m."
   },
   "france_metropolitaine": {"lat_min": 41.15, "lat_max": 51.56, "lon_min": -9.86, "lon_max": 10.38, "note": "rectangle du domaine d'usage d'EPSG:2154 (PROJ 9.4.0), docs/spec.md § 10, point 9 (la spec désigne le rectangle sans en donner les bornes ; bornes données par l'orchestrateur, source PROJ 9.4.0), utilisé par le test « placette en France ». Chaque point attendu doit y tomber (piège de la Somalie : latitude et longitude non inversées)."},
+  "etats_suivi": {
+    "P35-01": "a_jour",
+    "P35-02": "a_programmer",
+    "P35-03": "a_programmer"
+  },
+  "etats_suivi_avant_import": {
+    "P35-01": "a_jour",
+    "P35-02": "a_jour",
+    "P35-03": "a_programmer",
+    "note": "Pour mémoire, non comparé : la démo Couchey de sommieR 0.31.1 contrôle déjà les trois placettes en 2023 et 2025 (R/demo.R l. 373-391) ; derniers besoins (2025-06-1k) : P35-01 « aucun », P35-02 « aucun », P35-03 « DG ». Seul P35-02 change avec la tournée rendue : il passe « a_programmer » si et seulement si le besoin « RG » arrive au registre ; sans besoin (NA), il resterait « a_jour », le défaut constaté à la relecture de la PR #155."
+  },
+  "regle_etats_suivi": "Mission 091 : état de suivi de chaque placette après l'import, tel que sommieR 0.31.1 le verse dans la couche `placettes` de la tournée suivante (R/travaux_qfield.R l. 83-88 et l. 317-339, placettes_du_projet) : « jamais » sans contrôle ; « a_jour » si le dernier besoin est vide ou « aucun » ; sinon « a_programmer ». P35-01 : besoin « aucun » → a_jour ; P35-02 : besoin « RG » (regarni, R/registre6.R l. 17-26) → a_programmer ; P35-03 : pas de contrôle dans la tournée, son dernier besoin reste celui de la démo (« DG », 2025, R/demo.R l. 373-391) → a_programmer. Les contrôles de la tournée (2026-10-20) sont postérieurs à ceux de la démo (2025) : ce sont eux les « derniers » (ORDER BY visite_le DESC, l. 326-328). Le besoin et la concurrence du registre sont ceux du scénario (SOMMIER_CONCURRENCES = faible, moyenne, forte : R/registre6.R l. 64 ; besoin = un code de SOMMIER_CODES_TRAVAUX ou « aucun » : l. 137-138 et 178-179). Écrit par le testeur de la 091 sans lire le code de l'export, du journal ni du rendu.",
   "controles": [
     {
       "placette": "P35-01",
@@ -25,7 +38,9 @@
       "nb_vivants": 3,
       "nb_abroutis": 1,
       "h_moy_cm": 39,
-      "point": {"lon": 4.9325079273, "lat": 47.2590964021, "tolerance_m": 0.5, "origine": "position mesurée (piquet + décalage +0,6 m est, -0,4 m nord)"},
+      "besoin": "aucun",
+      "concurrence": "moyenne",
+      "point": {"lon": 4.9325079273, "lat": 47.2590964021, "tolerance_m": 0.5, "origine": "position mesurée (piquet + décalage +0,6 m est, -0,4 m nord)", "precision_m": 0.4, "source_gnss": "telephone", "simulee": true, "qualite_du_fix": "mission 091 : precision_m, source_gnss et simulee de la position mesurée, lus dans positions_controles de l'export ; valeurs reprises de position_mesuree du scénario (spec § 5, ADR 0003 ligne « Fix »)"},
       "calcul": {
         "nb_total": "a sain + b atteint + c mort + d absent + e sain = 5 (spec § 4.3 : sains + atteints + morts + absents, hors non observés et plants remplacés)",
         "nb_vivants": "sains + atteints = a, b, e = 3",
@@ -40,7 +55,9 @@
       "nb_vivants": 2,
       "nb_abroutis": 0,
       "h_moy_cm": 40,
-      "point": {"lon": 4.93300, "lat": 47.25940, "tolerance_m": 0.5, "origine": "piquet (aucune position mesurée dans le scénario)"},
+      "besoin": "RG",
+      "concurrence": "forte",
+      "point": {"lon": 4.93300, "lat": 47.25940, "tolerance_m": 0.5, "sans_position_mesuree": true, "origine": "piquet : contrôle ouvert sans position mesurée, sur son code lu (ADR 0003, amendement du 2026-11-02 ; décision de Pascal du 2026-11-02, mission 087). Le point est lu dans la couche controles de l'export ; positions_controles porte une ligne pour ce contrôle, géométrie NULL, sans_position_mesuree et rattache_par_identite vrais."},
       "calcul": {
         "nb_total": "a sain + b atteint = 2 ; c non observé est exclu (spec § 4.3)",
         "nb_vivants": "a, b = 2",

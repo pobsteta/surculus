@@ -58,6 +58,8 @@ val extraireNativesSqlite = tasks.register<ExtraireNativesSqlite>("extraireNativ
 }
 
 android {
+    // Robolectric lit les ressources et le manifeste de l'application (mission 080).
+    testOptions { unitTests.isIncludeAndroidResources = true }
     namespace = "io.github.pobsteta.surculus"
     compileSdk = 36
 
@@ -181,6 +183,11 @@ dependencies {
 
     testImplementation(kotlin("test-junit"))
     testImplementation(libs.junit4)
+    // Test de rendu des écrans (mission 080) : Robolectric et l'outil de test Compose, en JVM ; rien dans les APK.
+    testImplementation(libs.robolectric)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
@@ -227,3 +234,6 @@ tasks.matching { it.name == "connectedFumeeAndroidTest" }.configureEach {
     dependsOn(effacerRapportFumee)
     finalizedBy(verifierFumee)
 }
+
+// Robolectric 4.17 sur SDK 36 (Android 16, comme le téléphone) avec la JDK 21 : il lui faut ce paquet interne (mission 080).
+tasks.withType<Test>().configureEach { jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED") }

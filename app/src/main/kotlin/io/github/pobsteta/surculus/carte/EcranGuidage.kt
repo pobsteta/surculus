@@ -8,6 +8,7 @@
 package io.github.pobsteta.surculus.carte
 
 import android.media.AudioManager
+import android.os.SystemClock
 import android.media.ToneGenerator
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -35,12 +36,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
@@ -48,6 +54,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.controle.AttenteSansFix
+import io.github.pobsteta.surculus.controle.ConfirmationSansPosition
+import io.github.pobsteta.surculus.controle.ControleursOuverts
+import io.github.pobsteta.surculus.controle.EtatArrivee
+import io.github.pobsteta.surculus.controle.OuvertureSansPosition
+import io.github.pobsteta.surculus.controle.SansPositionEnAttente
+import io.github.pobsteta.surculus.controle.SuiteSansFix
+import io.github.pobsteta.surculus.controle.TextesControle
 import io.github.pobsteta.surculus.ui.BandeauCompact
 import io.github.pobsteta.surculus.ui.theme.LocalSombre
 import io.github.pobsteta.surculus.core.geo.PointLambert93
@@ -63,12 +77,17 @@ import io.github.pobsteta.surculus.core.placette.UuidPlacette
 import io.github.pobsteta.surculus.core.placette.Verdict
 import io.github.pobsteta.surculus.gpkg.PlacetteTournee
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Guidage vers une placette (spec § 4.2 et 4.3). Une question : à quelle distance, dans quelle direction ?
  * En grand : la distance. Dessous : le cap, et le radar (nord en haut, cercle de 30 m). Bip qui s'accélère à
  * l'approche, un bip d'arrivée à moins de 30 m. Dans le cercle : rattachement à 15 m, ou par le code du piquet.
  * Rien n'est écrit au journal à ce stade (mission 031 pas fusionnée).
+ *
+ * Sans aucun fix (mission 089, décisions de Pascal du 2026-11-07) : à la place du radar, l'attente de la 087, le champ du
+ * code dès l'absence de fix et « Ouvrir sans position » après le délai, par le morceau partagé avec l'écran de contrôle
+ * ([OuvertureSansPosition], [AttenteSansFix], [ConfirmationSansPosition]).
  */
 @Composable
 fun EcranGuidage(
@@ -76,7 +95,7 @@ fun EcranGuidage(
     placetteUuid: String,
     arriveeVue: Boolean = false,
     /** Arrivée (moins de 30 m) ou bouton « Contrôler » : ouvre le contrôle (mission 012-B1). */
-    onArrivee: () -> Unit = {},
+    onArrivee: (String?) -> Unit = {},
     /** L'agent est ressorti à 40 m : l'ouverture automatique est de nouveau permise. */
     onRearme: () -> Unit = {},
     onRetour: () -> Unit,
@@ -106,7 +125,13 @@ fun EcranGuidage(
                     if (cible == null) {
                         Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = couleurErreur()) }
                     } else {
-                        GuidagePret(cible, chargement.tournee.tournee.placettes, fix, arriveeVue, onArrivee, onRearme)
+                        val ctx = LocalContext.current
+                        val ouverte = chargement.tournee
+                        GuidagePret(
+                            cible, chargement.tournee.tournee.placettes, fix, arriveeVue, onArrivee, onRearme,
+                            cle = ControleursOuverts.cle(id, placetteUuid),
+                            ouvrirSansPosition = { code, ug, confirmee -> OuvertureSansPosition.ouvrir(ctx, ouverte, code, ug, confirmee) },
+                        )
                     }
             }
         }
@@ -118,20 +143,72 @@ private sealed interface Confirmation {
     data class Fini(val verdict: Verdict<Rattache>, val codeSaisi: String?) : Confirmation
 }
 
+/** L'horloge monotone de l'attente sans fix, relue chaque seconde (`uneSecondeArrivee`, la seconde de la 087). */
 @Composable
-private fun GuidagePret(
+private fun rememberMaintenant(): State<Long> {
+    val maintenant = remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            uneSecondeArrivee()
+            maintenant.longValue = SystemClock.elapsedRealtime()
+        }
+    }
+    return maintenant
+}
+
+/**
+ * Le guidage, tournée chargée. [cle] : la placette au sens de `ControleursOuverts` (contrôle ouvert sans position, ou UG à
+ * choisir, repris par l'écran de contrôle). [ouvrirSansPosition], [suiteSansFix] et [maintenant] : la règle de la 087 par
+ * l'habillage partagé, et l'horloge monotone ; injectés par le test d'écran.
+ */
+@Composable
+internal fun GuidagePret(
     cible: PlacetteTournee,
     toutes: List<PlacetteTournee>,
     fix: FixGnss?,
     arriveeVue: Boolean,
-    onArrivee: () -> Unit,
+    onArrivee: (String?) -> Unit,
     onRearme: () -> Unit,
+    cle: String,
+    ouvrirSansPosition: suspend (code: String, ugChoisie: String?, confirmee: Boolean) -> EtatArrivee,
+    suiteSansFix: (msSansFix: Long, fixRecu: Boolean) -> SuiteSansFix = LocalContext.current.let { ctx -> { ms, recu -> OuvertureSansPosition.suite(ctx, ms, recu) } },
+    maintenant: State<Long> = rememberMaintenant(),
 ) {
     val cap = fix?.let { Guidage.cap(it.position, cible.position!!) }
     val position = fix?.let { Guidage.versLambert93(it.position) }
     var son by remember { mutableStateOf(true) }
-    var code by remember { mutableStateOf("") }
+    var code by rememberSaveable { mutableStateOf("") }
     var confirmation by remember { mutableStateOf<Confirmation?>(null) }
+
+    // L'attente sans fix (mission 089, décision 3 de Pascal) : depuis l'ouverture du guidage, remise à zéro par chaque fix
+    // reçu (même hors de France : c'est une position, point 6), gardée à la rotation (horloge monotone).
+    var debutSansFix by rememberSaveable { mutableStateOf<Long?>(null) }
+    if (fix != null) debutSansFix = null else if (debutSansFix == null) debutSansFix = maintenant.value
+    // L'étape de « Ouvrir sans position » montrée ici : un refus (code inconnu) ou la placette à confirmer.
+    var etapeSansPosition by remember { mutableStateOf<EtatArrivee?>(null) }
+    val scope = rememberCoroutineScope()
+    // Un fix reçu pendant l'étape : on l'abandonne, la distance et la règle des 15 m reviennent (point 6).
+    LaunchedEffect(fix != null) { if (fix != null) etapeSansPosition = null }
+    val codeOuvert = rememberUpdatedState(code)
+    val arrivee = rememberUpdatedState(onArrivee)
+    fun suiteOuverture(v: EtatArrivee) {
+        when (v) {
+            // Le contrôle ouvert sans position est repris par l'écran de contrôle, qui le libère en le quittant.
+            is EtatArrivee.Ouverte -> {
+                etapeSansPosition = null
+                ControleursOuverts.poser(cle, v.controleur)
+                arrivee.value(codeOuvert.value)
+            }
+            // Le code se répète dans plusieurs UG : l'écran de contrôle de la 087 pose la question, puis la confirmation.
+            is EtatArrivee.UgAChoisir -> {
+                etapeSansPosition = null
+                SansPositionEnAttente.de(cle).let { it.etape = v; it.ugChoisie = null }
+                arrivee.value(codeOuvert.value)
+            }
+            is EtatArrivee.ConfirmerSansPosition, is EtatArrivee.Refus -> etapeSansPosition = v
+            else -> etapeSansPosition = null
+        }
+    }
 
     // Le bip : période selon la distance ; un bip distinct et unique à l'entrée dans le cercle.
     val distance = rememberUpdatedState(cap?.distanceM)
@@ -153,19 +230,20 @@ private fun GuidagePret(
     // navigation, car cet écran est recomposé à neuf au retour du contrôle : un détecteur local rouvrirait en boucle.
     // Il se baisse à 40 m (`Guidage.SEUIL_REARMEMENT_M`).
     val vue = rememberUpdatedState(arriveeVue)
+    val codeRef = rememberUpdatedState(code)
     LaunchedEffect(cap?.distanceM) {
         val d = cap?.distanceM ?: return@LaunchedEffect
         if (vue.value) {
             if (d >= Guidage.SEUIL_REARMEMENT_M) onRearme()
         } else if (Guidage.estArrive(d)) {
             if (sonActif.value) tonalite?.startTone(ToneGenerator.TONE_PROP_BEEP2, 500)
-            onArrivee()
+            onArrivee(codeRef.value)
         }
     }
 
     // Rattachement : moyenne de la position pendant quelques secondes, puis la règle des 15 m (ou le code lu).
     val piquets = remember(toutes) {
-        toutes.mapNotNull { p -> if (p.code != null && p.position != null) Piquet(UuidPlacette(p.uuid), p.code!!, p.position!!) else null }
+        toutes.mapNotNull { p -> if (p.code != null && p.position != null) Piquet(UuidPlacette(p.uuid), p.code!!, p.position!!, p.ug) else null }
     }
     val positionCourante = rememberUpdatedState(fix?.position)
     val enCours = confirmation is Confirmation.EnCours
@@ -199,9 +277,31 @@ private fun GuidagePret(
                 Text(stringResource(R.string.guidage_cap, Libelles.cap(cap.azimutDeg)), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             }
         }
-        // 3. La comparaison : où je suis par rapport à la placette et au cercle de 30 m.
-        Radar(position, cible.position!!, Modifier.fillMaxWidth().height(260.dp))
-        Text(stringResource(R.string.guidage_nord), style = MaterialTheme.typography.bodySmall)
+        if (fix == null) {
+            // 3 bis. Aucun fix (mission 089, décisions 1 et 2 de Pascal) : à la place du radar, qui n'aurait rien à montrer,
+            // l'attente de la 087 et le champ du code, puis « Ouvrir sans position » après le délai.
+            val ms = maintenant.value - (debutSansFix ?: maintenant.value)
+            val suite = suiteSansFix(ms, false)
+            when (val etape = etapeSansPosition) {
+                is EtatArrivee.ConfirmerSansPosition -> ConfirmationSansPosition(
+                    etape,
+                    onOuvrir = { scope.launch { suiteOuverture(ouvrirSansPosition(code, null, true)) } },
+                    onAnnuler = { etapeSansPosition = null },
+                )
+                else -> {
+                    AttenteSansFix(suite, (ms / 1000).toInt(), code, onCode = { code = it; etapeSansPosition = null }, onOuvrir = {
+                        scope.launch { suiteOuverture(ouvrirSansPosition(code, null, false)) }
+                    })
+                    if (etape is EtatArrivee.Refus && suite == SuiteSansFix.PROPOSER) {
+                        TextesControle.message(etape.refus)?.let { Text(it.texte, color = couleurErreur(), fontWeight = FontWeight.Bold) }
+                    }
+                }
+            }
+        } else {
+            // 3. La comparaison : où je suis par rapport à la placette et au cercle de 30 m.
+            Radar(position, cible.position!!, Modifier.fillMaxWidth().height(260.dp))
+            Text(stringResource(R.string.guidage_nord), style = MaterialTheme.typography.bodySmall)
+        }
 
         if (cap?.arrive == true) {
             val c = confirmation
@@ -218,7 +318,7 @@ private fun GuidagePret(
                 modifier = Modifier.fillMaxWidth().height(64.dp),
             ) { Text(stringResource(R.string.guidage_rattacher)) }
             // Rouvrir le contrôle à la main (il s'est ouvert tout seul à l'arrivée, mission 012-B1).
-            Button(onClick = onArrivee, modifier = Modifier.fillMaxWidth().height(64.dp)) { Text(stringResource(R.string.controle_controler)) }
+            Button(onClick = { onArrivee(code) }, modifier = Modifier.fillMaxWidth().height(64.dp)) { Text(stringResource(R.string.controle_controler)) }
             when (c) {
                 is Confirmation.EnCours -> Text(stringResource(R.string.guidage_moyenne, c.n, SECONDES_DE_MOYENNE_ARRIVEE), style = MaterialTheme.typography.bodyMedium)
                 is Confirmation.Fini -> Resultat(c.verdict)
@@ -238,9 +338,9 @@ private fun Resultat(v: Verdict<Rattache>) {
         is Verdict.Accepte -> {
             val r = v.valeur
             if (r.parIdentite) {
-                TexteEtat(stringResource(R.string.guidage_rattache_identite, r.piquet.code, Libelles.distance(r.distanceM)), Palette.Orange, fontWeight = FontWeight.Bold)
+                TexteEtat(stringResource(R.string.guidage_rattache_identite, r.piquet.code, Libelles.distance(checkNotNull(r.distanceM) { "guidage : rattachement toujours mesuré" })), Palette.Orange, fontWeight = FontWeight.Bold)
             } else {
-                TexteEtat(stringResource(R.string.guidage_rattache, r.piquet.code, Libelles.distance(r.distanceM)), Palette.Vert, fontWeight = FontWeight.Bold)
+                TexteEtat(stringResource(R.string.guidage_rattache, r.piquet.code, Libelles.distance(checkNotNull(r.distanceM) { "guidage : rattachement toujours mesuré" })), Palette.Vert, fontWeight = FontWeight.Bold)
             }
         }
         is Verdict.Refuse -> {
@@ -253,6 +353,10 @@ private fun Resultat(v: Verdict<Rattache>) {
             Text(texte, color = couleurErreur(), fontWeight = FontWeight.Bold)
         }
         is Verdict.AConfirmer -> TexteEtat(v.alerte.message, Palette.Orange)
+        is Verdict.AChoisirUg -> TexteEtat(
+            stringResource(R.string.guidage_ug_a_choisir, v.candidats.first().code, v.candidats.mapNotNull { it.ug }.joinToString(", ")),
+            Palette.Orange, fontWeight = FontWeight.Bold,
+        )
     }
 }
 
