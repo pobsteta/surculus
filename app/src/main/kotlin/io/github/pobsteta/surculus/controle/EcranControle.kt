@@ -222,21 +222,8 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
 
     /** « Ouvrir sans position » (mission 087) : choix de l'UG si le code se répète, puis confirmation, puis ouverture. */
     suspend fun ouvrirSansPosition(ouverte: TourneeOuverte, ugChoisie: String?, confirmee: Boolean): EtatArrivee {
-        val resultat = withContext(Dispatchers.IO) {
-            runCatching {
-                ArriveeControle.ouvrirSansPosition(
-                    contexte = ContexteDeTournee.de(ouverte.tournee),
-                    journal = SauvegardeApp.journal(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
-                    horloge = SauvegardeApp.horloge(ctx) { FixPourSession.depuis(SourcePosition.fix.value) },
-                    essences = ArriveeControle.essencesDe(ouverte.tournee),
-                    codeLu = code,
-                    sauvegarde = SauvegardeApp.ecoute(ctx, LigneTournee(ouverte.dossier, ouverte.tournee, null)),
-                    ugChoisie = ugChoisie,
-                    confirmee = confirmee,
-                )
-            }
-        }
-        val v = resultat.getOrNull() ?: EtatArrivee.SansPosition
+        // L'habillage de l'appel est partagé avec le guidage (mission 089) ; l'écran ne garde ici que l'étape en cours.
+        val v = OuvertureSansPosition.ouvrir(ctx, ouverte, code, ugChoisie, confirmee)
         val attente = SansPositionEnAttente.de(cle)
         when (v) {
             is EtatArrivee.Ouverte -> { ControleursOuverts.poser(cle, v.controleur); SansPositionEnAttente.liberer(cle) }
@@ -361,14 +348,8 @@ private fun VueSansFix(debutMs: Long, fixRecu: Boolean, code: String, onCode: (S
             uneSecondeArrivee()
         }
     }
-    // « Récepteur actif » (décision de Pascal du 2026-11-03) : un récepteur RTK branché écoute, même sans la localisation du téléphone.
-    val rtk = SourcePosition.recepteurBranche()
-    val suite = ArriveeSansPosition.suite(
-        msSansFix = maintenant - debutMs,
-        fixRecus = if (fixRecu) 1 else 0,
-        localisationActive = rtk || SourcePosition.localisationActive(ctx),
-        permissionAccordee = rtk || SourcePosition.localisationAutorisee(ctx),
-    )
+    // « Récepteur actif » et le délai : la règle de la 087, lue par l'habillage partagé avec le guidage (mission 089).
+    val suite = OuvertureSansPosition.suite(ctx, msSansFix = maintenant - debutMs, fixRecu = fixRecu)
     val relancer = rememberUpdatedState(onRecommencer)
     LaunchedEffect(suite) { if (suite == SuiteSansFix.POSITION_RECUE) relancer.value() }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -376,27 +357,7 @@ private fun VueSansFix(debutMs: Long, fixRecu: Boolean, code: String, onCode: (S
         if (ArriveeSansPosition.titreVisible(suite)) {
             Text(stringResource(R.string.controle_sans_position), style = MaterialTheme.typography.titleMedium, color = couleurNeutre())
         }
-        when (suite) {
-            SuiteSansFix.ACTIVER_LOCALISATION ->
-                Text(TextesControle.ACTIVER_LOCALISATION, style = MaterialTheme.typography.titleMedium, color = couleurErreur())
-            SuiteSansFix.ATTENDRE, SuiteSansFix.POSITION_RECUE ->
-                Text(TextesControle.attenteSansFix(((maintenant - debutMs) / 1000).toInt()), style = MaterialTheme.typography.bodyLarge, color = couleurNeutre())
-            SuiteSansFix.PROPOSER ->
-                Text(TextesControle.SANS_FIX_PROPOSE, style = MaterialTheme.typography.bodyLarge, color = couleurNeutre())
-        }
-        OutlinedTextField(
-            value = code,
-            onValueChange = onCode,
-            label = { Text(stringResource(R.string.guidage_code)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        if (suite == SuiteSansFix.PROPOSER) {
-            Button(onClick = onOuvrir, enabled = code.isNotBlank(), modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
-                Text(TextesControle.OUVRIR_SANS_POSITION)
-            }
-            if (code.isBlank()) Text(TextesControle.CODE_REQUIS, style = MaterialTheme.typography.bodyMedium, color = couleurNeutre())
-        }
+        AttenteSansFix(suite, ((maintenant - debutMs) / 1000).toInt(), code, onCode, onOuvrir)
         OutlinedButton(onClick = onRecommencer, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
             Text(stringResource(R.string.controle_ug_recommencer))
         }
@@ -407,13 +368,7 @@ private fun VueSansFix(debutMs: Long, fixRecu: Boolean, code: String, onCode: (S
 @Composable
 private fun VueConfirmerSansPosition(etat: EtatArrivee.ConfirmerSansPosition, onOuvrir: () -> Unit, onAnnuler: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(TextesControle.confirmationSansPosition(etat.piquet, etat.plantsPointes), style = MaterialTheme.typography.headlineMedium, color = couleurNeutre())
-        Button(onClick = onOuvrir, modifier = Modifier.fillMaxWidth().height(DimensionsControle.GRAND_CHOIX)) {
-            Text(TextesControle.OUVRIR_SANS_POSITION, style = MaterialTheme.typography.titleLarge)
-        }
-        OutlinedButton(onClick = onAnnuler, modifier = Modifier.fillMaxWidth().height(DimensionsControle.ACTION)) {
-            Text(TextesControle.ANNULER)
-        }
+        ConfirmationSansPosition(etat, onOuvrir, onAnnuler)
     }
 }
 
