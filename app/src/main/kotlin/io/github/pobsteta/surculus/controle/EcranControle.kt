@@ -198,6 +198,8 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
     // Les fix entiers (mission 091) : leur position, et ce qu'ils disent d'eux-mêmes (précision, source, simulée).
     var fixesArrivee by remember(cle) { mutableStateOf(ChoixUgEnAttente.get(cle)?.second ?: emptyList()) }
     val scope = rememberCoroutineScope()
+    // Mission 100 : un seul appui à la fois sur les boutons qui ouvrent sans position (verrou partagé avec le guidage).
+    val verrou = remember(cle) { VerrouOuverture() }
     suspend fun ouvrirArrivee(ouverte: TourneeOuverte, fixes: List<FixGnss>, ugChoisie: String?): EtatArrivee {
         val resultat = withContext(Dispatchers.IO) {
             runCatching {
@@ -281,17 +283,19 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
                         debutMs = SansPositionEnAttente.de(cle).debutMs ?: SystemClock.elapsedRealtime(),
                         fixRecu = fix != null,
                         code = code, onCode = { code = it },
-                        onOuvrir = { scope.launch { arrivee = ouvrirSansPosition(ouverte!!, null, confirmee = false) } },
+                        onOuvrir = { verrou.lancer(scope) { arrivee = ouvrirSansPosition(ouverte!!, null, confirmee = false) } },
                         onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ },
                     )
                     is EtatArrivee.UgAChoisir -> if (SansPositionEnAttente.etape(cle) != null) {
-                        VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirSansPosition(ouverte!!, ug, confirmee = false) } }, onRecommencer = { SansPositionEnAttente.de(cle).etape = null; arrivee = EtatArrivee.SansPosition })
+                        VueChoixUg(a, onChoix = { ug -> verrou.lancer(scope) { arrivee = ouvrirSansPosition(ouverte!!, ug, confirmee = false) } }, onRecommencer = { SansPositionEnAttente.de(cle).etape = null; arrivee = EtatArrivee.SansPosition })
                     } else {
                         VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, fixesArrivee, ug) } }, onRecommencer = { ChoixUgEnAttente.liberer(cle); arrivee = EtatArrivee.Moyenne(0); essai++ })
                     }
                     is EtatArrivee.ConfirmerSansPosition -> VueConfirmerSansPosition(
                         a,
-                        onOuvrir = { scope.launch { arrivee = ouvrirSansPosition(ouverte!!, SansPositionEnAttente.de(cle).ugChoisie, confirmee = true) } },
+                        verrou = verrou,
+                        ouvrir = { ouvrirSansPosition(ouverte!!, SansPositionEnAttente.de(cle).ugChoisie, confirmee = true) },
+                        onEtat = { arrivee = it },
                         onAnnuler = { SansPositionEnAttente.de(cle).let { it.etape = null; it.ugChoisie = null }; arrivee = EtatArrivee.SansPosition },
                     )
                     is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour, onParametres)
@@ -364,11 +368,22 @@ private fun VueSansFix(debutMs: Long, fixRecu: Boolean, code: String, onCode: (S
     }
 }
 
-/** La placette à confirmer avant d'ouvrir sans position (point 4) : rien n'est ouvert tant que l'agent n'a pas confirmé. */
+/**
+ * La placette à confirmer avant d'ouvrir sans position (point 4) : rien n'est ouvert tant que l'agent n'a pas confirmé.
+ * Point d'entrée du banc d'essai (mission 100) : [ouvrir] est l'ouverture confirmée (rend l'état qui en résulte), [onEtat]
+ * reçoit cet état, [verrou] est le verrou partagé (un seul appui à la fois).
+ */
 @Composable
-private fun VueConfirmerSansPosition(etat: EtatArrivee.ConfirmerSansPosition, onOuvrir: () -> Unit, onAnnuler: () -> Unit) {
+internal fun VueConfirmerSansPosition(
+    etat: EtatArrivee.ConfirmerSansPosition,
+    ouvrir: suspend () -> EtatArrivee,
+    onEtat: (EtatArrivee) -> Unit,
+    onAnnuler: () -> Unit,
+    verrou: VerrouOuverture = remember { VerrouOuverture() },
+) {
+    val scope = rememberCoroutineScope()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        ConfirmationSansPosition(etat, onOuvrir, onAnnuler)
+        ConfirmationSansPosition(etat, onOuvrir = { verrou.lancer(scope) { onEtat(ouvrir()) } }, onAnnuler = onAnnuler)
     }
 }
 

@@ -27,8 +27,11 @@ import io.github.pobsteta.surculus.gpkg.ContexteDeTournee
 import io.github.pobsteta.surculus.sauvegarde.SauvegardeApp
 import io.github.pobsteta.surculus.tournee.LigneTournee
 import io.github.pobsteta.surculus.tournee.TourneeOuverte
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * « Ouvrir sans position », **partagé** par l'écran de contrôle (mission 087) et le guidage (mission 089 ; décision de
@@ -73,6 +76,33 @@ object OuvertureSansPosition {
             }
         }
         return resultat.getOrNull() ?: EtatArrivee.SansPosition
+    }
+}
+
+/**
+ * Le verrou de « Ouvrir sans position » (mission 100), **partagé** par le guidage et l'écran de contrôle : pendant une
+ * ouverture le bouton ne répond plus, et il répond de nouveau dès qu'elle se termine (ouverte, refusée ou en erreur).
+ * Il est pris **au moment de l'appui** (fil principal), avant de lancer la coroutine : deux appuis arrivés dans le même
+ * geste ne lancent donc qu'une ouverture. Un seul verrou par écran, pour tous les boutons qui ouvrent sans position.
+ */
+class VerrouOuverture {
+    private val pris = AtomicBoolean(false)
+
+    /** Vrai tant qu'une ouverture est en cours. */
+    val enCours: Boolean get() = pris.get()
+
+    /** Lance [bloc] dans [scope] si aucune ouverture n'est en cours ; rend faux (rien lancé) sinon. */
+    fun lancer(scope: CoroutineScope, bloc: suspend () -> Unit): Boolean {
+        if (!pris.compareAndSet(false, true)) return false
+        try {
+            scope.launch {
+                try { bloc() } finally { pris.set(false) }
+            }
+        } catch (e: Throwable) {
+            pris.set(false)
+            throw e
+        }
+        return true
     }
 }
 

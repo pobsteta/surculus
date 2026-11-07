@@ -59,6 +59,7 @@ import io.github.pobsteta.surculus.controle.ConfirmationSansPosition
 import io.github.pobsteta.surculus.controle.ControleursOuverts
 import io.github.pobsteta.surculus.controle.EtatArrivee
 import io.github.pobsteta.surculus.controle.OuvertureSansPosition
+import io.github.pobsteta.surculus.controle.VerrouOuverture
 import io.github.pobsteta.surculus.controle.SansPositionEnAttente
 import io.github.pobsteta.surculus.controle.SuiteSansFix
 import io.github.pobsteta.surculus.controle.TextesControle
@@ -187,6 +188,8 @@ internal fun GuidagePret(
     // L'étape de « Ouvrir sans position » montrée ici : un refus (code inconnu) ou la placette à confirmer.
     var etapeSansPosition by remember { mutableStateOf<EtatArrivee?>(null) }
     val scope = rememberCoroutineScope()
+    // Mission 100 : un seul appui à la fois sur « Ouvrir sans position » (verrou partagé avec l'écran de contrôle).
+    val verrou = remember { VerrouOuverture() }
     // Un fix reçu pendant l'étape : on l'abandonne, la distance et la règle des 15 m reviennent (point 6).
     LaunchedEffect(fix != null) { if (fix != null) etapeSansPosition = null }
     val codeOuvert = rememberUpdatedState(code)
@@ -285,12 +288,12 @@ internal fun GuidagePret(
             when (val etape = etapeSansPosition) {
                 is EtatArrivee.ConfirmerSansPosition -> ConfirmationSansPosition(
                     etape,
-                    onOuvrir = { scope.launch { suiteOuverture(ouvrirSansPosition(code, null, true)) } },
+                    onOuvrir = { verrou.lancer(scope) { suiteOuverture(ouvrirSansPosition(code, null, true)) } },
                     onAnnuler = { etapeSansPosition = null },
                 )
                 else -> {
                     AttenteSansFix(suite, (ms / 1000).toInt(), code, onCode = { code = it; etapeSansPosition = null }, onOuvrir = {
-                        scope.launch { suiteOuverture(ouvrirSansPosition(code, null, false)) }
+                        verrou.lancer(scope) { suiteOuverture(ouvrirSansPosition(code, null, false)) }
                     })
                     if (etape is EtatArrivee.Refus && suite == SuiteSansFix.PROPOSER) {
                         TextesControle.message(etape.refus)?.let { Text(it.texte, color = couleurErreur(), fontWeight = FontWeight.Bold) }
