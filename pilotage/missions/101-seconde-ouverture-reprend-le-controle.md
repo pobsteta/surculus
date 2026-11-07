@@ -10,7 +10,7 @@
 contrôle pour une placette déjà ouverte ce jour-là et rende le contrôle existant, sans nouvelle ligne au journal, pour
 que « un contrôle par placette et par jour » soit tenu par les données et non par le seul écran.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** _testeur_ : je dois écrire les tests qui diront si, pour une même placette et un même jour, la seconde ouverture sans position reprend le contrôle déjà ouvert au lieu d'en ouvrir un autre, sans ligne de plus au journal, afin que « un contrôle par placette et par jour » soit tenu par les données et non par le seul écran.
 
 ## Le constat
 

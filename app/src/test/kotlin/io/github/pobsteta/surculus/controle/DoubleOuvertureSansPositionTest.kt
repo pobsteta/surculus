@@ -10,6 +10,10 @@ import kotlin.test.assertIs
  * journal, c'est ce que produit un double appui à la confirmation, au guidage comme à l'écran de contrôle (spec § 4 et § 6 : un
  * contrôle par placette et par jour civil Europe/Paris dans une tournée). Écrit par le `testeur` sans lire `SessionControle.kt`.
  *
+ * Mission 101 : la décision de Pascal du 2026-11-07 (la seconde ouverture reprend le contrôle, sans ligne en plus) rend ce constat
+ * **périmé** une fois la 101 réalisée ; la règle est alors jugée par `SecondeOuvertureSansPositionTest`. Le constat reste écrit tel que
+ * la 100 l'a vu, pour mémoire.
+ *
  * Ces cas **disent** ce que la règle fait quand l'écran ne protège pas ; ils ne jugent pas la règle. Le verrou, lui, est jugé par
  * `RenduDoubleAppuiSansPositionTest` (guidage). Coordonnées : P35-01 à Couchey (Côte-d'Or), Lambert-93 (EPSG:2154), en France.
  */
