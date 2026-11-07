@@ -435,3 +435,10 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   depuis le guidage (code, confirmation, contrôle « Sans position ») n'est vérifiée ni au téléphone ni en forêt ; ce
   qu'elle nous apprend : le micro-ondes montre le bloc et le bouton, pas le geste entier ; l'essai qui compte est sous
   couvert. *(Retenue par Pascal le 2026-11-07 : « Oui, avec la mauvaise nouvelle ».)*
+- cycle 19 · un double appui ganté sur « Ouvrir sans position » n'ouvre plus qu'un contrôle (100, v0.7.119), et « un
+  contrôle par placette et par jour » tient dans les données, même en cas de course (101) · pour le forestier et pour
+  la justesse des données rendues à sommieR · avant, deux appuis pouvaient ouvrir deux contrôles. Mauvaise nouvelle
+  jointe : rien n'est vérifié au téléphone ; l'orchestrateur a deux fois relayé un constat d'agent sans le vérifier (fix
+  figé, « ligne en trop »), et la 101 a été lancée sur un fait faux puis recadrée ; ce qu'elle nous apprend : un
+  chiffre de test se lit dans le code avant d'être traduit en défaut. *(Retenue par Pascal le 2026-11-07 : « Oui, avec
+  la mauvaise nouvelle ».)*
