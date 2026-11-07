@@ -10,7 +10,10 @@
 « Terminer », se lise en entier, sans mot coupé ni texte rogné par le bord du bouton, pour que l'agent reconnaisse le
 code au soleil et avec des gants.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** _(testeur, 2026-11-07)_ Je dois écrire les tests qui échouent tant que, à « Terminer », le début du libellé
+sous chacun des codes de la grille ne se lit pas en entier (aucun mot coupé, rien de rogné ni de débordant du bouton, à chaque
+taille debout et couché, avec et sans plein écran), le code restant gros et la grille à 4 par ligne debout, sans figer la façon
+d'y arriver. _(L'`afficheur` redira la sienne avant d'agir.)_
 
 ## Le constat (vérifié par l'orchestrateur)
 
