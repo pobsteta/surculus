@@ -60,7 +60,7 @@ CQQCOQP en bref : **Pourquoi** (marquer RGF93 une position corrigée par Centip�
 
 **Écart relevé** : la documentation officielle publie `crtk.net:2101` ; le dépôt RtkBaseVar utilise `caster.centipede.fr:80` ; MAVProxy donne `caster.centipede.fr` sans port. Cause non établie par une page publiée ; la table du caster montre qu'on atteint le même caster par les deux noms et sur les ports 2101 et 80. Le port diffère selon la source : à ne pas reconnaître un caster par le port.
 
-**Reste pour Pascal** : `caster.centipede.fr` est le réglage par défaut hérité de Groma. Il a deux sources non officielles de la documentation, un constat DNS identique à `crtk.net`, et une table de points de montage où le caster se déclare `crtk.net:2101`. Garder, retirer ou demander confirmation à l'équipe Centipède (forum officiel, issue sur `docs-centipedeRTK`) : décision de Pascal.
+**Décision de Pascal** : `caster.centipede.fr` est **gardé** comme hôte Centipède. Gardé par décision de Pascal, 2026-11-07 (PR #163, `pilotage/journal.md`). Raisons : (1) le README de CentipedeRTK/RtkBaseVar le cite (HOTE-RTKBASEVAR) ; (2) il rend la même table des points de montage que `crtk.net` (constat daté du 2026-11-07, HOTE-SOURCETABLE) ; (3) c'est le réglage par défaut de `ConfigRtk` (`app/src/main/kotlin/io/github/pobsteta/surculus/gnss/ConfigRtk.kt`). **Piste ouverte, non tranchée** : la confirmation écrite de l'équipe Centipède (forum officiel, issue sur `docs-centipedeRTK`) n'est pas demandée.
 
 ## Ce que le mobile reçoit : une déduction à vérifier
 
