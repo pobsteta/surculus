@@ -7,6 +7,9 @@
 
 ## Bac à sable
 
+- **Référentiel Centipède, l. 6** (relecture de la #165) : « Rien n'est tranché ici » contredit la décision inscrite l. 63 ; à aligner par l'`acquereur`.
+- **Mineurs de la 089** (relecture de la #162) : confirmation du guidage perdue à la rotation ; `debutSansFix` écrit pendant la composition ; vue sans fix de l'écran de contrôle sans test de rendu ; double appui sur « Ouvrir sans position » (déjà dans la 087).
+
 - **Libellés des codes rognés** (091, v0.7.109) : dans la grille « Terminer », la seconde ligne du libellé est coupée par le
   bord du cercle (« Préparation / du… », « Cloisonneme / nt… »). Une ligne seule, ou une coupe aux mots.
 
@@ -187,6 +190,9 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **089** ouvrir sans position depuis le guidage (`testeur` puis `dev` opus, tenir, plan tranché par Pascal, PR #162, dc62557) : v0.7.113 installée le 2026-11-07 ; localisation coupée capturée ; fix perdu : bloc et « Ouvrir sans position » vus par Pascal. Reste : ouverture par le code depuis le guidage, en forêt.
+- **097** hôtes Centipède sourcés (`acquereur`, #163), **098** commentaire de `CASTERS_CENTIPEDE` (`dev`, #164), **099** décision au référentiel (`acquereur`, #165) : `caster.centipede.fr` gardé par Pascal.
 
 - **094** référentiel de la source (`testeur` puis `dev`, PR #159, une reprise, aa02f2c), **095** « Terminer » refusé
   tant qu'un plant n'a pas d'état (`testeur` puis `dev`, PR #158, 351c427) : release v0.7.111 installée le 2026-11-07 ;
