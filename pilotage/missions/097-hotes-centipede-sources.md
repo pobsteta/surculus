@@ -10,7 +10,7 @@
 que Surculus reconnaît, dans `docs/referentiels/referentiel-centipede.md`, parce que ce nom décide si une position
 est marquée RGF93 dans les données rendues à sommieR.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** « citer une source publiée pour chaque nom d'hôte du caster Centipède que Surculus reconnaît, pour décider si une position est marquée RGF93 » (redite de l'`acquereur`, recopiée par l'orchestrateur : son harnais ne lui permet d'écrire que dans le référentiel).
 
 ## Le constat
 
