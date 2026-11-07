@@ -7,6 +7,8 @@
 
 ## Bac à sable
 
+- **Deux sessions vivantes de la même placette** (relecture de la #168, « Bac à sable », Pascal, 2026-11-07) : un même plant dit en même temps peut avoir deux lignes `etat` (`SessionControle.ecrireObservation`, `existant` lu hors verrou ; vérifié) ; un besoin ou une concurrence en attente peuvent se perdre si l'autre session crée le contrôle (non vérifié). Rares depuis le verrou d'écran de la 100.
+
 - **Référentiel Centipède, l. 6** (relecture de la #165) : « Rien n'est tranché ici » contredit la décision inscrite l. 63 ; à aligner par l'`acquereur`.
 - **Mineurs de la 089** (relecture de la #162) : confirmation du guidage perdue à la rotation ; `debutSansFix` écrit pendant la composition ; vue sans fix de l'écran de contrôle sans test de rendu ; double appui sur « Ouvrir sans position » (déjà dans la 087).
 
@@ -190,6 +192,8 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **100** double appui sur « Ouvrir sans position » (`testeur` puis `dev`, une reprise, PR #167, f9c9924, v0.7.119) et **101** création du contrôle du jour atomique (`testeur` puis `dev` opus, plan, recadrée, PR #168, 4cdff95). Essai du double appui sur le téléphone à faire.
 
 - **089** ouvrir sans position depuis le guidage (`testeur` puis `dev` opus, tenir, plan tranché par Pascal, PR #162, dc62557) : v0.7.113 installée le 2026-11-07 ; localisation coupée capturée ; fix perdu : bloc et « Ouvrir sans position » vus par Pascal. Reste : ouverture par le code depuis le guidage, en forêt.
 - **097** hôtes Centipède sourcés (`acquereur`, #163), **098** commentaire de `CASTERS_CENTIPEDE` (`dev`, #164), **099** décision au référentiel (`acquereur`, #165) : `caster.centipede.fr` gardé par Pascal.
