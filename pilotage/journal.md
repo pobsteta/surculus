@@ -1099,3 +1099,4 @@
 2026-11-07 · Pascal · PR #168 · « Fusionner » : 101 fusionnée par l'orchestrateur (4cdff95).
 2026-11-07 · Pascal · deux sessions vivantes · « Bac à sable » : course sur les lignes `etat` (vérifiée) et choix en attente perdus (non vérifié) notés au kanban. Kanban : 100 et 101 au Terminé.
 2026-11-07 · Pascal · cycle 19 · « Clos le cycle 19 et continue » ; livraison retenue « Oui, avec la mauvaise nouvelle » (100, 101 ; rien vérifié au téléphone ; deux constats relayés sans vérification).
+2026-11-07 · Pascal · cycle 20 · « Libellés rognés à « Terminer » » : fiche 102 (33d9e12) ; constat vérifié sur la capture de la v0.7.111 et dans le code (`EcranControle.kt` l. 873-877, `libelleCourt` 18 caractères) ; `testeur` puis `afficheur`, tenir, plan d'abord ; `testeur` lancé. PR #169 (pilotage du cycle 19) à Pascal.
