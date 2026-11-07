@@ -49,8 +49,8 @@ import kotlin.test.assertTrue
  * Le guidage est rendu tournée chargée (`GuidagePret`) ; l'ouverture est injectée et **comptée** ici. Les coordonnées sont celles
  * de `BancControle` : Lambert-93 (EPSG:2154), x = Est, y = Nord, mètres ; P35-01 est à Couchey (Côte-d'Or), en France.
  *
- * Non couvert : l'écran de contrôle lui-même (`EcranControle`) charge la tournée depuis un `travaux.gpkg` du disque, sans banc
- * d'essai dans `app/src/test` ; voir le rapport du `testeur`.
+ * L'écran de contrôle est couvert par `RenduDoubleAppuiEcranControleTest` (vue de confirmation `VueConfirmerSansPosition`) :
+ * `EcranControle` charge la tournée depuis un `travaux.gpkg` du disque, sans banc d'essai, d'où ce point d'entrée injectable.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
