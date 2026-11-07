@@ -186,6 +186,7 @@ class SessionControleTest {
         assertEquals(SuiteSession.EtatDAbord, s.preciser(hauteurCm = 40))
         s.dire("mort")
         assertIs<SuiteSession.Fait>(s.preciser(hauteurCm = 40))
+        Unit // le test doit rendre Unit, sinon JUnit 5 ne le lance pas
     }
 
     @Test
@@ -218,6 +219,7 @@ class SessionControleTest {
         assertTrue(ValeurPointage.lire(journal.deType("pointage").single().valeur)!!.horsRayonConfirme)
         // À la borne (3,99 + 0,10), pas d'alerte.
         assertIs<SuiteSession.Fait>(s.pointe(4.09, 190.0))
+        Unit // le test doit rendre Unit, sinon JUnit 5 ne le lance pas
     }
 
     // ------------------------------------------------------------ Terminer, « Contrôlée »
@@ -436,6 +438,7 @@ class SessionControleTest {
         assertEquals("plant_remplace_ni_mort_ni_absent", refus(s.remplace()).code)
         s.dire("absent")
         assertIs<SuiteSession.Fait>(s.remplace())
+        Unit // le test doit rendre Unit, sinon JUnit 5 ne le lance pas
     }
 
     @Test
@@ -608,5 +611,6 @@ class SessionControleTest {
         s.pointe(1.0, 10.0); s.dire("sain"); s.direBesoin("aucun"); s.direConcurrence("faible"); s.terminer(); s.annuler()
         assertTrue(journal.lignes.all { it.operateur == "Agent d'essai" })
         assertNotNull(journal.lignes.firstOrNull { it.type == "annulation" })
+        Unit // le test doit rendre Unit, sinon JUnit 5 ne le lance pas
     }
 }
