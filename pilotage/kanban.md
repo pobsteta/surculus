@@ -188,6 +188,14 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 ## Terminé
 
+- **094** référentiel de la source (`testeur` puis `dev`, PR #159, une reprise, aa02f2c), **095** « Terminer » refusé
+  tant qu'un plant n'a pas d'état (`testeur` puis `dev`, PR #158, 351c427) : release v0.7.111 installée le 2026-11-07 ;
+  P35-01 de la Colombière : « Terminer » grisé avec « Plant n° 2 sans état : dire son état ou « non observé ». »
+  (capturé), puis rendu avec `referentiel_source` = `WGS84`. Reste à Pascal : essai au ZED-F9P (RTK fixe → RGF93,
+  NTRIP coupé → null, DGPS → null).
+- **096** quatre tests muets de `SessionControleTest` lancés (`testeur` seul, PR #160, 39df25e) : 43 cas sur 43, aucun
+  défaut révélé.
+
 - **091** besoin, concurrence et qualité du fix (`testeur` puis `dev`, tenir, PR #156, deux reprises, 7e82a8a) et
   **092** référentiel des concurrences (`acquereur`, #157, 957ced7) : fusionnées ; release v0.7.109 installée le
   2026-11-05 (relancée une fois : émulateur de la CI non démarré). Écran « Terminer » de P35-03 capturé : besoin
@@ -341,6 +349,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 ## Abandonné
 
 _Avec la raison, en une ligne._
+
+- 2026-11-06 : **093** rendre les points hors forêt : abandonnée sans PR ; Pascal garde le refus (`PointHorsForet`) et
+  fait essayer sur une tournée à la Colombière (Dijon).
 
 - 2026-10-21 : PR #4 (ébauche des référentiels, 2026-10-15) fermée : antérieure à la porte
   n° 1, codes travaux contraires à la décision du 2026-10-15 ; ses cinq documents utiles
