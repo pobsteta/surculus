@@ -1,9 +1,9 @@
 # Référentiel des positions RTK du réseau Centipède
 
 - **Propriétaire** : Pascal Obstétar
-- **Date de consultation** : 2026-10-15
+- **Date de consultation** : 2026-10-15 ; rubrique « Hôtes du caster » et sources HOTE-* : 2026-11-07 (mission 097)
 - **Constitué par** : agent `acquereur`
-- **Décision éclairée** : le référentiel (et la réalisation) à enregistrer pour la position GNSS brute d'un plant ou d'un point de travaux, et la conversion vers Lambert-93 (EPSG:2154) avant écriture (spec § 3, ligne « Position GNSS brute » ; champ `referentiel_source` de la couche `plants`). Rien n'est tranché ici : la décision revient à Pascal (ADR « GNSS et repères »).
+- **Décision éclairée** : le référentiel (et la réalisation) à enregistrer pour la position GNSS brute d'un plant ou d'un point de travaux, et la conversion vers Lambert-93 (EPSG:2154) avant écriture (spec § 3, ligne « Position GNSS brute » ; champ `referentiel_source` de la couche `plants`). Rien n'est tranché ici : la décision revient à Pascal (ADR « GNSS et repères »). Pour la rubrique « Hôtes du caster » : quel nom d'hôte de caster marque une position `RGF93` (mission 097, spec § 3).
 
 ## Réponse courte
 
@@ -11,6 +11,7 @@
 2. **La réalisation (v1, v2, v2b) n'est écrite nulle part dans la documentation Centipède que j'ai lue.** La documentation recommande le code **EPSG:4171** (RGF93 v1, 2D) pour les relevés GNSS ; l'IGN et l'EPSG donnent RGF93 v2b comme système en vigueur depuis 2021. L'écart entre réalisations est de l'ordre du centimètre.
 3. **L'écart avec WGS 84 en 2026 est d'environ 1 mètre** (0,98 m par le calcul ci-dessous ; « près de 1 m » selon l'IGN), croissant de 2,6 cm par an. Il compte pour l'écart entre un point RTK et un point autonome, pas pour deux points RTK.
 4. **Pour passer en EPSG:2154, aucune transformation de datum** : les paramètres de décalage officiels de l'EPSG sont nuls (précision annoncée 1 m).
+5. **Hôtes du caster** : `crtk.net` est publié par la documentation officielle (port 2101) ; `caster.centipede.fr` n'est publié que par des sources tierces lues (port 2101 ou 80 selon la source) et aucune page officielle lue ne le nomme. Voir « Hôtes du caster ».
 
 ## Sources et pages exactes
 
@@ -20,7 +21,7 @@
 | C-PARAM | https://docs.centipede.fr/docs/base/param_positionnement.html, « Paramétrage du positionnement dans la base » | « utiliser les coordonnées RGF93 en bas du texte, et pas les coordonnées ITRF2014 ou ETRS89 situées au-dessus » ; ordre latitude, longitude, hauteur ; l'époque et la version de RGF93 ne sont pas mentionnées |
 | C-FR | https://docs.centipede.fr/docs/base/positionnement-france.html, « Positionnement France / DOM-TOM » | procédure : fichier RINEX, service en ligne de l'IGN (« calculs GNSS Réseau en ligne », stations du Réseau Géodésique Permanent), position de la base lue à la fin du rapport, section « ====== RGF93 ====== » ; exactitude estimée exigée inférieure à 10 mm en E et N, 20 mm en hauteur ; ni v1 ni v2b, ni époque |
 | C-EU | https://docs.centipede.fr/docs/base/positionnement-Europe.html | hors France, la procédure passe par ITRF2020 puis ETRF2000 ; écart entre ETRF2000 et le système national dit « < 1 cm » pour le RTK |
-| C-CASTER | https://docs.centipede.fr/docs/centipede/3_connect_caster.html | caster `crtk.net`, port 2101, NTRIP v1 ou v2, format RTCM3 ; points de montage NEAR (MSM7), NEAR4 (MSM4) ou base nommée ; **ne dit rien du référentiel de la position du mobile** |
+| C-CASTER | https://docs.centipede.fr/docs/centipede/3_connect_caster.html (relue le 2026-11-07) | caster `crtk.net`, port 2101, NTRIP v1 ou v2, format RTCM3 ; points de montage NEAR (MSM7), NEAR4 (MSM4) ou base nommée ; **seul nom d'hôte de caster cité, `caster.centipede.fr` y est absent, aucun alias mentionné** ; renvoie à la carte des bases `https://map.centipede-rtk.org/` (pas un caster) ; **ne dit rien du référentiel de la position du mobile** |
 | CRAIG | https://www.data.gouv.fr/datasets/bases-gnss-centipede-craig (Licence Ouverte 2.0, mise à jour affichée le 2026-10-15) | chaque base est un point **en WGS 84** (couche de localisation) ; l'attribut « coordonnées RGF93 diffusées sur le réseau Centipède » (bases actives) est le référentiel de diffusion. Les points sont en WGS 84, « pas en RGF93 » : un point de la couche CRAIG n'est donc pas la coordonnée diffusée |
 | EPSG-9782 | https://epsg.io/9782 | ETRS89-FRA [RGF93 v2b], géographique 2D, époque d'ancrage 2019, axes latitude puis longitude ; « Replaces ETRS89-FRA [RGF93 v2] (CRS code 9777) from 2021-01-05 » ; le code 9784 est la variante à axes inversés (usage SIG de l'IGN) |
 | EPSG-9794 | https://epsg.io/9794 | « ETRS89-FRA [RGF93 v2b] / Lambert-93 », base 9782 ; transformation par défaut vers WGS 84 : 9792 |
@@ -29,6 +30,37 @@
 | IGN-2026 | IGN, présentation GÉOPOS, mars 2026, https://cnig.gouv.fr/IMG/pdf/ign_2026-03-26_geopos_refgeodesique_sig_v2.pdf et présentation du 2026-05-18 https://cnig.gouv.fr/IMG/pdf/reunion_publique_besoin_systeme_de_reference_europeen_260518-2.pdf | **non lus : le site répond 403 à l'outil de lecture.** Je n'en ai que le résumé d'une recherche web : dérive d'environ 2,6 cm par an, écart ITRS - ETRS89 « près de 1 m » ; RGF93 v1 = ETRF93 (1993.0), v2 = ETRF2000 (2009.0), v2b = ETRF2000 (2019.0) ; « les coordonnées en usage en France métropolitaine sont aujourd'hui exprimées en RGF93 v2b ». **À relire par Pascal ou par une session qui y accède** |
 | CNIG-2020 | présentation GÉOPOS, 2020-10-14, https://cnig.gouv.fr/IMG/documents_wordpress/2021/11/1_Geopos-14octobre2020-Registres.pdf | **non lue (403)** ; résumé de recherche : transformation v1 vers v2 acceptée par l'EPSG avec paramètres nuls et incertitude de 5 cm à 1 sigma (écarts observés : 5 cm sur le RGP, 10 cm sur le RBF), aucune transformation directe v1 vers v2b publiée à cette date |
 | PROJ4J | https://github.com/locationtech/proj4j | licence Apache-2.0 ; module `proj4j-epsg` sous la licence de distribution de la base EPSG (« As of 1.2.2 version, proj4-core contains no EPSG Licensed files ») ; accepte les paramètres `+towgs84` ; **grilles de décalage (`nadgrids`) : non mentionnées sur la page**, non vérifiées ; version courante non lue |
+| HOTE-GNSSSTORE | https://gnss.store/blogs/elt-rtk-base/25-using-the-centipede-rtk-ntrip-caster (lue le 2026-11-07) | guide d'un revendeur (tiers) : « Enter the caster address: crtk.net », « Enter the caster port: 2101 » ; `caster.centipede.fr` absent ; autres hôtes nommés, pas des casters : `centipede.fr`, `map.centipede-rtk.org`, `docs.centipede.fr`, `centipede-rtk.org` |
+| HOTE-ARDUPILOT | https://ardupilot.org/mavproxy/docs/modules/ntrip.html (lue le 2026-11-07) | documentation du module NTRIP de MAVProxy (tiers) : « ntrip set caster caster.centipede.fr » ; `crtk.net` absent |
+| HOTE-RTKBASEVAR | https://github.com/CentipedeRTK/RtkBaseVar/blob/main/README.md (lue le 2026-11-07) | dépôt de l'organisation CentipedeRTK (voir HOTE-ORG), section « How it works » : « ntrip://:@caster.centipede.fr:80/ + Mountpoint » ; **port 80**, pas 2101 ; `crtk.net` absent ; ne dit pas que les deux noms sont équivalents |
+| HOTE-ORG | https://github.com/centipedertk (lue le 2026-11-07) | huit dépôts : `millipede-caster` (fork de pbeyssac/millipede-caster, « The Millipede NTRIP/RTK caster »), `documentation`, `docs-centipedeRTK`, `ticket-management-zammad`, `rtkbase`, `pi-gen_RTKbase`, `RtkBaseVar` (« Broadcasting the RTCM3 correction from the nearest RTK base »), `centipede` ; **aucun des deux noms d'hôte n'apparaît sur la page** |
+| HOTE-DOCSREPO | https://github.com/CentipedeRTK/docs-centipedeRTK (lue le 2026-11-07) | page d'accueil du dépôt de la documentation : seule la liste des fichiers est visible, **leur contenu n'a pas été lu** ; aucun des deux noms sur la page. Un chemin de fichier brut essayé (`docs/centipede/3_connect_caster.md`) a répondu 404 |
+| HOTE-MILLIPEDE | https://github.com/CentipedeRTK/millipede-caster (lue le 2026-11-07) | aucun des deux noms ; seul domaine proche : `centipede-rtk.org` |
+| HOTE-PUBLI | https://docs.centipede.fr/docs/publication (lue le 2026-11-07) | page « Publications » de la documentation officielle : sections « Publications scientifiques » et « Vidéos », aucun titre listé dans le texte lu, aucun nom d'hôte de caster |
+| HOTE-SOTM2026 | https://pretalx.com/sotm2026/talk/KVZZWR/ (lue le 2026-11-07) | « Centipede-RTK with RTKBase and Millipede: centimeter-level GNSS positioning », Pierre Beyssac, 2026-08-29 : « wrote the Millipede caster open-source software which serves the RTK streams of Centipede » ; aucun des deux noms d'hôte dans le texte de la page |
+| HOTE-SOURCETABLE | constat de l'orchestrateur, 2026-11-07, depuis le poste de Pascal : table des points de montage NTRIP (sourcetable), `GET /` avec `Ntrip-Version: Ntrip/2.0`, sur `http://crtk.net:2101/`, `http://caster.centipede.fr:2101/` et `http://caster.centipede.fr:80/` | **constat technique daté, table publiée par le caster lui-même** (champ CAS de la norme NTRIP, pas une page de documentation). Les trois adresses rendent **la même table** : 1339 lignes STR et la même ligne `CAS;crtk.net;2101;Millipede-caster;Centipede-RTK;0;FRA;45.99;-1.02;0.0.0.0;0;https//map.centipede-rtk.org`, puis `NET;ASSO;CENTIPEDE-RTK;B;N;https://www.centipede-rtk.org/terms-conditions;https://docs.centipede.fr;contact@centipede-rtk.org;none`. Le caster joint sous `caster.centipede.fr` (ports 2101 et 80) se déclare donc lui-même `crtk.net:2101`, opéré par CENTIPEDE-RTK. Je n'ai pas rejoué la requête |
+| HOTE-DNS | constat de l'orchestrateur, 2026-11-07, résolution DNS depuis le poste de Pascal (`getent ahostsv4`, `host -t CNAME`) | `crtk.net` et `caster.centipede.fr` résolvent tous deux en A 66.185.123.66, sans CNAME. **Constat technique daté, pas une source publiée** : la même IP montre le même serveur aujourd'hui, pas un alias garanti. La décision de Pascal (2026-11-06) est de reconnaître le caster par son nom, jamais par l'IP |
+
+## Hôtes du caster
+
+Question de la mission 097 : d'où vient chaque nom que Surculus reconnaît comme un caster Centipède (`CASTERS_CENTIPEDE` = `caster.centipede.fr`, `crtk.net`, mission 094) ? Ce nom décide si une position est marquée `RGF93`. Rien n'est changé dans le code ici.
+
+CQQCOQP en bref : **Pourquoi** (marquer RGF93 une position corrigée par Centipède). **Qui** : la documentation Centipède (INRAE et contributeurs) pour `crtk.net` ; des tiers (MAVProxy, dépôt RtkBaseVar) pour `caster.centipede.fr`. **Quoi** : un nom d'hôte, un port. **Où** : l'Internet public. **Quand** : lu le 2026-11-07. **Combien** : une source officielle pour un nom, une source tierce pour l'autre.
+
+| Nom | Meilleure source | Seconde source | Ce qu'elles disent | Verdict |
+|---|---|---|---|---|
+| `crtk.net` | C-CASTER (documentation officielle) | HOTE-GNSSSTORE (tiers) | « Adresse caster : crtk.net », port 2101 ; le guide tiers répète « crtk.net » et 2101 | **Publié par la source officielle**, deux sources concordantes |
+| `caster.centipede.fr` | HOTE-RTKBASEVAR (dépôt de l'organisation CentipedeRTK, README) | HOTE-ARDUPILOT (tiers) | `caster.centipede.fr`, port 80 dans RtkBaseVar ; nom seul dans MAVProxy | **Source de projet et source tierce**, mais **aucune page de la documentation officielle lue ne le nomme**. **Constat technique** (HOTE-SOURCETABLE, 2026-11-07) : le caster joint sous ce nom (ports 2101 et 80) publie la même table que `crtk.net` et se déclare `crtk.net:2101` (champ CAS) |
+
+**Même service ou non ?** Aucune page publiée lue ne le dit. Chaque page cite un seul des deux noms. Deux constats techniques datés du 2026-11-07, qui ne sont pas des pages publiées : (1) les deux noms résolvent vers la même adresse IPv4 (HOTE-DNS) ; (2) le caster joint sous `caster.centipede.fr` (ports 2101 et 80) rend la même table de points de montage que `crtk.net:2101` (1339 lignes STR) et **se déclare lui-même `crtk.net:2101`**, opéré par CENTIPEDE-RTK (ligne CAS, HOTE-SOURCETABLE). C'est le caster qui parle, à la date de la requête : on s'en tient à ce constat, sans le généraliser au futur ni à d'autres adresses. Un résumé de recherche web attribue à un diaporama de conférence la phrase « crtk.net:2101, également joignable en caster.centipede.fr:2101 » ; **je n'ai pas pu lire ce document** (PDF illisible par l'outil, ou trop lourd), je ne le cite donc pas comme source.
+
+**Autres noms d'hôte officiels trouvés** (non ajoutés au code) : aucun autre nom de caster. Les autres noms vus ne sont pas des casters : `map.centipede-rtk.org` (carte des bases, C-CASTER), `centipede-rtk.org`, `centipede.fr`, `docs.centipede.fr`.
+
+**RtkBaseVar** est bien l'un des dépôts de l'organisation GitHub `CentipedeRTK` (HOTE-ORG). C'est un outil du projet, pas la documentation : sa valeur (`caster.centipede.fr:80`) est un réglage d'exemple, pas une déclaration du service.
+
+**Écart relevé** : la documentation officielle publie `crtk.net:2101` ; le dépôt RtkBaseVar utilise `caster.centipede.fr:80` ; MAVProxy donne `caster.centipede.fr` sans port. Cause non établie par une page publiée ; la table du caster montre qu'on atteint le même caster par les deux noms et sur les ports 2101 et 80. Le port diffère selon la source : à ne pas reconnaître un caster par le port.
+
+**Reste pour Pascal** : `caster.centipede.fr` est le réglage par défaut hérité de Groma. Il a deux sources non officielles de la documentation, un constat DNS identique à `crtk.net`, et une table de points de montage où le caster se déclare `crtk.net:2101`. Garder, retirer ou demander confirmation à l'équipe Centipède (forum officiel, issue sur `docs-centipedeRTK`) : décision de Pascal.
 
 ## Ce que le mobile reçoit : une déduction à vérifier
 
@@ -62,6 +94,7 @@ La documentation Centipède ne dit pas dans quel référentiel est exprimée la 
 2. **« WGS 84 » ou « RGF93 »** : la couche de localisation du CRAIG est en WGS 84 (CRAIG), alors que la position diffusée est en RGF93 : deux étiquettes pour un même point, à un mètre près. Ne pas lire la coordonnée du CRAIG comme coordonnée diffusée.
 3. **ETRS89 contre RGF93** : la spec § 3 écrit « RGF93 (ETRS89) » ; C-PARAM oppose les deux (coordonnées ETRS89 du rapport à ne pas saisir). Numériquement l'écart est de quelques centimètres. Le champ `referentiel_source` peut garder la valeur `rgf93`.
 4. **Écart avec WGS 84** : chiffré « près de 1 m » (IGN-2026), « 1 m » (EPSG), 0,80 m (témoignage), 0,98 m (calcul). Concordance sur l'ordre de grandeur, pas sur le chiffre : tous partent de la même physique (la dérive de la plaque). Je n'ai pas de mesure indépendante.
+5. **Nom et port du caster** : la documentation officielle publie `crtk.net:2101` (C-CASTER) ; RtkBaseVar utilise `caster.centipede.fr:80` ; MAVProxy donne `caster.centipede.fr` sans port. Les deux noms résolvent vers la même IP le 2026-11-07 (HOTE-DNS) et la table du caster est identique, avec une ligne CAS `crtk.net;2101` (HOTE-SOURCETABLE). Cause non établie (voir « Hôtes du caster »).
 
 ## Ce que je n'ai pas trouvé
 
@@ -70,3 +103,6 @@ La documentation Centipède ne dit pas dans quel référentiel est exprimée la 
 - Les présentations de l'IGN de 2026 (403).
 - Le contenu exact de `proj4j-epsg` (présence de 2154, 4171, 9782, 9794 ; grilles NTv2).
 - Les composantes nord et est de l'écart WGS 84 contre RGF93 en France.
+- Une page de la documentation officielle Centipède qui nomme `caster.centipede.fr` : **sans source officielle trouvée** (les pages lues : C-CASTER, HOTE-PUBLI ; le contenu des fichiers du dépôt `docs-centipedeRTK` n'a pas été lu).
+- Une page publiée qui dise que `crtk.net` et `caster.centipede.fr` sont le même service (seul le constat technique HOTE-SOURCETABLE le montre, à sa date).
+- Les documents suivants, **non lus donc non cités** : l'article https://jimis.episciences.org/15096/pdf (trop volumineux pour l'outil) ; les diaporamas FRnOG 41 (https://media.frnog.org/FRnOG_41/FRnOG_41-3.pdf, trop volumineux) et OSM 2023-11-11 (PDF dont le texte n'est pas lisible par l'outil).
