@@ -25,6 +25,21 @@ que « un contrôle par placette et par jour » soit tenu par les données et no
 **« Oui, mission à part »** : la seconde ouverture le même jour reprend le contrôle déjà ouvert, sans nouvelle ligne au
 journal.
 
+## Recadrage après le plan du `dev` (2026-11-07)
+
+- **Écart de l'orchestrateur :** je me suis trompé. La « ligne en trop » de la 100 n'était pas une seconde ouverture
+  mais un état dit sur le contrôle repris : `SessionControle.assurerControle` (l. 537-538) reprend déjà le contrôle du
+  jour, avec ou sans position, terminé ou non. La règle tient déjà par les données.
+- **Seul trou :** deux sessions vivantes qui font leur **première** saisie en même temps peuvent écrire chacune une ligne
+  `controle` (« lire puis écrire » non atomique ; déduit à la lecture, non reproduit).
+- **Décision de Pascal :** « Verrou sur la création » : le `dev` rend atomique la création du contrôle du jour (verrou
+  partagé par le processus autour de lire / `UnControleParJour` / écrire), couvre l'ouverture avec et sans position, et
+  ajoute un test de concurrence déterministe ; le `testeur` corrige ses tests n° 2 et 5, qui interdisaient une saisie
+  légitime sur le contrôle repris : ils comptent les lignes `controle`, pas toutes les lignes ; il revoit la phrase
+  « périmé » de `DoubleOuvertureSansPositionTest`.
+- Réponses aux questions du plan : (1) avec position : dans la mission ; (2) la règle rend le contrôle existant (déjà le
+  cas) ; (3) un contrôle terminé est repris (déjà le cas, spec § 4.3).
+
 ## Les trois questions (règle de staffing)
 
 | Question | Réponse | Conséquence |
