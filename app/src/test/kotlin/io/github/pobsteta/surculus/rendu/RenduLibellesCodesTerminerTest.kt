@@ -66,8 +66,8 @@ class RenduLibellesCodesTerminerTest {
             "PA" to "Entretien des limites (peinture, bornes)",
         )
 
-        /** Valeur provisoire : rayon (dp) du coin arrondi supposé d'un bouton de code, tant que la capture n'a pas mesuré le vrai. */
-        const val COIN_DP = 16f
+        /** Décision de Pascal du 2026-11-07 (fiche 102, « Coins arrondis, 2 lignes ») : rayon (dp) des coins d'un bouton de code. */
+        const val COIN_CODE_DP = 12f
 
         /** Valeur provisoire : corps minimal (sp) du code « en gros » (titleLarge = 22 sp aujourd'hui). */
         const val CODE_MIN_SP = 20f
@@ -162,7 +162,7 @@ class RenduLibellesCodesTerminerTest {
         else if (vus.size > attendu.size || vus != attendu.take(vus.size)) {
             d += "${b.code} : « $affiche » n'est pas un début du libellé « ${LIBELLES.getValue(b.code)} » en mots entiers"
         }
-        val coin = COIN_DP * densite
+        val coin = COIN_CODE_DP * densite
         for (t in b.textes) {
             val m = t.mise
             val plein = m.layoutInput.text.text
@@ -201,7 +201,8 @@ class RenduLibellesCodesTerminerTest {
         val defauts = ArrayList<String>()
         if (absents.isNotEmpty()) defauts += "boutons de la grille introuvables pour les codes $absents"
         boutons.forEach { defauts += defautsDeLibelle(it, r.densite) }
-        BancRendu.rapport(cas, r, defauts)
+        val tailles = boutons.flatMap { b -> b.textes.filterNot { estLeCode(it.texte, b.code) }.map { "${b.code} : libellé « ${it.texte} » en ${it.mise.layoutInput.style.fontSize}" } }
+        BancRendu.rapport(cas, r, defauts, entete = tailles)
         assertTrue(defauts.isEmpty(), "Rendu « $cas » :\n" + defauts.joinToString("\n"))
     }
 
@@ -239,6 +240,15 @@ class RenduLibellesCodesTerminerTest {
     @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `code en gros et 4 par ligne debout sans plein ecran`() = codeEnGrosEtParLigne("code-debout-sans-plein", 4)
     @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `code en gros couche en plein ecran`() = codeEnGrosEtParLigne("code-couche-plein", null)
     @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `code en gros couche sans plein ecran`() = codeEnGrosEtParLigne("code-couche-sans-plein", null)
+
+    /**
+     * Garde de la forme (décision de Pascal) : le libellé doit tenir dans un rectangle à coins de 12 dp. Un retour au quasi-cercle
+     * de rayon 40 dp (82 × 80 dp debout) pousse les coins des lignes hors du bouton et fait échouer [libelles].
+     */
+    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `forme du bouton de code - le libelle tient dans un rectangle a coins de 12 dp, pas dans un quasi-cercle`() {
+        assertEquals(12f, COIN_CODE_DP)
+        libelles("forme-debout-plein")
+    }
 
     @Test
     fun `la donnee d'essai porte les 15 codes de sommieR`() {
