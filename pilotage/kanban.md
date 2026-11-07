@@ -7,14 +7,50 @@
 
 ## Bac à sable
 
+- **Libellés des codes rognés** (091, v0.7.109) : dans la grille « Terminer », la seconde ligne du libellé est coupée par le
+  bord du cercle (« Préparation / du… », « Cloisonneme / nt… »). Une ligne seule, ou une coupe aux mots.
+
+
+- **089** ouvrir sans position depuis le guidage (« Contrôler » et le code n'y viennent qu'avec un fix) : décision de
+  Pascal du 2026-11-03, mission à part après la 088, avant l'essai en forêt ; fiche à écrire.
+
+- **Parcelle de la placette** (relecture de la 086, « sans parcelle pour l'instant », Pascal, 2026-11-02) : `placettes`
+  ne porte pas la parcelle ; à demander à sommieR (une colonne), pas à deviner par jointure. La confirmation de la 087
+  s'écrit sans parcelle d'ici là.
+- **Placette visée par le guidage** (relecture de la 086) : pourrait départager ou être mise en avant entre homonymes ;
+  l'ADR ne retient que la position. Signalé, non recommandé.
+- **ADR 0003** : l'en-tête et le paragraphe `.sursync` disent encore « codé par la 086 » ; le découpage 086 / 087 / 088
+  est à y reprendre (`archiviste`).
+
+- **084** (décision de Pascal, 2026-11-02, relecture de la 082) : les autres refus de la lecture d'une tournée encore
+  techniques à l'écran (`ReferentielSpatialInconnu` avec `srs_id` et `gpkg_spatial_ref_sys`, `Referentiel` EPSG,
+  `CoucheAbsente` avec majuscule, `PointHorsFrance` aux coordonnées brutes), même règle que la 082 ; fiche à écrire
+  (`testeur` puis `dev`).
+- **« Carte impossible : placette <uuid> »** (`EcranGuidage:107`, `EcranControle:193`, relecture de la 082) : UUID à
+  l'écran.
+- **Test de la 082** : `gabarit()` ne lit que `strings_tournees.xml`, d'où le doublon `carte_recepteur_service_interrompu`
+  / `rtk_service_interrompu` ; le faire lire les deux fichiers (`testeur`), puis une seule ressource. La carte reconnaît
+  l'interruption par son texte (`DEBUT_SERVICE_INTERROMPU`) : un indicateur dans `EtatRtk` serait plus solide.
+
+- **Libellé « Caster » dans Paramètres** (`recepteur_caster`, `recepteur_ntrip_desc`, relecture de la 082) : mot
+  technique, hors de la 082.
+
+- **Contrôles d'intégrité de l'export** (`ExportTravaux:487-494`, clés étrangères, rtree, `gpkg_contents`) : textes
+  techniques, invisibles tant qu'aucun écran n'appelle l'export ; à traduire ce jour-là (« les laisser, noter », Pascal,
+  2026-11-02, relecture de la 082).
+- **Après « Libérer le récepteur »** (relecture de la 082, non vérifié sur appareil) : `travail.cancel()` peut remettre
+  « liaison coupée » dans l'état alors que le service est arrêté (`ServiceGnssRtk.kt:141`).
+
 - **Mineur M2 de la 076** (depuis le cycle 15) : plus aucun test ne vérifie que `echeance()` retient la plus
   proche des deux échéances (bandeau, résultat final) ; une ligne dans le premier test du bandeau.
 
-- **082** (décision de Pascal, 2026-10-30, relecture de la 081) : plus aucun `e.message` brut à l'écran
-  (`carte/Commun.kt:94`, `DepotTournees.kt:145`, `EcranTournees.kt:144`, `MoteurDicteeVosk.kt:45`, `:52`,
-  `ServiceGnssRtk.kt:84`, `:140`, `:170`) ; fiche à écrire.
-- **Le plant par son numéro dans les refus** (« le plant n° 7 » plutôt que « ce plant », 081) : le refus doit porter le
-  numéro ; « assez pour l'instant » (Pascal, 2026-10-30).
+- **Questions de la relecture de la 081** (Pascal, « au bac à sable », 2026-10-30) : `ConnectException` (serveur qui
+  refuse) dit « pas de réseau », coupure en plein téléchargement (`SocketException`, SSL) sur la phrase générique ;
+  signe moins « - » ou « − » (U+2212) ; tests manquants : appel de `refusServeur` dans `source`, priorité
+  d'`EchecInstallation` sur une enveloppe.
+
+- **Message d'échec de la voix hors de vue** (capture v0.7.99, 2026-10-30) : au premier appui sur « Retélécharger »,
+  rien de visible ; le message s'écrit en bas de Paramètres. À vérifier, puis le faire voir sans défiler.
 
 _Idées, à trier au prochain `/mission`._
 
@@ -91,10 +127,6 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **079** README et spec au niveau du livré (`archiviste`, appuyer), **080** test de rendu des écrans (`afficheur`,
-  tenir : plan d'abord), **081** aucun texte technique à l'écran (`testeur` puis `dev`, appuyer) : validées par
-  Pascal le 2026-10-30 (porte n° 2, « Oui, les trois »), lancées le même jour ; fiches sur leurs seules branches.
-
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
@@ -155,6 +187,49 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **094** référentiel de la source (`testeur` puis `dev`, PR #159, une reprise, aa02f2c), **095** « Terminer » refusé
+  tant qu'un plant n'a pas d'état (`testeur` puis `dev`, PR #158, 351c427) : release v0.7.111 installée le 2026-11-07 ;
+  P35-01 de la Colombière : « Terminer » grisé avec « Plant n° 2 sans état : dire son état ou « non observé ». »
+  (capturé), puis rendu avec `referentiel_source` = `WGS84`. Reste à Pascal : essai au ZED-F9P (RTK fixe → RGF93,
+  NTRIP coupé → null, DGPS → null).
+- **096** quatre tests muets de `SessionControleTest` lancés (`testeur` seul, PR #160, 39df25e) : 43 cas sur 43, aucun
+  défaut révélé.
+
+- **091** besoin, concurrence et qualité du fix (`testeur` puis `dev`, tenir, PR #156, deux reprises, 7e82a8a) et
+  **092** référentiel des concurrences (`acquereur`, #157, 957ced7) : fusionnées ; release v0.7.109 installée le
+  2026-11-05 (relancée une fois : émulateur de la CI non démarré). Écran « Terminer » de P35-03 capturé : besoin
+  « Aucun » et 15 codes, concurrence Faible, Moyenne, Forte, « Terminer » grisé avec « Choisir le besoin et la
+  concurrence pour terminer. » ; quitté par « Reprendre » sans rien écrire. Reste : l'essai de Pascal sur P35-01
+  (RG, Forte, rendu, import sommieR) et l'essai ganté des boutons de 64 dp.
+
+- **090** rendre la tournée depuis le téléphone : fusionnée (#155, 67ff17a), release v0.7.107 ; bouton et
+  confirmation vus le 2026-11-03. Reste : un vrai rendu, avec la 091.
+
+- **087** ouvrir un contrôle sans position et **088** `.sursync` v2 : fusionnées ensemble (#153 et #154 dans la
+  branche 087, puis #152 dans `main`, 7c8f969), release v0.7.106 installée le 2026-11-03 ; essais : refus de la v2 par
+  la 0.7.102, restauration sur la 0.7.106, « Activez la localisation… », ouverture sans position vue par Pascal
+  (micro-ondes). Reste : la mesure des 30 s à l'essai en forêt.
+
+- **086** code de piquet en double entre UG (`testeur` puis `dev`, PR #151, 709c7bd, un aller-retour) : fusionnée le
+  2026-11-02 ; **capture à faire** (écran « P01 : quelle UG ? », tournée à deux « P01 »).
+
+- **082** plus aucun message d'exception brut à l'écran (`testeur` puis `dev`, PR #146, a04eb64, deux allers-retours) :
+  fusionnée le 2026-11-02 ; **captures à faire** (import d'un fichier vide refusé, récepteur coupé).
+
+- **083** le bandeau d'écoute ne cache plus « Plant précédent » (`testeur` puis `afficheur`, PR #148, c081f8a, deux
+  allers-retours) : fusionnée le 2026-11-02 ; preuve #147 rouge (18 tests) fermée sans fusion ; spec amendée par la
+  PR #149 ; **captures debout et couché après une vraie phrase à faire** (téléphone non branché le 2026-11-02).
+
+- **080** test de rendu des écrans (`afficheur`, tenir, PR #142, 76731ab, trois allers-retours) : fusionnée le
+  2026-10-30 ; rouge vérifié sur 076, 078 et 060 (PR de preuve #143 à #145 fermées sans fusion) ; aucun
+  changement de rendu, donc pas de capture ; défaut connu 083 marqué dans le test.
+
+- **081** aucun texte technique à l'écran (`testeur` puis `dev`, PR #140, deux allers-retours) : fusionnée le
+  2026-10-30 ; capturées sur v0.7.99 le 2026-10-30 (code inconnu, « pas de réseau » en mode avion).
+
+- **079** README et spec au niveau du livré (`archiviste`, PR #141, bce9fd2, deux allers-retours) : fusionnée le
+  2026-10-30 ; le test de la minute sera refait au prochain bilan.
 
 - **077** « cliquez sur le bouton « Rattacher » » (`dev`, PR #136, 9d01de8) et **078** six boutons de carte
   en une colonne, de 48 à 32 dp (`afficheur`, PR #137, f780287, deux allers-retours) : capturées sur v0.7.95
@@ -275,6 +350,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 _Avec la raison, en une ligne._
 
+- 2026-11-06 : **093** rendre les points hors forêt : abandonnée sans PR ; Pascal garde le refus (`PointHorsForet`) et
+  fait essayer sur une tournée à la Colombière (Dijon).
+
 - 2026-10-21 : PR #4 (ébauche des référentiels, 2026-10-15) fermée : antérieure à la porte
   n° 1, codes travaux contraires à la décision du 2026-10-15 ; ses cinq documents utiles
   passent à la mission 030.
@@ -334,3 +412,9 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   jointe : rien n'est vérifié en forêt ; le signe concret du brief (10 placettes en moins de 10 min, tournée
   réimportée dans sommieR) n'est pas mesuré ; ce qu'elle nous apprend : une livraison vue au téléphone n'est pas une
   livraison vue au terrain. *(Retenue par Pascal le 2026-10-30 : « Oui, avec la mauvaise nouvelle ».)*
+- cycle 17 · la tournée rendue depuis le téléphone revient dans sommieR (P35-03 : besoin DG → PL, import sommieR 0.31.1
+  le 2026-11-06), avec le besoin, la concurrence, la qualité du fix et son référentiel (`referentiel_source`), et sans
+  plant oublié à « Terminer » (v0.7.111) · pour le forestier et pour sommieR · avant, la tournée ne revenait pas dans
+  sommieR. Mauvaise nouvelle jointe : un point hors forêt empêche toujours le rendu, et rien n'est vérifié en forêt
+  (essai à la maison, Colombière) ; ce qu'elle nous apprend : l'aller-retour est prouvé, pas encore au terrain.
+  *(Retenue par Pascal le 2026-11-07 : « Oui, avec la mauvaise nouvelle ».)*
