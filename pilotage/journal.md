@@ -1060,3 +1060,4 @@
 2026-11-07 · Pascal · fix figé sous couvert · d'abord « Mission sur le fix périmé », sur la foi du relecteur de la #162 (M4).
 2026-11-07 · Claude (orchestrateur) · fix figé sous couvert · écart · je me suis trompé : j'ai posé la question M4 du relecteur sans la vérifier. Le code fait déjà périmer le fix : `SourcePosition.fix` et `ServiceGnssRtk` réévaluent chaque seconde, fix de plus de 5 s refusé (`PolitiqueFix.ageMaxFixMs`, ADR 0003, `PolitiqueFixTest` l. 39) ; l'essai du 2026-11-03 (fix puis micro-ondes, « Ouvrir sans position » vu) le montrait. Question reposée.
 2026-11-07 · Pascal · fix figé sous couvert · « Pas de mission » : rien à coder ; ajouté à l'essai de la 089 (fix pris puis perdu au guidage : bloc sans fix après 5 s, bouton après 30 s).
+2026-11-07 · Claude (orchestrateur) · release v0.7.113 · publiée (dc62557 : 089). Téléphone débranché au moment d'installer : installation et captures du guidage sans fix en attente.
