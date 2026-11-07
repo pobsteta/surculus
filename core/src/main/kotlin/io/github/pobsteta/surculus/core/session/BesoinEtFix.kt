@@ -99,9 +99,14 @@ object ReferentielsSource {
     val DOMAINE: Set<String> = linkedSetOf(RGF93, WGS84)
 
     /**
-     * Hôtes du caster Centipède, reconnus par leur nom seul, jamais par une adresse IP : `crtk.net`, nommé par la
-     * documentation Centipède (https://docs.centipede.fr/docs/centipede/3_connect_caster.html), et `caster.centipede.fr`,
-     * réglage par défaut de `ConfigRtk` (`app/.../gnss/ConfigRtk.kt`), hérité de Groma, que cette page ne nomme pas.
+     * Hôtes du caster Centipède, reconnus par leur nom seul, jamais par une adresse IP. Sources et verdicts :
+     * `docs/referentiels/referentiel-centipede.md`, rubrique « Hôtes du caster » (mission 097).
+     *  - `crtk.net` : nommé par la documentation Centipède (https://docs.centipede.fr/docs/centipede/3_connect_caster.html,
+     *    port 2101), source C-CASTER du référentiel.
+     *  - `caster.centipede.fr` : README du dépôt CentipedeRTK/RtkBaseVar (port 80) et documentation MAVProxy, sources
+     *    HOTE-RTKBASEVAR et HOTE-ARDUPILOT du référentiel ; aucune page officielle lue ne le nomme. Constat daté du
+     *    2026-11-07 (HOTE-SOURCETABLE) : il rend la même table des points de montage que `crtk.net`. Gardé par décision
+     *    de Pascal (2026-11-07).
      * Comparés au caractère près, casse ignorée.
      */
     val CASTERS_CENTIPEDE: Set<String> = linkedSetOf("caster.centipede.fr", "crtk.net")
