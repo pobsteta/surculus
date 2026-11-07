@@ -42,7 +42,7 @@ aux 15 m dès qu'un fix arrive), sans rien changer avec un fix.
 |---|---|---|
 | Peut-il redire la mission en une phrase, avec son but ? | oui | |
 | Sait-il comment faire ? | en partie : la règle existe (087), sa place dans le guidage est à concevoir | **tenir** : plan d'abord |
-| A-t-il les moyens ? | oui : tests Robolectric de l'écran, `PositionSimulee` ; l'essai réel sans fix est à Pascal | le `testeur` écrit d'abord les tests |
+| A-t-il les moyens ? | oui : tests Robolectric de l'écran (`BancRendu`), fix injecté en paramètre ; l'essai réel sans fix est à Pascal | le `testeur` écrit d'abord les tests |
 
 **Temps de la main :** tenir (écran de terrain, parcours de l'agent sous couvert) ; le `dev` rend un plan d'abord.
 
@@ -64,11 +64,27 @@ _Rempli par Pascal seul._
 2. Le champ du code est-il visible dès le guidage sans fix, ou seulement après les 30 s ?
 3. Le compte des 30 s : depuis l'ouverture du guidage, ou partagé avec la carte ?
 
+## Décisions de Pascal sur le plan du `dev` (2026-11-07)
+
+1. **Place :** « À la place du radar » : sans fix, le bloc (attente, champ du code, « Ouvrir sans position ») monte en
+   haut, sous « Position absente » ; le bouton du son reste ; le radar revient au premier fix.
+2. **Champ du code :** « Dès l'absence de fix » : visible dès qu'il n'y a pas de fix, comme l'écran de contrôle de la
+   087 ; le bouton n'arrive qu'après 30 s ; le champ disparaît au retour d'un fix.
+3. **Compte des 30 s :** « Depuis l'ouverture du guidage » : remis à zéro à chaque fix reçu, gardé à la rotation ;
+   l'agent qui repasse par la carte puis « Contrôler » attend de nouveau.
+4. **Tests de branchement :** « Assouplir, code partagé » : le `dev` extrait de l'écran de contrôle un seul morceau de
+   code (habillage de l'appel à l'ouverture sans position et vue de confirmation), appelé par les deux écrans, sans
+   recopie ; le `testeur` réécrit ensuite ses tests de branchement pour exiger cet appel partagé plutôt que des noms
+   précis ; l'écran de contrôle de la 087 est touché, ses tests le gardent.
+
+Écart de l'orchestrateur : je me suis trompé, la première version de cette fiche citait `PositionSimulee`, qui
+n'existe pas ; corrigé (fix injecté en paramètre).
+
 ## Harnais
 
 - **Testeur peut :** tests dans `app/src/test/` et `core/src/test/` ; vus rouges.
-- **Dev peut :** `EcranGuidage.kt`, ce qu'il faut de l'arrivée sans position (087) pour la partager, ressources ; ses
-  tests.
+- **Dev peut :** `EcranGuidage.kt`, `EcranControle.kt` et ce qu'il faut de l'arrivée sans position (087) pour la
+  partager, ressources ; ses tests.
 - **Ne doivent pas :** toucher à `docs/` (l'orchestrateur amende la spec) ; toucher à `main` ; réécrire les tests de
   l'autre.
 - **Sources autorisées :** spec § 4.3, § 6 ; ADR 0003 (amendement du 2026-11-02) ; fiches 087 et 089.
