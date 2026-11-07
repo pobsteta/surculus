@@ -424,3 +424,10 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   sommieR. Mauvaise nouvelle jointe : un point hors forêt empêche toujours le rendu, et rien n'est vérifié en forêt
   (essai à la maison, Colombière) ; ce qu'elle nous apprend : l'aller-retour est prouvé, pas encore au terrain.
   *(Retenue par Pascal le 2026-11-07 : « Oui, avec la mauvaise nouvelle ».)*
+- cycle 18 · sous couvert, sans fix, l'agent ouvre sa placette depuis le guidage avec le code lu, sans revenir à la carte
+  (089, v0.7.113) ; chaque nom de caster qui fait marquer une position RGF93 a sa source (097 à 099) ; les quatre
+  tests muets de `SessionControleTest` tournent (096) · pour le forestier en forêt et pour la justesse des données ·
+  avant, le guidage restait bloqué tant qu'aucun fix n'arrivait. Mauvaise nouvelle jointe : l'ouverture complète
+  depuis le guidage (code, confirmation, contrôle « Sans position ») n'est vérifiée ni au téléphone ni en forêt ; ce
+  qu'elle nous apprend : le micro-ondes montre le bloc et le bouton, pas le geste entier ; l'essai qui compte est sous
+  couvert. *(Retenue par Pascal le 2026-11-07 : « Oui, avec la mauvaise nouvelle ».)*
