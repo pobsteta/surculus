@@ -412,3 +412,9 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   jointe : rien n'est vérifié en forêt ; le signe concret du brief (10 placettes en moins de 10 min, tournée
   réimportée dans sommieR) n'est pas mesuré ; ce qu'elle nous apprend : une livraison vue au téléphone n'est pas une
   livraison vue au terrain. *(Retenue par Pascal le 2026-10-30 : « Oui, avec la mauvaise nouvelle ».)*
+- cycle 17 · la tournée rendue depuis le téléphone revient dans sommieR (P35-03 : besoin DG → PL, import sommieR 0.31.1
+  le 2026-11-06), avec le besoin, la concurrence, la qualité du fix et son référentiel (`referentiel_source`), et sans
+  plant oublié à « Terminer » (v0.7.111) · pour le forestier et pour sommieR · avant, la tournée ne revenait pas dans
+  sommieR. Mauvaise nouvelle jointe : un point hors forêt empêche toujours le rendu, et rien n'est vérifié en forêt
+  (essai à la maison, Colombière) ; ce qu'elle nous apprend : l'aller-retour est prouvé, pas encore au terrain.
+  *(Retenue par Pascal le 2026-11-07 : « Oui, avec la mauvaise nouvelle ».)*
