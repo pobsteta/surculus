@@ -10,6 +10,11 @@ import kotlin.test.assertIs
  * journal, c'est ce que produit un double appui à la confirmation, au guidage comme à l'écran de contrôle (spec § 4 et § 6 : un
  * contrôle par placette et par jour civil Europe/Paris dans une tournée). Écrit par le `testeur` sans lire `SessionControle.kt`.
  *
+ * Mission 101 (recadrage) : la règle reprend déjà le contrôle du jour ; la « ligne en trop » (3 lignes au lieu de 2) est un état dit
+ * sur le contrôle repris, une correction d'état légitime (spec § 4.3), pas une seconde ouverture. Le constat reste écrit tel que la 100
+ * l'a vu, mais ne dit pas un défaut ; la règle « une ligne `controle` par placette et par jour » est jugée par
+ * `SecondeOuvertureSansPositionTest`.
+ *
  * Ces cas **disent** ce que la règle fait quand l'écran ne protège pas ; ils ne jugent pas la règle. Le verrou, lui, est jugé par
  * `RenduDoubleAppuiSansPositionTest` (guidage). Coordonnées : P35-01 à Couchey (Côte-d'Or), Lambert-93 (EPSG:2154), en France.
  */
