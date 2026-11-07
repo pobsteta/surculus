@@ -10,7 +10,7 @@
 nom d'hôte, à sa source dans `docs/referentiels/referentiel-centipede.md`, parce qu'il dit encore que
 `caster.centipede.fr` n'est qu'un réglage hérité de Groma.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** Réécrire seulement le commentaire KDoc de `CASTERS_CENTIPEDE` pour donner, à chaque nom d'hôte (`crtk.net`, `caster.centipede.fr`), sa source et le renvoi à la rubrique « Hôtes du caster » du référentiel, afin qu'il ne dise plus que `caster.centipede.fr` n'est qu'un réglage hérité de Groma ; aucune ligne exécutable ni test ne change.
 
 ## Le constat
 
