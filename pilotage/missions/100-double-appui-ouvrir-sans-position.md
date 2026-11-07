@@ -10,7 +10,7 @@
 l'écran de contrôle, n'ouvre et n'écrive qu'un seul contrôle, parce qu'avec des gants deux appuis arrivent et que les
 données rendues à sommieR ne doivent pas en garder la trace.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent (`testeur`) :** écrire les tests qui diront si deux appuis rapides sur « Ouvrir sans position » (à la confirmation, au guidage puis à l'écran de contrôle) n'ouvrent et n'écrivent qu'un seul contrôle, sans plantage, le bouton se taisant pendant l'ouverture et répondant de nouveau après un refus, et montrer d'abord ce qui se passe aujourd'hui ; je ne touche pas au code de la mission.
 
 ## Le constat
 
