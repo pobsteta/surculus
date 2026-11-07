@@ -110,23 +110,24 @@ class GuidageSansPositionTest {
         ?: File("app/src/main/kotlin/io/github/pobsteta/surculus")
     private val guidage get() = File(racine, "carte/EcranGuidage.kt").readText()
 
+    private val ecranControle get() = File(racine, "controle/EcranControle.kt").readText()
+
     @Test
-    fun `le guidage lit la regle de la 087 - suite, ouvrirSansPosition, confirmation`() {
-        val g = guidage
-        assertTrue("ArriveeSansPosition.suite(" in g, "délai, localisation et permission : la règle de la 087")
-        assertTrue("ArriveeControle.ouvrirSansPosition(" in g, "code_requis, code_inconnu et UG : la règle de la 087")
-        assertTrue("ConfirmerSansPosition" in g, "la placette est affichée à confirmer")
-        assertTrue("TextesControle.confirmationSansPosition(" in g, "le texte de confirmation de la 087")
+    fun `le guidage et l'ecran de controle appellent le meme morceau partage de la 087`() {
+        for ((nom, source) in listOf("EcranGuidage" to guidage, "EcranControle" to ecranControle)) {
+            for (appel in listOf("OuvertureSansPosition.suite(", "OuvertureSansPosition.ouvrir(", "AttenteSansFix(", "ConfirmationSansPosition(")) {
+                assertTrue(appel in source, "$nom doit appeler $appel (délai, code requis, placette à confirmer : une seule source)")
+            }
+        }
     }
 
     @Test
-    fun `le guidage traite les trois suites et les textes de la 087`() {
-        val g = guidage
-        assertTrue("SuiteSansFix.PROPOSER" in g)
-        assertTrue("SuiteSansFix.ACTIVER_LOCALISATION" in g)
-        assertTrue("SuiteSansFix.POSITION_RECUE" in g, "un fix reçu ramène à la règle des 15 m")
-        assertTrue("TextesControle.ACTIVER_LOCALISATION" in g)
-        assertTrue("TextesControle.CODE_REQUIS" in g)
+    fun `ArriveeControle ouvrirSansPosition n'apparait que dans le morceau partage - pas de recopie`() {
+        assertTrue(File(racine, "controle/OuvertureSansPosition.kt").isFile, "le morceau partagé existe")
+        val ailleurs = racine.walkTopDown()
+            .filter { it.isFile && it.extension == "kt" && it.name != "OuvertureSansPosition.kt" && "ArriveeControle.ouvrirSansPosition(" in it.readText() }
+            .map { it.name }.toList()
+        assertEquals(emptyList(), ailleurs, "ArriveeControle.ouvrirSansPosition( ne doit être appelé que par OuvertureSansPosition.kt")
     }
 
     @Test
