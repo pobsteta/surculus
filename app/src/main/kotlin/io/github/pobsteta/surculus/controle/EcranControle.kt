@@ -294,6 +294,7 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
                     is EtatArrivee.ConfirmerSansPosition -> VueConfirmerSansPosition(
                         a,
                         verrou = verrou,
+                        scope = scope,
                         ouvrir = { ouvrirSansPosition(ouverte!!, SansPositionEnAttente.de(cle).ugChoisie, confirmee = true) },
                         onEtat = { arrivee = it },
                         onAnnuler = { SansPositionEnAttente.de(cle).let { it.etape = null; it.ugChoisie = null }; arrivee = EtatArrivee.SansPosition },
@@ -371,7 +372,8 @@ private fun VueSansFix(debutMs: Long, fixRecu: Boolean, code: String, onCode: (S
 /**
  * La placette à confirmer avant d'ouvrir sans position (point 4) : rien n'est ouvert tant que l'agent n'a pas confirmé.
  * Point d'entrée du banc d'essai (mission 100) : [ouvrir] est l'ouverture confirmée (rend l'état qui en résulte), [onEtat]
- * reçoit cet état, [verrou] est le verrou partagé (un seul appui à la fois).
+ * reçoit cet état, [verrou] est le verrou partagé (un seul appui à la fois). [scope] : la coroutine de l'écran de contrôle,
+ * pour que l'ouverture survive à la vue (« Annuler » pendant une ouverture lente) ; les tests gardent la valeur par défaut.
  */
 @Composable
 internal fun VueConfirmerSansPosition(
@@ -380,8 +382,8 @@ internal fun VueConfirmerSansPosition(
     onEtat: (EtatArrivee) -> Unit,
     onAnnuler: () -> Unit,
     verrou: VerrouOuverture = remember { VerrouOuverture() },
+    scope: kotlinx.coroutines.CoroutineScope = rememberCoroutineScope(),
 ) {
-    val scope = rememberCoroutineScope()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         ConfirmationSansPosition(etat, onOuvrir = { verrou.lancer(scope) { onEtat(ouvrir()) } }, onAnnuler = onAnnuler)
     }
