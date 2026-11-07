@@ -4,6 +4,7 @@ import io.github.pobsteta.surculus.core.placette.EtatDsf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 /**
  * Mission 101 : une seconde ouverture sans position, le même jour, de la même placette, reprend le contrôle déjà ouvert, sans
@@ -36,14 +37,15 @@ class SecondeOuvertureSansPositionTest {
     }
 
     @Test
-    fun `la seconde ouverture ne cree jamais un second controle, meme avec un etat dit dessus`() = with(BancControle()) {
+    fun `la seconde ouverture ne cree jamais un second controle, meme avec un etat dit sur le controle repris`() = with(BancControle()) {
         ouvrirEtDire("P35-01")
-        val lignes = journal.nombreDeLignes
+        val objet = journal.lignesCourantes().single { it.type == "controle" }.objetUuid
         val second = runCatching { ouvrirSansPosition("P35-01") }.getOrNull()
+        // Un état dit sur le contrôle repris est une saisie légitime (spec § 4.3) : on compte les lignes « controle », pas toutes.
         (second as? EtatArrivee.Ouverte)?.let { runCatching { it.controleur.dire(EtatDsf.SAIN) } }
-        assertEquals(1, controles(), "un contrôle par placette et par jour")
-        assertEquals(1, journal.lignesCourantes().filter { it.type == "controle" }.map { it.objetUuid }.toSet().size)
-        assertEquals(lignes, journal.nombreDeLignes, "le journal ne porte qu'une ouverture par placette et par jour")
+        val controlesLus = journal.lignesCourantes().filter { it.type == "controle" }
+        assertEquals(1, controlesLus.size, "une seule ligne controle pour la placette ce jour-là")
+        assertEquals(objet, controlesLus.single().objetUuid, "c'est le même contrôle")
     }
 
     @Test
@@ -70,12 +72,65 @@ class SecondeOuvertureSansPositionTest {
         val apres = BancControle()
         val relu = JournalEnMemoire()
         banc.journal.lignesCourantes().forEach { relu.saisir(it.objetUuid, it.type, it.valeur ?: "", "Agent d'essai", null, null) }
-        val lignes = relu.nombreDeLignes
+        val objet = relu.lignesCourantes().single { it.type == "controle" }.objetUuid
         val second = runCatching {
             ArriveeControle.ouvrirSansPosition(apres.contexte, relu, banc.horloge, apres.essences, "P35-01", apres.sauvegarde, confirmee = true)
         }.getOrNull()
         (second as? EtatArrivee.Ouverte)?.let { runCatching { it.controleur.dire(EtatDsf.SAIN) } }
-        assertEquals(lignes, relu.nombreDeLignes, "aucune ligne en plus après redémarrage")
-        assertEquals(1, relu.lignesCourantes().count { it.type == "controle" })
+        val controlesLus = relu.lignesCourantes().filter { it.type == "controle" }
+        assertEquals(1, controlesLus.size, "une seule ligne controle après redémarrage")
+        assertEquals(objet, controlesLus.single().objetUuid, "le contrôle du jour est repris")
+    }
+
+    @Test
+    fun `course - deux sessions de la meme placette, meme jour, premiere saisie en meme temps - une seule ligne controle`() {
+        val banc = BancControle()
+        val journal = JournalQuiAttendLesDeuxLecteurs(banc.journal)
+        fun session() = assertIs<EtatArrivee.Ouverte>(
+            ArriveeControle.ouvrirSansPosition(banc.contexte, journal, banc.horloge, banc.essences, "P35-01", EcouteComptee(), confirmee = true),
+        ).controleur
+        val a = session()
+        val b = session()
+        journal.armer()
+        val erreurs = java.util.Collections.synchronizedList(ArrayList<Throwable>())
+        val fils = listOf(a, b).map { c ->
+            Thread { runCatching { c.dire(EtatDsf.SAIN) }.onFailure { erreurs += it } }.also { it.start() }
+        }
+        fils.forEach { it.join(15_000) }
+        assertTrue(erreurs.isEmpty(), "aucune erreur : $erreurs")
+        val controlesLus = journal.lignesCourantes().filter { it.type == "controle" }
+        assertEquals(1, controlesLus.size, "deux sessions vivantes, un seul contrôle de la placette ce jour-là")
+    }
+}
+
+/**
+ * Journal dont la **première lecture de chaque fil**, une fois armé, attend que les deux fils soient arrivés à lire (au plus
+ * 2 s : si la règle sérialise la création, le second lecteur ne peut pas arriver, le premier repart à l'échéance). Force
+ * l'entrelacement « lire, lire, écrire, écrire » sans lire le code de la session.
+ */
+private class JournalQuiAttendLesDeuxLecteurs(private val sous: JournalEnMemoire) : io.github.pobsteta.surculus.core.session.JournalControle {
+    @Volatile private var arme = false
+    private val arrives = java.util.concurrent.CountDownLatch(2)
+    private val dejaAttendu = ThreadLocal.withInitial { false }
+
+    fun armer() { arme = true }
+
+    override fun nouvelUuid() = synchronized(sous) { sous.nouvelUuid() }
+
+    override fun saisir(
+        objetUuid: String, type: String, valeur: String, operateur: String, remplaceUuid: String?,
+        fix: io.github.pobsteta.surculus.core.session.FixSession?,
+    ) = synchronized(sous) { sous.saisir(objetUuid, type, valeur, operateur, remplaceUuid, fix) }
+
+    override fun annuler(uuidCible: String, operateur: String) = synchronized(sous) { sous.annuler(uuidCible, operateur) }
+
+    override fun lignesCourantes(): List<io.github.pobsteta.surculus.core.session.LigneCourante> {
+        val lues = synchronized(sous) { sous.lignesCourantes() }
+        if (arme && !dejaAttendu.get()) {
+            dejaAttendu.set(true)
+            arrives.countDown()
+            arrives.await(2, java.util.concurrent.TimeUnit.SECONDS)
+        }
+        return lues
     }
 }
