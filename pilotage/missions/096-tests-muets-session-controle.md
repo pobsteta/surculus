@@ -9,7 +9,7 @@
 **En une phrase (quoi, et pourquoi) :** Réécrire les quatre tests de `SessionControleTest.kt` que JUnit 5 ne lance
 jamais, pour qu'ils tournent et disent vrai, parce qu'un test qui ne tourne pas laisse croire qu'une règle est gardée.
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir — s'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** faire en sorte que les quatre tests de `SessionControleTest.kt` que JUnit 5 sautait sans rien dire (corps rendant autre chose que `Unit`) soient réellement lancés, sans changer leurs assertions, pour que les règles qu'ils croyaient garder le soient vraiment ; et dire lesquels échouent, sans toucher au code.
 
 ## Le constat
 
