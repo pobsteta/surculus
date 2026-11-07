@@ -484,19 +484,11 @@ object TextesControle {
     /** Libellé d'écran d'un niveau : colonne `libelle` de `docs/referentiels/concurrences.csv` ([Concurrences.LIBELLES]). */
     private fun libelleConcurrence(niveau: String) = Concurrences.LIBELLES.getValue(niveau)
 
-    /** Longueur du début de libellé sous le code, sur un bouton d'environ 80 dp. */
-    const val LIBELLE_COURT_MAX = 18
-
     /**
-     * Le début du libellé d'un code : sommieR écrit « RG - Regarnis, compléments » (`R/travaux_qfield.R` l. 61) ; on
-     * retire « RG - » et on coupe au dernier mot entier qui tient en [LIBELLE_COURT_MAX] caractères.
+     * Le libellé d'un code sans son préfixe : sommieR écrit « RG - Regarnis, compléments » (`R/travaux_qfield.R` l. 61) ; on
+     * retire « RG - ». La coupe aux mots, selon la largeur mesurée du bouton, se fait à l'écran ([choisirLibelle]).
      */
-    fun libelleCourt(code: String, libelle: String): String {
-        val sans = libelle.removePrefix("$code - ").trim()
-        if (sans.length <= LIBELLE_COURT_MAX) return sans
-        val coupe = sans.take(LIBELLE_COURT_MAX).substringBeforeLast(' ').trimEnd(',', ' ', '(')
-        return (coupe.ifEmpty { sans.take(LIBELLE_COURT_MAX) }) + "…"
-    }
+    fun libelleCourt(code: String, libelle: String): String = libelle.removePrefix("$code - ").trim()
 
     /**
      * La phrase de ce qui manque pour terminer ; `null` si rien ne manque. Les plants sans état sont nommés par leur
@@ -580,4 +572,21 @@ object TextesControle {
         is Verdict.AConfirmer -> VueTotaux("", v.alerte.message)
         is Verdict.AChoisirUg -> VueTotaux("", "")
     }
+}
+
+/**
+ * Le plus long début de [libelle] en mots entiers que [tient] accepte (texte, taille en sp), à la première taille de [tailles]
+ * qui en accepte un ; le libellé entier tel quel s'il tient, sinon ses premiers mots suivis de « … » (sans virgule ni
+ * parenthèse ouvrante pendantes). Rien ne tient : ("", dernière taille). Pur, testable sans écran.
+ */
+fun choisirLibelle(libelle: String, tailles: List<Float>, tient: (String, Float) -> Boolean): Pair<String, Float> {
+    val mots = libelle.split(Regex("\\s+")).filter { it.isNotEmpty() }
+    for (t in tailles) {
+        if (tient(mots.joinToString(" "), t)) return mots.joinToString(" ") to t
+        for (k in mots.size - 1 downTo 1) {
+            val c = mots.take(k).joinToString(" ").trimEnd(',', ';', ':', '(', ' ') + "…"
+            if (tient(c, t)) return c to t
+        }
+    }
+    return "" to tailles.last()
 }

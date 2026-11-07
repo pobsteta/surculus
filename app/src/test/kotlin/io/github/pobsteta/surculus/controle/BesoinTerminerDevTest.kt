@@ -44,12 +44,21 @@ class BesoinTerminerDevTest {
     }
 
     @Test
-    fun `le libelle court retire le code et coupe a un mot entier`() {
-        assertEquals("Regarnis…", TextesControle.libelleCourt("RG", "RG - Regarnis, compléments"))
+    fun `le libelle court retire le code et ne coupe rien (la coupe aux mots se fait a l'ecran)`() {
+        assertEquals("Regarnis, compléments", TextesControle.libelleCourt("RG", "RG - Regarnis, compléments"))
         assertEquals("Aucun", TextesControle.libelleCourt("aucun", "Aucun"))
-        assertEquals("Plantation en…", TextesControle.libelleCourt("PL", "PL - Plantation en plein, placeaux, enrichissement"))
+        assertEquals("Plantation en plein, placeaux, enrichissement", TextesControle.libelleCourt("PL", "PL - Plantation en plein, placeaux, enrichissement"))
         assertEquals("", TextesControle.libelleCourt("RG", ""))
-        assertTrue(TextesControle.libelleCourt("RN", "RN - Travaux en régénération naturelle").length <= TextesControle.LIBELLE_COURT_MAX + 1)
+    }
+
+    @Test
+    fun `choisirLibelle prend le plus de mots entiers qui tiennent, avec des points de suspension seulement si coupe`() {
+        val tient = { t: String, sp: Float -> t.length <= (if (sp >= 11f) 12 else 14) }
+        assertEquals("Clôture" to 11f, choisirLibelle("Clôture", listOf(11f, 10f), tient))
+        assertEquals("Entretien…" to 11f, choisirLibelle("Entretien des limites (peinture, bornes)", listOf(11f, 10f), tient))
+        assertEquals("Entretien…" to 11f, choisirLibelle("Entretien de piste", listOf(11f, 10f)) { t, _ -> t.length <= 10 })
+        assertEquals("Dégagement…" to 11f, choisirLibelle("Dégagement (manuel, mécanique)", listOf(11f, 10f)) { t, _ -> t.length <= 11 })
+        assertEquals("" to 10f, choisirLibelle("Cloisonnement sylvicole", listOf(11f, 10f)) { _, _ -> false })
     }
 
     @Test

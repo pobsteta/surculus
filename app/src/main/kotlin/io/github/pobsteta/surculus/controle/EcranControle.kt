@@ -13,6 +13,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Constraints
+import io.github.pobsteta.surculus.ui.theme.enSp
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import kotlinx.coroutines.sync.Mutex
@@ -871,10 +877,10 @@ private fun ChoixBesoinEtConcurrence(b: VueBesoin, agir: (ControleurPlacette.() 
     for (ligne in b.codes.chunked(DimensionsControle.CODES_PAR_LIGNE)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             for (c in ligne) {
-                BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_CODE), { agir { direBesoin(c.code) } }) {
+                BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_CODE), { agir { direBesoin(c.code) } }, RoundedCornerShape(DimensionsControle.COIN_CODE)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(c.code, style = MaterialTheme.typography.titleLarge, maxLines = 1)
-                        if (c.libelleCourt.isNotEmpty()) Text(c.libelleCourt, style = MaterialTheme.typography.labelSmall, maxLines = 2)
+                        LibelleDeCode(c.libelleCourt)
                     }
                 }
             }
@@ -891,14 +897,43 @@ private fun ChoixBesoinEtConcurrence(b: VueBesoin, agir: (ControleurPlacette.() 
     }
 }
 
+/**
+ * Le début du libellé sous le code (mission 102) : le plus de mots entiers qui tiennent sur deux lignes dans la largeur mesurée
+ * du bouton, à 11 sp puis, sinon, à 10 sp ; « … » seulement si le libellé est coupé ; jamais un mot coupé en deux. Si rien ne
+ * tient à 10 sp, on n'écrit rien plutôt qu'un mot coupé (le code reste lisible).
+ */
+@Composable
+private fun LibelleDeCode(libelle: String) {
+    if (libelle.isEmpty()) return
+    val mesureur = rememberTextMeasurer()
+    val base = MaterialTheme.typography.labelSmall
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val largeur = constraints.maxWidth
+        val (texte, taille) = remember(libelle, largeur, base) {
+            choisirLibelle(libelle, TAILLES_LIBELLE_SP) { t, sp ->
+                val m = mesureur.measure(t, base.enSp(sp), constraints = Constraints(maxWidth = largeur))
+                val plein = m.layoutInput.text.text
+                m.lineCount <= 2 && (0 until m.lineCount - 1).none { i ->
+                    val fin = m.getLineEnd(i)
+                    fin in 1 until plein.length && plein[fin - 1].isLetterOrDigit() && plein[fin].isLetterOrDigit()
+                }
+            }
+        }
+        if (texte.isNotEmpty()) Text(texte, style = base.enSp(taille), maxLines = 2, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
+    }
+}
+
+/** Tailles du libellé sous le code, en sp : 11 d'abord, 10 au plus petit (décision de Pascal, mission 102). */
+private val TAILLES_LIBELLE_SP = listOf(11f, 10f)
+
 /** Un bouton de choix : plein s'il est choisi, cerné sinon (le choix se voit au soleil sans dépendre de la seule couleur). */
 @Composable
-private fun BoutonChoix(choisi: Boolean, modifier: Modifier, onClick: () -> Unit, contenu: @Composable () -> Unit) {
+private fun BoutonChoix(choisi: Boolean, modifier: Modifier, onClick: () -> Unit, shape: Shape = ButtonDefaults.shape, contenu: @Composable () -> Unit) {
     val padding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 4.dp)
     if (choisi) {
-        Button(onClick = onClick, modifier = modifier, contentPadding = padding) { contenu() }
+        Button(onClick = onClick, modifier = modifier, shape = shape, contentPadding = padding) { contenu() }
     } else {
-        OutlinedButton(onClick = onClick, modifier = modifier, contentPadding = padding) { contenu() }
+        OutlinedButton(onClick = onClick, modifier = modifier, shape = shape, contentPadding = padding) { contenu() }
     }
 }
 
