@@ -49,6 +49,19 @@ _Rempli par Pascal seul._
 - **Ce qui ne lui est pas demandé :** changer les codes ou leurs libellés (sommieR) ; changer la taille des boutons sous
   le minimum ganté ; la concurrence ou « Aucun ».
 
+## Décision de Pascal sur le plan de l'`afficheur` (2026-11-07)
+
+- **« Coins arrondis, 2 lignes »** (option C) : les boutons de la grille des codes passent d'une forme pleinement
+  arrondie (debout 82 × 80 dp, quasi-cercle de rayon 40 dp) à un rectangle aux coins de 12 dp (`COIN_CODE`), même
+  encombrement (80 dp), code en `titleLarge` inchangé ; « Aucun » et la concurrence gardent leur forme. Le libellé
+  (préfixe « CODE - » retiré) est coupé aux mots selon la largeur mesurée, sur deux lignes, « … » seulement s'il est
+  coupé ; libellé à 11 sp, 10 sp au plus petit, jamais un mot coupé.
+- `LIBELLE_COURT_MAX` (18 caractères, non mesuré) disparaît ; `BesoinTerminerDevTest` l. 47-52, qui figeait ce détail,
+  est adapté par l'`afficheur` (choix technique de l'orchestrateur, conséquence de la décision) et dit dans la PR.
+- Le `testeur` remplace son coin provisoire de 16 dp par `COIN_CODE_DP = 12` (décision) et ajoute un test qui garde la
+  forme.
+- À juger sur la capture : « Dégagement / (manuel… » (mot entre parenthèses).
+
 ## Harnais
 
 - **Testeur peut :** tests dans `app/src/test/` ; vus rouges.
