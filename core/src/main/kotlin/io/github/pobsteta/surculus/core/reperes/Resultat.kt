@@ -47,10 +47,10 @@ sealed interface RefusRepere {
     val detailTechnique: String get() = ""
 
     companion object {
-        /** Un nombre montré au forestier : une décimale, virgule française ; jamais « NaN » ni « Infinity » (mission 081). */
         /** Ce que fait le forestier devant une tournée dont le fichier est à refaire (mission 084). */
         const val CONSIGNE_REEXPORT = "demander à celui qui l'a préparée de l'exporter de nouveau depuis sommieR"
 
+        /** Un nombre montré au forestier : une décimale, virgule française ; jamais « NaN » ni « Infinity » (mission 081). */
         internal fun dit(v: Double, feminin: Boolean = false): String = when {
             v.isNaN() -> "non numérique"
             v.isInfinite() -> (if (feminin) "infinie" else "infini") + if (v > 0) "" else " négati" + if (feminin) "ve" else "f"

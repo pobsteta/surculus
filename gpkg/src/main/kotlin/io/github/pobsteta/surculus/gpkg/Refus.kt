@@ -35,7 +35,7 @@ sealed interface RefusGpkg {
 
     data class CoucheAbsente(val couche: String) : RefusGpkg {
         override val motif = "couche_absente"
-        override val message = "il manque une partie de la tournée, ce fichier n'est pas une tournée de travaux de sommieR : ${RefusRepere.CONSIGNE_REEXPORT}"
+        override val message = "ce fichier n'est pas une tournée de travaux complète : vérifier le fichier choisi, sinon ${RefusRepere.CONSIGNE_REEXPORT}"
         override val detailTechnique = "couche « $couche » absente"
     }
 
