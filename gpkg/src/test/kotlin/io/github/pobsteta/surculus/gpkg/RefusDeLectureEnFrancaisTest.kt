@@ -38,7 +38,7 @@ class RefusDeLectureEnFrancaisTest {
     private val uuidRe = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
     private val troisDecimalesRe = Regex("""\d+[.,]\d{3,}""")
     private val grandNombreRe = Regex("""\d{5,}""")
-    private val majusculeApresDeuxPointsRe = Regex(""":\s*\p{Lu}""")
+    private val majusculeApresDeuxPointsRe = Regex(""":\s*\p{Lu}\p{Ll}""")
     private val actionRe = Regex("sommieR|préparé|préparer|demand|export|refai|recommenc|contact", RegexOption.IGNORE_CASE)
 
     private fun verifie(nom: String, refus: RefusGpkg, interdits: List<String> = emptyList()) {
@@ -51,7 +51,7 @@ class RefusDeLectureEnFrancaisTest {
             assertFalse(uuidRe.containsMatchIn(t), "$ou contient un UUID")
             assertFalse(troisDecimalesRe.containsMatchIn(t), "$ou contient un nombre à plus de deux décimales")
             assertFalse(grandNombreRe.containsMatchIn(t), "$ou contient un nombre de 5 chiffres ou plus (coordonnée brute)")
-            assertFalse(majusculeApresDeuxPointsRe.containsMatchIn(t), "$ou met une majuscule après « : »")
+            assertFalse(majusculeApresDeuxPointsRe.containsMatchIn(t), "$ou met une majuscule (hors sigle) après « : »")
             assertTrue(actionRe.containsMatchIn(refus.message), "$ou ne dit pas quoi faire (qui contacter ou quoi refaire)")
             for (i in interdits) assertFalse(i in t, "$ou montre « $i »")
         }
