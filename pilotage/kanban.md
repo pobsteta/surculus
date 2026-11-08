@@ -27,7 +27,7 @@
 - **ADR 0003** : l'en-tête et le paragraphe `.sursync` disent encore « codé par la 086 » ; le découpage 086 / 087 / 088
   est à y reprendre (`archiviste`).
 
-- **084** (décision de Pascal, 2026-11-02, relecture de la 082) : les autres refus de la lecture d'une tournée encore
+- **084** (fiche écrite le 2026-11-08, cycle 21, en cours) : les autres refus de la lecture d'une tournée encore
   techniques à l'écran (`ReferentielSpatialInconnu` avec `srs_id` et `gpkg_spatial_ref_sys`, `Referentiel` EPSG,
   `CoucheAbsente` avec majuscule, `PointHorsFrance` aux coordonnées brutes), même règle que la 082 ; fiche à écrire
   (`testeur` puis `dev`).
