@@ -6,6 +6,13 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.createFontFamilyResolver
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.sp
 import io.github.pobsteta.surculus.controle.ArriveeControle
 import io.github.pobsteta.surculus.controle.BancControle
 import io.github.pobsteta.surculus.controle.EtatArrivee
@@ -153,12 +160,34 @@ class RenduLibellesCodesTerminerTest {
         return hypot(px - cx, py - cy) <= coin + 0.5f
     }
 
-    private fun defautsDeLibelle(b: Bouton, densite: Float): List<String> {
+    /**
+     * Décision de Pascal (2026-11-08) : style labelSmall seul (11 sp), jamais de mot coupé ; un mot qui ne tient pas n'est pas
+     * affiché. Largeur (px) du premier mot du libellé au style labelSmall de Material (11 sp, Medium, interlettrage 0,5 sp).
+     */
+    private fun largeurPremierMot(code: String, densite: Float): Float {
+        val mesureur = TextMeasurer(createFontFamilyResolver(RuntimeEnvironment.getApplication()), Density(densite), LayoutDirection.Ltr)
+        val style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.5.sp)
+        return mesureur.measure(mots(LIBELLES.getValue(code)).first(), style, softWrap = false).size.width.toFloat()
+    }
+
+    /** Marge minimale (dp) de chaque côté entre un mot et le bord du bouton : un mot qui toucherait le bord ne « tient » pas. */
+    private val MARGE_MOT_DP = 4f
+
+    /** Codes sans libellé sous eux (rapport du rendu). */
+    private val sansLibelle = ArrayList<String>()
+
+    private fun defautsDeLibelle(b: Bouton, densite: Float, absenceAcceptee: Boolean): List<String> {
         val d = ArrayList<String>()
         val attendu = mots(LIBELLES.getValue(b.code))
         val affiche = libelleAffiche(b)
         val vus = mots(affiche)
-        if (vus.isEmpty()) d += "${b.code} : aucun début de libellé sous le code"
+        if (vus.isEmpty()) {
+            val mot = largeurPremierMot(b.code, densite)
+            val place = b.l - 2 * MARGE_MOT_DP * densite
+            if (absenceAcceptee && mot > place) sansLibelle += "${b.code} : « ${attendu.first()} » (%.0f px) ne tient pas sur le bouton (%.0f px, place %.0f px)".format(mot, b.l, place)
+            else d += "${b.code} : aucun début de libellé sous le code" +
+                if (absenceAcceptee) " alors que son premier mot « ${attendu.first()} » tient (%.0f px <= place %.0f px)".format(mot, place) else ""
+        }
         else if (vus.size > attendu.size || vus != attendu.take(vus.size)) {
             d += "${b.code} : « $affiche » n'est pas un début du libellé « ${LIBELLES.getValue(b.code)} » en mots entiers"
         }
@@ -195,14 +224,14 @@ class RenduLibellesCodesTerminerTest {
         return d
     }
 
-    private fun libelles(cas: String) {
+    private fun libelles(cas: String, absenceAcceptee: Boolean) {
         val r = BancRendu.rendre(contenu = contenu(), regle = regle)
         val (boutons, absents) = lireBoutons()
         val defauts = ArrayList<String>()
         if (absents.isNotEmpty()) defauts += "boutons de la grille introuvables pour les codes $absents"
-        boutons.forEach { defauts += defautsDeLibelle(it, r.densite) }
+        boutons.forEach { defauts += defautsDeLibelle(it, r.densite, absenceAcceptee) }
         val tailles = boutons.flatMap { b -> b.textes.filterNot { estLeCode(it.texte, b.code) }.map { "${b.code} : libellé « ${it.texte} » en ${it.mise.layoutInput.style.fontSize}" } }
-        BancRendu.rapport(cas, r, defauts, entete = tailles)
+        BancRendu.rapport(cas, r, defauts, entete = tailles + sansLibelle.map { "SANS LIBELLÉ $it" })
         assertTrue(defauts.isEmpty(), "Rendu « $cas » :\n" + defauts.joinToString("\n"))
     }
 
@@ -231,10 +260,10 @@ class RenduLibellesCodesTerminerTest {
         assertTrue(defauts.isEmpty(), "Rendu « $cas » :\n" + defauts.joinToString("\n"))
     }
 
-    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `libelles des 15 codes debout en plein ecran - mots entiers, rien de rogne`() = libelles("libelles-debout-plein")
-    @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `libelles des 15 codes debout sans plein ecran - mots entiers, rien de rogne`() = libelles("libelles-debout-sans-plein")
-    @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `libelles des 15 codes couche en plein ecran - mots entiers, rien de rogne`() = libelles("libelles-couche-plein")
-    @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `libelles des 15 codes couche sans plein ecran - mots entiers, rien de rogne`() = libelles("libelles-couche-sans-plein")
+    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `libelles des 15 codes debout en plein ecran - mots entiers, rien de rogne`() = libelles("libelles-debout-plein", absenceAcceptee = true)
+    @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `libelles des 15 codes debout sans plein ecran - mots entiers, rien de rogne`() = libelles("libelles-debout-sans-plein", absenceAcceptee = true)
+    @Test @Config(qualifiers = BancRendu.COUCHE_PLEIN) fun `libelles des 15 codes couche en plein ecran - mots entiers, rien de rogne`() = libelles("libelles-couche-plein", absenceAcceptee = false)
+    @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `libelles des 15 codes couche sans plein ecran - mots entiers, rien de rogne`() = libelles("libelles-couche-sans-plein", absenceAcceptee = false)
 
     @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `code en gros et 4 par ligne debout en plein ecran`() = codeEnGrosEtParLigne("code-debout-plein", 4)
     @Test @Config(qualifiers = BancRendu.DEBOUT_SANS_PLEIN) fun `code en gros et 4 par ligne debout sans plein ecran`() = codeEnGrosEtParLigne("code-debout-sans-plein", 4)
@@ -247,7 +276,7 @@ class RenduLibellesCodesTerminerTest {
      */
     @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `forme du bouton de code - le libelle tient dans un rectangle a coins de 12 dp, pas dans un quasi-cercle`() {
         assertEquals(12f, COIN_CODE_DP)
-        libelles("forme-debout-plein")
+        libelles("forme-debout-plein", absenceAcceptee = true)
     }
 
     @Test
