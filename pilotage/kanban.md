@@ -193,7 +193,9 @@ _En attente sous le plafond humain (3 PR en revue)._
 
 ## Terminé
 
-- **100** double appui sur « Ouvrir sans position » (`testeur` puis `dev`, une reprise, PR #167, f9c9924, v0.7.119) et **101** création du contrôle du jour atomique (`testeur` puis `dev` opus, plan, recadrée, PR #168, 4cdff95). Essai du double appui sur le téléphone à faire.
+- **102** libellés des codes lisibles à « Terminer » (`testeur` puis `afficheur`, tenir, plan d'abord, PR #170, 418a625, v0.7.122) : rectangles à coins de 12 dp, labelSmall seul (« Pas de 10 sp »), mots entiers, « CL » seul debout ; garde de forme sur l'image rendue (une reprise). Capturé le 2026-11-08 debout et couché sur P35-01 ; DG « Dégagement / (manuel… » et RN « Travaux en… » gardés ainsi par Pascal.
+
+- **100** double appui sur « Ouvrir sans position » (`testeur` puis `dev`, une reprise, PR #167, f9c9924, v0.7.119) et **101** création du contrôle du jour atomique (`testeur` puis `dev` opus, plan, recadrée, PR #168, 4cdff95). Double appui essayé par Pascal sur la v0.7.120 le 2026-11-08 : un seul contrôle.
 
 - **089** ouvrir sans position depuis le guidage (`testeur` puis `dev` opus, tenir, plan tranché par Pascal, PR #162, dc62557) : v0.7.113 installée le 2026-11-07 ; localisation coupée capturée ; fix perdu : bloc et « Ouvrir sans position » vus par Pascal. Reste : ouverture par le code depuis le guidage, en forêt.
 - **097** hôtes Centipède sourcés (`acquereur`, #163), **098** commentaire de `CASTERS_CENTIPEDE` (`dev`, #164), **099** décision au référentiel (`acquereur`, #165) : `caster.centipede.fr` gardé par Pascal.
@@ -442,3 +444,11 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   figé, « ligne en trop »), et la 101 a été lancée sur un fait faux puis recadrée ; ce qu'elle nous apprend : un
   chiffre de test se lit dans le code avant d'être traduit en défaut. *(Retenue par Pascal le 2026-11-07 : « Oui, avec
   la mauvaise nouvelle ».)*
+- cycle 20 · à « Terminer », les libellés des 15 codes sont en mots entiers, sans rien de rogné par le bord (102,
+  v0.7.122, capturé debout et couché sur P35-01 ; « CL » seul debout) ; le double appui n'ouvre qu'un contrôle (100
+  et 101, essayé par Pascal sur la v0.7.120) · pour le forestier qui choisit le besoin, gants aux mains · avant, les
+  libellés étaient coupés au milieu d'un mot et rognés par le bord rond. Mauvaise nouvelle jointe : l'`afficheur` a
+  contourné la garde des styles, la garde de forme du `testeur` ne gardait rien (constante comparée à elle-même), et
+  la consigne de l'orchestrateur pour l'essai du double appui était fausse (couper la localisation) ; ce qu'elle nous
+  apprend : une garde n'est prouvée que vue rouge. *(Retenue par Pascal le 2026-11-08 : « Oui, avec la mauvaise
+  nouvelle ».)*
