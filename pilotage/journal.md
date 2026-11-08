@@ -1127,3 +1127,4 @@
 2026-11-08 · Pascal · PR #172 · 084 : `CoucheAbsente` « Texte du relecteur » (« ce fichier n’est pas une tournée de travaux complète : vérifier le fichier choisi, sinon demander à celui qui l’a préparée de l’exporter de nouveau depuis sommieR ») ; « (Lambert-93 attendu) » gardé ; mineurs 3 à 5 au bac à sable. `dev` relancé (reprise 1/3 : texte, KDoc de `dit`).
 2026-11-08 · Pascal · PR #171 · pilotage du cycle 20 fusionné (697b502).
 2026-11-08 · dev · PR #172 · 084 reprise 1/3 (40615b8) : texte de `CoucheAbsente` décidé par Pascal, KDoc de `dit` remise à sa place ; test-command code 0. Orchestrateur : corps de PR réécrit (phrases affichées, préfixe compris) ; `relecteur` relancé.
+2026-11-08 · relecteur · PR #172 · 084 reprise 1/3 (40615b8) : fusionnable ; texte de `CoucheAbsente` conforme (Refus.kt:38), KDoc de `dit` remise (Resultat.kt:52), corps de PR conforme au code, CI verte. PR sortie du brouillon.
