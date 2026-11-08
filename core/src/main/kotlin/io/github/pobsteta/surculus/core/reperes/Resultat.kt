@@ -25,7 +25,7 @@ sealed interface Resultat<out T> {
     /** Valeur acceptée ; lève [IllegalStateException] avec le motif si refus (pour les appelants qui ont déjà validé). */
     fun valeurOuEchec(): T = when (this) {
         is Accepte -> valeur
-        is Refuse -> throw IllegalStateException("${refus.motif} : ${refus.message}")
+        is Refuse -> throw IllegalStateException("${refus.motif} : ${refus.message}${if (refus.detailTechnique.isEmpty()) "" else " (${refus.detailTechnique})"}")
     }
 }
 
@@ -43,8 +43,14 @@ sealed interface RefusRepere {
     val motif: String
     val message: String
 
+    /** Détail technique (codes EPSG…), jamais affiché : pour le journal Android (mission 084). */
+    val detailTechnique: String get() = ""
+
     companion object {
         /** Un nombre montré au forestier : une décimale, virgule française ; jamais « NaN » ni « Infinity » (mission 081). */
+        /** Ce que fait le forestier devant une tournée dont le fichier est à refaire (mission 084). */
+        const val CONSIGNE_REEXPORT = "demander à celui qui l'a préparée de l'exporter de nouveau depuis sommieR"
+
         internal fun dit(v: Double, feminin: Boolean = false): String = when {
             v.isNaN() -> "non numérique"
             v.isInfinite() -> (if (feminin) "infinie" else "infini") + if (v > 0) "" else " négati" + if (feminin) "ve" else "f"
@@ -111,16 +117,19 @@ sealed interface RefusRepere {
 
     data class ReferentielsMeles(val codes: Set<Int>) : RefusRepere {
         override val motif = "referentiels_meles"
-        override val message = "Le fichier mêle les référentiels EPSG ${codes.sorted().joinToString(" et ")} : une tournée n'en porte qu'un."
+        override val message = "les positions de ce fichier ne sont pas toutes dans le même repère : $CONSIGNE_REEXPORT"
+        override val detailTechnique = "référentiels EPSG ${codes.sorted().joinToString(" et ")} mêlés"
     }
 
     data class ReferentielNonPrisEnCharge(val codes: Set<Int>) : RefusRepere {
         override val motif = "referentiel_non_pris_en_charge"
-        override val message = "Référentiel EPSG ${codes.sorted().joinToString(", ")} non pris en charge : EPSG:2154 ou EPSG:9794 seulement."
+        override val message = "le repère des positions de ce fichier n'est pas pris en charge (Lambert-93 attendu) : $CONSIGNE_REEXPORT"
+        override val detailTechnique = "référentiel EPSG ${codes.sorted().joinToString(", ")} non pris en charge : EPSG:2154 ou EPSG:9794 seulement"
     }
 
     data object AucunReferentiel : RefusRepere {
         override val motif = "aucun_referentiel"
-        override val message = "Aucun référentiel déclaré dans le fichier."
+        override val message = "le fichier ne dit pas dans quel repère sont ses positions : $CONSIGNE_REEXPORT"
+        override val detailTechnique = "aucun référentiel déclaré dans le fichier"
     }
 }

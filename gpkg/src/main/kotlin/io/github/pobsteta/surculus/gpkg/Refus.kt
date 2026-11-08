@@ -21,6 +21,9 @@ sealed interface RefusGpkg {
     val motif: String
     val message: String
 
+    /** Détail technique (table, srs_id, UUID, coordonnées…), jamais affiché : pour le journal Android (mission 084). */
+    val detailTechnique: String get() = ""
+
     /**
      * [constat] puis [detail] (la consigne) : une phrase en minuscules, sans point final, qui suit un préfixe d'écran
      * (« Illisible : », « Carte impossible : », « Tournée refusée : ») sans le redire.
@@ -32,24 +35,29 @@ sealed interface RefusGpkg {
 
     data class CoucheAbsente(val couche: String) : RefusGpkg {
         override val motif = "couche_absente"
-        override val message = "La couche « $couche » manque : ce n'est pas une tournée travaux de sommieR."
+        override val message = "il manque une partie de la tournée, ce fichier n'est pas une tournée de travaux de sommieR : ${RefusRepere.CONSIGNE_REEXPORT}"
+        override val detailTechnique = "couche « $couche » absente"
     }
 
     data class ReferentielSpatialInconnu(val srsId: Int) : RefusGpkg {
         override val motif = "referentiel_spatial_inconnu"
-        override val message = "Le srs_id $srsId n'est pas décrit dans gpkg_spatial_ref_sys, ou n'est pas un code EPSG."
+        override val message = "le repère des positions de ce fichier n'est pas reconnu : ${RefusRepere.CONSIGNE_REEXPORT}"
+        override val detailTechnique = "srs_id $srsId non décrit dans gpkg_spatial_ref_sys, ou pas un code EPSG"
     }
 
     /** Refus de la chaîne des repères (ex. 2154 et 9794 mêlés, code hors Lambert-93). */
     data class Referentiel(val refus: RefusRepere) : RefusGpkg {
         override val motif = if (refus.motif == "referentiels_meles") "melange_reperes" else refus.motif
         override val message = refus.message
+        override val detailTechnique = refus.detailTechnique
     }
 
     data class PointHorsFrance(val couche: String, val uuid: String, val x: Double, val y: Double, val axesInverses: Boolean) : RefusGpkg {
         override val motif = "hors_france"
-        override val message = "Point de « $couche » ($uuid) hors de France : x = $x, y = $y (Lambert-93, x = Est, y = Nord)." +
-            if (axesInverses) " Une fois les axes permutés, il tombe en France : x et y sont inversés." else ""
+        override val message = (if (axesInverses) "une position de la tournée tombe hors de France, latitude et longitude semblent inversées" else "une position de la tournée tombe hors de France") +
+            " : ${RefusRepere.CONSIGNE_REEXPORT}"
+        override val detailTechnique = "point de « $couche » ($uuid) hors de France : x = $x, y = $y (Lambert-93, x = Est, y = Nord)" +
+            if (axesInverses) " ; une fois les axes permutés, il tombe en France" else ""
     }
 
     data class PointHorsForet(val couche: String, val uuid: String, val x: Double, val y: Double) : RefusGpkg {
@@ -157,4 +165,4 @@ sealed interface RefusGpkg {
  * Exception qui porte un [RefusGpkg]. [cause] garde le détail technique (message SQLite, en anglais) pour le journal :
  * il n'entre jamais dans [RefusGpkg.message], seul texte montré au forestier (mission 082).
  */
-class GpkgRefuse(val refus: RefusGpkg, cause: Throwable? = null) : Exception(refus.message, cause)
+class GpkgRefuse(val refus: RefusGpkg, cause: Throwable? = null) : Exception(refus.message + (if (refus.detailTechnique.isEmpty()) "" else " [${refus.detailTechnique}]"), cause)
