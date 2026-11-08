@@ -13,12 +13,8 @@
 - **Référentiel Centipède, l. 6** (relecture de la #165) : « Rien n'est tranché ici » contredit la décision inscrite l. 63 ; à aligner par l'`acquereur`.
 - **Mineurs de la 089** (relecture de la #162) : confirmation du guidage perdue à la rotation ; `debutSansFix` écrit pendant la composition ; vue sans fix de l'écran de contrôle sans test de rendu ; double appui sur « Ouvrir sans position » (déjà dans la 087).
 
-- **Libellés des codes rognés** (091, v0.7.109) : dans la grille « Terminer », la seconde ligne du libellé est coupée par le
-  bord du cercle (« Préparation / du… », « Cloisonneme / nt… »). Une ligne seule, ou une coupe aux mots.
 
 
-- **089** ouvrir sans position depuis le guidage (« Contrôler » et le code n'y viennent qu'avec un fix) : décision de
-  Pascal du 2026-11-03, mission à part après la 088, avant l'essai en forêt ; fiche à écrire.
 
 - **Parcelle de la placette** (relecture de la 086, « sans parcelle pour l'instant », Pascal, 2026-11-02) : `placettes`
   ne porte pas la parcelle ; à demander à sommieR (une colonne), pas à deviner par jointure. La confirmation de la 087
