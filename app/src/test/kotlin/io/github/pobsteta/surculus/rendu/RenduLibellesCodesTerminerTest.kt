@@ -1,5 +1,9 @@
 package io.github.pobsteta.surculus.rendu
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -8,11 +12,9 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.sp
 import io.github.pobsteta.surculus.controle.ArriveeControle
 import io.github.pobsteta.surculus.controle.BancControle
 import io.github.pobsteta.surculus.controle.EtatArrivee
@@ -85,9 +87,15 @@ class RenduLibellesCodesTerminerTest {
     /** Un texte du bouton : sa mise en page et sa place dans le bouton (px, repère du bouton). */
     private class Texte(val texte: String, val mise: TextLayoutResult, val x: Float, val y: Float)
 
-    private class Bouton(val code: String, val x: Float, val y: Float, val l: Float, val h: Float, val textes: List<Texte>)
+    private class Bouton(val code: String, val x: Float, val y: Float, val l: Float, val h: Float, val textes: List<Texte>) {
+        /** Rayon des coins (dp) lu sur l'image rendue ; `null` : pas mesuré. */
+        var coinMesure: Float? = null
+    }
 
-    private fun contenu(): @androidx.compose.runtime.Composable () -> Unit {
+    /** Le style labelSmall du thème réel de l'application (lu dans le contenu composé sous `SurculusTheme`, jamais recopié). */
+    private var labelSmall: TextStyle? = null
+
+    private fun contenu(): @Composable () -> Unit {
         val b = BancControle(nbPlantsAnterieurs = 1)
         val contexte = b.contexte.copy(
             codesTravaux = codes.toSet() + "aucun",
@@ -100,7 +108,10 @@ class RenduLibellesCodesTerminerTest {
         c.dire(EtatDsf.SAIN)
         c.demanderTerminer()
         val reglages = DepotTournees.reglagesControle(RuntimeEnvironment.getApplication())
-        return { VueSession(c, "couchey-essai-plants", reglages, stockageRefuse = false, onRetour = {}, onParametres = {}) }
+        return {
+            labelSmall = MaterialTheme.typography.labelSmall
+            VueSession(c, "couchey-essai-plants", reglages, stockageRefuse = false, onRetour = {}, onParametres = {})
+        }
     }
 
     private fun textesDe(n: SemanticsNode, out: MutableList<SemanticsNode>) {
@@ -162,12 +173,52 @@ class RenduLibellesCodesTerminerTest {
 
     /**
      * Décision de Pascal (2026-11-08) : style labelSmall seul (11 sp), jamais de mot coupé ; un mot qui ne tient pas n'est pas
-     * affiché. Largeur (px) du premier mot du libellé au style labelSmall de Material (11 sp, Medium, interlettrage 0,5 sp).
+     * affiché. Largeur (px) du premier mot du libellé au style labelSmall du thème de l'application.
      */
     private fun largeurPremierMot(code: String, densite: Float): Float {
         val mesureur = TextMeasurer(createFontFamilyResolver(RuntimeEnvironment.getApplication()), Density(densite), LayoutDirection.Ltr)
-        val style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.5.sp)
+        val style = checkNotNull(labelSmall) { "le thème n'a pas été composé" }
         return mesureur.measure(mots(LIBELLES.getValue(code)).first(), style, softWrap = false).size.width.toFloat()
+    }
+
+    /**
+     * Lit le rayon des coins (dp) de chaque bouton **sur l'image rendue**, en boîte noire : sur la diagonale qui part du coin haut
+     * gauche du cadre du bouton vers l'intérieur, on cherche le premier pixel qui n'a plus la couleur du fond (pris 2 dp hors du
+     * cadre). Pour un coin rond de rayon r, ce pixel est à r (1 - 1/racine(2)) du coin, soit r = d / 0,2929 : 12 dp donne d = 3,5 dp,
+     * une pilule de 40 dp donne d = 11,7 dp. Marche pour un bouton plein comme pour un bouton cerné (c'est le bord qui est cherché).
+     * Rend les défauts de mesure ; remplit [Bouton.coinMesure].
+     */
+    private fun mesurerCoins(boutons: List<Bouton>, densite: Float): List<String> {
+        // `captureToImage()` attend une image de la fenêtre (PixelCopy) que Robolectric ne livre pas (ComposeTimeoutException) :
+        // on dessine la vue racine de l'activité dans un bitmap logiciel, ce qui rend les mêmes pixels que l'écran.
+        val vue = checkNotNull(BancRendu.activite) { "pas d'activité rendue" }.window.decorView
+        val image = Bitmap.createBitmap(vue.width, vue.height, Bitmap.Config.ARGB_8888)
+        vue.draw(Canvas(image))
+        val d = ArrayList<String>()
+        var mesures = 0
+        for (b in boutons) {
+            val fond0 = Math.round(b.x - 2f * densite); val fond1 = Math.round(b.y - 2f * densite)
+            if (fond0 < 0 || fond1 < 0 || b.x + b.l > image.width || b.y + b.h > image.height) continue
+            val fond = image.getPixel(fond0, fond1)
+            fun ecart(p: Int): Int = (0..2).sumOf { Math.abs(((p shr (it * 8)) and 0xFF) - ((fond shr (it * 8)) and 0xFF)) }
+            var premier: Float? = null
+            var k = 0
+            while (k <= Math.round(20f * densite)) {
+                val px = Math.round(b.x) + k; val py = Math.round(b.y) + k
+                if (px < image.width && py < image.height && ecart(image.getPixel(px, py)) > 40) { premier = k / densite; break }
+                k++
+            }
+            if (premier == null) { d += "${b.code} : aucun bord de bouton trouvé sur les 20 dp de la diagonale du coin haut gauche (fond %08x)".format(fond); continue }
+            val rayon = premier / (1f - 1f / Math.sqrt(2.0).toFloat())
+            b.coinMesure = rayon
+            mesures++
+            if (Math.abs(rayon - COIN_CODE_DP) > 3f) {
+                d += "${b.code} : coins de %.1f dp lus sur l'image (bord à %.1f dp du coin sur la diagonale), %.0f dp attendus (rectangle à coins arrondis, pas une pilule)"
+                    .format(rayon, premier, COIN_CODE_DP)
+            }
+        }
+        if (mesures == 0) d += "aucun bouton de code mesuré sur l'image rendue : la garde de forme n'a rien jugé"
+        return d
     }
 
     /** Marge minimale (dp) de chaque côté entre un mot et le bord du bouton : un mot qui toucherait le bord ne « tient » pas. */
@@ -191,7 +242,7 @@ class RenduLibellesCodesTerminerTest {
         else if (vus.size > attendu.size || vus != attendu.take(vus.size)) {
             d += "${b.code} : « $affiche » n'est pas un début du libellé « ${LIBELLES.getValue(b.code)} » en mots entiers"
         }
-        val coin = COIN_CODE_DP * densite
+        val coin = (b.coinMesure ?: COIN_CODE_DP) * densite
         for (t in b.textes) {
             val m = t.mise
             val plein = m.layoutInput.text.text
@@ -224,11 +275,12 @@ class RenduLibellesCodesTerminerTest {
         return d
     }
 
-    private fun libelles(cas: String, absenceAcceptee: Boolean) {
+    private fun libelles(cas: String, absenceAcceptee: Boolean, jugerForme: Boolean = false) {
         val r = BancRendu.rendre(contenu = contenu(), regle = regle)
         val (boutons, absents) = lireBoutons()
         val defauts = ArrayList<String>()
         if (absents.isNotEmpty()) defauts += "boutons de la grille introuvables pour les codes $absents"
+        if (jugerForme) defauts += mesurerCoins(boutons, r.densite)
         boutons.forEach { defauts += defautsDeLibelle(it, r.densite, absenceAcceptee) }
         val tailles = boutons.flatMap { b -> b.textes.filterNot { estLeCode(it.texte, b.code) }.map { "${b.code} : libellé « ${it.texte} » en ${it.mise.layoutInput.style.fontSize}" } }
         BancRendu.rapport(cas, r, defauts, entete = tailles + sansLibelle.map { "SANS LIBELLÉ $it" })
@@ -271,13 +323,13 @@ class RenduLibellesCodesTerminerTest {
     @Test @Config(qualifiers = BancRendu.COUCHE_SANS_PLEIN) fun `code en gros couche sans plein ecran`() = codeEnGrosEtParLigne("code-couche-sans-plein", null)
 
     /**
-     * Garde de la forme (décision de Pascal) : le libellé doit tenir dans un rectangle à coins de 12 dp. Un retour au quasi-cercle
-     * de rayon 40 dp (82 × 80 dp debout) pousse les coins des lignes hors du bouton et fait échouer [libelles].
+     * Garde de la forme (décision de Pascal) : les boutons de code sont des rectangles à coins de 12 dp. Le rayon est **lu sur
+     * l'image rendue** ([mesurerCoins], pixels du bord sur la diagonale du coin), pas pris dans une constante : une pilule de
+     * 40 dp (`ButtonDefaults.shape`) donne un bord à ~12 dp du coin au lieu de ~3,5 dp et le test échoue. Le libellé doit en plus
+     * tenir dans ce bord mesuré ([defautsDeLibelle]).
      */
-    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `forme du bouton de code - le libelle tient dans un rectangle a coins de 12 dp, pas dans un quasi-cercle`() {
-        assertEquals(12f, COIN_CODE_DP)
-        libelles("forme-debout-plein", absenceAcceptee = true)
-    }
+    @Test @Config(qualifiers = BancRendu.DEBOUT_PLEIN) fun `forme du bouton de code - coins de 12 dp lus sur l'image rendue, pas une pilule`() =
+        libelles("forme-debout-plein", absenceAcceptee = true, jugerForme = true)
 
     @Test
     fun `la donnee d'essai porte les 15 codes de sommieR`() {
