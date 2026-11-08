@@ -62,6 +62,16 @@ class BesoinTerminerDevTest {
     }
 
     @Test
+    fun `choisirLibelle retire la ponctuation qui traine avant les points de suspension`() {
+        // « Plantation, » + « … » tiendrait en 12 signes : sans le retrait, la virgule resterait collée aux points.
+        assertEquals("Plantation…", choisirLibelle("Plantation, enrichissement") { it.length <= 12 })
+        assertEquals("Plantation…", choisirLibelle("Plantation; enrichissement") { it.length <= 12 })
+        assertEquals("Plantation…", choisirLibelle("Plantation: enrichissement") { it.length <= 12 })
+        assertEquals("Dégagement…", choisirLibelle("Dégagement (manuel, mécanique)") { it.length <= 12 })
+        assertEquals("Entretien…", choisirLibelle("Entretien (peinture)") { it.length <= 11 })
+    }
+
+    @Test
     fun `terminer sans choix reste sur la vue Terminer, puis termine une fois les deux choix faits`() {
         val b = BancControle(nbPlantsAnterieurs = 1)
         val c = b.controleur()

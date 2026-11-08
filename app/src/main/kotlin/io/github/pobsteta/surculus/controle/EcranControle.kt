@@ -879,7 +879,7 @@ private fun ChoixBesoinEtConcurrence(b: VueBesoin, agir: (ControleurPlacette.() 
                 BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_CODE), { agir { direBesoin(c.code) } }, RoundedCornerShape(DimensionsControle.COIN_CODE)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(c.code, style = MaterialTheme.typography.titleLarge, maxLines = 1)
-                        LibelleDeCode(c.libelleCourt)
+                        LibelleDeCode(c.libelle)
                     }
                 }
             }
@@ -906,9 +906,10 @@ private fun LibelleDeCode(libelle: String) {
     if (libelle.isEmpty()) return
     val mesureur = rememberTextMeasurer()
     val base = MaterialTheme.typography.labelSmall
+    val densite = androidx.compose.ui.platform.LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val largeur = constraints.maxWidth
-        val texte = remember(libelle, largeur, base) {
+        val texte = remember(libelle, largeur, base, mesureur, densite) {
             choisirLibelle(libelle) { t ->
                 val m = mesureur.measure(t, base, constraints = Constraints(maxWidth = largeur))
                 val plein = m.layoutInput.text.text

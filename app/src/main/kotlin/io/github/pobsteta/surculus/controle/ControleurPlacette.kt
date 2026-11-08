@@ -96,8 +96,8 @@ data class VuePointage(
     val aConfirmer: String?,
 )
 
-/** Un bouton de la grille du besoin : le code de la couche `codes`, en gros, et le début de son libellé. */
-data class ChoixBesoin(val code: String, val libelleCourt: String, val choisi: Boolean)
+/** Un bouton de la grille du besoin : le code de la couche `codes`, en gros, et son libellé entier (l'écran en affiche le début qui tient). */
+data class ChoixBesoin(val code: String, val libelle: String, val choisi: Boolean)
 
 /** Un bouton de la concurrence : faible, moyenne ou forte. */
 data class ChoixConcurrence(val niveau: String, val libelle: String, val choisi: Boolean)
