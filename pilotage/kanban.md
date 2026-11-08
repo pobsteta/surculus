@@ -7,6 +7,7 @@
 
 ## Bac à sable
 
+- **Mineurs de la 084** (relecture de la #172, « Bac à sable », Pascal, 2026-11-08) : critère d'action lexical du test (`RefusDeLectureEnFrancaisTest.kt:42`, passerait sans la consigne) ; « latitude et longitude semblent inversées » pour des x/y Lambert-93 (`Refus.kt:57`, comme `FautesDuRendu.kt:32`) ; détail technique entre crochets (`GpkgRefuse`) ou parenthèses (`Resultat.kt:28`).
 - **Deux sessions vivantes de la même placette** (relecture de la #168, « Bac à sable », Pascal, 2026-11-07) : un même plant dit en même temps peut avoir deux lignes `etat` (`SessionControle.ecrireObservation`, `existant` lu hors verrou ; vérifié) ; un besoin ou une concurrence en attente peuvent se perdre si l'autre session crée le contrôle (non vérifié). Rares depuis le verrou d'écran de la 100.
 
 - **Référentiel Centipède, l. 6** (relecture de la #165) : « Rien n'est tranché ici » contredit la décision inscrite l. 63 ; à aligner par l'`acquereur`.
