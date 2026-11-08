@@ -12,6 +12,9 @@ phrase française qui dit ce qui ne va pas et quoi faire, sans nom de table, san
 forestier qui ouvre une tournée refusée sache quoi demander à celui qui l'a préparée.
 
 **Redite par l'agent :**
+- *Testeur (2026-11-08) :* ma mission est d'écrire les tests qui échouent tant qu'un des six textes de refus d'une tournée,
+  composé avec son préfixe d'écran, montre `_`, une table GeoPackage, un UUID, une coordonnée brute, une majuscule après « : »
+  ou ne dit pas quoi faire, pour que le `dev` ait un critère net et que le travail ne s'auto-évalue pas.
 
 ## Les trois questions (règle de staffing)
 
