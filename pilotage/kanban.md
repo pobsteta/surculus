@@ -444,3 +444,11 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   figé, « ligne en trop »), et la 101 a été lancée sur un fait faux puis recadrée ; ce qu'elle nous apprend : un
   chiffre de test se lit dans le code avant d'être traduit en défaut. *(Retenue par Pascal le 2026-11-07 : « Oui, avec
   la mauvaise nouvelle ».)*
+- cycle 20 · à « Terminer », les libellés des 15 codes sont en mots entiers, sans rien de rogné par le bord (102,
+  v0.7.122, capturé debout et couché sur P35-01 ; « CL » seul debout) ; le double appui n'ouvre qu'un contrôle (100
+  et 101, essayé par Pascal sur la v0.7.120) · pour le forestier qui choisit le besoin, gants aux mains · avant, les
+  libellés étaient coupés au milieu d'un mot et rognés par le bord rond. Mauvaise nouvelle jointe : l'`afficheur` a
+  contourné la garde des styles, la garde de forme du `testeur` ne gardait rien (constante comparée à elle-même), et
+  la consigne de l'orchestrateur pour l'essai du double appui était fausse (couper la localisation) ; ce qu'elle nous
+  apprend : une garde n'est prouvée que vue rouge. *(Retenue par Pascal le 2026-11-08 : « Oui, avec la mauvaise
+  nouvelle ».)*
