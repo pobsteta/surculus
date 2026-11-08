@@ -53,12 +53,12 @@ class BesoinTerminerDevTest {
 
     @Test
     fun `choisirLibelle prend le plus de mots entiers qui tiennent, avec des points de suspension seulement si coupe`() {
-        val tient = { t: String, sp: Float -> t.length <= (if (sp >= 11f) 12 else 14) }
-        assertEquals("Clôture" to 11f, choisirLibelle("Clôture", listOf(11f, 10f), tient))
-        assertEquals("Entretien…" to 11f, choisirLibelle("Entretien des limites (peinture, bornes)", listOf(11f, 10f), tient))
-        assertEquals("Entretien…" to 11f, choisirLibelle("Entretien de piste", listOf(11f, 10f)) { t, _ -> t.length <= 10 })
-        assertEquals("Dégagement…" to 11f, choisirLibelle("Dégagement (manuel, mécanique)", listOf(11f, 10f)) { t, _ -> t.length <= 11 })
-        assertEquals("" to 10f, choisirLibelle("Cloisonnement sylvicole", listOf(11f, 10f)) { _, _ -> false })
+        val tient = { t: String -> t.length <= 12 }
+        assertEquals("Clôture", choisirLibelle("Clôture", tient))
+        assertEquals("Entretien…", choisirLibelle("Entretien des limites (peinture, bornes)", tient))
+        assertEquals("Entretien…", choisirLibelle("Entretien de piste") { it.length <= 10 })
+        assertEquals("Dégagement…", choisirLibelle("Dégagement (manuel, mécanique)") { it.length <= 11 })
+        assertEquals("", choisirLibelle("Cloisonnement sylvicole") { false })
     }
 
     @Test

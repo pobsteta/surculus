@@ -575,18 +575,15 @@ object TextesControle {
 }
 
 /**
- * Le plus long début de [libelle] en mots entiers que [tient] accepte (texte, taille en sp), à la première taille de [tailles]
- * qui en accepte un ; le libellé entier tel quel s'il tient, sinon ses premiers mots suivis de « … » (sans virgule ni
- * parenthèse ouvrante pendantes). Rien ne tient : ("", dernière taille). Pur, testable sans écran.
+ * Le plus long début de [libelle] en mots entiers que [tient] accepte ; le libellé entier tel quel s'il tient, sinon ses
+ * premiers mots suivis de « … » (sans virgule ni parenthèse ouvrante pendantes). Rien ne tient : "". Pur, testable sans écran.
  */
-fun choisirLibelle(libelle: String, tailles: List<Float>, tient: (String, Float) -> Boolean): Pair<String, Float> {
+fun choisirLibelle(libelle: String, tient: (String) -> Boolean): String {
     val mots = libelle.split(Regex("\\s+")).filter { it.isNotEmpty() }
-    for (t in tailles) {
-        if (tient(mots.joinToString(" "), t)) return mots.joinToString(" ") to t
-        for (k in mots.size - 1 downTo 1) {
-            val c = mots.take(k).joinToString(" ").trimEnd(',', ';', ':', '(', ' ') + "…"
-            if (tient(c, t)) return c to t
-        }
+    if (tient(mots.joinToString(" "))) return mots.joinToString(" ")
+    for (k in mots.size - 1 downTo 1) {
+        val c = mots.take(k).joinToString(" ").trimEnd(',', ';', ':', '(', ' ') + "…"
+        if (tient(c)) return c
     }
-    return "" to tailles.last()
+    return ""
 }
