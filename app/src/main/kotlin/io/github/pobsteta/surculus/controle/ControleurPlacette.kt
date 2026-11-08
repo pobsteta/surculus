@@ -96,8 +96,8 @@ data class VuePointage(
     val aConfirmer: String?,
 )
 
-/** Un bouton de la grille du besoin : le code de la couche `codes`, en gros, et le début de son libellé. */
-data class ChoixBesoin(val code: String, val libelleCourt: String, val choisi: Boolean)
+/** Un bouton de la grille du besoin : le code de la couche `codes`, en gros, et son libellé entier (l'écran en affiche le début qui tient). */
+data class ChoixBesoin(val code: String, val libelle: String, val choisi: Boolean)
 
 /** Un bouton de la concurrence : faible, moyenne ou forte. */
 data class ChoixConcurrence(val niveau: String, val libelle: String, val choisi: Boolean)
@@ -484,19 +484,11 @@ object TextesControle {
     /** Libellé d'écran d'un niveau : colonne `libelle` de `docs/referentiels/concurrences.csv` ([Concurrences.LIBELLES]). */
     private fun libelleConcurrence(niveau: String) = Concurrences.LIBELLES.getValue(niveau)
 
-    /** Longueur du début de libellé sous le code, sur un bouton d'environ 80 dp. */
-    const val LIBELLE_COURT_MAX = 18
-
     /**
-     * Le début du libellé d'un code : sommieR écrit « RG - Regarnis, compléments » (`R/travaux_qfield.R` l. 61) ; on
-     * retire « RG - » et on coupe au dernier mot entier qui tient en [LIBELLE_COURT_MAX] caractères.
+     * Le libellé d'un code sans son préfixe : sommieR écrit « RG - Regarnis, compléments » (`R/travaux_qfield.R` l. 61) ; on
+     * retire « RG - ». La coupe aux mots, selon la largeur mesurée du bouton, se fait à l'écran ([choisirLibelle]).
      */
-    fun libelleCourt(code: String, libelle: String): String {
-        val sans = libelle.removePrefix("$code - ").trim()
-        if (sans.length <= LIBELLE_COURT_MAX) return sans
-        val coupe = sans.take(LIBELLE_COURT_MAX).substringBeforeLast(' ').trimEnd(',', ' ', '(')
-        return (coupe.ifEmpty { sans.take(LIBELLE_COURT_MAX) }) + "…"
-    }
+    fun libelleCourt(code: String, libelle: String): String = libelle.removePrefix("$code - ").trim()
 
     /**
      * La phrase de ce qui manque pour terminer ; `null` si rien ne manque. Les plants sans état sont nommés par leur
@@ -580,4 +572,18 @@ object TextesControle {
         is Verdict.AConfirmer -> VueTotaux("", v.alerte.message)
         is Verdict.AChoisirUg -> VueTotaux("", "")
     }
+}
+
+/**
+ * Le plus long début de [libelle] en mots entiers que [tient] accepte ; le libellé entier tel quel s'il tient, sinon ses
+ * premiers mots suivis de « … » (sans virgule ni parenthèse ouvrante pendantes). Rien ne tient : "". Pur, testable sans écran.
+ */
+fun choisirLibelle(libelle: String, tient: (String) -> Boolean): String {
+    val mots = libelle.split(Regex("\\s+")).filter { it.isNotEmpty() }
+    if (tient(mots.joinToString(" "))) return mots.joinToString(" ")
+    for (k in mots.size - 1 downTo 1) {
+        val c = mots.take(k).joinToString(" ").trimEnd(',', ';', ':', '(', ' ') + "…"
+        if (tient(c)) return c
+    }
+    return ""
 }
