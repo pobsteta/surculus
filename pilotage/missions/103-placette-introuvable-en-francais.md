@@ -11,7 +11,7 @@ contrôle par une phrase française qui dit ce qui ne va pas et quoi faire, sans
 dessus en forêt sache revenir à la liste et quoi demander, comme les refus de la 082 et de la 084.
 
 **Redite par l'agent :**
-- *Testeur :* _à remplir_
+- *Testeur :* écrire, sans lire le code des écrans, des tests Robolectric qui ouvrent le guidage (placette absente, puis placette sans position) et le contrôle (placette absente) sur une vraie tournée d'essai, et qui échouent tant que le refus affiché, préfixe compris, montre un UUID, met une majuscule après « : » ou ne dit pas quoi faire.
 - *Dev :* _à remplir_
 
 ## Les trois questions (règle de staffing)
