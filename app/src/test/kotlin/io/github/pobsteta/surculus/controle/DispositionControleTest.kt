@@ -14,6 +14,9 @@ class DispositionControleTest {
     @Test fun `couche, le plan tient dans la hauteur disponible`() {
         val c = cotePlanDp(largeurDp = 780f, hauteurEcranDp = 360f)
         assertTrue(c <= 360f - RESERVE_HAUTEUR_PLAN_DP, "côté $c")
+        // Garde muette de la 104 : la ligne ci-dessus suit la constante, elle ne voit pas une réserve ramenée à 0. La barre
+        // d'application (BandeauCompact, 48 dp) doit rester déduite, quelle que soit la valeur de la réserve.
+        assertTrue(c <= 360f - 48f, "côté $c : le plan couché doit laisser au moins 48 dp (barre d'application)")
         assertTrue(c > 0f)
     }
 
