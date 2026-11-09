@@ -198,6 +198,12 @@ dans `placettes` (ADR 0007, critère F4 ; `ci/sommier/README.md` l. 54-66 ; `fix
 F4 prouve), la question remonte à Pascal. **Tranché le 2026-11-02 par Pascal** (« en faire le cas sans position »),
 codé par la 087 : P35-02 a une ligne à géométrie NULL, vérifiée par F4 (ADR 0007).
 
+**Ajout du 2026-11-09 (mission 105), qui corrige sans l'effacer la phrase « La 086 en fera un contrôle `sans_position_mesuree`, ou
+dira pourquoi non » ci-dessus (écrite au futur le 2026-11-02) :** c'est un fait, mais ce n'est pas la 086 qui l'a fait. La
+086 (code de piquet en double entre UG, PR #151) a réglé les homonymes ; la 087 a ouvert le contrôle sans position et écrit
+la ligne à géométrie NULL de P35-02 ; la 088 a créé le `.sursync` v2. Livré avec la v0.7.106 (journal et kanban, 2026-11-03).
+Mêmes noms de missions que la ligne 147 de cet ADR (« homonymes : 086 ; `.sursync` v2 : 088 »).
+
 **Valeur provisoire :** les **30 s** d'attente sans fix. Mesurées par Pascal à l'essai en forêt sous couvert (premier
 fix à froid du récepteur), date à fixer ; gelées avant la publication de la tranche 1.
 

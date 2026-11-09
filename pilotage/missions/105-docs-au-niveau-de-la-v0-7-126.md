@@ -9,7 +9,7 @@
 du kanban au niveau de la v0.7.126, pour qu'un successeur sache en une minute ce que fait Surculus aujourd'hui.
 
 **Redite par l'agent :**
-- *Archiviste :* _à remplir_
+- *Archiviste (2026-11-09) :* je mets le README, la spec, l'ADR 0003, `equipe.md` et le bac à sable du kanban au niveau de la v0.7.126, en ajoutant (jamais en effaçant) ce qui est livré de la 084 à la 103, et je ne retire du bac à sable que ce que je revérifie dans le code de `main`, preuve `fichier:ligne` à l'appui ; je ne tranche rien de ce qui relève de Pascal.
 
 ## Les trois questions
 

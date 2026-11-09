@@ -14,13 +14,14 @@ Application Android de **suivi des travaux de plantation en forêt**, hors ligne
 elle suit **plant par plant**, sur des placettes fixes, ce qui a repris d'un passage à
 l'autre, et relève les travaux faits, pour les rendre au sommier forestier (sommieR).
 
-> **État : en développement (tranche 1).** Le contrôle de placette (mission 012, A à D, dernière
-> PR fusionnée le 2026-10-28, journal du même jour) est livré : pointage, gestes de volume et
-> mode poche, dictée « tenir pour parler » (qui ne tient en version de production que depuis la
-> mission 071, PR #125, fusionnée le 2026-10-29). Les essais en forêt (essai ganté de Pascal, Couchey)
-> ne sont pas faits (journal, 2026-10-30). **Ce qui est livré, en cours ou planifié se lit dans
-> [`pilotage/kanban.md`](pilotage/kanban.md)**, seule source de l'avancement ; les écrans ne sont
-> pas listés ici. **La dernière version installable** est la dernière
+> **État : en développement (tranche 1). Version couverte par ce texte : v0.7.126, 2026-11-09.**
+> La boucle est fermée au bureau : l'agent contrôle une placette sans regarder l'écran (voix, volume, micro),
+> l'ouvre aussi sans position sous couvert, et rend sa tournée depuis le téléphone ; sommieR la réimporte
+> (aller-retour prouvé le 2026-11-06 sur une copie de base). Les écrans disent leurs refus en français.
+> **Mauvaise nouvelle : rien n'a encore été vérifié en forêt** (le ZED-F9P attend depuis le 2026-10-16 ; essai en forêt
+> décidé par Pascal d'ici le 2026-11-15, journal du 2026-11-09). **Ce qui est livré, en cours ou planifié se lit dans
+> [`pilotage/kanban.md`](pilotage/kanban.md)** (colonnes et rubrique « Livraisons »), seule source de l'avancement ;
+> les écrans ne sont pas listés ici. **La dernière version installable** est la dernière
 > [release](https://github.com/pobsteta/surculus/releases) (badge « version » ci-dessus).
 
 ## Pour qui, pour quoi

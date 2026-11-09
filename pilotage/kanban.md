@@ -7,11 +7,17 @@
 
 ## Bac à sable
 
-- **Mineurs de la 084** (relecture de la #172, « Bac à sable », Pascal, 2026-11-08) : critère d'action lexical du test (`RefusDeLectureEnFrancaisTest.kt:42`, passerait sans la consigne) ; « latitude et longitude semblent inversées » pour des x/y Lambert-93 (`Refus.kt:57`, comme `FautesDuRendu.kt:32`) ; détail technique entre crochets (`GpkgRefuse`) ou parenthèses (`Resultat.kt:28`).
-- **Deux sessions vivantes de la même placette** (relecture de la #168, « Bac à sable », Pascal, 2026-11-07) : un même plant dit en même temps peut avoir deux lignes `etat` (`SessionControle.ecrireObservation`, `existant` lu hors verrou ; vérifié) ; un besoin ou une concurrence en attente peuvent se perdre si l'autre session crée le contrôle (non vérifié). Rares depuis le verrou d'écran de la 100.
+_Trié et daté le 2026-11-09 (mission 105, `archiviste`). « Revérifié » = relu dans le code de `main` ce jour-là, avec
+`fichier:ligne` ; « non revérifié » = gardé tel quel, à vérifier avant d'en faire une question. Les entrées qui dépendent de
+Pascal ou d'un autre dépôt sont gardées. Retirées ce jour-là (preuves dans la PR de la 105) : thème Système / Clair / Sombre,
+mineurs de la 074, contrôles d'intégrité de l'export, état « rendue » et nombre de saisies de la liste (dette de la 011),
+double appui (mineurs de la 089), renvoi de l'ADR 0003 au « codé par la 086 »._
 
-- **Référentiel Centipède, l. 6** (relecture de la #165) : « Rien n'est tranché ici » contredit la décision inscrite l. 63 ; à aligner par l'`acquereur`.
-- **Mineurs de la 089** (relecture de la #162) : confirmation du guidage perdue à la rotation ; `debutSansFix` écrit pendant la composition ; vue sans fix de l'écran de contrôle sans test de rendu ; double appui sur « Ouvrir sans position » (déjà dans la 087).
+- **Mineurs de la 084** (relecture de la #172, « Bac à sable », Pascal, 2026-11-08) : critère d'action lexical du test (`RefusDeLectureEnFrancaisTest.kt:42`, passerait sans la consigne) ; « latitude et longitude semblent inversées » pour des x/y Lambert-93 (`Refus.kt:57`, comme `FautesDuRendu.kt:32`) ; détail technique entre crochets (`GpkgRefuse`) ou parenthèses (`Resultat.kt:28`). *(Revérifié 2026-11-09 : test lexical `RefusDeLectureEnFrancaisTest.kt:42`, message `Refus.kt:57`, parenthèses `Resultat.kt:27-28`.)*
+- **Deux sessions vivantes de la même placette** (relecture de la #168, « Bac à sable », Pascal, 2026-11-07) : un même plant dit en même temps peut avoir deux lignes `etat` (`SessionControle.ecrireObservation`, `existant` lu hors verrou ; vérifié) ; un besoin ou une concurrence en attente peuvent se perdre si l'autre session crée le contrôle (non vérifié). Rares depuis le verrou d'écran de la 100. *(Revérifié 2026-11-09 : `existant` lu hors verrou, `core/.../session/SessionControle.kt:531`, le verrou `VERROU_CONTROLE` n'entourant que la création, l. 442 et 552 ; la perte du besoin ou de la concurrence reste non vérifiée.)*
+
+- **Référentiel Centipède, l. 6** (relecture de la #165) : « Rien n'est tranché ici » contredit la décision inscrite l. 63 ; à aligner par l'`acquereur`. *(Revérifié 2026-11-09 : `docs/referentiels/referentiel-centipede.md:6` et `:63`.)*
+- **Mineurs de la 089** (relecture de la #162) : confirmation du guidage perdue à la rotation ; `debutSansFix` écrit pendant la composition ; vue sans fix de l'écran de contrôle sans test de rendu. *(Revérifié 2026-11-09 : `confirmation` en `remember` et non `rememberSaveable`, `EcranGuidage.kt:189` ; `debutSansFix` écrit pendant la composition, `EcranGuidage.kt:194` ; `VueSansFix` privée, `EcranControle.kt:356`, sans test de rendu dans `app/src/test/.../rendu/`. Le double appui, ancienne quatrième clause, est retiré : gardé par `RenduDoubleAppuiEcranControleTest.kt` et `RenduDoubleAppuiSansPositionTest.kt` (mission 100).)*
 
 
 
@@ -21,53 +27,45 @@
   s'écrit sans parcelle d'ici là.
 - **Placette visée par le guidage** (relecture de la 086) : pourrait départager ou être mise en avant entre homonymes ;
   l'ADR ne retient que la position. Signalé, non recommandé.
-- **ADR 0003** : l'en-tête et le paragraphe `.sursync` disent encore « codé par la 086 » ; le découpage 086 / 087 / 088
-  est à y reprendre (`archiviste`).
 
 - **Test de la 082** : `gabarit()` ne lit que `strings_tournees.xml`, d'où le doublon `carte_recepteur_service_interrompu`
   / `rtk_service_interrompu` ; le faire lire les deux fichiers (`testeur`), puis une seule ressource. La carte reconnaît
-  l'interruption par son texte (`DEBUT_SERVICE_INTERROMPU`) : un indicateur dans `EtatRtk` serait plus solide.
+  l'interruption par son texte (`DEBUT_SERVICE_INTERROMPU`) : un indicateur dans `EtatRtk` serait plus solide. *(Revérifié 2026-11-09 : `gabarit()` lit `strings_tournees.xml` seul, `AucunMessageBrutTest.kt:162,210-211` ; doublon `strings_tournees.xml:116` / `strings.xml:10` ; texte comparé par `DEBUT_SERVICE_INTERROMPU`, `ErreurRecepteurCarte.kt:35,46`.)*
 
 - **Libellé « Caster » dans Paramètres** (`recepteur_caster`, `recepteur_ntrip_desc`, relecture de la 082) : mot
-  technique, hors de la 082.
+  technique, hors de la 082. *(Revérifié 2026-11-09 : `strings_recepteur.xml:24-25`.)*
 
-- **Contrôles d'intégrité de l'export** (`ExportTravaux:487-494`, clés étrangères, rtree, `gpkg_contents`) : textes
-  techniques, invisibles tant qu'aucun écran n'appelle l'export ; à traduire ce jour-là (« les laisser, noter », Pascal,
-  2026-11-02, relecture de la 082).
 - **Après « Libérer le récepteur »** (relecture de la 082, non vérifié sur appareil) : `travail.cancel()` peut remettre
-  « liaison coupée » dans l'état alors que le service est arrêté (`ServiceGnssRtk.kt:141`).
+  « liaison coupée » dans l'état alors que le service est arrêté (`ServiceGnssRtk.kt:141`). *(2026-11-09 : le `travail?.cancel()` est maintenant à `ServiceGnssRtk.kt:148` et `:261` ; le défaut lui-même, non vérifié sur appareil, n'est pas revérifié.)*
 
 - **Mineur M2 de la 076** (depuis le cycle 15) : plus aucun test ne vérifie que `echeance()` retient la plus
-  proche des deux échéances (bandeau, résultat final) ; une ligne dans le premier test du bandeau.
+  proche des deux échéances (bandeau, résultat final) ; une ligne dans le premier test du bandeau. *(2026-11-09 : `echeance()` prend `minOrNull()`, `MachineEcoute.kt:215-219` ; test du « plus proche » non revérifié.)*
 
 - **Questions de la relecture de la 081** (Pascal, « au bac à sable », 2026-10-30) : `ConnectException` (serveur qui
   refuse) dit « pas de réseau », coupure en plein téléchargement (`SocketException`, SSL) sur la phrase générique ;
   signe moins « - » ou « − » (U+2212) ; tests manquants : appel de `refusServeur` dans `source`, priorité
-  d'`EchecInstallation` sur une enveloppe.
+  d'`EchecInstallation` sur une enveloppe. *(Revérifié 2026-11-09 pour `ConnectException` : « pas de réseau », `SuiviInstallationVosk.kt:42` ; le reste non revérifié.)*
 
 - **Message d'échec de la voix hors de vue** (capture v0.7.99, 2026-10-30) : au premier appui sur « Retélécharger »,
-  rien de visible ; le message s'écrit en bas de Paramètres. À vérifier, puis le faire voir sans défiler.
+  rien de visible ; le message s'écrit en bas de Paramètres. À vérifier, puis le faire voir sans défiler. *(Non revérifié le 2026-11-09 ; texte formé à `SectionDicteeVocale.kt:89`.)*
 
 _Idées, à trier au prochain `/mission`._
 
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
-  dans plusieurs messages de `RefusPlacette`.
+  dans plusieurs messages de `RefusPlacette`. *(Non revérifié le 2026-11-09 ; la 103 a traité la placette introuvable, pas ces messages.)*
 - **Mineurs de la 052** : paramètres de rationale inutilisés dans `refusAMemoriser` (`noterRationales`) ;
-  `IssueInstallation.Echec` affiche `e.message` brut (texte technique).
+  `IssueInstallation.Echec` affiche `e.message` brut (texte technique). *(Revérifié 2026-11-09 : `refusAMemoriser` ignore ses deux paramètres de rationale, `AvertissementsRecepteur.kt:52` ; `issue.cause` formaté à `SectionDicteeVocale.kt:89`.)*
 - **Mineurs de la 059** : KDoc d'`ExamenOrtho` et d'`OrthoChantierMentionTest` périmées ; `FichierOrtho.examiner`
-  testé par garde de source seulement.
-- **Mineurs de la 074** : le pointage (`ControleurPlacette` l. 392) n'appelle pas `Libelles.decimetres` ;
-  `Resultat.kt` l. 79 écrit un `Double` brut (« Distance … m refusée »), affichage non vérifié.
+  testé par garde de source seulement. *(2026-11-09 : garde de source seule, `CarteSuitesSourcesTest.kt:59-63` ; KDoc non relues.)*
 - **Mineurs de la 068** : libellé du bouton d'arrivée en Kotlin (`TextesControle.boutonArrivee`)
-  et non en ressource ; indentation de `PointageControleTest` vers la l. 280.
+  et non en ressource ; indentation de `PointageControleTest` vers la l. 280. *(Revérifié 2026-11-09 : libellé en Kotlin, `ControleurPlacette.kt:450` ; indentation non revérifiée.)*
 - **Mineurs de la 071** : lien de la FAQ de JNA dans `proguard-rules.pro`,
   `-dontwarn com.sun.jna.platform.**` sans effet ; anciens tests UPDATE/DELETE du journal en
-  `assertFailsWith<Exception>` (relecture de la 073).
+  `assertFailsWith<Exception>` (relecture de la 073). *(Revérifié 2026-11-09 : `-dontwarn com.sun.jna.platform.**` à `proguard-rules.pro:32` ; `assertFailsWith<Exception>` à `JournalDurableTest.kt:70-73`, `JournalRobustesseTest.kt:142`.)*
 - **Question pour Pascal (ADR 0011)** : jouer l'essai de fumée aussi sur les PR (`ci.yml`, environ
-  10 min d'émulateur), pour qu'un R8 cassé bloque la fusion et pas seulement la release.
+  10 min d'émulateur), pour qu'un R8 cassé bloque la fusion et pas seulement la release. *(Revérifié 2026-11-09 : `.github/workflows/ci.yml` ne contient ni émulateur ni essai de fumée ; la question reste posée.)*
 - **Mot à Ramulus** : sous Robolectric (SQLite 3.44.3), `BEFORE DELETE` refuse déjà le REPLACE,
   contrairement à son brief (073) ; à envoyer si Pascal le veut.
-- **Choix Système / Clair / Sombre** (Marculus v0.65.0), proposé par la session `marculus`.
 
 - **Orchestrateur + `contradicteur`** : ADR 0006 (fusion, avant la tranche 4), 0010
   (voir la carte « clé de signature » au Planifié), 0012 (briques communes vers `terrain`,
@@ -79,17 +77,17 @@ _Idées, à trier au prochain `/mission`._
   permission `WRITE_EXTERNAL_STORAGE` est demandée par la 012-B1, la sauvegarde est
   branchée sur les saisies par la 012-A).
 
-- **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées
-  (export, 032) ; l'essai sur téléphone est sur la carte « terrain avant la 012 ».
+- **Dettes de la 011** : l'essai sur téléphone est sur la carte « terrain avant la 012 ». *(L'état « rendue » et le nombre
+  de saisies de la liste des tournées, autre dette de la 011, sont retirés le 2026-11-09 : `DepotTournees.kt:143`, `EtatKanban.kt:34-48`.)*
 - **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
   barème 2024 (« en vigueur NON vérifié »).
 - **Tests (relecture de la 027)** : une seule emprise France, celle de la spec § 10.9
   (domaine d'usage d'EPSG:2154) ; `FixturesBienFormeesTest` (l. 138) a sa propre boîte.
   `fixtures/README.md` (l. 79) : ajouter `remplace_autre_tournee` aux codes d'anomalie
-  (`testeur`).
+  (`testeur`). *(Revérifié 2026-11-09 : le code est absent de `fixtures/README.md`.)*
 - **Emprise France** : y min vaut 6 005 294,71 dans le code (PROJ, densify 50) et
   6 005 281,2 dans `fixtures/acceptation-export/repere-et-france.json` (epsg.io), soit
-  13,5 m d'écart, sans effet sur le test de la Corse ; laquelle fait foi (Pascal) ?
+  13,5 m d'écart, sans effet sur le test de la Corse ; laquelle fait foi (Pascal) ? *(Revérifié 2026-11-09 : `PointLambert93.kt:50` = 6 005 294,71 ; `repere-et-france.json:249` = 6005281.2 ; les deux restent différents.)*
 - **Carte, après la 012** : l'état d'une placette contrôlée pendant la tournée, « mission
   à part, après 012 » (Pascal, 2026-10-22 ; l'option proposait de faire primer l'état local
   sur `etat_suivi`) ; travaux et vides au bac à sable (Pascal, même jour), à dessiner quand

@@ -104,6 +104,51 @@ n° 2 : l'état à jour des missions est dans `kanban.md`.
 Hors équipe, au Planifié : ADR 0010 (attend la sauvegarde de la clé par Pascal), 049, photos (mesures sur appareil),
 tranche 3 (date de plantation), 010 et 014 (moyens).
 
+## Missions de la 082 à la 106 (ajout du 2026-11-09, mission 105)
+
+Le tableau de la porte n° 2 s'arrêtait à la 081. Les missions suivantes sont nées de décisions de Pascal au fil des
+cycles (journal) ; le **temps de la main** est celui de la fiche ; l'état à jour de chacune est dans `kanban.md`, pas ici.
+Le `relecteur` relit chaque PR, le `testeur` écrit d'abord ses tests sans lire le code (règle du bilan du 2026-10-30).
+
+| Mission | Agent | Temps de la main |
+|---|---|---|
+| [082](missions/082-aucun-message-d-exception-a-l-ecran.md) Aucun message d'exception à l'écran | `testeur` puis `dev` | appuyer |
+| [083](missions/083-bandeau-ne-cache-plus-plant-precedent.md) Bandeau qui ne cache plus « Plant précédent » | `testeur` puis `afficheur` | appuyer |
+| [084](missions/084-refus-de-lecture-en-francais.md) Refus de lecture en français | `testeur` puis `dev` | appuyer |
+| [085](missions/085-ouvrir-sans-position-adr-et-spec.md) Ouvrir sans position : ADR et spec | `archiviste` | tenir |
+| [086](missions/086-code-de-piquet-en-double-entre-ug.md) Code de piquet en double entre UG | `testeur` puis `dev` | appuyer |
+| [087](missions/087-ouvrir-un-controle-sans-position.md) Ouvrir un contrôle sans position | `testeur` puis `dev` | tenir |
+| [088](missions/088-sauvegarde-sursync-v2.md) Sauvegarde `.sursync` v2 | `testeur` puis `dev` | tenir |
+| [089](missions/089-ouvrir-sans-position-depuis-le-guidage.md) Ouvrir sans position depuis le guidage | `testeur` puis `dev` | tenir |
+| [090](missions/090-rendre-la-tournee-depuis-le-telephone.md) Rendre la tournée depuis le téléphone | `testeur` puis `dev` | tenir |
+| [091](missions/091-besoin-concurrence-et-qualite-du-fix.md) Besoin, concurrence et qualité du fix | `testeur` puis `dev` | tenir |
+| [092](missions/092-referentiel-des-concurrences.md) Référentiel des concurrences | `acquereur` | appuyer |
+| 093 Rendre les points hors forêt | — | abandonnée (kanban, 2026-11-06) |
+| [094](missions/094-referentiel-de-la-source.md) Référentiel de la source | `dev` (plan) puis `testeur` | tenir |
+| [095](missions/095-terminer-plant-sans-etat.md) « Terminer » refusé tant qu'un plant n'a pas d'état | `testeur` puis `dev` | appuyer |
+| [096](missions/096-tests-muets-session-controle.md) Tests muets de `SessionControle` | `testeur` | appuyer |
+| [097](missions/097-hotes-centipede-sources.md) Hôtes Centipède sourcés | `acquereur` | appuyer |
+| [098](missions/098-kdoc-hotes-centipede.md) Commentaire de `CASTERS_CENTIPEDE` | `dev` | appuyer |
+| [099](missions/099-decision-hotes-centipede-au-referentiel.md) Décision sur les hôtes au référentiel | `acquereur` | appuyer |
+| [100](missions/100-double-appui-ouvrir-sans-position.md) Double appui sur « Ouvrir sans position » | `testeur` puis `dev` | appuyer |
+| [101](missions/101-seconde-ouverture-reprend-le-controle.md) Un contrôle par placette et par jour, création atomique | `testeur` puis `dev` | tenir |
+| [102](missions/102-libelles-des-codes-lisibles.md) Libellés des codes lisibles à « Terminer » | `testeur` puis `afficheur` | tenir |
+| [103](missions/103-placette-introuvable-en-francais.md) Placette introuvable en français | `testeur` puis `dev` | appuyer |
+| 104 Audit des gardes de rendu et de forme (fiche sur sa branche) | `testeur` | appuyer |
+| [105](missions/105-docs-au-niveau-de-la-v0-7-126.md) Docs au niveau de la v0.7.126 | `archiviste` | appuyer |
+| [106](missions/106-liste-de-controle-avant-relecture.md) Liste de contrôle avant relecture | `archiviste` | appuyer |
+
+Les missions 010 et 014 restent en attente de moyens ; la 049, les photos et la tranche 3 au Planifié (kanban).
+
+## Règles adoptées au bilan du 2026-11-09 (décision de Pascal, journal du même jour)
+
+1. **Terrain d'abord** : essai en forêt d'ici le 2026-11-15 ; aucune mission d'écran d'ici là, seulement les dettes du bilan.
+2. **Liste de contrôle** de l'orchestrateur (section suivante, mission 106), cause n° 1 du Pareto.
+3. **Textes et bornes décidés au plan** (cause n° 2, journal l. 1151 point 3) : toute fiche d'écran porte une rubrique
+   « textes et bornes décidés au plan », **tranchée par Pascal avant le code**. Qui la vérifie et où le gabarit la porte :
+   non décidé (question dans la PR de la mission 105).
+4. **Audit des gardes** (cause 3, « une garde n'est prouvée que vue rouge ») : mission 104 du `testeur`.
+
 ## Liste de contrôle de l'orchestrateur (bilan du 2026-11-09, décision de Pascal)
 
 Avant chaque relecture et chaque question à Pascal : [`liste-de-controle.md`](liste-de-controle.md). Les manquements
