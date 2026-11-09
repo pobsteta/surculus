@@ -11,7 +11,7 @@ applique avant chaque relecture et avant chaque question à Pascal, pour qu'aucu
 avoir été vérifiée à sa source (cause n° 1 du bilan : 26 incidents sur 51).
 
 **Redite par l'agent :**
-- *Archiviste :* _à remplir_
+- *Archiviste :* j'écris `pilotage/liste-de-controle.md`, une liste de six points au plus, chacun relié à un incident du journal et à une commande de vérification, que l'orchestrateur applique avant chaque relecture et avant chaque question à Pascal, et je la lie depuis `pilotage/equipe.md`.
 
 ## Les trois questions
 
