@@ -24,6 +24,14 @@ dessus en forêt sache revenir à la liste et quoi demander, comme les refus de 
 
 **Temps de la main :** appuyer.
 
+## Reprise 1/3 (2026-11-09)
+
+Relecture du premier passage (1f91da7) : à reprendre, la preuve promise (rendu `rendu-des-ecrans`) n'existait pas.
+Décisions de Pascal : le test écrit les rendus des trois écrans ; « revenir en arrière » (la flèche du guidage ramène
+à la carte, `Navigation.kt:85-88`) ; « n'est pas dans la tournée » ; sans position : « revenir en arrière et la
+contrôler sans guidage, ou demander qu'elle soit positionnée dans sommieR ». Reprise faite en 6a4a9c3 ; corps de PR
+réécrit par l'orchestrateur.
+
 ## Ma réponse d'abord
 
 _Rempli par Pascal seul._
