@@ -451,3 +451,10 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   France), le message est en français et dit quoi faire : demander une nouvelle exportation depuis sommieR (084,
   v0.7.124, capturé le 2026-11-09) · pour le forestier qui ouvre une tournée sans réseau · avant, des codes EPSG, des
   `srs_id` et des coordonnées brutes à l'écran. *(Retenue par Pascal le 2026-11-09 : « Oui, telle quelle ».)*
+- cycle 22 · quand la placette demandée manque à la tournée ou n'a pas de position, le guidage et le contrôle disent en
+  français quoi faire (revenir en arrière et choisir une autre placette, ou la contrôler sans guidage, ou demander
+  qu'elle soit positionnée dans sommieR), sans l'identifiant technique (103, v0.7.126, rendus de la CI vus le
+  2026-11-09) · pour le forestier en forêt · avant, « Carte impossible : placette 3f2a9c1e-… ». Mauvaise nouvelle
+  jointe : la preuve promise par la fiche (rendus de la CI) n'existait pas au premier passage, et l'orchestrateur a
+  d'abord installé la release sur l'émulateur sans vérifier la cible ; ce qu'elle nous apprend : une preuve annoncée se
+  vérifie dans l'artefact avant la relecture. *(Retenue par Pascal le 2026-11-09 : « Oui, avec la mauvaise nouvelle ».)*
