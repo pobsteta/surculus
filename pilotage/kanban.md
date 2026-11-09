@@ -24,8 +24,8 @@
 - **ADR 0003** : l'en-tête et le paragraphe `.sursync` disent encore « codé par la 086 » ; le découpage 086 / 087 / 088
   est à y reprendre (`archiviste`).
 
-- **« Carte impossible : placette <uuid> »** (`EcranGuidage:107`, `EcranControle:193`, relecture de la 082) : UUID à
-  l'écran.
+- **103** (fiche écrite le 2026-11-09, cycle 22, en cours) : « Carte impossible : placette <uuid> » remplacé par une
+  phrase française sans UUID (`EcranGuidage.kt:127`, `EcranControle.kt:282`) ; `testeur` puis `dev`, appuyer.
 - **Test de la 082** : `gabarit()` ne lit que `strings_tournees.xml`, d'où le doublon `carte_recepteur_service_interrompu`
   / `rtk_service_interrompu` ; le faire lire les deux fichiers (`testeur`), puis une seule ressource. La carte reconnaît
   l'interruption par son texte (`DEBUT_SERVICE_INTERROMPU`) : un indicateur dans `EtatRtk` serait plus solide.
