@@ -458,3 +458,12 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   jointe : la preuve promise par la fiche (rendus de la CI) n'existait pas au premier passage, et l'orchestrateur a
   d'abord installé la release sur l'émulateur sans vérifier la cible ; ce qu'elle nous apprend : une preuve annoncée se
   vérifie dans l'artefact avant la relecture. *(Retenue par Pascal le 2026-11-09 : « Oui, avec la mauvaise nouvelle ».)*
+- bilan du 2026-11-09 · depuis le 30 octobre, la boucle est fermée : le forestier rend sa tournée depuis le téléphone
+  et sommieR la réimporte (aller-retour prouvé le 2026-11-06 sur une copie de base) ; il peut ouvrir un contrôle sans
+  position sous couvert, n'ouvre qu'un contrôle par placette et par jour, et lit en français les libellés et les refus
+  (v0.7.100 → v0.7.126) · pour le forestier et pour sommieR · de plus que le bilan du 30 octobre (contrôle sans regarder
+  l'écran) : les données reviennent dans sommieR. Mauvaise nouvelle jointe : rien n'a été vérifié en forêt, le ZED-F9P
+  attend depuis le 16 octobre, et 51 % des échecs viennent d'affirmations non vérifiées à la source (7 de
+  l'orchestrateur) ; ce qu'elle nous apprend : le terrain d'abord, d'ici le 2026-11-15, et vérifier à la source avant
+  d'écrire. *(Retenue par Pascal le 2026-11-09 : « Oui, avec la mauvaise nouvelle » ; « v0.7.104 » de la question
+  corrigé en v0.7.100.)*
