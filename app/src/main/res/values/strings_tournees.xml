@@ -72,6 +72,9 @@
     <string name="guidage_titre">Guidage</string>
     <string name="carte_ouverture">Ouverture de la tournée…</string>
     <string name="carte_refus">Carte impossible : %1$s</string>
+    <!-- Mission 103 : placette demandée introuvable dans la tournée (derrière « Carte impossible : »), sans UUID ; l'UUID va au journal Android. -->
+    <string name="carte_placette_introuvable">cette placette n\'est pas dans la tournée : revenir en arrière et choisir une autre placette.</string>
+    <string name="carte_placette_sans_position_refus">cette placette n\'a pas de position dans la tournée : revenir en arrière et la contrôler sans guidage, ou demander qu\'elle soit positionnée dans sommieR.</string>
     <string name="carte_couche_foret">Forêt (%1$d)</string>
     <string name="carte_couche_ug">UG (%1$d)</string>
     <string name="carte_couche_parcelles">Parcelles (%1$d)</string>

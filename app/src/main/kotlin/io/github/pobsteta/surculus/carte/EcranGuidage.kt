@@ -54,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.messages.JournalTechnique
 import io.github.pobsteta.surculus.controle.AttenteSansFix
 import io.github.pobsteta.surculus.controle.ConfirmationSansPosition
 import io.github.pobsteta.surculus.controle.ControleursOuverts
@@ -124,7 +125,13 @@ fun EcranGuidage(
                 }
                 is Chargement.Pret ->
                     if (cible == null) {
-                        Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, "placette $placetteUuid"), color = couleurErreur()) }
+                        // Deux causes, deux phrases : placette absente de la tournée, ou présente mais sans position (mission 103).
+                        val dansLaTournee = chargement.tournee.tournee.placettes.any { it.uuid == placetteUuid }
+                        LaunchedEffect(placetteUuid, dansLaTournee) {
+                            JournalTechnique.diagnostic("Guidage", "placette $placetteUuid ${if (dansLaTournee) "sans position" else "absente"} dans la tournée $id")
+                        }
+                        val raison = if (dansLaTournee) R.string.carte_placette_sans_position_refus else R.string.carte_placette_introuvable
+                        Column(Modifier.padding(24.dp)) { Text(stringResource(R.string.carte_refus, stringResource(raison)), color = couleurErreur()) }
                     } else {
                         val ctx = LocalContext.current
                         val ouverte = chargement.tournee
