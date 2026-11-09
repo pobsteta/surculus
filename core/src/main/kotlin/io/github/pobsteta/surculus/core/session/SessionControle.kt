@@ -438,11 +438,14 @@ class SessionControle private constructor(
      * de contrôle au journal (« Terminer » sans état dit n'écrit rien, décision de Pascal sur la #108).
      */
     private fun reecrireControle(enAttente: () -> Unit, changer: (ValeurControle) -> ValeurControle): SuiteSession {
-        val (ligne, valeur) = lire().controleDuJour ?: run { enAttente(); return SuiteSession.Fait() }
-        val nouvelle = changer(valeur)
-        if (nouvelle == valeur) return SuiteSession.Fait()
-        val ecrite = ecrire(ligne.objetUuid, FormatValeurs.TYPE_CONTROLE, nouvelle.versJson(), remplace = ligne.uuid)
-        return SuiteSession.Fait(listOf(ecrite))
+        // Sous le verrou (mission 101) : la ligne relue est la dernière écrite, deux réécritures ne remplacent jamais la même.
+        synchronized(VERROU_CONTROLE) {
+            val (ligne, valeur) = lire().controleDuJour ?: run { enAttente(); return SuiteSession.Fait() }
+            val nouvelle = changer(valeur)
+            if (nouvelle == valeur) return SuiteSession.Fait()
+            val ecrite = ecrire(ligne.objetUuid, FormatValeurs.TYPE_CONTROLE, nouvelle.versJson(), remplace = ligne.uuid)
+            return SuiteSession.Fait(listOf(ecrite))
+        }
     }
 
     /**
@@ -473,7 +476,10 @@ class SessionControle private constructor(
      * **figés** et la sauvegarde reçoit une fin de placette. Refusé si aucun état n'est dit aujourd'hui, si le contrôle
      * du jour est déjà terminé, ou s'il manque le besoin, la concurrence ou l'état d'un plant actif ([SuiteSession.ChoixManquant], missions 091 et 095).
      */
-    fun terminer(): SuiteSession {
+    fun terminer(): SuiteSession = synchronized(VERROU_CONTROLE) { terminerSousVerrou() }
+
+    /** Sous le verrou (mission 101) : la fin réécrit la ligne `controle` relue, jamais une ligne déjà remplacée. */
+    private fun terminerSousVerrou(): SuiteSession {
         val vue = lire()
         val ligneControle = vue.controleDuJour
         if (ligneControle?.second?.termine == true) return SuiteSession.DejaTerminee
@@ -534,8 +540,20 @@ class SessionControle private constructor(
 
     private class ControleAssure(val uuid: String, val lignes: List<String>)
 
-    /** UUID du contrôle du jour (un par placette et par jour civil, [UnControleParJour]) ; l'écrit au premier besoin. */
-    private fun assurerControle(vue: Vue): ControleAssure {
+    /**
+     * UUID du contrôle du jour (un par placette et par jour civil, [UnControleParJour]) ; l'écrit au premier besoin.
+     * Si [premiereVue] porte déjà le contrôle du jour, on le reprend. Sinon la création est **atomique** (mission 101) :
+     * sous [VERROU_CONTROLE], le journal est relu puis la ligne écrite. Deux sessions de la même placette (deux ouvertures,
+     * avec ou sans position) qui font leur première saisie en même temps n'écrivent donc qu'une ligne `controle` : la
+     * seconde reprend celle de la première.
+     */
+    private fun assurerControle(premiereVue: Vue): ControleAssure {
+        premiereVue.controleDuJour?.let { return ControleAssure(it.first.objetUuid, emptyList()) }
+        return synchronized(VERROU_CONTROLE) { creerControleSousVerrou() }
+    }
+
+    private fun creerControleSousVerrou(): ControleAssure {
+        val vue = lire()
         vue.controleDuJour?.let { return ControleAssure(it.first.objetUuid, emptyList()) }
         val uuid = journal.nouvelUuid()
         val e = UnControleParJour.ecrire(vue.existants, UuidControle(uuid), placette.uuid, Instant.ofEpochMilli(vue.instantMs))
@@ -689,6 +707,14 @@ class SessionControle private constructor(
     private fun premierSansEtat(vue: Vue): UuidPlant? = vue.plants.firstOrNull { it.duJour == null && !it.remplaceAvant }?.uuid
 
     companion object {
+        /**
+         * Verrou partagé par le processus (mission 101) autour de « lire le journal, [UnControleParJour], écrire la ligne
+         * `controle` » : création du contrôle du jour, réécriture (besoin, concurrence) et « Terminer ». Partagé, et non
+         * propre à une instance de journal : l'application ouvre une instance de journal par appel. Toutes les placettes le
+         * partagent ; chaque section tenue est courte (une lecture, une écriture).
+         */
+        private val VERROU_CONTROLE = Any()
+
         /**
          * Ouvre la session d'une placette à l'arrivée de l'agent : position testée **en France** (en degrés, avant toute
          * projection), puis rattachée à un piquet à 15 m au plus, ou à celui dont l'agent a lu le [codeLu] (le code lu

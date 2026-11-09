@@ -13,6 +13,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import kotlinx.coroutines.sync.Mutex
@@ -198,6 +203,8 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
     // Les fix entiers (mission 091) : leur position, et ce qu'ils disent d'eux-mêmes (précision, source, simulée).
     var fixesArrivee by remember(cle) { mutableStateOf(ChoixUgEnAttente.get(cle)?.second ?: emptyList()) }
     val scope = rememberCoroutineScope()
+    // Mission 100 : un seul appui à la fois sur les boutons qui ouvrent sans position (verrou partagé avec le guidage).
+    val verrou = remember(cle) { VerrouOuverture() }
     suspend fun ouvrirArrivee(ouverte: TourneeOuverte, fixes: List<FixGnss>, ugChoisie: String?): EtatArrivee {
         val resultat = withContext(Dispatchers.IO) {
             runCatching {
@@ -281,17 +288,20 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
                         debutMs = SansPositionEnAttente.de(cle).debutMs ?: SystemClock.elapsedRealtime(),
                         fixRecu = fix != null,
                         code = code, onCode = { code = it },
-                        onOuvrir = { scope.launch { arrivee = ouvrirSansPosition(ouverte!!, null, confirmee = false) } },
+                        onOuvrir = { verrou.lancer(scope) { arrivee = ouvrirSansPosition(ouverte!!, null, confirmee = false) } },
                         onRecommencer = { arrivee = EtatArrivee.Moyenne(0); essai++ },
                     )
                     is EtatArrivee.UgAChoisir -> if (SansPositionEnAttente.etape(cle) != null) {
-                        VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirSansPosition(ouverte!!, ug, confirmee = false) } }, onRecommencer = { SansPositionEnAttente.de(cle).etape = null; arrivee = EtatArrivee.SansPosition })
+                        VueChoixUg(a, onChoix = { ug -> verrou.lancer(scope) { arrivee = ouvrirSansPosition(ouverte!!, ug, confirmee = false) } }, onRecommencer = { SansPositionEnAttente.de(cle).etape = null; arrivee = EtatArrivee.SansPosition })
                     } else {
                         VueChoixUg(a, onChoix = { ug -> scope.launch { arrivee = ouvrirArrivee(ouverte!!, fixesArrivee, ug) } }, onRecommencer = { ChoixUgEnAttente.liberer(cle); arrivee = EtatArrivee.Moyenne(0); essai++ })
                     }
                     is EtatArrivee.ConfirmerSansPosition -> VueConfirmerSansPosition(
                         a,
-                        onOuvrir = { scope.launch { arrivee = ouvrirSansPosition(ouverte!!, SansPositionEnAttente.de(cle).ugChoisie, confirmee = true) } },
+                        verrou = verrou,
+                        scope = scope,
+                        ouvrir = { ouvrirSansPosition(ouverte!!, SansPositionEnAttente.de(cle).ugChoisie, confirmee = true) },
+                        onEtat = { arrivee = it },
                         onAnnuler = { SansPositionEnAttente.de(cle).let { it.etape = null; it.ugChoisie = null }; arrivee = EtatArrivee.SansPosition },
                     )
                     is EtatArrivee.Ouverte -> VueSession(a.controleur, id, reglages, stockageRefuse, onRetour, onParametres)
@@ -364,11 +374,23 @@ private fun VueSansFix(debutMs: Long, fixRecu: Boolean, code: String, onCode: (S
     }
 }
 
-/** La placette à confirmer avant d'ouvrir sans position (point 4) : rien n'est ouvert tant que l'agent n'a pas confirmé. */
+/**
+ * La placette à confirmer avant d'ouvrir sans position (point 4) : rien n'est ouvert tant que l'agent n'a pas confirmé.
+ * Point d'entrée du banc d'essai (mission 100) : [ouvrir] est l'ouverture confirmée (rend l'état qui en résulte), [onEtat]
+ * reçoit cet état, [verrou] est le verrou partagé (un seul appui à la fois). [scope] : la coroutine de l'écran de contrôle,
+ * pour que l'ouverture survive à la vue (« Annuler » pendant une ouverture lente) ; les tests gardent la valeur par défaut.
+ */
 @Composable
-private fun VueConfirmerSansPosition(etat: EtatArrivee.ConfirmerSansPosition, onOuvrir: () -> Unit, onAnnuler: () -> Unit) {
+internal fun VueConfirmerSansPosition(
+    etat: EtatArrivee.ConfirmerSansPosition,
+    ouvrir: suspend () -> EtatArrivee,
+    onEtat: (EtatArrivee) -> Unit,
+    onAnnuler: () -> Unit,
+    verrou: VerrouOuverture = remember { VerrouOuverture() },
+    scope: kotlinx.coroutines.CoroutineScope = rememberCoroutineScope(),
+) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        ConfirmationSansPosition(etat, onOuvrir, onAnnuler)
+        ConfirmationSansPosition(etat, onOuvrir = { verrou.lancer(scope) { onEtat(ouvrir()) } }, onAnnuler = onAnnuler)
     }
 }
 
@@ -854,10 +876,10 @@ private fun ChoixBesoinEtConcurrence(b: VueBesoin, agir: (ControleurPlacette.() 
     for (ligne in b.codes.chunked(DimensionsControle.CODES_PAR_LIGNE)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             for (c in ligne) {
-                BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_CODE), { agir { direBesoin(c.code) } }) {
+                BoutonChoix(c.choisi, Modifier.weight(1f).height(DimensionsControle.BOUTON_CODE), { agir { direBesoin(c.code) } }, RoundedCornerShape(DimensionsControle.COIN_CODE)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(c.code, style = MaterialTheme.typography.titleLarge, maxLines = 1)
-                        if (c.libelleCourt.isNotEmpty()) Text(c.libelleCourt, style = MaterialTheme.typography.labelSmall, maxLines = 2)
+                        LibelleDeCode(c.libelle)
                     }
                 }
             }
@@ -874,14 +896,41 @@ private fun ChoixBesoinEtConcurrence(b: VueBesoin, agir: (ControleurPlacette.() 
     }
 }
 
+/**
+ * Le début du libellé sous le code (mission 102) : le plus de mots entiers qui tiennent sur deux lignes dans la largeur mesurée
+ * du bouton, au style `labelSmall` du thème (11 sp, aucune taille libre : décision de Pascal) ; « … » seulement si le libellé est
+ * coupé ; jamais un mot coupé en deux. Si rien ne tient, on n'écrit rien plutôt qu'un mot coupé (le code reste lisible).
+ */
+@Composable
+private fun LibelleDeCode(libelle: String) {
+    if (libelle.isEmpty()) return
+    val mesureur = rememberTextMeasurer()
+    val base = MaterialTheme.typography.labelSmall
+    val densite = androidx.compose.ui.platform.LocalDensity.current
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val largeur = constraints.maxWidth
+        val texte = remember(libelle, largeur, base, mesureur, densite) {
+            choisirLibelle(libelle) { t ->
+                val m = mesureur.measure(t, base, constraints = Constraints(maxWidth = largeur))
+                val plein = m.layoutInput.text.text
+                m.lineCount <= 2 && (0 until m.lineCount - 1).none { i ->
+                    val fin = m.getLineEnd(i)
+                    fin in 1 until plein.length && plein[fin - 1].isLetterOrDigit() && plein[fin].isLetterOrDigit()
+                }
+            }
+        }
+        if (texte.isNotEmpty()) Text(texte, style = base, maxLines = 2, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
+    }
+}
+
 /** Un bouton de choix : plein s'il est choisi, cerné sinon (le choix se voit au soleil sans dépendre de la seule couleur). */
 @Composable
-private fun BoutonChoix(choisi: Boolean, modifier: Modifier, onClick: () -> Unit, contenu: @Composable () -> Unit) {
+private fun BoutonChoix(choisi: Boolean, modifier: Modifier, onClick: () -> Unit, shape: Shape = ButtonDefaults.shape, contenu: @Composable () -> Unit) {
     val padding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp, vertical = 4.dp)
     if (choisi) {
-        Button(onClick = onClick, modifier = modifier, contentPadding = padding) { contenu() }
+        Button(onClick = onClick, modifier = modifier, shape = shape, contentPadding = padding) { contenu() }
     } else {
-        OutlinedButton(onClick = onClick, modifier = modifier, contentPadding = padding) { contenu() }
+        OutlinedButton(onClick = onClick, modifier = modifier, shape = shape, contentPadding = padding) { contenu() }
     }
 }
 

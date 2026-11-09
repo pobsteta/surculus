@@ -12,6 +12,10 @@ phrase française qui dit ce qui ne va pas et quoi faire, sans nom de table, san
 forestier qui ouvre une tournée refusée sache quoi demander à celui qui l'a préparée.
 
 **Redite par l'agent :**
+- *Testeur (2026-11-08) :* ma mission est d'écrire les tests qui échouent tant qu'un des six textes de refus d'une tournée,
+  composé avec son préfixe d'écran, montre `_`, une table GeoPackage, un UUID, une coordonnée brute, une majuscule après « : »
+  ou ne dit pas quoi faire, pour que le `dev` ait un critère net et que le travail ne s'auto-évalue pas.
+- *Dev (2026-11-08) :* ma mission est de réécrire les `message` des six refus de lecture d'une tournée en une phrase française minuscule qui dit quoi demander et à qui, sans `_`, table, UUID ni coordonnée, en gardant le détail technique dans un champ `detail` non affiché (journal Android), pour que le forestier sache quoi faire devant une tournée refusée.
 
 ## Les trois questions (règle de staffing)
 

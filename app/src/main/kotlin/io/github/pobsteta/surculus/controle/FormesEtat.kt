@@ -63,6 +63,9 @@ object DimensionsControle {
     /** Un code du besoin dans la grille de « Terminer » (mission 091) : environ 80 dp, faisable avec des gants. */
     val BOUTON_CODE = 80.dp
     const val CODES_PAR_LIGNE = 4
+
+    /** Coin du rectangle arrondi d'un code (mission 102, décision de Pascal) : le quasi-cercle rognait la seconde ligne. */
+    val COIN_CODE = 12.dp
     val FLECHE = 48.dp
     val PASTILLE = 28.dp
 

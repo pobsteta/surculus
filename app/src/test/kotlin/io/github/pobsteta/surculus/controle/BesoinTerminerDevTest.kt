@@ -44,12 +44,31 @@ class BesoinTerminerDevTest {
     }
 
     @Test
-    fun `le libelle court retire le code et coupe a un mot entier`() {
-        assertEquals("Regarnis…", TextesControle.libelleCourt("RG", "RG - Regarnis, compléments"))
+    fun `le libelle court retire le code et ne coupe rien (la coupe aux mots se fait a l'ecran)`() {
+        assertEquals("Regarnis, compléments", TextesControle.libelleCourt("RG", "RG - Regarnis, compléments"))
         assertEquals("Aucun", TextesControle.libelleCourt("aucun", "Aucun"))
-        assertEquals("Plantation en…", TextesControle.libelleCourt("PL", "PL - Plantation en plein, placeaux, enrichissement"))
+        assertEquals("Plantation en plein, placeaux, enrichissement", TextesControle.libelleCourt("PL", "PL - Plantation en plein, placeaux, enrichissement"))
         assertEquals("", TextesControle.libelleCourt("RG", ""))
-        assertTrue(TextesControle.libelleCourt("RN", "RN - Travaux en régénération naturelle").length <= TextesControle.LIBELLE_COURT_MAX + 1)
+    }
+
+    @Test
+    fun `choisirLibelle prend le plus de mots entiers qui tiennent, avec des points de suspension seulement si coupe`() {
+        val tient = { t: String -> t.length <= 12 }
+        assertEquals("Clôture", choisirLibelle("Clôture", tient))
+        assertEquals("Entretien…", choisirLibelle("Entretien des limites (peinture, bornes)", tient))
+        assertEquals("Entretien…", choisirLibelle("Entretien de piste") { it.length <= 10 })
+        assertEquals("Dégagement…", choisirLibelle("Dégagement (manuel, mécanique)") { it.length <= 11 })
+        assertEquals("", choisirLibelle("Cloisonnement sylvicole") { false })
+    }
+
+    @Test
+    fun `choisirLibelle retire la ponctuation qui traine avant les points de suspension`() {
+        // « Plantation, » + « … » tiendrait en 12 signes : sans le retrait, la virgule resterait collée aux points.
+        assertEquals("Plantation…", choisirLibelle("Plantation, enrichissement") { it.length <= 12 })
+        assertEquals("Plantation…", choisirLibelle("Plantation; enrichissement") { it.length <= 12 })
+        assertEquals("Plantation…", choisirLibelle("Plantation: enrichissement") { it.length <= 12 })
+        assertEquals("Dégagement…", choisirLibelle("Dégagement (manuel, mécanique)") { it.length <= 12 })
+        assertEquals("Entretien…", choisirLibelle("Entretien (peinture)") { it.length <= 11 })
     }
 
     @Test
