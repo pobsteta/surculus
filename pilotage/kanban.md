@@ -123,6 +123,9 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **104** audit des gardes de rendu et de forme (`testeur`, appuyer, bilan du 2026-11-09, cause 3) : en cours.
+- **106** liste de contrôle avant relecture (`archiviste`, appuyer, bilan du 2026-11-09, cause 1) : en cours.
+
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
@@ -152,6 +155,10 @@ _Idées, à trier au prochain `/mission`._
   (pobsteta/sommieR#66), briefs envoyés, sans réponse ; session pilotée par Pascal.
 
 ## Planifié
+
+- **105** docs au niveau de la v0.7.126 (`archiviste`, appuyer, bilan du 2026-11-09) : fiche écrite, attend une place sous le plafond (PR #175 en revue).
+- **Essai en forêt** d'ici le 2026-11-15 (Pascal) : ZED-F9P avec Centipède, ouverture par le code depuis le guidage, 30 s sans fix, rendu puis import sommieR. Aucune mission d'écran d'ici là.
+- **ADR 0010** : attend de Pascal l'emplacement de la copie de la clé et le détenteur des mots de passe.
 
 _En attente sous le plafond humain (3 PR en revue)._
 
