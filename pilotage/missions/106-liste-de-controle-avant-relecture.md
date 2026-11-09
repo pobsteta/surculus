@@ -11,7 +11,7 @@ applique avant chaque relecture et avant chaque question à Pascal, pour qu'aucu
 avoir été vérifiée à sa source (cause n° 1 du bilan : 26 incidents sur 51).
 
 **Redite par l'agent :**
-- *Archiviste :* j'écris `pilotage/liste-de-controle.md`, une liste de six points au plus, chacun relié à un incident du journal et à une commande de vérification, que l'orchestrateur applique avant chaque relecture et avant chaque question à Pascal, et je la lie depuis `pilotage/equipe.md`.
+- *Archiviste :* j'écris `pilotage/liste-de-controle.md`, une liste courte (dix points au plus ; six au premier jet), chacun relié à un incident du journal et à une commande de vérification, que l'orchestrateur applique avant chaque relecture et avant chaque question à Pascal, et je la lie depuis `pilotage/equipe.md`.
 
 ## Les trois questions
 
@@ -50,7 +50,7 @@ Aucune.
 
 ## Dépend de / rouge attendu jusqu'à
 
-Aucune dépendance. Une PR, en brouillon jusqu'à la fin.
+Aucune dépendance de code. Une PR, en brouillon jusqu'à la fin. Ordre de fusion (relecture du 2026-11-09) : la PR #175 (pilotage du cycle 22) est fusionnée avant la #176, sans ajout au journal entre les deux : les lignes du journal citées par la liste n'existent que sur `pilotage/cycle-22`.
 
 ## Tests
 

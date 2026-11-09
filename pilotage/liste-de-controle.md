@@ -1,7 +1,7 @@
 # Liste de contrôle de l'orchestrateur
 
 > Mission 106. Décision de Pascal au bilan du 2026-11-09 (« Oui, la liste »), cause n° 1 du Pareto :
-> 26 incidents sur 51 sont des affirmations non vérifiées à leur source.
+> 26 incidents sur 51 sont des affirmations non vérifiées à leur source (rapport de l'`analyste`, journal l. 1149).
 > **Propriétaire :** l'orchestrateur, qui l'applique. **Mise à jour :** à chaque bilan. **Version :** 2026-11-09.
 
 ## Quand
@@ -19,13 +19,13 @@ elles ne bougent pas).
 Chaque phrase affichée à l'utilisateur et chaque chiffre du corps sont comparés au code actuel, pas à celui du premier jet.
 - *Incidents :* journal l. 800 (PR #137, corps seul à reprendre) ; l. 1113 (PR #170, corps périmé, M1) ; l. 1126 (PR #172,
   phrases à lister dans la PR) ; l. 1141-1142 (PR #174, anciens textes dans le corps).
-- *Vérifier :* `gh pr view N --json body -q .body`, puis `git diff main...HEAD` et `grep -n` de chaque phrase citée.
+- *Vérifier :* `gh pr view N --json body -q .body`, puis `gh pr diff N` (ou `git diff origin/main...origin/<branche>`, sans checkout) et `grep -n` de chaque phrase citée.
 
 ### 2. Une preuve annoncée est ouverte dans l'artefact avant d'être écrite
 
 Image, rapport ou rendu promis : on l'ouvre (téléchargé, vu) avant de l'écrire dans la fiche, le corps ou la question.
 - *Incident :* l. 1138 (PR #174, « rendu-des-ecrans » promis, le test n'écrivait aucune image) ; l. 1147 (décision de Pascal).
-- *Vérifier :* `gh run view ID --json artifacts`, puis `gh run download ID -n NOM` et ouvrir le fichier.
+- *Vérifier :* `gh api repos/pobsteta/surculus/actions/runs/ID/artifacts -q '.artifacts[].name'`, puis `gh run download ID -n NOM` et ouvrir le fichier.
 
 ### 3. La cible `adb` est vérifiée avant d'installer
 
@@ -44,7 +44,7 @@ Un constat d'agent (« une seconde ouverture », « aucun écran n'affiche... »
 
 Version, date, nombre de tests, numéro de PR.
 - *Incident :* l. 1152 (« v0.7.104 » écrit sans vérification ; la dernière release était v0.7.100).
-- *Vérifier :* `gh release list --limit 3` ; `gh pr view N` ; `date +%F` ; `git log -1 --format=%h`.
+- *Vérifier :* `gh release list --limit 3` ; `gh pr view N` ; `date +%F` ; `git log -1 --format=%h` ; nombre de tests : rapports XML `app/build/test-results/**/*.xml` (attributs `tests`, `failures`) ou la ligne Gradle « N tests completed ».
 
 ### 6. Une consigne d'essai donnée à Pascal est rejouée ou lue dans le code
 
@@ -58,7 +58,7 @@ Une marche à suivre sur le téléphone se confronte au code de l'écran concern
 Tout manquement constaté s'inscrit au journal en une ligne `écart` au format complet :
 `attendu : ... · vu : ... · décision : ...`, en citant le numéro du point de cette liste (« liste, point 4 »).
 L'`analyste` compte ces lignes au prochain bilan ; la cause n° 1 doit descendre sous 26 incidents.
-Une ligne `écart` incomplète (sans date, comme la l. 850 relevée par l'`analyste`) est difficile à compter : on l'écrit complète.
+Une ligne `écart` se compte quand elle est complète. La l. 850 du journal l'est (datée, avec attendu, vu, décision) ; son défaut, relevé par l'`analyste`, est une décision « creuser » sans échéance : la décision d'un `écart` porte une échéance ou un propriétaire.
 
 ## Ce que cette liste ne fait pas
 
