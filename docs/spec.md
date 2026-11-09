@@ -10,6 +10,15 @@
 > Établie à partir de sommieR 0.31.1 (`main`, `fd92078`), Marculus (`87f5720`), Groma
 > (`af551dc`) et nemetonshiny (`9144139`).
 
+> **Version couverte (ajout du 2026-11-09, mission 105) : v0.7.126.** Cette spec est écrite pour la tranche 1 ; ce qui est
+> livré se lit dans `pilotage/kanban.md` (colonne « Terminé » et rubrique « Livraisons »), sans copie ici. De la 084
+> à la 103 (journal du 2026-11-09), la spec **décrit** : contrôle sans position (§ 4.3, missions 085, 087, 089), `.sursync`
+> v2 (§ 4.8, 088), rendu de la tournée depuis le téléphone (§ 4.8, 090), besoin et concurrence exigés à « Terminer » et plant
+> sans état refusé (§ 4.3, 091 et 095), `referentiel_source` (§ 3, 094) et hôtes Centipède (référentiel, 097 à 099).
+> Elle **ne décrit pas, et c'est la fiche de mission qui fait foi** (décision de Pascal, 2026-11-09) : le refus de lecture d'une tournée en français (084), un
+> contrôle par placette et par jour, double appui et création atomique (100 et 101), les libellés des 15 codes à « Terminer »
+> (102), la placette introuvable en français (103). **Rien de cela n'est vérifié en forêt** (journal, 2026-11-09).
+
 ## 1. Objet
 
 Surculus est l'application Android de la **tournée travaux** (ADR 0001). Elle suit plant
