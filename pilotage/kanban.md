@@ -124,8 +124,7 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
-- **104** audit des gardes de rendu et de forme (`testeur`, appuyer, bilan du 2026-11-09, cause 3) : en cours.
-- **106** liste de contrôle avant relecture (`archiviste`, appuyer, bilan du 2026-11-09, cause 1) : en cours.
+- **104** audit des gardes de rendu et de forme (`testeur`, appuyer, bilan du 2026-11-09, cause 3) : PR #177, reprise 1/3 en relecture (57 gardes, 5 muettes corrigées).
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
@@ -157,7 +156,6 @@ _Idées, à trier au prochain `/mission`._
 
 ## Planifié
 
-- **105** docs au niveau de la v0.7.126 (`archiviste`, appuyer, bilan du 2026-11-09) : fiche écrite, attend une place sous le plafond (PR #175 en revue).
 - **Essai en forêt** d'ici le 2026-11-15 (Pascal) : ZED-F9P avec Centipède, ouverture par le code depuis le guidage, 30 s sans fix, rendu puis import sommieR. Aucune mission d'écran d'ici là.
 - **ADR 0010** : attend de Pascal l'emplacement de la copie de la clé et le détenteur des mots de passe.
 
@@ -191,6 +189,9 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **106** liste de contrôle avant relecture (`archiviste`, deux reprises, PR #176, 3cf605a) : `pilotage/liste-de-controle.md`, six points reliés à des incidents du journal, inscrite dans `CLAUDE.md` (décision de Pascal) ; point 7 (rubrique au plan) ajouté par la 105.
+- **105** docs au niveau de la v0.7.126 (`archiviste`, une reprise, PR #178, 054ac67) : README et spec avec version couverte, ADR 0003 corrigé par ajout daté, `equipe.md` de la 082 à la 106, bac à sable trié (5 retraits prouvés, le reste daté).
 
 - **103** placette introuvable en français, sans UUID (`testeur` puis `dev`, une reprise, PR #174, 843667d, v0.7.126) : « cette placette n'est pas dans la tournée : revenir en arrière et choisir une autre placette » ; au guidage sans position, « …la contrôler sans guidage, ou demander qu'elle soit positionnée dans sommieR » ; UUID au journal Android. Preuve : rendus `placette-introuvable-*` de la CI, vus par Pascal le 2026-11-09.
 
