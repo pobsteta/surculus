@@ -84,6 +84,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import io.github.pobsteta.surculus.R
+import io.github.pobsteta.surculus.messages.JournalTechnique
 import io.github.pobsteta.surculus.carte.BadgeFix
 import io.github.pobsteta.surculus.carte.Chargement
 import io.github.pobsteta.surculus.carte.PastilleDisque
@@ -279,7 +280,10 @@ fun EcranControle(id: String, placetteUuid: String, codeInitial: String = "", on
             when {
                 chargement == Chargement.EnCours -> Texte(stringResource(R.string.carte_ouverture))
                 chargement is Chargement.Refus -> Texte(stringResource(R.string.carte_refus, chargement.message), erreur = true)
-                placette == null -> Texte(stringResource(R.string.carte_refus, "placette $placetteUuid"), erreur = true)
+                placette == null -> {
+                    LaunchedEffect(placetteUuid) { JournalTechnique.diagnostic("Controle", "placette $placetteUuid absente de la tournée $id") }
+                    Texte(stringResource(R.string.carte_refus, stringResource(R.string.carte_placette_introuvable)), erreur = true)
+                }
                 rendue -> Texte(stringResource(R.string.controle_tournee_rendue))
                 else -> when (val a = arrivee) {
                     is EtatArrivee.Moyenne -> VueArrivee(a, code, onCode = { code = it }, onRecommencer = null)

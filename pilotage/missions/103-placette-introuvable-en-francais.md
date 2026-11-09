@@ -12,7 +12,7 @@ dessus en forêt sache revenir à la liste et quoi demander, comme les refus de 
 
 **Redite par l'agent :**
 - *Testeur :* écrire, sans lire le code des écrans, des tests Robolectric qui ouvrent le guidage (placette absente, puis placette sans position) et le contrôle (placette absente) sur une vraie tournée d'essai, et qui échouent tant que le refus affiché, préfixe compris, montre un UUID, met une majuscule après « : » ou ne dit pas quoi faire.
-- *Dev :* _à remplir_
+- *Dev (2026-11-09) :* ma mission est de remplacer, au guidage et au contrôle, le refus « Carte impossible : placette <uuid> » par une phrase française en minuscule qui dit quoi faire, sans UUID (mis au journal Android), pour que le forestier sache revenir à la liste, et de rendre verts les tests du `testeur` sans les modifier.
 
 ## Les trois questions (règle de staffing)
 
