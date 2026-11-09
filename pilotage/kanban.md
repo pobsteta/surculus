@@ -24,10 +24,6 @@
 - **ADR 0003** : l'en-tête et le paragraphe `.sursync` disent encore « codé par la 086 » ; le découpage 086 / 087 / 088
   est à y reprendre (`archiviste`).
 
-- **084** (fiche écrite le 2026-11-08, cycle 21, en cours) : les autres refus de la lecture d'une tournée encore
-  techniques à l'écran (`ReferentielSpatialInconnu` avec `srs_id` et `gpkg_spatial_ref_sys`, `Referentiel` EPSG,
-  `CoucheAbsente` avec majuscule, `PointHorsFrance` aux coordonnées brutes), même règle que la 082 ; fiche à écrire
-  (`testeur` puis `dev`).
 - **« Carte impossible : placette <uuid> »** (`EcranGuidage:107`, `EcranControle:193`, relecture de la 082) : UUID à
   l'écran.
 - **Test de la 082** : `gabarit()` ne lit que `strings_tournees.xml`, d'où le doublon `carte_recepteur_service_interrompu`
@@ -189,6 +185,8 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **084** refus de lecture d'une tournée en français (`testeur` puis `dev`, une reprise, PR #172, a0d6f66, v0.7.124) : repère, couche absente, point hors de France, chacun avec la consigne « demander à celui qui l'a préparée de l'exporter de nouveau depuis sommieR » ; détail technique au journal Android seul. Capturé le 2026-11-09 sur le téléphone : tournée en EPSG:4326 refusée « (Lambert-93 attendu) ».
 
 - **102** libellés des codes lisibles à « Terminer » (`testeur` puis `afficheur`, tenir, plan d'abord, PR #170, 418a625, v0.7.122) : rectangles à coins de 12 dp, labelSmall seul (« Pas de 10 sp »), mots entiers, « CL » seul debout ; garde de forme sur l'image rendue (une reprise). Capturé le 2026-11-08 debout et couché sur P35-01 ; DG « Dégagement / (manuel… » et RN « Travaux en… » gardés ainsi par Pascal.
 
