@@ -32,6 +32,7 @@ class ThemeEnListeTest {
         assertTrue(source.contains("DropdownMenuItem(") && source.contains("heightIn(min = 48.dp)"))
         // Garde muette de la 104 : « heightIn(min = 48.dp) » est écrit ailleurs dans le fichier ; un item du menu ou la ligne qui
         // l'ouvre ramenés sous 48 dp passaient. On juge donc le voisinage de chacun.
+        // Fragile : les fenêtres de 120 et 80 caractères cassent si le fichier est reformaté (modifier, ligne ou arguments déplacés).
         val item = source.indexOf("DropdownMenuItem(")
         assertTrue("heightIn(min = 48.dp)" in source.substring(item, item + 120), "l'item du menu doit faire 48 dp au moins")
         val ouvre = source.indexOf(".clickable(role = Role.DropdownList)")
