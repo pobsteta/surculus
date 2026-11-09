@@ -24,8 +24,6 @@
 - **ADR 0003** : l'en-tête et le paragraphe `.sursync` disent encore « codé par la 086 » ; le découpage 086 / 087 / 088
   est à y reprendre (`archiviste`).
 
-- **103** (fiche écrite le 2026-11-09, cycle 22, en cours) : « Carte impossible : placette <uuid> » remplacé par une
-  phrase française sans UUID (`EcranGuidage.kt:127`, `EcranControle.kt:282`) ; `testeur` puis `dev`, appuyer.
 - **Test de la 082** : `gabarit()` ne lit que `strings_tournees.xml`, d'où le doublon `carte_recepteur_service_interrompu`
   / `rtk_service_interrompu` ; le faire lire les deux fichiers (`testeur`), puis une seule ressource. La carte reconnaît
   l'interruption par son texte (`DEBUT_SERVICE_INTERROMPU`) : un indicateur dans `EtatRtk` serait plus solide.
@@ -125,6 +123,9 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **104** audit des gardes de rendu et de forme (`testeur`, appuyer, bilan du 2026-11-09, cause 3) : en cours.
+- **106** liste de contrôle avant relecture (`archiviste`, appuyer, bilan du 2026-11-09, cause 1) : en cours.
+
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
   allumé et choisi dans Paramètres ; « pas maintenant », Pascal, 2026-10-30) ; puis essai ganté de
   Pascal (112 ou 96 dp au contrôle ; boutons de carte de 40 à 48 dp depuis la 078, v0.7.95). Vus le 2026-10-30 sur v0.7.88 : 059, 074 « 10,0 km », 052 erreur sur la carte,
@@ -154,6 +155,10 @@ _Idées, à trier au prochain `/mission`._
   (pobsteta/sommieR#66), briefs envoyés, sans réponse ; session pilotée par Pascal.
 
 ## Planifié
+
+- **105** docs au niveau de la v0.7.126 (`archiviste`, appuyer, bilan du 2026-11-09) : fiche écrite, attend une place sous le plafond (PR #175 en revue).
+- **Essai en forêt** d'ici le 2026-11-15 (Pascal) : ZED-F9P avec Centipède, ouverture par le code depuis le guidage, 30 s sans fix, rendu puis import sommieR. Aucune mission d'écran d'ici là.
+- **ADR 0010** : attend de Pascal l'emplacement de la copie de la clé et le détenteur des mots de passe.
 
 _En attente sous le plafond humain (3 PR en revue)._
 
@@ -185,6 +190,8 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **103** placette introuvable en français, sans UUID (`testeur` puis `dev`, une reprise, PR #174, 843667d, v0.7.126) : « cette placette n'est pas dans la tournée : revenir en arrière et choisir une autre placette » ; au guidage sans position, « …la contrôler sans guidage, ou demander qu'elle soit positionnée dans sommieR » ; UUID au journal Android. Preuve : rendus `placette-introuvable-*` de la CI, vus par Pascal le 2026-11-09.
 
 - **084** refus de lecture d'une tournée en français (`testeur` puis `dev`, une reprise, PR #172, a0d6f66, v0.7.124) : repère, couche absente, point hors de France, chacun avec la consigne « demander à celui qui l'a préparée de l'exporter de nouveau depuis sommieR » ; détail technique au journal Android seul. Capturé le 2026-11-09 sur le téléphone : tournée en EPSG:4326 refusée « (Lambert-93 attendu) ».
 
@@ -451,3 +458,19 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   France), le message est en français et dit quoi faire : demander une nouvelle exportation depuis sommieR (084,
   v0.7.124, capturé le 2026-11-09) · pour le forestier qui ouvre une tournée sans réseau · avant, des codes EPSG, des
   `srs_id` et des coordonnées brutes à l'écran. *(Retenue par Pascal le 2026-11-09 : « Oui, telle quelle ».)*
+- cycle 22 · quand la placette demandée manque à la tournée ou n'a pas de position, le guidage et le contrôle disent en
+  français quoi faire (revenir en arrière et choisir une autre placette, ou la contrôler sans guidage, ou demander
+  qu'elle soit positionnée dans sommieR), sans l'identifiant technique (103, v0.7.126, rendus de la CI vus le
+  2026-11-09) · pour le forestier en forêt · avant, « Carte impossible : placette 3f2a9c1e-… ». Mauvaise nouvelle
+  jointe : la preuve promise par la fiche (rendus de la CI) n'existait pas au premier passage, et l'orchestrateur a
+  d'abord installé la release sur l'émulateur sans vérifier la cible ; ce qu'elle nous apprend : une preuve annoncée se
+  vérifie dans l'artefact avant la relecture. *(Retenue par Pascal le 2026-11-09 : « Oui, avec la mauvaise nouvelle ».)*
+- bilan du 2026-11-09 · depuis le 30 octobre, la boucle est fermée : le forestier rend sa tournée depuis le téléphone
+  et sommieR la réimporte (aller-retour prouvé le 2026-11-06 sur une copie de base) ; il peut ouvrir un contrôle sans
+  position sous couvert, n'ouvre qu'un contrôle par placette et par jour, et lit en français les libellés et les refus
+  (v0.7.100 → v0.7.126) · pour le forestier et pour sommieR · de plus que le bilan du 30 octobre (contrôle sans regarder
+  l'écran) : les données reviennent dans sommieR. Mauvaise nouvelle jointe : rien n'a été vérifié en forêt, le ZED-F9P
+  attend depuis le 16 octobre, et 51 % des échecs viennent d'affirmations non vérifiées à la source (7 de
+  l'orchestrateur) ; ce qu'elle nous apprend : le terrain d'abord, d'ici le 2026-11-15, et vérifier à la source avant
+  d'écrire. *(Retenue par Pascal le 2026-11-09 : « Oui, avec la mauvaise nouvelle » ; « v0.7.104 » de la question
+  corrigé en v0.7.100.)*
