@@ -44,7 +44,7 @@ Un constat d'agent (« une seconde ouverture », « aucun écran n'affiche... »
 
 Version, date, nombre de tests, numéro de PR.
 - *Incident :* l. 1152 (« v0.7.104 » écrit sans vérification ; la dernière release était v0.7.100).
-- *Vérifier :* `gh release list --limit 3` ; `gh pr view N` ; `date +%F` ; `git log -1 --format=%h` ; nombre de tests : rapports XML `app/build/test-results/**/*.xml` (attributs `tests`, `failures`) ou la ligne Gradle « N tests completed ».
+- *Vérifier :* `gh release list --limit 3` ; `gh pr view N` ; `date +%F` ; `git log -1 --format=%h` ; nombre de tests : rapports XML `*/build/test-results/**/*.xml` (tous les modules : core, gpkg, data, app) (attributs `tests`, `failures`) ou la ligne Gradle « N tests completed ».
 
 ### 6. Une consigne d'essai donnée à Pascal est rejouée ou lue dans le code
 
