@@ -7,17 +7,14 @@
 
 ## Bac à sable
 
+- **Mineurs de la 084** (relecture de la #172, « Bac à sable », Pascal, 2026-11-08) : critère d'action lexical du test (`RefusDeLectureEnFrancaisTest.kt:42`, passerait sans la consigne) ; « latitude et longitude semblent inversées » pour des x/y Lambert-93 (`Refus.kt:57`, comme `FautesDuRendu.kt:32`) ; détail technique entre crochets (`GpkgRefuse`) ou parenthèses (`Resultat.kt:28`).
 - **Deux sessions vivantes de la même placette** (relecture de la #168, « Bac à sable », Pascal, 2026-11-07) : un même plant dit en même temps peut avoir deux lignes `etat` (`SessionControle.ecrireObservation`, `existant` lu hors verrou ; vérifié) ; un besoin ou une concurrence en attente peuvent se perdre si l'autre session crée le contrôle (non vérifié). Rares depuis le verrou d'écran de la 100.
 
 - **Référentiel Centipède, l. 6** (relecture de la #165) : « Rien n'est tranché ici » contredit la décision inscrite l. 63 ; à aligner par l'`acquereur`.
 - **Mineurs de la 089** (relecture de la #162) : confirmation du guidage perdue à la rotation ; `debutSansFix` écrit pendant la composition ; vue sans fix de l'écran de contrôle sans test de rendu ; double appui sur « Ouvrir sans position » (déjà dans la 087).
 
-- **Libellés des codes rognés** (091, v0.7.109) : dans la grille « Terminer », la seconde ligne du libellé est coupée par le
-  bord du cercle (« Préparation / du… », « Cloisonneme / nt… »). Une ligne seule, ou une coupe aux mots.
 
 
-- **089** ouvrir sans position depuis le guidage (« Contrôler » et le code n'y viennent qu'avec un fix) : décision de
-  Pascal du 2026-11-03, mission à part après la 088, avant l'essai en forêt ; fiche à écrire.
 
 - **Parcelle de la placette** (relecture de la 086, « sans parcelle pour l'instant », Pascal, 2026-11-02) : `placettes`
   ne porte pas la parcelle ; à demander à sommieR (une colonne), pas à deviner par jointure. La confirmation de la 087
@@ -27,12 +24,8 @@
 - **ADR 0003** : l'en-tête et le paragraphe `.sursync` disent encore « codé par la 086 » ; le découpage 086 / 087 / 088
   est à y reprendre (`archiviste`).
 
-- **084** (décision de Pascal, 2026-11-02, relecture de la 082) : les autres refus de la lecture d'une tournée encore
-  techniques à l'écran (`ReferentielSpatialInconnu` avec `srs_id` et `gpkg_spatial_ref_sys`, `Referentiel` EPSG,
-  `CoucheAbsente` avec majuscule, `PointHorsFrance` aux coordonnées brutes), même règle que la 082 ; fiche à écrire
-  (`testeur` puis `dev`).
-- **« Carte impossible : placette <uuid> »** (`EcranGuidage:107`, `EcranControle:193`, relecture de la 082) : UUID à
-  l'écran.
+- **103** (fiche écrite le 2026-11-09, cycle 22, en cours) : « Carte impossible : placette <uuid> » remplacé par une
+  phrase française sans UUID (`EcranGuidage.kt:127`, `EcranControle.kt:282`) ; `testeur` puis `dev`, appuyer.
 - **Test de la 082** : `gabarit()` ne lit que `strings_tournees.xml`, d'où le doublon `carte_recepteur_service_interrompu`
   / `rtk_service_interrompu` ; le faire lire les deux fichiers (`testeur`), puis une seule ressource. La carte reconnaît
   l'interruption par son texte (`DEBUT_SERVICE_INTERROMPU`) : un indicateur dans `EtatRtk` serait plus solide.
@@ -192,6 +185,8 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **084** refus de lecture d'une tournée en français (`testeur` puis `dev`, une reprise, PR #172, a0d6f66, v0.7.124) : repère, couche absente, point hors de France, chacun avec la consigne « demander à celui qui l'a préparée de l'exporter de nouveau depuis sommieR » ; détail technique au journal Android seul. Capturé le 2026-11-09 sur le téléphone : tournée en EPSG:4326 refusée « (Lambert-93 attendu) ».
 
 - **102** libellés des codes lisibles à « Terminer » (`testeur` puis `afficheur`, tenir, plan d'abord, PR #170, 418a625, v0.7.122) : rectangles à coins de 12 dp, labelSmall seul (« Pas de 10 sp »), mots entiers, « CL » seul debout ; garde de forme sur l'image rendue (une reprise). Capturé le 2026-11-08 debout et couché sur P35-01 ; DG « Dégagement / (manuel… » et RN « Travaux en… » gardés ainsi par Pascal.
 
@@ -452,3 +447,7 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   la consigne de l'orchestrateur pour l'essai du double appui était fausse (couper la localisation) ; ce qu'elle nous
   apprend : une garde n'est prouvée que vue rouge. *(Retenue par Pascal le 2026-11-08 : « Oui, avec la mauvaise
   nouvelle ».)*
+- cycle 21 · quand une tournée est refusée à l'import (repère autre que Lambert-93, couche manquante, position hors de
+  France), le message est en français et dit quoi faire : demander une nouvelle exportation depuis sommieR (084,
+  v0.7.124, capturé le 2026-11-09) · pour le forestier qui ouvre une tournée sans réseau · avant, des codes EPSG, des
+  `srs_id` et des coordonnées brutes à l'écran. *(Retenue par Pascal le 2026-11-09 : « Oui, telle quelle ».)*
