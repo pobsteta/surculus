@@ -33,6 +33,7 @@ cavalière. **Pascal garde les rênes, la décision et l'effort.**
 | Les missions | `pilotage/missions/NNN-titre.md` (gabarit : `fiche-mission.md` du skill `imperatrice:mission`) |
 | Les décisions d'architecture | `docs/adr/NNNN-titre.md` (gabarit : `adr-france.md` du skill `imperatrice:brief`) |
 | L'avancement | `pilotage/kanban.md` |
+| La liste de contrôle avant relecture et avant question | `pilotage/liste-de-controle.md` |
 | La mémoire du projet | `pilotage/journal.md` — **ajout seul, on n'efface jamais** |
 | Les messages aux autres dépôts | `pilotage/briefs/vers-*/` (source), envoyés par issue et par note dans `~/dev/briefs/vers-<cible>/` |
 | Les codes travaux et référentiels | `docs/referentiels/` |
@@ -68,6 +69,7 @@ Un lien plutôt qu'une copie. Si une information existe à deux endroits, l'un d
 - **Le `relecteur` relit chaque PR** avant que Pascal la voie.
 - Si un agent revient avec une question de sens ou de périmètre : tu ne tranches pas, tu
   la poses à Pascal.
+- **Liste de contrôle** : l'orchestrateur applique `pilotage/liste-de-controle.md` avant chaque relecture, chaque question à Pascal et chaque livraison ; un manquement s'inscrit en ligne `écart` au journal (décision du bilan du 2026-11-09).
 
 ## Dire tout de suite
 
