@@ -447,3 +447,7 @@ imperatrice 0.3.0) : les cycles 1 à 8 ne sont pas inscrits rétroactivement._
   la consigne de l'orchestrateur pour l'essai du double appui était fausse (couper la localisation) ; ce qu'elle nous
   apprend : une garde n'est prouvée que vue rouge. *(Retenue par Pascal le 2026-11-08 : « Oui, avec la mauvaise
   nouvelle ».)*
+- cycle 21 · quand une tournée est refusée à l'import (repère autre que Lambert-93, couche manquante, position hors de
+  France), le message est en français et dit quoi faire : demander une nouvelle exportation depuis sommieR (084,
+  v0.7.124, capturé le 2026-11-09) · pour le forestier qui ouvre une tournée sans réseau · avant, des codes EPSG, des
+  `srs_id` et des coordonnées brutes à l'écran. *(Retenue par Pascal le 2026-11-09 : « Oui, telle quelle ».)*
