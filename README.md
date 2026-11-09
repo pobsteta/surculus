@@ -17,7 +17,7 @@ l'autre, et relève les travaux faits, pour les rendre au sommier forestier (som
 > **État : en développement (tranche 1). Version couverte par ce texte : v0.7.126, 2026-11-09.**
 > La boucle est fermée au bureau : l'agent contrôle une placette sans regarder l'écran (voix, volume, micro),
 > l'ouvre aussi sans position sous couvert, et rend sa tournée depuis le téléphone ; sommieR la réimporte
-> (aller-retour prouvé le 2026-11-06 sur une copie de base). Les écrans disent leurs refus en français.
+> (aller-retour prouvé le 2026-11-06 sur une copie de base). Les refus de lecture, d'export et de placette introuvable sont dits en français (missions 082, 084 et 103).
 > **Mauvaise nouvelle : rien n'a encore été vérifié en forêt** (le ZED-F9P attend depuis le 2026-10-16 ; essai en forêt
 > décidé par Pascal d'ici le 2026-11-15, journal du 2026-11-09). **Ce qui est livré, en cours ou planifié se lit dans
 > [`pilotage/kanban.md`](pilotage/kanban.md)** (colonnes et rubrique « Livraisons »), seule source de l'avancement ;

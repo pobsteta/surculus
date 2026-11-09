@@ -53,6 +53,12 @@ Une marche à suivre sur le téléphone se confronte au code de l'écran concern
   `ArriveeSansPosition.kt:41-42`).
 - *Vérifier :* lire le fichier cité, suivre la consigne pas à pas sur l'émulateur ou dans le code.
 
+### 7. Une fiche d'écran porte ses textes décidés avant d'être confiée
+
+Avant de confier une mission d'écran : la rubrique « textes et bornes décidés au plan » est présente et tranchée par Pascal.
+- *Incident :* journal, PR #174 (103), phrases tranchées par Pascal en relecture, après le code (l. 1139).
+- *Vérifier :* `grep -n "textes et bornes" pilotage/missions/NNN-*.md`, puis la décision de Pascal au journal.
+
 ## Comment le bilan compte les manquements
 
 Tout manquement constaté s'inscrit au journal en une ligne `écart` au format complet :

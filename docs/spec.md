@@ -15,7 +15,7 @@
 > à la 103 (journal du 2026-11-09), la spec **décrit** : contrôle sans position (§ 4.3, missions 085, 087, 089), `.sursync`
 > v2 (§ 4.8, 088), rendu de la tournée depuis le téléphone (§ 4.8, 090), besoin et concurrence exigés à « Terminer » et plant
 > sans état refusé (§ 4.3, 091 et 095), `referentiel_source` (§ 3, 094) et hôtes Centipède (référentiel, 097 à 099).
-> Elle **ne décrit pas encore**, la fiche de mission faisant foi : le refus de lecture d'une tournée en français (084), un
+> Elle **ne décrit pas, et c'est la fiche de mission qui fait foi** (décision de Pascal, 2026-11-09) : le refus de lecture d'une tournée en français (084), un
 > contrôle par placette et par jour, double appui et création atomique (100 et 101), les libellés des 15 codes à « Terminer »
 > (102), la placette introuvable en français (103). **Rien de cela n'est vérifié en forêt** (journal, 2026-11-09).
 

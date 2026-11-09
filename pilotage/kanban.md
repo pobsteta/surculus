@@ -10,7 +10,7 @@
 _Trié et daté le 2026-11-09 (mission 105, `archiviste`). « Revérifié » = relu dans le code de `main` ce jour-là, avec
 `fichier:ligne` ; « non revérifié » = gardé tel quel, à vérifier avant d'en faire une question. Les entrées qui dépendent de
 Pascal ou d'un autre dépôt sont gardées. Retirées ce jour-là (preuves dans la PR de la 105) : thème Système / Clair / Sombre,
-mineurs de la 074, contrôles d'intégrité de l'export, état « rendue » et nombre de saisies de la liste (dette de la 011),
+mineurs de la 074 (affichage non vu à l'écran), contrôles d'intégrité de l'export,
 double appui (mineurs de la 089), renvoi de l'ADR 0003 au « codé par la 086 »._
 
 - **Mineurs de la 084** (relecture de la #172, « Bac à sable », Pascal, 2026-11-08) : critère d'action lexical du test (`RefusDeLectureEnFrancaisTest.kt:42`, passerait sans la consigne) ; « latitude et longitude semblent inversées » pour des x/y Lambert-93 (`Refus.kt:57`, comme `FautesDuRendu.kt:32`) ; détail technique entre crochets (`GpkgRefuse`) ou parenthèses (`Resultat.kt:28`). *(Revérifié 2026-11-09 : test lexical `RefusDeLectureEnFrancaisTest.kt:42`, message `Refus.kt:57`, parenthèses `Resultat.kt:27-28`.)*
@@ -77,8 +77,11 @@ _Idées, à trier au prochain `/mission`._
   permission `WRITE_EXTERNAL_STORAGE` est demandée par la 012-B1, la sauvegarde est
   branchée sur les saisies par la 012-A).
 
-- **Dettes de la 011** : l'essai sur téléphone est sur la carte « terrain avant la 012 ». *(L'état « rendue » et le nombre
-  de saisies de la liste des tournées, autre dette de la 011, sont retirés le 2026-11-09 : `DepotTournees.kt:143`, `EtatKanban.kt:34-48`.)*
+- **Dettes de la 011** : état « rendue » et nombre de saisies dans la liste des tournées (export, 032) ; l'essai sur
+  téléphone est sur la carte « terrain avant la 012 ». *(Revérifié 2026-11-09 : la vue en colonnes est faite,
+  `VueKanban.kt:55` et `:167` ; la vue en liste ne l'est pas : `EcranTournees.kt:363` écrit `tournees_saisies` avec
+  `t.controles.size`, `strings_tournees.xml:59` = « %1$d contrôles prévus · ouverte » en dur, même sous le filtre
+  « Rendues », `EcranTournees.kt:180`.)*
 - **Référentiels** : lire le JORF du 10/10/2026 (textes 7 et 8) avant de chiffrer avec le
   barème 2024 (« en vigueur NON vérifié »).
 - **Tests (relecture de la 027)** : une seule emprise France, celle de la spec § 10.9
@@ -87,7 +90,7 @@ _Idées, à trier au prochain `/mission`._
   (`testeur`). *(Revérifié 2026-11-09 : le code est absent de `fixtures/README.md`.)*
 - **Emprise France** : y min vaut 6 005 294,71 dans le code (PROJ, densify 50) et
   6 005 281,2 dans `fixtures/acceptation-export/repere-et-france.json` (epsg.io), soit
-  13,5 m d'écart, sans effet sur le test de la Corse ; laquelle fait foi (Pascal) ? *(Revérifié 2026-11-09 : `PointLambert93.kt:50` = 6 005 294,71 ; `repere-et-france.json:249` = 6005281.2 ; les deux restent différents.)*
+  13,5 m d'écart, sans effet sur le test de la Corse ; laquelle fait foi (Pascal) ? *(Revérifié 2026-11-09 : `PointLambert93.kt:49` = 6 005 294,71 ; `repere-et-france.json:249` = 6005281.2 ; les deux restent différents.)*
 - **Carte, après la 012** : l'état d'une placette contrôlée pendant la tournée, « mission
   à part, après 012 » (Pascal, 2026-10-22 ; l'option proposait de faire primer l'état local
   sur `etat_suivi`) ; travaux et vides au bac à sable (Pascal, même jour), à dessiner quand
