@@ -1142,3 +1142,4 @@
 2026-11-09 · orchestrateur · PR #174 · corps de PR réécrit (textes actuels, décisions, rendus) ; fiche complétée (185cffe) ; `relecteur` relancé sur ces deux points.
 2026-11-09 · relecteur · PR #174 · 103 après reprise 1/3 (185cffe) : corps de PR et fiche conformes au code, CI verte ; fusionnable. PR sortie du brouillon.
 2026-11-09 · Pascal · PR #174 · « Fusionner » : mission 103 fusionnée (843667d).
+2026-11-09 · orchestrateur · mission 103 · release v0.7.126 publiée (843667d). Téléphone débranché : seul l'émulateur était vu par adb, la release y a été installée par erreur de cible (sans effet). Installation sur le téléphone à faire au prochain branchement.

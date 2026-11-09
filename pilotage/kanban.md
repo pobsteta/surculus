@@ -24,8 +24,6 @@
 - **ADR 0003** : l'en-tête et le paragraphe `.sursync` disent encore « codé par la 086 » ; le découpage 086 / 087 / 088
   est à y reprendre (`archiviste`).
 
-- **103** (fiche écrite le 2026-11-09, cycle 22, en cours) : « Carte impossible : placette <uuid> » remplacé par une
-  phrase française sans UUID (`EcranGuidage.kt:127`, `EcranControle.kt:282`) ; `testeur` puis `dev`, appuyer.
 - **Test de la 082** : `gabarit()` ne lit que `strings_tournees.xml`, d'où le doublon `carte_recepteur_service_interrompu`
   / `rtk_service_interrompu` ; le faire lire les deux fichiers (`testeur`), puis une seule ressource. La carte reconnaît
   l'interruption par son texte (`DEBUT_SERVICE_INTERROMPU`) : un indicateur dans `EtatRtk` serait plus solide.
@@ -185,6 +183,8 @@ _En attente sous le plafond humain (3 PR en revue)._
   détient les mots de passe, puis l'ADR 0010.
 
 ## Terminé
+
+- **103** placette introuvable en français, sans UUID (`testeur` puis `dev`, une reprise, PR #174, 843667d, v0.7.126) : « cette placette n'est pas dans la tournée : revenir en arrière et choisir une autre placette » ; au guidage sans position, « …la contrôler sans guidage, ou demander qu'elle soit positionnée dans sommieR » ; UUID au journal Android. Preuve : rendus `placette-introuvable-*` de la CI, vus par Pascal le 2026-11-09.
 
 - **084** refus de lecture d'une tournée en français (`testeur` puis `dev`, une reprise, PR #172, a0d6f66, v0.7.124) : repère, couche absente, point hors de France, chacun avec la consigne « demander à celui qui l'a préparée de l'exporter de nouveau depuis sommieR » ; détail technique au journal Android seul. Capturé le 2026-11-09 sur le téléphone : tournée en EPSG:4326 refusée « (Lambert-93 attendu) ».
 
