@@ -104,3 +104,7 @@ n° 2 : l'état à jour des missions est dans `kanban.md`.
 Hors équipe, au Planifié : ADR 0010 (attend la sauvegarde de la clé par Pascal), 049, photos (mesures sur appareil),
 tranche 3 (date de plantation), 010 et 014 (moyens).
 
+## Liste de contrôle de l'orchestrateur (bilan du 2026-11-09, décision de Pascal)
+
+Avant chaque relecture et chaque question à Pascal : [`liste-de-controle.md`](liste-de-controle.md). Les manquements
+s'inscrivent au journal en ligne `écart` et sont comptés au bilan.
