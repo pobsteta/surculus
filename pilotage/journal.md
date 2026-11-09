@@ -1143,3 +1143,4 @@
 2026-11-09 · relecteur · PR #174 · 103 après reprise 1/3 (185cffe) : corps de PR et fiche conformes au code, CI verte ; fusionnable. PR sortie du brouillon.
 2026-11-09 · Pascal · PR #174 · « Fusionner » : mission 103 fusionnée (843667d).
 2026-11-09 · orchestrateur · mission 103 · release v0.7.126 publiée (843667d). Téléphone débranché : seul l'émulateur était vu par adb, la release y a été installée par erreur de cible (sans effet). Installation sur le téléphone à faire au prochain branchement.
+2026-11-09 · orchestrateur · mission 103 · v0.7.126 installée sur le téléphone (R5CW51BZA2W), l'application s'ouvre ; pas de capture du refus (cas non provoquable), preuve : rendus de la CI.
