@@ -101,7 +101,7 @@ n° 2 : l'état à jour des missions est dans `kanban.md`.
 | [080](missions/080-test-de-rendu-des-ecrans.md) Test de rendu des écrans | `afficheur` | sonnet | tenir (plan d'abord) | non à la 2e, partiel à la 3e (outil de test Compose absent de `app`) |
 | [081](missions/081-aucun-texte-technique-a-l-ecran.md) Aucun texte technique à l'écran | `testeur` puis `dev` | sonnet | appuyer | 3 oui |
 
-Hors équipe, au Planifié : ADR 0010 (clé « sauvegardée » selon Pascal, journal du 2026-11-09 ; attend l'emplacement de la copie et le détenteur des mots de passe), 049, photos (mesures sur appareil),
+Hors équipe, au Planifié : ADR 0010 (proposée, PR #180 ; attend les actions de Pascal, journal du 2026-11-10), 049, photos (mesures sur appareil),
 tranche 3 (date de plantation), 010 et 014 (moyens).
 
 ## Missions de la 082 à la 106 (ajout du 2026-11-09, mission 105)
