@@ -113,13 +113,13 @@ En plus, deux mutations sont restées vertes sans que la garde soit muette (M8, 
 | 37 | `BancRenduTest` : l'effet reprend sur le fil principal | L1 | rouge |
 | 38-40 | `RenduCarteTest` : boutons au moins au plancher, position et recouvrement, la carte ne déborde pas du bandeau | N2, N3, N1 | rouges |
 | 41-45 | `RenduLibellesCodesTerminerTest` : coins de 12 dp lus sur l'image, 4 codes par ligne, libellés dans un bouton assez haut, code en gros, aucun mot coupé | P1, P2, P3, P4, P6 | rouges |
-| 57 | `RenduLibellesCodesTerminerTest` : libellé non rogné en hauteur (`didOverflowHeight`) | P5 | **muette** (corrigée, P5c) |
 | 46-53 | `RenduControleTest` : bloc d'écoute effacé après `DUREE_BANDEAU_MS`, appui absorbé, lignes non tronquées, cadre et bornes du bloc, « Mode poche » vu, bloc sur le haut du pied, bande de poche après défilement, recouvrements en mode normal | M1, M2, M3/M4, M5/M6/M7, M9, M10, M12, M13 | rouges |
 | 54 | `RenduGuidageSansPositionTest` cas 9 : le bouton « Ouvrir sans position » est vu (poussé hors de l'écran) | O2 | rouge |
 | 55 | `RenduGuidageSansPositionTest` cas 9 : le bouton est vu **en entier** (pas rogné en partie) | O1 | **muette** (corrigée, O1c) |
 | 56 | `RenduPlacetteIntrouvableTest` et `PlacetteIntrouvableEnFrancaisTest` : le refus est affiché | Q1 | rouge |
+| 57 | `RenduLibellesCodesTerminerTest` : libellé non rogné en hauteur (`didOverflowHeight`) | P5 | **muette** (corrigée, P5c) |
 
-### Les gardes muettes (à trancher par Pascal : garder, corriger ou retirer)
+### Les gardes muettes (tranchées par Pascal le 2026-11-10, voir « Décisions de Pascal »)
 
 1. **Garde 7, réserve du plan couché** (`DispositionControleTest.kt:16`). La garde compare le côté du plan à `360 - RESERVE_HAUTEUR_PLAN_DP`,
    c'est-à-dire à la constante qu'elle devrait surveiller : mise à 0 (B2), elle reste verte. Correctif proposé et commité : une borne écrite en
@@ -202,8 +202,8 @@ En plus, deux mutations sont restées vertes sans que la garde soit muette (M8, 
 | P2 | `RenduLibellesCodesTerminerTest.kt:312` — code en gros et 4 par ligne debout en plein ecran | `FormesEtat.kt:65` : `const val CODES_PAR_LIGNE = 4` → `const val CODES_PAR_LIGNE = 3` | **rouge** (2) échecs | `RenduLibellesCodesTerminerTest > code en gros et 4 par ligne debout en plein ecran FAILED` → `AssertionError at RenduLibellesCodesTerminerTest.kt:312` |
 | P3 | `RenduLibellesCodesTerminerTest.kt:287` — libelles des 15 codes couche en plein ecran - mots entiers, rien de rogne | `FormesEtat.kt:64` : `val BOUTON_CODE = 80.dp` → `val BOUTON_CODE = 52.dp` | **rouge** (5) échecs | `RenduLibellesCodesTerminerTest > libelles des 15 codes couche en plein ecran - mots entiers, rien de rogne FAILED` → `AssertionError at RenduLibellesCodesTerminerTest.kt:287` |
 | P4 | `RenduLibellesCodesTerminerTest.kt:312` — code en gros et 4 par ligne debout en plein ecran | `EcranControle.kt:885` : `Text(c.code, style = MaterialTheme.typography.titleLarge, m…` → `Text(c.code, style = MaterialTheme.typography.titleSmall, m…` | **rouge** (4) échecs | `RenduLibellesCodesTerminerTest > code en gros et 4 par ligne debout en plein ecran FAILED` → `AssertionError at RenduLibellesCodesTerminerTest.kt:312` |
-| P5 | `RenduLibellesCodesTerminerTest.kt` — libellés non rognés en hauteur (aucune assertion) | `EcranControle.kt:926` : `if (texte.isNotEmpty()) Text(texte, style = base, maxLines …` → `if (texte.isNotEmpty()) Text(texte, style = base, maxLines …` | **MUETTE** (vert) | `BUILD SUCCESSFUL` (aucun échec) |
-| P5c | `RenduLibellesCodesTerminerTest.kt` — libelles des 15 codes … mots entiers, rien de rogne | `EcranControle.kt:926` : `if (texte.isNotEmpty()) Text(texte, style = base, maxLines …` → `if (texte.isNotEmpty()) Text(texte, style = base, maxLines …` | **rouge** (5 échecs) | `RenduLibellesCodesTerminerTest > libelles des 15 codes couche en plein ecran - mots entiers, rien de rogne FAILED` |
+| P5 | `RenduLibellesCodesTerminerTest.kt:257` — libellés non rognés en hauteur (`didOverflowHeight`, aucune assertion avant correction) | `EcranControle.kt:926` : `if (texte.isNotEmpty()) Text(texte, style = base, maxLines …` → `if (texte.isNotEmpty()) Text(texte, style = base, maxLines …` | **MUETTE** (vert) | `BUILD SUCCESSFUL` (aucun échec) |
+| P5c | `RenduLibellesCodesTerminerTest.kt:290` — libelles des 15 codes … mots entiers, rien de rogne | `EcranControle.kt:926` : `if (texte.isNotEmpty()) Text(texte, style = base, maxLines …` → `if (texte.isNotEmpty()) Text(texte, style = base, maxLines …` | **rouge** (5) échecs | `RenduLibellesCodesTerminerTest > libelles des 15 codes couche en plein ecran - mots entiers, rien de rogne FAILED` |
 | P6 | `RenduLibellesCodesTerminerTest.kt:287` — libelles des 15 codes debout sans plein ecran - mots entiers, rien de rogne | `EcranControle.kt:922` : `fin in 1 until plein.length && plein[fin - 1].isLetterOrDig…` → `false` | **rouge** (3) échecs | `RenduLibellesCodesTerminerTest > libelles des 15 codes debout sans plein ecran - mots entiers, rien de rogne FAILED` → `AssertionError at RenduLibellesCodesTerminerTest.kt:287` |
 | Q1 | `PlacetteIntrouvableEnFrancaisTest.kt:139` — guidage - placette absente de la tournee | `EcranGuidage.kt:134` : `Column(Modifier.padding(24.dp)) { Text(stringResource(R.str…` → `Column(Modifier.padding(24.dp)) { }` | **rouge** (5) échecs | `PlacetteIntrouvableEnFrancaisTest > guidage - placette absente de la tournee FAILED` → `AssertionError at PlacetteIntrouvableEnFrancaisTest.kt:139` |
 | O1 | voir la note | `OuvertureSansPosition.kt:132` : `Button(onClick = onOuvrir, enabled = code.isNotBlank(), mod…` → `Button(onClick = onOuvrir, enabled = code.isNotBlank(), mod…` | **MUETTE** (vert) | `BUILD SUCCESSFUL` (aucun échec) |
@@ -222,6 +222,17 @@ En plus, deux mutations sont restées vertes sans que la garde soit muette (M8, 
 | M11 | voir la note | `EcranControle.kt:737` : `Text(stringResource(R.string.controle_poche_bande), style =…` → `Text(stringResource(R.string.controle_poche_bande), style =…` | **MUETTE** (vert) | `BUILD SUCCESSFUL` (aucun échec) |
 | M12 | `RenduControleTest.kt:128` — mode poche debout en plein ecran, apres defilement | `EcranControle.kt:524` : `Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) …` → `Box(Modifier.padding(start = 2000.dp)) { ⏎                 …` | **rouge** (3) échecs | `RenduControleTest > mode poche debout en plein ecran, apres defilement FAILED` → `AssertionError at RenduControleTest.kt:128` |
 | M13 | `RenduControleTest.kt:276` — apres une phrase compris, couche plein ecran, entendu et compris entiers | `EcranControle.kt:648` : `import androidx.compose.ui.unit.dp@@@Text(p.libelleEtat, st…` → `import androidx.compose.ui.unit.dp ⏎ import androidx.compos…` | **rouge** (29) échecs | `RenduControleTest > apres une phrase compris, couche plein ecran, entendu et compris entiers FAILED` → `AssertionError at RenduControleTest.kt:276` |
+
+### Décisions de Pascal (2026-11-10)
+
+Les **cinq correctifs sont gardés**.
+
+1. Durcissement de `BancRendu.vu` (un bouton même partiellement rogné est refusé) : **gardé**. Il vaut pour les trois classes qui l'appellent.
+2. Plan couché : le plancher de 48 dp est **gardé** (`DispositionControleTest.kt:19`). Les 88 dp de `RESERVE_HAUTEUR_PLAN_DP` restent la valeur
+   réglée, sans être figés par un test.
+3. `didOverflowHeight` (`RenduLibellesCodesTerminerTest.kt:257`) : **gardé**, le libellé reste entier. Un libellé de code qui ne tient pas
+   en 2 lignes rend la CI rouge.
+4. Cibles de 48 dp du menu du thème et test du bouton de 40 dp écrit en dur : les deux **gardés**.
 
 ### Sortie de `.claude/test-command`
 
