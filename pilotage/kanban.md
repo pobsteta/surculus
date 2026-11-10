@@ -156,7 +156,7 @@ _Idées, à trier au prochain `/mission`._
 
 ## Planifié
 
-- **Essai en forêt** d'ici le 2026-11-15 (Pascal) : ZED-F9P avec Centipède, ouverture par le code depuis le guidage, 30 s sans fix, rendu puis import sommieR. Aucune mission d'écran d'ici là.
+- **Essai en forêt** le 2026-11-11 (Pascal, date fixée le 2026-11-10) : ZED-F9P avec Centipède, ouverture par le code depuis le guidage, 30 s sans fix, rendu puis import sommieR. Aucune mission d'écran d'ici là.
 - **ADR 0010** proposée (PR #180, brouillon, 8c2a427) : avant l'acceptation, Pascal vérifie ou change les mots de passe, relève `keytool -list -v` sur la copie USB (empreinte SHA-256, format), crée l'environnement « release » et y déplace les secrets, ouvre le compte limité de vérification Android ; puis mission de code `release.yml` (environnement « release ») et `docs/publier.md` l. 69-75.
 
 _En attente sous le plafond humain (3 PR en revue)._
