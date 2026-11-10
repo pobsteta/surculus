@@ -27,9 +27,11 @@ passe, ni élément de la clé.
    l'acceptation de cet ADR si c'est le cas.
 3. **Clé perdue.** On publie sous un **nouvel identifiant d'application**, installé à côté de
    l'ancien (marche à suivre plus bas).
-4. **Vérification des développeurs Android.** **Compte limité dès maintenant** (gratuit, nombre
-   d'appareils plafonné, voir plus bas). On enregistre `io.github.pobsteta.surculus` tant que la clé
-   est là ; on passe au compte complet si l'on dépasse le plafond d'appareils.
+4. **Vérification des développeurs Android.** **Compte complet d'emblée** (25 USD, pièce d'identité, au
+   nom de Pascal, sans plafond d'appareils). Cette décision **remplace**, le même jour, celle du
+   « compte limité dès maintenant ». On enregistre `io.github.pobsteta.surculus` tant que la clé est là.
+   Raison : le compte limité vise un usage personnel non commercial, et Surculus sert au travail des
+   forestiers ; son plafond (20 ou 50) est en outre incertain.
 5. **Clé USB** rangée « hors du bâtiment du poste », sans adresse écrite.
 6. **Test du successeur : « non »**, assumé par la décision de Pascal (mots de passe à lui seul) ;
    inscrit dans les valeurs sacrifiées, rouvert à chaque bilan.
@@ -111,14 +113,14 @@ Pages lues le 2026-11-10.
 - **Clé perdue** (même FAQ) : « If you lose your signing key you won't be able to register your
   packages. » La FAQ ajoute qu'une application peut avoir plusieurs clés enregistrées pour un même nom
   de paquet.
-- **Compte limité** (https://developer.android.com/developer-verification/guides/limited-distribution,
+- **Compte limité, écarté** (décision 4 ; https://developer.android.com/developer-verification/guides/limited-distribution,
   mis à jour le 2026-10-28) : gratuit, sans pièce d'identité, partage avec des appareils que
   l'utilisateur a **autorisés** (poignée de main par code QR ou lien, consentement sur l'appareil), pour
   « students, teachers, and hobbyists ». Compte complet : 25 USD (FAQ). Le passage du limité au complet
   est possible, pas l'inverse (FAQ).
 - **Écart entre les pages** : la page d'accueil et la FAQ disent **20 appareils**, le guide du compte
-  limité dit **50 appareils**. On retient **20** (le plus bas), jusqu'à ce que Pascal vérifie dans la
-  console. Voir « Questions ouvertes ».
+  limité dit **50 appareils**. Sans objet depuis la décision 4 (compte complet), gardé comme trace.
+- **Compte complet** : 25 USD, pièce d'identité (FAQ) ; c'est le choix de Pascal.
 - **ADB** : l'installation par ADB n'exige pas la vérification (FAQ).
 
 Conséquence : **la clé n'est pas seulement ce qui permet la mise à jour ; elle est ce qui permet
@@ -247,10 +249,10 @@ La clé court jusqu'en 2054 ; aucune rotation n'est prévue, et il n'y a plus de
 
 ## Marculus et Groma
 
-L'ADR 0004 (l. 21) dit que Surculus reprend le code de Marculus et de Groma. Ont-ils leur propre clé, et
-où est-elle ? **Non vérifié : rien dans ce dépôt ne le dit** (recherche de « clé », « keystore » et
-« signature » dans les documents). **À demander à Pascal** (voir « Questions ouvertes »). Une clé commune
-aux trois ferait d'une perte un sinistre triple ; des clés séparées en font trois copies à surveiller.
+L'ADR 0004 (l. 21) dit que Surculus reprend le code de Marculus et de Groma. **Chacune a sa propre clé :
+trois clés distinctes, toutes sur la même clé USB, et les trois applications sont enregistrées sous le même
+compte de vérification** (décision de Pascal, 2026-11-10). Conséquence : une clé USB perdue ou un sinistre
+du lieu de rangement emporte les trois ; la relecture de la copie à chaque bilan vaut pour les trois.
 
 ## Le crible FRANCE
 
@@ -260,7 +262,7 @@ aux trois ferait d'une perte un sinistre triple ; des clés séparées en font t
 | **R**esponsable | Qui fait quoi ? | Pascal garde la clé, les mots de passe et approuve chaque release ; la CI signe ; en cas de perte, **le forestier sort son `.sursync`, le restaure dans la nouvelle application, puis désinstalle l'ancienne** | Tout repose sur Pascal ; une manipulation chez chaque forestier en cas de perte | **Oui** : décisions 3 et 6 |
 | **A**nticiper | Si l'imprévu arrive ? | Poste perdu : la clé USB reste. Les deux perdues : nouvelle application à côté, marche « clé perdue ». Pascal indisponible : personne ne publie ni ne récupère les mots de passe | Pour la perte : une réinstallation et une restauration par forestier, sans mise à jour d'ici là. Pour Pascal indisponible : plus de publication (valeur sacrifiée) | **Oui** : décisions 3 et 6, assumées |
 | **N**ovateur | Toutes les idées écoutées ? | Options a à e, voies de distribution F-Droid, Obtainium, registre libre, mise à jour sans réseau | Le temps de l'examen (fait ici) ; Obtainium et le repli sans réseau restent à essayer | **Oui** |
-| **C**oût | Coût pour l'ensemble ? | Pas d'argent aujourd'hui (compte limité gratuit) ; 25 USD si l'on passe au compte complet (au-delà de 20 appareils) ; une mission de code (`release.yml`) | 25 USD éventuels, une mission, le temps des relectures de la copie USB à chaque bilan | **Oui** : décision 4 |
+| **C**oût | Coût pour l'ensemble ? | 25 USD pour le compte complet de vérification, au nom de Pascal ; une mission de code (`release.yml`) | 25 USD, une pièce d'identité remise à Google, une mission, le temps des relectures de la copie USB à chaque bilan | **Oui** : décision 4 |
 | **É**cologique | Que réutilisons-nous ? | Outils standard (`keytool`, `apksigner`, `gh`), format du fichier à confirmer (voir tableau), aucun service propriétaire pour signer | Dépendance à GitHub Actions pour la signature automatique, et à la console Google pour l'enregistrement | **Oui** |
 
 ## Valeurs sacrifiées
@@ -273,9 +275,7 @@ aux trois ferait d'une perte un sinistre triple ; des clés séparées en font t
   prendrait aussi l'autre lieu, non.
 - **Le confort d'installation, payé par le forestier** (`CLAUDE.md`, « Plier ou tenir ») : pas de
   magasin, donc pas de mise à jour automatique ; le forestier télécharge et installe à la main ; en
-  cas de perte de la clé, il refait lui-même la manipulation « clé perdue » ; avec la vérification des
-  développeurs, il devra autoriser son téléphone auprès du compte limité (code QR ou lien, une fois).
-  C'est un compromis que le forestier paie, pas Pascal.
+  cas de perte de la clé, il refait lui-même la manipulation « clé perdue ». C'est un compromis que le forestier paie, pas Pascal.
 
 ## Dette
 
@@ -303,22 +303,14 @@ Cet ADR reste **proposée** jusqu'à ce que Pascal ait fait, et dit au journal :
    avant de signer.
 3. **`keytool -list -v`** sur la copie USB : remplir le tableau « Le fichier et son empreinte », puis le
    `README.md`.
-4. **Compte limité** dans la console des développeurs, et enregistrement de
-   `io.github.pobsteta.surculus` avec l'empreinte SHA-256 complète. Relever le plafond d'appareils
-   affiché (20 ou 50).
+4. **Compte complet** dans la console des développeurs (25 USD, pièce d'identité), et enregistrement de
+   `io.github.pobsteta.surculus` avec l'empreinte SHA-256 complète.
 5. Répondre aux questions ci-dessous.
 
 ## Questions ouvertes pour Pascal
 
-Découvertes en reprenant l'ADR ; aucune n'est tranchée ici.
-
-1. **Plafond du compte limité : 20 ou 50 appareils ?** Les pages de Google se contredisent (20 : page
-   d'accueil et FAQ ; 50 : guide du compte limité). La console dira ce qui s'applique. Le chiffre fixe le
-   moment où il faut passer au compte complet (décision 4).
-2. **Le compte limité vise « students, teachers, and hobbyists », usage personnel et sans but commercial.**
-   Des forestiers qui utilisent Surculus pour leur employeur y entrent-ils ? Si la console le refuse, le
-   compte complet (25 USD) devient nécessaire dès le départ. Non vérifié.
-3. **Marculus et Groma ont-ils leur propre clé, et où ?** Non vérifié, à demander à Pascal.
+Aucune. Les trois questions de la reprise 1/3 ont reçu une réponse de Pascal le 2026-11-10 (compte
+complet, décision 4 ; Marculus et Groma, section dédiée).
 
 ## Révisions
 
@@ -331,6 +323,13 @@ Découvertes en reprenant l'ADR ; aucune n'est tranchée ici.
   l. 33, question retirée), Marculus et Groma. Ajoutés : les deux marches à suivre, l'examen des voies de
   distribution, la dette, les actions de Pascal. Le format « Java KeyStore ouvert » est retiré : le
   format sera rempli d'après `keytool`.
+
+- **2026-11-10, reprise 2/3** : Pascal remplace la décision 4 (compte limité) par le **compte complet
+  d'emblée** (25 USD, pièce d'identité, sans plafond) et répond pour Marculus et Groma (chacune sa clé,
+  même clé USB, même compte). Modifiés : décision 4, section Vérification, crible (coût), valeurs
+  sacrifiées, actions avant acceptation, section Marculus et Groma, questions ouvertes (plus aucune).
+  L'ancienne décision 4 est remplacée dans le texte, pas effacée du récit : voir cette ligne et la
+  reprise 1/3 (8c2a427).
 
 ## Sources
 
@@ -360,8 +359,7 @@ Découvertes en reprenant l'ADR ; aucune n'est tranchée ici.
   (https://github.com/ImranR98/Obtainium).
 - JEP 229 (https://openjdk.org/jeps/229) : citée par la critique, **non rouverte** ici.
 - **Non vérifié** : le format du fichier de la clé ; l'essai de signature avec la copie USB ; les droits
-  `workflow` des jetons des agents ; le plafond d'appareils du compte limité (20 ou 50) ; l'éligibilité
-  des forestiers au compte limité ; les clés de Marculus et de Groma ; la cohabitation de deux
+  `workflow` des jetons des agents ; la cohabitation de deux
   identifiants ; le sort des photos après réinstallation ; la restauration d'un `.sursync` après
   réinstallation ; la licence et la communauté d'Obtainium ; la signature par défaut de F-Droid sans
   build reproductible ; la pose des secrets par `gh secret set --env`.
