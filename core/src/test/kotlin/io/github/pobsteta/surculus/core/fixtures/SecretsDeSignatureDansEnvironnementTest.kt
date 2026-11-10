@@ -6,12 +6,18 @@ import org.junit.jupiter.api.Test
 import java.io.File
 
 /**
- * Mission 107 (ADR 0010) : les secrets de signature `RELEASE_*` ne sortent que dans le job de `release.yml`
- * qui déclare `environment: release` (environnement limité à `main`, approuvé par Pascal). Aucun autre job,
- * aucun autre workflow ne les lit. Lecture ligne à ligne des workflows : pas de bibliothèque YAML ici,
+ * Mission 107 (ADR 0010) : les secrets de signature `RELEASE_*` ne sortent que dans le job de signature de
+ * `release.yml` (« signer »), qui déclare `environment: release` (environnement limité à `main`, approuvé par
+ * Pascal). Le job de tests (« tester ») ne déclare aucun environnement : il tourne sans approbation. Aucun autre job,
+ * aucun autre workflow ne lit ces secrets. Lecture ligne à ligne des workflows : pas de bibliothèque YAML ici,
  * et le test ne contient aucune valeur de secret.
  */
 class SecretsDeSignatureDansEnvironnementTest {
+
+    companion object {
+        const val JOB_SIGNATURE = "signer"
+        const val JOB_TESTS = "tester"
+    }
 
     /** Une lecture `secrets.RELEASE_*` : fichier, job qui la contient (ou null), nom du secret, environnement du job. */
     data class Lecture(val fichier: String, val job: String?, val secret: String, val environnement: String?)
@@ -22,31 +28,34 @@ class SecretsDeSignatureDansEnvironnementTest {
 
     private fun sortDeJobs(l: String) = l.isNotBlank() && !l.startsWith(" ") && !l.startsWith("#")
 
-    fun lectures(fichier: String, texte: String): List<Lecture> {
-        val lignes = texte.lines()
-        // Passe 1 : l'environnement déclaré par chaque job.
-        val environnements = mutableMapOf<String, String>()
+    /** L'environnement déclaré par chaque job (les jobs sans `environment:` n'y figurent pas). */
+    fun environnements(texte: String): Map<String, String> {
+        val resultat = mutableMapOf<String, String>()
         var dansJobs = false
         var courant: String? = null
-        for (l in lignes) {
+        for (l in texte.lines()) {
             if (l.startsWith("jobs:")) { dansJobs = true; continue }
             if (dansJobs && sortDeJobs(l)) dansJobs = false
             if (!dansJobs) continue
             enteteJob.find(l)?.let { courant = it.groupValues[1] }
-            environnementDuJob.find(l)?.let { m -> courant?.let { environnements[it] = m.groupValues[1] } }
+            environnementDuJob.find(l)?.let { m -> courant?.let { resultat[it] = m.groupValues[1] } }
         }
-        // Passe 2 : chaque lecture d'un secret RELEASE_*, rattachée à son job.
+        return resultat
+    }
+
+    fun lectures(fichier: String, texte: String): List<Lecture> {
+        val env = environnements(texte)
         val resultat = mutableListOf<Lecture>()
-        dansJobs = false
-        courant = null
-        for (l in lignes) {
+        var dansJobs = false
+        var courant: String? = null
+        for (l in texte.lines()) {
             if (l.startsWith("jobs:")) { dansJobs = true; continue }
             if (dansJobs && sortDeJobs(l)) dansJobs = false
             if (dansJobs) enteteJob.find(l)?.let { courant = it.groupValues[1] }
             if (l.trimStart().startsWith("#")) continue
             val job = if (dansJobs) courant else null
             for (m in lectureSecret.findAll(l)) {
-                resultat += Lecture(fichier, job, m.groupValues[1], job?.let { environnements[it] })
+                resultat += Lecture(fichier, job, m.groupValues[1], job?.let { env[it] })
             }
         }
         return resultat
@@ -56,12 +65,14 @@ class SecretsDeSignatureDansEnvironnementTest {
     fun ecarts(lectures: List<Lecture>): List<String> = lectures.mapNotNull { l ->
         when {
             l.fichier != "release.yml" -> "${l.fichier} lit ${l.secret} : seul release.yml le peut"
-            l.job != "construire" -> "${l.fichier} : le job « ${l.job} » lit ${l.secret} : seul « construire » le peut"
+            l.job != JOB_SIGNATURE -> "${l.fichier} : le job « ${l.job} » lit ${l.secret} : seul « $JOB_SIGNATURE » le peut"
             l.environnement != "release" ->
                 "${l.fichier} : le job « ${l.job} » lit ${l.secret} sans déclarer « environment: release »"
             else -> null
         }
     }
+
+    private fun workflow(nom: String) = File(Depot.racine, ".github/workflows/$nom")
 
     private fun toutesLesLectures(): List<Lecture> {
         val dossier = File(Depot.racine, ".github/workflows")
@@ -71,8 +82,15 @@ class SecretsDeSignatureDansEnvironnementTest {
     }
 
     @Test
-    fun `les secrets RELEASE ne sont lus que par le job construire de release-yml, sous environment release`() {
+    fun `les secrets RELEASE ne sont lus que par le job signer de release-yml, sous environment release`() {
         assertEquals(emptyList<String>(), ecarts(toutesLesLectures()))
+    }
+
+    @Test
+    fun `le job de tests existe et ne declare aucun environnement, seul le job de signature le fait`() {
+        val texte = workflow("release.yml").readText()
+        assertTrue(Regex("^ {2}$JOB_TESTS:\\s*$", RegexOption.MULTILINE).containsMatchIn(texte), "job « $JOB_TESTS » absent")
+        assertEquals(mapOf(JOB_SIGNATURE to "release"), environnements(texte))
     }
 
     @Test
@@ -88,23 +106,31 @@ class SecretsDeSignatureDansEnvironnementTest {
 
     @Test
     fun `la garde voit un job sans environnement`() {
-        val y = "jobs:\n  construire:\n    runs-on: x\n    steps:\n      - env:\n          A: \${{ secrets.RELEASE_KEY_ALIAS }}\n"
+        val y = "jobs:\n  signer:\n    runs-on: x\n    steps:\n      - env:\n          A: \${{ secrets.RELEASE_KEY_ALIAS }}\n"
         assertEquals(1, ecarts(lectures("release.yml", y)).size)
     }
 
     @Test
     fun `la garde voit un autre job ou un autre workflow`() {
-        val y = "jobs:\n  construire:\n    environment: release\n    steps: []\n" +
+        val y = "jobs:\n  signer:\n    environment: release\n    steps: []\n" +
             "  publier:\n    steps:\n      - run: \${{ secrets.RELEASE_KEY_ALIAS }}\n"
         assertEquals(1, ecarts(lectures("release.yml", y)).size)
-        val z = "jobs:\n  construire:\n    environment: release\n    steps:\n      - run: \${{ secrets.RELEASE_KEY_ALIAS }}\n"
+        val t = "jobs:\n  tester:\n    environment: release\n    steps:\n      - run: \${{ secrets.RELEASE_KEY_ALIAS }}\n"
+        assertEquals(1, ecarts(lectures("release.yml", t)).size)
+        val z = "jobs:\n  signer:\n    environment: release\n    steps:\n      - run: \${{ secrets.RELEASE_KEY_ALIAS }}\n"
         assertEquals(1, ecarts(lectures("ci.yml", z)).size)
         assertEquals(0, ecarts(lectures("release.yml", z)).size)
     }
 
     @Test
+    fun `la garde voit un environnement declare sur le job de tests`() {
+        val y = "jobs:\n  tester:\n    environment: release\n    steps: []\n  signer:\n    environment: release\n    steps: []\n"
+        assertEquals(mapOf("tester" to "release", "signer" to "release"), environnements(y))
+    }
+
+    @Test
     fun `la garde refuse un autre environnement`() {
-        val y = "jobs:\n  construire:\n    environment: test\n    steps:\n      - run: \${{ secrets.RELEASE_KEY_ALIAS }}\n"
+        val y = "jobs:\n  signer:\n    environment: test\n    steps:\n      - run: \${{ secrets.RELEASE_KEY_ALIAS }}\n"
         assertEquals(1, ecarts(lectures("release.yml", y)).size)
     }
 }

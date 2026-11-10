@@ -5,19 +5,28 @@ de Pascal le même jour (a et b ci-dessous).
 
 ## Ce qui se passe à chaque fusion dans `main`
 
-`release.yml` a deux jobs, `permissions: {}` au niveau du workflow.
+`release.yml` a trois jobs, `permissions: {}` au niveau du workflow.
 
-**`construire`** (`contents: read`, checkout sans conservation du jeton)
+**`tester`** (`contents: read`, checkout sans conservation du jeton, **ni environnement ni secret**)
 1. Calcule la prochaine version SemVer d'après les messages de commit
    (`mathieudutour/github-tag-action`, préfixe `v`) **sans poser le tag**.
-2. Lance `.claude/test-command` et le contrôle 16 Ko (`scripts/verifier-16ko.sh`).
-3. Si les secrets de signature sont présents : compile `:app:assembleRelease` avec
-   `-PappVersionName=<version>` et `-PappVersionCode=<numéro d'exécution>`, et refait le contrôle
-   16 Ko sur l'APK release.
-4. Dépose en artefact les notes et, le cas échéant, `surculus-vX.Y.Z-AAAAMMJJ-HHMM.apk`.
+2. Lance `.claude/test-command` et le contrôle 16 Ko de l'APK debug (`scripts/verifier-16ko.sh`).
 
-**`publier`** (`contents: write`, ni checkout ni Gradle) : crée le tag `vX.Y.Z` sur le commit
-fusionné et la release GitHub. Tests rouges : `publier` ne part pas, ni tag ni release.
+**`signer`** (`contents: read`, `environment: release`, part après `tester`) : attend l'approbation
+de Pascal, fait son propre checkout, puis
+1. si les secrets de signature sont présents : compile `:app:assembleRelease` avec
+   `-PappVersionName=<version>` et `-PappVersionCode=<numéro d'exécution>`, refait le contrôle
+   16 Ko sur l'APK release, joue l'essai de fumée sur émulateur ;
+2. dépose en artefact les notes et, le cas échéant, `surculus-vX.Y.Z-AAAAMMJJ-HHMM.apk`.
+
+Aucun APK ne passe de `tester` à `signer` : l'APK release est recompilé dans `signer`, de sorte
+que l'APK debug (non signé de la clé) ne peut pas passer pour l'APK signé.
+
+**`publier`** (`contents: write`, ni checkout ni Gradle, aucun secret de signature) : crée le tag
+`vX.Y.Z` sur le commit fusionné et la release GitHub. Il dépend de `tester` et de `signer`. Tests
+rouges : `publier` ne part pas, ni tag ni release. **Si Pascal n'approuve pas, ou rejette,
+`signer` ne s'exécute pas : ni tag ni release.** Pendant l'attente, la release occupe le groupe
+de concurrence : une fusion suivante attend derrière elle (voir plus bas).
 
 `badges.yml` rejoue les tests de `:core` et `:gpkg` avec JaCoCo et pousse le badge de couverture
 sur la branche **`badges`** (jamais sur `main`). `ci.yml` reste en lecture seule.
@@ -78,9 +87,10 @@ Sans les quatre secrets, pas d'APK (décision a).
    workflow lancé depuis une branche peut encore les lire et la protection ne sert à rien.
    Vérification : `gh secret list` (niveau dépôt) n'affiche plus aucun `RELEASE_*`.
 
-Le job `construire` de `release.yml` déclare `environment: release` : chaque release attend
-l'approbation de Pascal (onglet Actions) avant de démarrer, tests compris. Un environnement sans
-les quatre secrets donne toujours une release sans APK (décision a).
+Le job `signer` de `release.yml` déclare `environment: release` : chaque release attend
+l'approbation de Pascal (onglet Actions) avant la signature. Les tests (`tester`) tournent sans
+attendre. Sans approbation, ou si Pascal rejette, ni tag ni release. Un environnement sans les
+quatre secrets donne toujours une release sans APK (décision a).
 
 Un des quatre manquant équivaut à l'absence de clé. Décision de fond (conservation de la clé,
 distribution) : ADR 0010, à venir (réservée, non écrite : voir [l'index des ADR](adr/README.md)).

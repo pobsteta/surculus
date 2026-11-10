@@ -98,3 +98,17 @@ Aucune. Le nom de l'environnement, `release`, est décidé par Pascal.
 La release qui suit la fusion attend l'approbation de Pascal. Une fois approuvée, elle publie un
 APK signé qui s'installe par-dessus la version du téléphone. Une fois les secrets du dépôt
 supprimés, `gh secret list` (au niveau du dépôt) n'affiche plus aucun `RELEASE_*`.
+
+## Reprise 1/3 (2026-11-10) : scinder le job
+
+Décision de Pascal, le 2026-11-10 : « Scinder dans la 107 ». L'approbation ne doit pas retarder les tests.
+
+- **Redite :** `release.yml` passe à trois jobs : `tester` (version, tests, contrôle 16 Ko debug, sans environnement ni secret),
+  `signer` (`environment: release`, tout ce qui lit `RELEASE_*`, APK et notes) et `publier` (dépend des deux, aucun secret).
+- **Choix :** `signer` fait son propre checkout (`persist-credentials: false`) et recompile l'APK release ; aucun APK ne
+  passe d'un job à l'autre, donc l'APK debug non signé ne peut pas passer pour l'APK signé. Le coût est un second réglage
+  Gradle/SDK dans `signer`, sans rejouer les tests. La version et le journal des changements passent par les sorties de `tester`.
+- **Si Pascal n'approuve pas ou rejette :** `signer` ne part pas, `publier` non plus : ni tag ni release (écrit dans
+  `release.yml` et `docs/publier.md`).
+- **Test :** seul `signer` lit `RELEASE_*` et déclare `environment: release` ; `tester` existe et n'en déclare aucun.
+  Vu rouge sur 1ffddbd (2 échecs sur 7), puis vert.
