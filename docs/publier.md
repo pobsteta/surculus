@@ -15,9 +15,12 @@ de Pascal le même jour (a et b ci-dessous).
 **`signer`** (`contents: read`, `environment: release`, part après `tester`) : attend l'approbation
 de Pascal, fait son propre checkout, puis
 1. si les secrets de signature sont présents : compile `:app:assembleRelease` avec
-   `-PappVersionName=<version>` et `-PappVersionCode=<numéro d'exécution>`, refait le contrôle
-   16 Ko sur l'APK release, joue l'essai de fumée sur émulateur ;
-2. dépose en artefact les notes et, le cas échéant, `surculus-vX.Y.Z-AAAAMMJJ-HHMM.apk`.
+   `-PappVersionName=<version>` et `-PappVersionCode=<numéro d'exécution>` et refait le contrôle
+   16 Ko sur l'APK release ;
+2. joue l'essai de fumée sur émulateur, **toujours**, après l'approbation (décision de Pascal,
+   2026-11-10) : sans clé, le type de build `fumee` se signe en debug (`app/build.gradle.kts`,
+   `signingConfig` de `release` : « release » si le keystore existe, « debug » sinon) ;
+3. dépose en artefact les notes et, le cas échéant, `surculus-vX.Y.Z-AAAAMMJJ-HHMM.apk`.
 
 Aucun APK ne passe de `tester` à `signer` : l'APK release est recompilé dans `signer`, de sorte
 que l'APK debug (non signé de la clé) ne peut pas passer pour l'APK signé.
@@ -74,23 +77,53 @@ Sans les quatre secrets, pas d'APK (décision a).
    `keytool -genkeypair -v -keystore surculus-release.keystore -alias surculus -keyalg RSA -keysize 4096 -validity 10000`
 2. Le garder en lieu sûr, avec ses mots de passe : **le perdre interdit toute mise à jour**
    des appareils déjà installés.
-3. Créer l'environnement `release` (Settings > Environments > New environment), puis le régler :
-   - **Deployment branches and tags** : « Selected branches and tags », avec la seule règle `main` ;
-   - **Required reviewers** : Pascal (approbation avant que le job ne parte) ;
-   - y créer quatre **Environment secrets** (et non des secrets du dépôt) :
+3. Créer l'environnement `release`, ses règles et ses secrets (Settings > Environments), **avant**
+   de fusionner la mission 107. Libellés de GitHub (« Managing environments for deployment »,
+   vérifiés le 2026-11-10) :
+   - Settings > Environments > **New environment**, nom `release` ;
+   - **Deployment branches** (« Deployment branches and tags ») > **Selected branches and tags** >
+     **Add deployment branch or tag rule** : Ref type **Branch**, motif `main` > **Add rule** ;
+   - **Required reviewers** : Pascal. **Ne pas cocher « Prevent self-review »** : c'est Pascal qui
+     fusionne et déclenche la release, il doit pouvoir l'approuver lui-même. Puis
+     **Save protection rules** ;
+   - sous **Environment secrets**, **Add Secret**, quatre fois :
      - `RELEASE_KEYSTORE_BASE64` : `base64 -w0 surculus-release.keystore` ;
      - `RELEASE_KEYSTORE_PASSWORD` ;
      - `RELEASE_KEY_ALIAS` (`surculus` ci-dessus) ;
      - `RELEASE_KEY_PASSWORD`.
-4. Après la première release signée et approuvée, **supprimer les quatre secrets du dépôt**
-   (Settings > Secrets and variables > Actions > Repository secrets). Sans cette suppression, un
-   workflow lancé depuis une branche peut encore les lire et la protection ne sert à rien.
-   Vérification : `gh secret list` (niveau dépôt) n'affiche plus aucun `RELEASE_*`.
+4. Vérifier avant la fusion : `gh secret list --env release` montre les quatre noms.
+
+**L'ordre, en toutes lettres.** (1) créer l'environnement, ses règles et ses secrets ; (2) **puis**
+fusionner la mission 107 ; (3) **puis** attendre et approuver la première release (onglet Actions >
+la release > **Review deployments** > **Approve and deploy**, ou **Reject**) ; (4) **puis**
+supprimer les quatre secrets du dépôt (Settings > Secrets and variables > Actions > Repository
+secrets) et vérifier la release suivante.
+
+*Pourquoi cet ordre.* Un workflow qui référence un environnement absent **crée** cet environnement,
+sans aucune règle de protection ni secret (GitHub, « Managing environments for deployment »). Fusionner
+d'abord donnerait donc un environnement `release` ouvert à tous, sans approbation : la protection
+serait fausse sans que rien ne le signale.
+
+*Deux vérifications, pas une.* Tant que les secrets du dépôt existent, `signer` les voit aussi : une
+première release signée ne prouve donc pas que les secrets d'environnement sont en place.
+- Avant la fusion : `gh secret list --env release` montre les quatre noms.
+- Après la suppression des secrets du dépôt : la release suivante porte toujours un APK signé
+  (et `gh secret list`, au niveau du dépôt, n'affiche plus aucun `RELEASE_*`). Sinon, un secret
+  manque dans l'environnement : le recréer là, pas dans le dépôt.
+
+Sans la suppression de l'étape (4), un workflow lancé depuis une branche peut encore lire les secrets
+du dépôt et la protection ne sert à rien.
 
 Le job `signer` de `release.yml` déclare `environment: release` : chaque release attend
-l'approbation de Pascal (onglet Actions) avant la signature. Les tests (`tester`) tournent sans
-attendre. Sans approbation, ou si Pascal rejette, ni tag ni release. Un environnement sans les
-quatre secrets donne toujours une release sans APK (décision a).
+l'approbation de Pascal avant la signature. Sans approbation, ou si Pascal **rejette**, ni tag ni
+release. Un environnement sans les quatre secrets donne toujours une release sans APK (décision a).
+
+*Attente et concurrence.* Les tests (`tester`) de la **première** release tournent sans attendre
+l'approbation. Tant qu'une approbation est en attente, la release occupe le groupe de concurrence :
+la release suivante attend **tout entière**, `tester` compris, et GitHub n'en garde qu'une en attente
+(la plus récente). Pascal **rejette** donc (**Reject**) une release qu'il ne veut pas, au lieu de la
+laisser en attente, sans quoi il bloque les suivantes. Aucun délai maximal d'attente n'est écrit ici :
+la documentation consultée n'en donne pas pour ce cas.
 
 Un des quatre manquant équivaut à l'absence de clé. Décision de fond (conservation de la clé,
 distribution) : ADR 0010, à venir (réservée, non écrite : voir [l'index des ADR](adr/README.md)).
@@ -112,8 +145,8 @@ s'affiche cassé jusque-là. Si une protection de branche couvre toutes les bran
 
 ## L'essai de fumée sur émulateur
 
-Ajouté le 2026-10-22. Avant de publier, `.github/workflows/release.yml` (étapes « Activer KVM » puis
-« Essai de fumée de l'APK release sur émulateur », vers la l. 115) lance l'application sur un
+Ajouté le 2026-10-22. Avant de publier, `.github/workflows/release.yml` (job `signer`, étapes « Activer KVM » puis
+« Essai de fumée de l'APK release sur émulateur ») lance l'application sur un
 émulateur x86_64 : elle écrit une tournée de démonstration (sqlite-jdbc, fonctions `ST_*` en Kotlin,
 index rtree) puis la relit. Il tourne sur le type de build `fumee`, calqué sur la release, avec
 R8 et `proguard-fumee.pro`. **La release ne part pas si l'essai échoue.**

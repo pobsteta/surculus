@@ -112,3 +112,22 @@ Décision de Pascal, le 2026-11-10 : « Scinder dans la 107 ». L'approbation ne
   `release.yml` et `docs/publier.md`).
 - **Test :** seul `signer` lit `RELEASE_*` et déclare `environment: release` ; `tester` existe et n'en déclare aucun.
   Vu rouge sur 1ffddbd (2 échecs sur 7), puis vert.
+
+## Reprise 2/3 (2026-11-10)
+
+Le relecteur juge `release.yml` juste (`actionlint` 1.7.7, code 0, sans `shellcheck`) : il n'a pas bougé. Pascal a tranché :
+la fumée reste dans `signer`, après l'approbation, sur le type de build `fumee` calqué sur la release (ADR 0011).
+
+- **Redite :** la reprise ne touche que `docs/publier.md` et le test.
+- **Doc (B1-B3) :** l'ordre en toutes lettres (environnement et secrets, puis fusion, puis approbation de la première release,
+  puis suppression des secrets du dépôt et release suivante vérifiée), sa raison (un environnement référencé mais absent
+  est créé sans règle de protection ni secret), les deux vérifications (`gh secret list --env release` avant la fusion ;
+  release suivante encore signée après la suppression), les libellés de GitHub relus sur les pages « Managing environments
+  for deployment » et « Reviewing deployments » le 2026-11-10 (sans « Prevent self-review »).
+- **Doc (M1-M3) :** la fumée est jouée toujours (repli debug sans clé) ; renvoi par le nom des étapes ; concurrence : la
+  release suivante attend tout entière, Pascal rejette ce qu'il ne veut pas ; aucun délai d'attente écrit.
+- **Test (M4) :** lit aussi `secrets['RELEASE_…']`, `secrets[…]` dynamique, `toJSON(secrets)`, `secrets: inherit`, et garde
+  `publier: needs: [tester, signer]`. Chaque garde vue rouge sur un cas fautif.
+- **Test (M5) :** rejoué sur le `release.yml` de `origin/main` : rouge (3 échecs sur 10).
+- **Non vérifié :** la page « Using secrets in GitHub Actions » ouverte ne dit pas que le secret d'environnement prime sur le secret
+  du dépôt du même nom ; la doc écrite n'affirme que ce qui est sûr (le job voit aussi les secrets du dépôt).

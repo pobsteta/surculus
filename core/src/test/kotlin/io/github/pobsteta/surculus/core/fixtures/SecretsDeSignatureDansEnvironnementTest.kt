@@ -22,7 +22,15 @@ class SecretsDeSignatureDansEnvironnementTest {
     /** Une lecture `secrets.RELEASE_*` : fichier, job qui la contient (ou null), nom du secret, environnement du job. */
     data class Lecture(val fichier: String, val job: String?, val secret: String, val environnement: String?)
 
-    private val lectureSecret = Regex("""secrets\.(RELEASE_[A-Z0-9_]+)""")
+    // Toutes les façons de lire un secret : secrets.RELEASE_X, secrets['RELEASE_X'], secrets[...] dynamique,
+    // toJSON(secrets) (tous les secrets d'un coup) et « secrets: inherit » (workflow réutilisable).
+    private val lectureSecret = Regex(
+        """secrets\.(RELEASE_[A-Z0-9_]+)""" +
+            """|secrets\[\s*['"](RELEASE_[A-Z0-9_]+)['"]\s*\]""" +
+            """|(secrets\s*\[)""" +
+            """|(?i:(toJSON\(\s*secrets\s*\)))""" +
+            """|(secrets:\s*inherit)""",
+    )
     private val enteteJob = Regex("""^ {2}([A-Za-z0-9_-]+):\s*$""")
     private val environnementDuJob = Regex("""^ {4}environment:\s*['"]?([A-Za-z0-9_-]+)['"]?\s*(#.*)?$""")
 
@@ -43,6 +51,33 @@ class SecretsDeSignatureDansEnvironnementTest {
         return resultat
     }
 
+    private val enteteBesoins = Regex("""^ {4}needs:\s*(.*?)\s*$""")
+    private val elementListe = Regex("""^ {6}-\s*([A-Za-z0-9_-]+)\s*$""")
+
+    /** Les jobs dont dépend chaque job (`needs:` en ligne, `[a, b]` ou liste à tirets). */
+    fun besoins(texte: String): Map<String, Set<String>> {
+        val resultat = mutableMapOf<String, MutableSet<String>>()
+        var dansJobs = false
+        var courant: String? = null
+        var dansListe = false
+        for (l in texte.lines()) {
+            if (l.startsWith("jobs:")) { dansJobs = true; continue }
+            if (dansJobs && sortDeJobs(l)) dansJobs = false
+            if (!dansJobs) continue
+            enteteJob.find(l)?.let { courant = it.groupValues[1]; dansListe = false }
+            val job = courant ?: continue
+            enteteBesoins.find(l)?.let { m ->
+                val v = m.groupValues[1].substringBefore('#').trim().trim('[', ']')
+                val noms = resultat.getOrPut(job) { mutableSetOf() }
+                noms += v.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+                dansListe = v.isEmpty()
+                return@let
+            }
+            if (dansListe) elementListe.find(l)?.let { resultat.getOrPut(job) { mutableSetOf() } += it.groupValues[1] }
+        }
+        return resultat
+    }
+
     fun lectures(fichier: String, texte: String): List<Lecture> {
         val env = environnements(texte)
         val resultat = mutableListOf<Lecture>()
@@ -55,7 +90,8 @@ class SecretsDeSignatureDansEnvironnementTest {
             if (l.trimStart().startsWith("#")) continue
             val job = if (dansJobs) courant else null
             for (m in lectureSecret.findAll(l)) {
-                resultat += Lecture(fichier, job, m.groupValues[1], job?.let { env[it] })
+                val nom = m.groupValues.drop(1).first { it.isNotEmpty() }
+                resultat += Lecture(fichier, job, nom, job?.let { env[it] })
             }
         }
         return resultat
@@ -91,6 +127,13 @@ class SecretsDeSignatureDansEnvironnementTest {
         val texte = workflow("release.yml").readText()
         assertTrue(Regex("^ {2}$JOB_TESTS:\\s*$", RegexOption.MULTILINE).containsMatchIn(texte), "job « $JOB_TESTS » absent")
         assertEquals(mapOf(JOB_SIGNATURE to "release"), environnements(texte))
+    }
+
+    @Test
+    fun `publier depend de tester et de signer`() {
+        val b = besoins(workflow("release.yml").readText())
+        assertEquals(setOf(JOB_TESTS, JOB_SIGNATURE), b["publier"])
+        assertEquals(setOf(JOB_TESTS), b[JOB_SIGNATURE])
     }
 
     @Test
@@ -132,5 +175,32 @@ class SecretsDeSignatureDansEnvironnementTest {
     fun `la garde refuse un autre environnement`() {
         val y = "jobs:\n  signer:\n    environment: test\n    steps:\n      - run: \${{ secrets.RELEASE_KEY_ALIAS }}\n"
         assertEquals(1, ecarts(lectures("release.yml", y)).size)
+    }
+
+    @Test
+    fun `la garde voit les lectures par crochets, toJSON et inherit`() {
+        val corps = listOf(
+            "      - run: \${{ secrets['RELEASE_KEY_ALIAS'] }}\n",
+            "      - run: \${{ secrets[format('RELEASE_{0}', 'KEY_ALIAS')] }}\n",
+            "      - run: \${{ toJSON(secrets) }}\n",
+            "      - run: \${{ tojson( secrets ) }}\n",
+        )
+        for (c in corps) {
+            val y = "jobs:\n  tester:\n    steps:\n$c"
+            assertEquals(1, ecarts(lectures("release.yml", y)).size, c)
+            val bon = "jobs:\n  signer:\n    environment: release\n    steps:\n$c"
+            assertEquals(0, ecarts(lectures("release.yml", bon)).size, c)
+        }
+        val inherit = "jobs:\n  tester:\n    uses: ./.github/workflows/x.yml\n    secrets: inherit\n"
+        assertEquals(1, ecarts(lectures("release.yml", inherit)).size)
+    }
+
+    @Test
+    fun `la garde lit needs en ligne, en crochets et en liste`() {
+        assertEquals(setOf("a", "b"), besoins("jobs:\n  publier:\n    needs: [a, b]\n")["publier"])
+        assertEquals(setOf("a"), besoins("jobs:\n  publier:\n    needs: a\n")["publier"])
+        assertEquals(setOf("a", "b"), besoins("jobs:\n  publier:\n    needs:\n      - a\n      - b\n")["publier"])
+        // publier qui ne dépend que de tester : la garde le verrait.
+        assertEquals(setOf("tester"), besoins("jobs:\n  publier:\n    needs: tester\n")["publier"])
     }
 }
