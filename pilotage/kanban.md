@@ -124,6 +124,8 @@ _Idées, à trier au prochain `/mission`._
 
 ## Validé
 
+- **107** secrets de signature dans l'environnement « release » (`dev`, appuyer), lancée le 2026-11-10 ; fiche `pilotage/missions/107-secrets-dans-l-environnement-release.md` ; brouillon jusqu'aux actions de Pascal (ADR 0010).
+
 - **104** audit des gardes de rendu et de forme (`testeur`, appuyer, bilan du 2026-11-09, cause 3) : PR #177, reprise 1/3 en relecture (57 gardes, 5 muettes corrigées).
 
 - **Restes des captures du cycle 15** (depuis le cycle 15) : 052 tâche retirée (récepteur RTK Bluetooth
