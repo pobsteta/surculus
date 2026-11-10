@@ -252,6 +252,9 @@ class RenduLibellesCodesTerminerTest {
                     d += "${b.code} : mot coupé entre les lignes ${i + 1} et ${i + 2} de « $plein » (« ${plein.substring(0, fin)} / ${plein.substring(fin)} »)"
                 }
             }
+            // Garde muette de la 104 (P5, maxLines 2 -> 1) : un libellé qui perd sa 2e ligne sans ellipse n'est ni « ellipsé » ni « sorti
+            // de sa zone » ; Compose le dit par didOverflowHeight.
+            if (m.didOverflowHeight) d += "${b.code} : « $plein » perd des lignes (didOverflowHeight), %d ligne(s) visible(s)".format(m.lineCount)
             for (i in 0 until m.lineCount) {
                 if (m.isLineEllipsized(i)) d += "${b.code} : ligne ${i + 1} de « $plein » rognée par Compose (ellipse à la lettre)"
             }

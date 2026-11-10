@@ -58,7 +58,11 @@ object BancRendu {
     }
 
     /** Un nœud de l'arbre, en dp, avec ce qui le nomme. */
-    class Noeud(val nom: String, val rect: Rect, val cliquable: Boolean, val texte: Boolean, val descendance: Set<Int>, val id: Int)
+    class Noeud(
+        val nom: String, val rect: Rect, val cliquable: Boolean, val texte: Boolean, val descendance: Set<Int>, val id: Int,
+        /** La taille de mise en page du nœud (dp), **avant** tout rognage : [rect] est rogné par la zone qui défile, pas elle. */
+        val taille: Rect = rect,
+    )
 
     class Resultat(val racine: Rect, val noeuds: List<Noeud>, val densite: Float) {
         val cliquables: List<Noeud> get() = noeuds.filter { it.cliquable }
@@ -106,7 +110,7 @@ object BancRendu {
                 ?: n.config.getOrNull(SemanticsProperties.Text)?.joinToString(" ") { it.text }
                 ?: n.config.getOrNull(SemanticsProperties.TestTag)
                 ?: "(sans nom #${n.id})")
-            Noeud(nom, en(n.boundsInRoot, densite), cliquable, texte, descendants(n), n.id)
+            Noeud(nom, en(n.boundsInRoot, densite), cliquable, texte, descendants(n), n.id, Rect(0f, 0f, n.size.width / densite, n.size.height / densite))
         }
         return Resultat(en(racine.boundsInRoot, densite), noeuds.sortedBy { it.rect.top * 10_000 + it.rect.left }, densite)
     }
@@ -137,7 +141,10 @@ object BancRendu {
      * Un nœud est-il **vu** en entier ? Compose rend un rectangle vide (0 × 0) pour un nœud rogné par la zone qui défile : un
      * bouton ou une bande attendus à l'écran doivent avoir une surface, pas seulement tenir dans la racine.
      */
-    fun vu(r: Resultat, n: Noeud) = aire(n.rect) > 0f && entier(r, n)
+    fun vu(r: Resultat, n: Noeud) = aire(n.rect) > 0f && entier(r, n) && !rogne(n)
+
+    /** Garde muette de la 104 : un nœud rogné en partie garde une surface et tient dans la racine ; sa taille de mise en page le trahit. */
+    fun rogne(n: Noeud) = n.rect.width < n.taille.width - 0.5f || n.rect.height < n.taille.height - 0.5f
 
     /**
      * La règle de recouvrement (assertion 3) : sur **tous** les cliquables et **tous** les textes de l'arbre, aucun nœud ne coupe un

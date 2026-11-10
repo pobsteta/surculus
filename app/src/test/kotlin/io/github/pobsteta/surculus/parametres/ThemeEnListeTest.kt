@@ -30,6 +30,14 @@ class ThemeEnListeTest {
 
     @Test fun `les cibles du menu font au moins 48 dp et aucune taille de police en dur`() {
         assertTrue(source.contains("DropdownMenuItem(") && source.contains("heightIn(min = 48.dp)"))
+        // Garde muette de la 104 : « heightIn(min = 48.dp) » est écrit ailleurs dans le fichier ; un item du menu ou la ligne qui
+        // l'ouvre ramenés sous 48 dp passaient. On juge donc le voisinage de chacun.
+        // Fragile : les fenêtres de 120 et 80 caractères cassent si le fichier est reformaté (modifier, ligne ou arguments déplacés).
+        val item = source.indexOf("DropdownMenuItem(")
+        assertTrue("heightIn(min = 48.dp)" in source.substring(item, item + 120), "l'item du menu doit faire 48 dp au moins")
+        val ouvre = source.indexOf(".clickable(role = Role.DropdownList)")
+        assertTrue(ouvre > 0, "la ligne qui ouvre la liste a disparu")
+        assertTrue("heightIn(min = 48.dp)" in source.substring(maxOf(0, ouvre - 80), ouvre), "la ligne qui ouvre la liste doit faire 48 dp au moins")
         assertFalse("fontSize" in source)
     }
 }

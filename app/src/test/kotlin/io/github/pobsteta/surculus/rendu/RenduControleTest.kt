@@ -90,6 +90,10 @@ class RenduControleTest {
         val defauts = ArrayList<String>()
         r.cliquables.filterNot { BancRendu.entier(r, it) }.forEach { defauts += "cliquable « ${it.nom} » ${BancRendu.fmt(it.rect)} déborde de la racine ${BancRendu.fmt(r.racine)}" }
         defauts += BancRendu.recouvrements(r)
+        // Garde muette de la 104 : un bouton réduit à 40 dp passait (aucun test ne jugeait la taille rendue). Le plancher du doigt ganté
+        // est celui de DimensionsControle (48 dp) ; on lit la taille de mise en page, que le rognage de la zone qui défile ne change pas.
+        r.cliquables.filter { BancRendu.aire(it.rect) > 0f && (it.taille.height < 47.5f || it.taille.width < 47.5f) }
+            .forEach { defauts += "cliquable « ${it.nom} » de ${"%.0f".format(it.taille.width)} × ${"%.0f".format(it.taille.height)} dp, sous la cible de 48 dp" }
         if (modePocheAttendu) {
             val b = BancRendu.cliquable(r, MODE_POCHE)
             if (b == null) defauts += "bouton « $MODE_POCHE » absent"
