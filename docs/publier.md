@@ -72,7 +72,8 @@ Sans les quatre secrets, pas d'APK (décision a).
    - `RELEASE_KEY_PASSWORD`.
 
 Un des quatre manquant équivaut à l'absence de clé. Décision de fond (conservation de la clé,
-distribution) : ADR 0010, à venir (réservée, non écrite : voir [l'index des ADR](adr/README.md)).
+distribution) : [ADR 0010](adr/0010-cle-de-signature-et-distribution.md), proposée, pas encore tranchée
+(voir [l'index des ADR](adr/README.md)).
 
 En local avec clé : passer `RELEASE_KEYSTORE`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`,
 `RELEASE_KEY_PASSWORD` dans l'environnement. Si `RELEASE_KEYSTORE` pointe vers un fichier absent,

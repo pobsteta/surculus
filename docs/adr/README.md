@@ -15,7 +15,7 @@
 | [0007](0007-couches-ajoutees-au-contrat-sommier.md) | Couches ajoutées au contrat `travaux.gpkg` | acceptée (2026-10-15) |
 | [0008](0008-bibliotheques-communes.md) | Style commun avec Marculus et Groma, par la bibliothèque `terrain` (les autres briques communes : ADR ultérieure) | acceptée (2026-10-23) ; pas de successeur de `terrain` pour l'instant (risque assumé) |
 | [0009](0009-carte-hors-ligne.md) | Carte et ortho hors ligne | acceptée (2026-10-21) |
-| 0010 | Clé de signature et distribution | **réservée, non écrite** ; citée par `docs/publier.md` ; la clé reste à Pascal |
+| [0010](0010-cle-de-signature-et-distribution.md) | Clé de signature et distribution | **proposée** (2026-11-10), pas encore critiquée par le `contradicteur` ni tranchée par Pascal ; questions ouvertes dont le successeur |
 | [0011](0011-ecriture-geopackage-sur-appareil.md) | Écriture du GeoPackage sur l'appareil | acceptée (2026-10-17) |
 | 0012 | Briques communes (GNSS, géodésie, journal, GeoPackage, voix, carte) vers `terrain` | **réservée, non écrite** (2026-10-22) : renvoyée par l'ADR 0008 après l'essai d'automne 2026 et une table des écarts ; les en-têtes des copies (`core/.../{gnss,geo}/*.kt`, `Declinaison.kt`, `app/.../gnss/*.kt`, leurs tests, `NOTICE` l. 38), l'ADR 0003 l. 69 et la fiche 003 l. 26 disent encore « ADR 0008 » |
 
