@@ -131,3 +131,18 @@ la fumée reste dans `signer`, après l'approbation, sur le type de build `fumee
 - **Test (M5) :** rejoué sur le `release.yml` de `origin/main` : rouge (3 échecs sur 10).
 - **Non vérifié :** la page « Using secrets in GitHub Actions » ouverte ne dit pas que le secret d'environnement prime sur le secret
   du dépôt du même nom ; la doc écrite n'affirme que ce qui est sûr (le job voit aussi les secrets du dépôt).
+
+## Reprise 3/3 (2026-11-10)
+
+Pascal a changé de cap après la remarque sur le type de build `fumee` : la fumée passe dans `tester`, avant l'approbation,
+sans aucun secret (signée en debug sans `RELEASE_KEYSTORE`, `app/build.gradle.kts`).
+
+- **Redite :** « Activer KVM » et « Essai de fumée » quittent `signer` pour `tester`. `signer` ne garde que la clé, l'APK
+  release, son contrôle 16 Ko, l'APK, les notes et l'artefact.
+- **Vérifié :** la fumée ne lit aucune sortie de `signer` (elle prend `steps.version.outputs.new_version`, de `tester`, et
+  `github.run_number`) ; son échec fait échouer `tester`, donc `signer` (`needs: tester`) ne part pas : ni approbation demandée,
+  ni tag, ni release. Commentaires et `docs/publier.md` : la fumée éprouve le type `fumee`, pas l'APK publié.
+- **Test :** la fumée est dans `tester` et absente de `signer` ; aucune ligne de `tester` ne mentionne `RELEASE_`. Vu rouge sur
+  179fb57 (1 échec sur 12), puis vert.
+- **`actionlint` :** non passé dans ce worktree : l'exécution du binaire téléchargé (1.7.7, somme SHA-256 vérifiée contre le
+  fichier officiel des sommes) a été refusée par le système. Le relecteur l'avait passé sur la version de la reprise 2/3.

@@ -78,6 +78,21 @@ class SecretsDeSignatureDansEnvironnementTest {
         return resultat
     }
 
+    /** Les lignes (hors commentaires) d'un job, de son en-tête jusqu'au job suivant. */
+    fun lignesDuJob(texte: String, job: String): List<String> {
+        val resultat = mutableListOf<String>()
+        var dansJobs = false
+        var dedans = false
+        for (l in texte.lines()) {
+            if (l.startsWith("jobs:")) { dansJobs = true; continue }
+            if (dansJobs && sortDeJobs(l)) dansJobs = false
+            if (!dansJobs) continue
+            enteteJob.find(l)?.let { dedans = it.groupValues[1] == job }
+            if (dedans && !l.trimStart().startsWith("#")) resultat += l
+        }
+        return resultat
+    }
+
     fun lectures(fichier: String, texte: String): List<Lecture> {
         val env = environnements(texte)
         val resultat = mutableListOf<Lecture>()
@@ -127,6 +142,16 @@ class SecretsDeSignatureDansEnvironnementTest {
         val texte = workflow("release.yml").readText()
         assertTrue(Regex("^ {2}$JOB_TESTS:\\s*$", RegexOption.MULTILINE).containsMatchIn(texte), "job « $JOB_TESTS » absent")
         assertEquals(mapOf(JOB_SIGNATURE to "release"), environnements(texte))
+    }
+
+    @Test
+    fun `la fumee est dans le job de tests et aucune ligne de ce job ne mentionne RELEASE`() {
+        val texte = workflow("release.yml").readText()
+        val tests = lignesDuJob(texte, JOB_TESTS)
+        val signature = lignesDuJob(texte, JOB_SIGNATURE)
+        assertTrue(tests.any { "connectedFumeeAndroidTest" in it }, "la fumée n'est pas dans « $JOB_TESTS »")
+        assertTrue(signature.none { "connectedFumeeAndroidTest" in it }, "la fumée est encore dans « $JOB_SIGNATURE »")
+        assertEquals(emptyList<String>(), tests.filter { "RELEASE_" in it })
     }
 
     @Test
@@ -202,5 +227,14 @@ class SecretsDeSignatureDansEnvironnementTest {
         assertEquals(setOf("a", "b"), besoins("jobs:\n  publier:\n    needs:\n      - a\n      - b\n")["publier"])
         // publier qui ne dépend que de tester : la garde le verrait.
         assertEquals(setOf("tester"), besoins("jobs:\n  publier:\n    needs: tester\n")["publier"])
+    }
+
+    @Test
+    fun `la garde distingue les lignes des deux jobs et ignore les commentaires`() {
+        val y = "jobs:\n  tester:\n    steps:\n      # RELEASE_X en commentaire\n      - run: a\n" +
+            "  signer:\n    steps:\n      - run: b RELEASE_Y\n"
+        assertEquals(listOf("    steps:", "      - run: a"), lignesDuJob(y, "tester").drop(1))
+        assertEquals(1, lignesDuJob(y, "signer").count { "RELEASE_" in it })
+        assertEquals(0, lignesDuJob(y, "tester").count { "RELEASE_" in it })
     }
 }

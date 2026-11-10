@@ -11,16 +11,16 @@ de Pascal le même jour (a et b ci-dessous).
 1. Calcule la prochaine version SemVer d'après les messages de commit
    (`mathieudutour/github-tag-action`, préfixe `v`) **sans poser le tag**.
 2. Lance `.claude/test-command` et le contrôle 16 Ko de l'APK debug (`scripts/verifier-16ko.sh`).
+3. Joue l'essai de fumée sur émulateur (voir plus bas), **avant l'approbation et sans aucune clé** :
+   le type de build `fumee` se signe en debug quand `RELEASE_KEYSTORE` est absent
+   (`app/build.gradle.kts`). Pascal approuve donc une release déjà éprouvée sur émulateur.
 
 **`signer`** (`contents: read`, `environment: release`, part après `tester`) : attend l'approbation
 de Pascal, fait son propre checkout, puis
 1. si les secrets de signature sont présents : compile `:app:assembleRelease` avec
    `-PappVersionName=<version>` et `-PappVersionCode=<numéro d'exécution>` et refait le contrôle
    16 Ko sur l'APK release ;
-2. joue l'essai de fumée sur émulateur, **toujours**, après l'approbation (décision de Pascal,
-   2026-11-10) : sans clé, le type de build `fumee` se signe en debug (`app/build.gradle.kts`,
-   `signingConfig` de `release` : « release » si le keystore existe, « debug » sinon) ;
-3. dépose en artefact les notes et, le cas échéant, `surculus-vX.Y.Z-AAAAMMJJ-HHMM.apk`.
+2. dépose en artefact les notes et, le cas échéant, `surculus-vX.Y.Z-AAAAMMJJ-HHMM.apk`.
 
 Aucun APK ne passe de `tester` à `signer` : l'APK release est recompilé dans `signer`, de sorte
 que l'APK debug (non signé de la clé) ne peut pas passer pour l'APK signé.
@@ -145,11 +145,11 @@ s'affiche cassé jusque-là. Si une protection de branche couvre toutes les bran
 
 ## L'essai de fumée sur émulateur
 
-Ajouté le 2026-10-22. Avant de publier, `.github/workflows/release.yml` (job `signer`, étapes « Activer KVM » puis
-« Essai de fumée de l'APK release sur émulateur ») lance l'application sur un
+Ajouté le 2026-10-22. Avant de publier, `.github/workflows/release.yml` (job `tester`, étapes « Activer KVM » puis
+« Essai de fumée du type de build fumee sur émulateur ») lance l'application sur un
 émulateur x86_64 : elle écrit une tournée de démonstration (sqlite-jdbc, fonctions `ST_*` en Kotlin,
 index rtree) puis la relit. Il tourne sur le type de build `fumee`, calqué sur la release, avec
-R8 et `proguard-fumee.pro`. **La release ne part pas si l'essai échoue.**
+R8 et `proguard-fumee.pro`. **La release ne part pas si l'essai échoue** : `tester` échoue, donc `signer` (qui en dépend) ne part pas, sans même demander l'approbation de Pascal. L'essai éprouve le type `fumee`, signé en debug, et non l'APK signé qui sera publié ; il n'utilise aucun secret ni aucune sortie de `signer`.
 
 Limites, dites dans le workflow : x86_64 seulement (le chemin ARM n'est jamais exécuté en CI,
 Pascal l'essaie sur téléphone) ; `proguard-fumee.pro` garde aussi `:gpkg`, `:core`, `kotlin.**`
