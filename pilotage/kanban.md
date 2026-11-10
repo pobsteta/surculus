@@ -51,6 +51,8 @@ double appui (mineurs de la 089), renvoi de l'ADR 0003 au « codé par la 086 »
 
 _Idées, à trier au prochain `/mission`._
 
+- **`app/build.gradle.kts` l. 115-116** : le type `fumee` n'a plus « même signature » en CI depuis la 107 (signé en debug dans `tester`) ; commentaire à corriger (relecture de la #182).
+
 - **Refus encore techniques à l'écran** (relecture de la 068) : `non_observe` avec un `_`, UUID de plant
   dans plusieurs messages de `RefusPlacette`. *(Non revérifié le 2026-11-09 ; la 103 a traité la placette introuvable, pas ces messages.)*
 - **Mineurs de la 052** : paramètres de rationale inutilisés dans `refusAMemoriser` (`noterRationales`) ;
@@ -123,6 +125,8 @@ _Idées, à trier au prochain `/mission`._
   correspondance des codes, `montant_eur` facultatif).
 
 ## Validé
+
+- **107** secrets de signature dans l'environnement « release » (`dev`, appuyer), lancée le 2026-11-10 ; fiche `pilotage/missions/107-secrets-dans-l-environnement-release.md` ; PR #182 relue, fusionnable une fois les actions de Pascal faites (`docs/publier.md`, « L'ordre, en toutes lettres »).
 
 - **104** audit des gardes de rendu et de forme (`testeur`, appuyer, bilan du 2026-11-09, cause 3) : PR #177, reprise 1/3 en relecture (57 gardes, 5 muettes corrigées).
 
