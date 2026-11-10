@@ -22,6 +22,10 @@ concurrency:
 jobs:
   construire:
     runs-on: ubuntu-latest
+    # Les secrets de signature RELEASE_* vivent dans l'environnement « release » (ADR 0010, mission 107) :
+    # limité à main, approbation de Pascal avant que le job ne parte. Ils ne sont plus des secrets du dépôt.
+    # Seul ce job les lit ; un test (SecretsDeSignatureDansEnvironnementTest) le vérifie.
+    environment: release
     permissions:
       contents: read
     outputs:

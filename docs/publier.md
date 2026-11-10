@@ -65,11 +65,22 @@ Sans les quatre secrets, pas d'APK (décision a).
    `keytool -genkeypair -v -keystore surculus-release.keystore -alias surculus -keyalg RSA -keysize 4096 -validity 10000`
 2. Le garder en lieu sûr, avec ses mots de passe : **le perdre interdit toute mise à jour**
    des appareils déjà installés.
-3. Créer quatre secrets dans Settings > Secrets and variables > Actions du dépôt :
-   - `RELEASE_KEYSTORE_BASE64` : `base64 -w0 surculus-release.keystore` ;
-   - `RELEASE_KEYSTORE_PASSWORD` ;
-   - `RELEASE_KEY_ALIAS` (`surculus` ci-dessus) ;
-   - `RELEASE_KEY_PASSWORD`.
+3. Créer l'environnement `release` (Settings > Environments > New environment), puis le régler :
+   - **Deployment branches and tags** : « Selected branches and tags », avec la seule règle `main` ;
+   - **Required reviewers** : Pascal (approbation avant que le job ne parte) ;
+   - y créer quatre **Environment secrets** (et non des secrets du dépôt) :
+     - `RELEASE_KEYSTORE_BASE64` : `base64 -w0 surculus-release.keystore` ;
+     - `RELEASE_KEYSTORE_PASSWORD` ;
+     - `RELEASE_KEY_ALIAS` (`surculus` ci-dessus) ;
+     - `RELEASE_KEY_PASSWORD`.
+4. Après la première release signée et approuvée, **supprimer les quatre secrets du dépôt**
+   (Settings > Secrets and variables > Actions > Repository secrets). Sans cette suppression, un
+   workflow lancé depuis une branche peut encore les lire et la protection ne sert à rien.
+   Vérification : `gh secret list` (niveau dépôt) n'affiche plus aucun `RELEASE_*`.
+
+Le job `construire` de `release.yml` déclare `environment: release` : chaque release attend
+l'approbation de Pascal (onglet Actions) avant de démarrer, tests compris. Un environnement sans
+les quatre secrets donne toujours une release sans APK (décision a).
 
 Un des quatre manquant équivaut à l'absence de clé. Décision de fond (conservation de la clé,
 distribution) : ADR 0010, à venir (réservée, non écrite : voir [l'index des ADR](adr/README.md)).

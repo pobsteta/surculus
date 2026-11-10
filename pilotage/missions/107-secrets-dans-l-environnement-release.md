@@ -12,7 +12,7 @@ Pascal. Aujourd'hui, ce sont des secrets du dépôt, que tout workflow lancé de
 peut lire. Avec l'environnement, la clé et ses mots de passe ne sortent plus que pour une
 release voulue par Pascal (ADR 0010, décision 1 de Pascal du 2026-11-10).
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir. S'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** je fais lire les quatre secrets `RELEASE_*` au seul job de `release.yml` qui signe l'APK, en lui faisant déclarer l'environnement `release` (limité à `main`, approuvé par Pascal), pour que la clé ne sorte que pour une release voulue ; un test garde cette règle, et je ne crée ni l'environnement ni les secrets.
 
 ## Les trois questions (règle de staffing)
 
