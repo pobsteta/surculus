@@ -1,15 +1,16 @@
 # Publier : versions, releases, badges
 
 Mission 016. Repris de Marculus, comme l'a arbitré Pascal le 2026-10-16, avec deux décisions
-de Pascal le même jour (a et b ci-dessous).
+de Pascal le même jour (a et b ci-dessous ; la numérotation SemVer d'origine est remplacée par la
+version calendaire, mission 108).
 
 ## Ce qui se passe à chaque fusion dans `main`
 
 `release.yml` a trois jobs, `permissions: {}` au niveau du workflow.
 
 **`tester`** (`contents: read`, checkout sans conservation du jeton, **ni environnement ni secret**)
-1. Calcule la prochaine version SemVer d'après les messages de commit
-   (`mathieudutour/github-tag-action`, préfixe `v`) **sans poser le tag**.
+1. Calcule la prochaine version calendaire `AAAA.M.N` (voir « La version calendaire » plus bas,
+   `scripts/prochaine-version.sh`) **sans poser le tag**, et les notes de version (commits depuis le dernier tag `v*`).
 2. Lance `.claude/test-command` et le contrôle 16 Ko de l'APK debug (`scripts/verifier-16ko.sh`).
 3. Joue l'essai de fumée sur émulateur (voir plus bas), **avant l'approbation et sans aucune clé** :
    le type de build `fumee` se signe en debug quand `RELEASE_KEYSTORE` est absent
@@ -20,13 +21,13 @@ de Pascal, fait son propre checkout, puis
 1. si les secrets de signature sont présents : compile `:app:assembleRelease` avec
    `-PappVersionName=<version>` et `-PappVersionCode=<numéro d'exécution>` et refait le contrôle
    16 Ko sur l'APK release ;
-2. dépose en artefact les notes et, le cas échéant, `surculus-vX.Y.Z-AAAAMMJJ-HHMM.apk`.
+2. dépose en artefact les notes et, le cas échéant, `surculus-vAAAA.M.N-AAAAMMJJ-HHMM.apk`.
 
 Aucun APK ne passe de `tester` à `signer` : l'APK release est recompilé dans `signer`, de sorte
 que l'APK debug (non signé de la clé) ne peut pas passer pour l'APK signé.
 
 **`publier`** (`contents: write`, ni checkout ni Gradle, aucun secret de signature) : crée le tag
-`vX.Y.Z` sur le commit fusionné et la release GitHub. Il dépend de `tester` et de `signer`. Tests
+`vAAAA.M.N` sur le commit fusionné et la release GitHub. Il dépend de `tester` et de `signer`. Tests
 rouges : `publier` ne part pas, ni tag ni release. **Si Pascal n'approuve pas, ou rejette,
 `signer` ne s'exécute pas : ni tag ni release.** Pendant l'attente, la release occupe le groupe
 de concurrence : une fusion suivante attend derrière elle (voir plus bas).
@@ -44,22 +45,32 @@ pas la même signature et ne se mettent pas à jour l'un par-dessus l'autre : il
 désinstaller (et perdre les données locales) à chaque version. Mieux vaut pas d'APK qu'un APK qui
 piège le forestier. En local, `./gradlew :app:assembleRelease` garde le repli debug, pour les essais.
 
-**(b) Première version `v0.1.0`, automatique.** Quand aucun tag `v*` n'existe, le workflow pose
-`v0.1.0` (sans cela, l'action partirait de 0.0.1). Ensuite le calcul normal reprend. Aucun geste
-manuel. Les notes de cette première release seront vides, mis à part la mention sur l'APK
-(la liste des commits n'a pas de point de départ).
+**(b) Première version `v0.1.0`, automatique. Remplacée par la mission 108 (2026-11-11), à
+confirmer par Pascal.** La décision d'origine : quand aucun tag `v*` n'existe, le workflow pose
+`v0.1.0`, sans geste manuel. Elle devient « première version **du mois** » : sans tag du mois,
+le rang est 1 (`v2026.11.1`). Sans aucun tag `v*` dans le dépôt, la première release est donc
+`vAAAA.M.1` et non plus `v0.1.0`, avec des notes sans liste de changements (pas de point de départ).
+Les tags `v0.1.0` à `v0.7.x` existants restent tels quels.
 
-## Commits conventionnels
+## La version calendaire
 
-| Message | Effet sur la version |
-|---|---|
-| `feat: ...` | mineur (0.1.0 -> 0.2.0) |
-| `fix: ...` | patch (0.1.0 -> 0.1.1) |
-| `feat!: ...` ou pied `BREAKING CHANGE:` | majeur |
-| tout autre (`docs:`, `build:`...) | patch |
+Mission 108, comme nemeton (`r.yml`). Plus de SemVer ni de messages de commit conventionnels
+pour numéroter : le numéro dit la date de l'APK.
 
-Le titre du commit de fusion de la PR compte : le soigner à la fusion. Chaque fusion donne une
-version, même pour de la documentation (défaut `patch`), comme dans Marculus.
+- Tag `vAAAA.M.N`, version `AAAA.M.N` (sans `v`) : `v2026.11.1`, `v2026.11.2`, puis `v2026.12.1`,
+  puis `v2027.1.1`. Forme : `^[0-9]{4}\.([1-9]|1[0-2])\.[1-9][0-9]*$` (mois sans zéro devant).
+- AAAA.M : année et mois du lancement du workflow, **à l'heure de Paris** (une fusion le
+  30 novembre à 23 h 30 à Paris est une release de novembre). Valeur provisoire, à confirmer par Pascal.
+- N : 1 + le plus grand N des tags `vAAAA.M.*` du même mois (comparaison numérique), 1 s'il n'y en
+  a aucun. Les tags `v0.x.y` sont ignorés. Un trou (tag supprimé) n'est pas comblé.
+- Le `versionCode` Android reste le numéro d'exécution du workflow (`github.run_number`) : il monte
+  toujours, l'APK s'installe par-dessus l'ancien.
+- Le calcul est `scripts/prochaine-version.sh`, vérifié par `VersionCalendaireTest` (listes de
+  tags et dates données, sans réseau). Il se fait dans `tester`, sans poser le tag.
+- Notes de version : « Changements depuis `<dernier tag v*>` » puis un commit par ligne (titre et
+  hash court), fusions exclues. La première release calendaire part du dernier `v0.7.x`.
+  Chaque fusion donne une release, même pour de la documentation. Les titres de commit ne
+  pilotent plus rien : ils ne servent qu'à lire les notes.
 
 ## Deux fusions pendant qu'une release tourne
 

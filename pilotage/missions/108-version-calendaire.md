@@ -11,7 +11,8 @@ et le mois de la release (mois sans zéro devant) et N le rang de la release dan
 mois. Il le fait à la place du SemVer tiré des commits, pour que le numéro dise la date de l'APK, comme dans nemeton
 (demande de Pascal du 2026-11-11, « Comme nemeton »).
 
-**Redite par l'agent :** _à compléter par l'agent avant d'agir. S'il n'y arrive pas, il s'arrête._
+**Redite par l'agent :** faire numéroter chaque release `vAAAA.M.N` par `release.yml` (année et mois de Paris, rang N dans le mois, repartant
+de 1 chaque mois) à la place du SemVer tiré des commits, pour que le numéro de l'APK dise sa date, comme nemeton.
 
 ## Les trois questions (règle de staffing)
 

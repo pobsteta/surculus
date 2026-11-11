@@ -1,10 +1,10 @@
 name: Release
 
-# Chaque fusion dans main : version SemVer calculée depuis les commits conventionnels,
-# tests et contrôle 16 Ko, APK release signé, puis tag vX.Y.Z et release GitHub.
-# Repris de Marculus (arbitrage de Pascal, 2026-10-16) avec deux décisions de Pascal :
-#  - pas d'APK sans clé de signature : sans secrets, la release part avec ses notes, sans APK ;
-#  - première version v0.1.0 automatique quand aucun tag « v* » n'existe.
+# Chaque fusion dans main : version calendaire AAAA.M.N (mission 108, comme nemeton),
+# tests et contrôle 16 Ko, APK release signé, puis tag vAAAA.M.N et release GitHub.
+# Repris de Marculus (arbitrage de Pascal, 2026-10-16) avec une décision de Pascal :
+#  - pas d'APK sans clé de signature : sans secrets, la release part avec ses notes, sans APK.
+# (La décision b du 2026-10-16, première version v0.1.0, est remplacée par la mission 108 : première version du mois = rang 1.)
 # Trois jobs, du moins privilégié au plus privilégié :
 #  - « tester » : code du dépôt en lecture seule, SANS environnement et sans secret de signature. Calcule la version
 #    (sans poser le tag), joue les tests, le contrôle 16 Ko de l'APK debug et l'essai de fumée sur émulateur.
@@ -44,28 +44,26 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # Aucun tag « v* » : première version v0.1.0 (custom_tag). Sinon, calcul normal.
-      - name: Chercher un tag existant
-        id: existant
-        run: |
-          if [ -n "$(git tag --list 'v*')" ]; then
-            echo "premiere=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "premiere=true" >> "$GITHUB_OUTPUT"
-            echo "Aucun tag v* : première version v0.1.0."
-          fi
-
-      # feat: -> mineur · fix: -> patch · ! ou BREAKING CHANGE -> majeur · sinon -> patch.
-      - name: Calculer la version (sans poser le tag)
+      # Version calendaire vAAAA.M.N (mission 108, comme nemeton) : AAAA.M = année et mois du lancement à l'heure de
+      # Paris, N = rang de la release dans le mois (scripts/prochaine-version.sh, testé par VersionCalendaireTest).
+      # Le tag n'est pas posé ici. Notes : les commits depuis le dernier tag « v* » atteignable (le dernier v0.7.x pour
+      # la première release calendaire) ; sans aucun tag, pas de liste. Aucun secret lu.
+      - name: Calculer la version calendaire (sans poser le tag)
         id: version
-        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: patch
-          release_branches: main
-          tag_prefix: v
-          custom_tag: ${{ steps.existant.outputs.premiere == 'true' && '0.1.0' || '' }}
-          dry_run: true
+        run: |
+          version=$(git tag --list 'v*' | bash scripts/prochaine-version.sh "$(date -u +%Y-%m-%dT%H:%M:%SZ)")
+          echo "new_version=$version" >> "$GITHUB_OUTPUT"
+          echo "new_tag=v$version" >> "$GITHUB_OUTPUT"
+          precedent=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+          if [ -n "$precedent" ]; then
+            liste=$(git log "$precedent..HEAD" --no-merges --pretty='- %s (%h)')
+            notes="## Changements depuis $precedent"$'\n\n'"${liste:-Aucun commit propre depuis $precedent.}"
+          else
+            notes="Première release : aucun tag précédent, pas de liste de changements."
+          fi
+          delim="FIN_NOTES_$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n')"
+          { echo "changelog<<$delim"; echo "$notes"; echo "$delim"; } >> "$GITHUB_OUTPUT"
+          echo "Version $version (tag v$version), depuis ${precedent:-aucun tag}."
 
       - name: Configurer JDK 21
         uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1

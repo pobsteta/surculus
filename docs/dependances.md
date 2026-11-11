@@ -53,7 +53,6 @@ Licences lues sur l'API GitHub (`/repos/<action>/license`) le 2026-10-16.
 | `gradle/actions/setup-gradle` | v4 | **non déclarée par l'API (NOASSERTION)** : à confirmer, voir ci-dessous | tous les workflows |
 | `actions/upload-artifact` | v4 | MIT | `ci.yml`, `badges.yml`, `release.yml` |
 | `actions/download-artifact` | v4.3.0, épinglée par SHA | MIT | `badges.yml`, `release.yml` (jobs qui écrivent) |
-| `mathieudutour/github-tag-action` | v6.2 | MIT | `release.yml` (calcul de la version, préfixe `v`) |
 | `softprops/action-gh-release` | v2.6.2, épinglée par SHA | MIT | `release.yml` (tag et release) |
 | `cicirello/jacoco-badge-generator` | v2 | MIT | `badges.yml` (badge de couverture) |
 | `reactivecircus/android-emulator-runner` | v2.38.0, épinglée par SHA (commit du tag annoté) | Apache-2.0 | `release.yml` (essai de fumée de l'APK release sur émulateur x86_64, ADR 0011) |
