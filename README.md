@@ -45,6 +45,16 @@ Télécharger l'APK de la dernière [release](https://github.com/pobsteta/surcul
 (Android 8.0 ou plus récent) et l'installer. Les versions et la signature sont décrites
 dans [`docs/publier.md`](docs/publier.md).
 
+### Signature
+
+Les APK des releases sont signés de la clé décrite par l'[ADR 0010](docs/adr/0010-cle-de-signature-et-distribution.md)
+(proposée, pas encore acceptée). Pour vérifier un APK : `apksigner verify --print-certs <fichier.apk>`,
+puis comparer l'empreinte SHA-256 du certificat à celle-ci.
+
+- Empreinte SHA-256 complète du certificat : **à remplir par Pascal** (sortie de `keytool -list -v` sur la copie USB).
+- Format du fichier de clé : **à remplir par Pascal** (ligne « Keystore type » de la même sortie).
+- Date du relevé : **à remplir par Pascal**. La source unique est l'ADR 0010 ; ce qui est ici doit en être la copie fidèle.
+
 ## Construire et tester
 
 JDK 17 ou plus (bytecode cible 17, `core/build.gradle.kts` ; testé avec 21, comme la CI,
