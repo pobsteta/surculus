@@ -1,12 +1,20 @@
 name: Release
 
-# Chaque fusion dans main : version SemVer calculée depuis les commits conventionnels,
-# tests et contrôle 16 Ko, APK release signé, puis tag vX.Y.Z et release GitHub.
-# Repris de Marculus (arbitrage de Pascal, 2026-10-16) avec deux décisions de Pascal :
-#  - pas d'APK sans clé de signature : sans secrets, la release part avec ses notes, sans APK ;
-#  - première version v0.1.0 automatique quand aucun tag « v* » n'existe.
-# Deux jobs : « construire » exécute le code du dépôt en lecture seule ; « publier » a le droit
-# d'écrire (tag, release), ne fait ni checkout ni Gradle. Le tag n'est posé qu'après des tests verts.
+# Chaque fusion dans main : version calendaire AAAA.M.N (mission 108, comme nemeton),
+# tests et contrôle 16 Ko, APK release signé, puis tag vAAAA.M.N et release GitHub.
+# Repris de Marculus (arbitrage de Pascal, 2026-10-16) avec une décision de Pascal :
+#  - pas d'APK sans clé de signature : sans secrets, la release part avec ses notes, sans APK.
+# (La décision b du 2026-10-16, première version v0.1.0, est remplacée par la mission 108 : première version du mois = rang 1.)
+# Trois jobs, du moins privilégié au plus privilégié :
+#  - « tester » : code du dépôt en lecture seule, SANS environnement et sans secret de signature. Calcule la version
+#    (sans poser le tag), joue les tests, le contrôle 16 Ko de l'APK debug et l'essai de fumée sur émulateur.
+#    Part seul à chaque fusion dans main.
+#  - « signer » : déclare « environment: release » (ADR 0010, mission 107). L'environnement est limité à main et exige
+#    l'approbation de Pascal : les secrets RELEASE_* n'y sortent que pour une release voulue. Il fait son propre
+#    checkout, compile l'APK release, contrôle ses pages de 16 Ko, prépare l'APK et les notes. Il ne part qu'après « tester ».
+#  - « publier » : seul à pouvoir écrire (tag, release), ne fait ni checkout ni Gradle, ne voit aucun secret.
+# Le tag n'est posé qu'après des tests verts ET l'approbation de Pascal. Si Pascal n'approuve pas, ou rejette, « signer »
+# ne part pas (ou échoue) : « publier » ne part pas non plus, donc ni tag ni release.
 on:
   push:
     branches: [ main ]
@@ -20,41 +28,42 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  construire:
+  # Aucun environnement, aucun secret de signature (SecretsDeSignatureDansEnvironnementTest le vérifie).
+  # Pascal approuve donc une release déjà éprouvée par les tests et l'essai de fumée.
+  tester:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     outputs:
       new_tag: ${{ steps.version.outputs.new_tag }}
-      signe: ${{ steps.cle.outputs.signe }}
+      new_version: ${{ steps.version.outputs.new_version }}
+      changelog: ${{ steps.version.outputs.changelog }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      # Aucun tag « v* » : première version v0.1.0 (custom_tag). Sinon, calcul normal.
-      - name: Chercher un tag existant
-        id: existant
-        run: |
-          if [ -n "$(git tag --list 'v*')" ]; then
-            echo "premiere=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "premiere=true" >> "$GITHUB_OUTPUT"
-            echo "Aucun tag v* : première version v0.1.0."
-          fi
-
-      # feat: -> mineur · fix: -> patch · ! ou BREAKING CHANGE -> majeur · sinon -> patch.
-      - name: Calculer la version (sans poser le tag)
+      # Version calendaire vAAAA.M.N (mission 108, comme nemeton) : AAAA.M = année et mois du lancement à l'heure de
+      # Paris, N = rang de la release dans le mois (scripts/prochaine-version.sh, testé par VersionCalendaireTest).
+      # Le tag n'est pas posé ici. Notes : les commits depuis le dernier tag « v* » atteignable (le dernier v0.7.x pour
+      # la première release calendaire) ; sans aucun tag, pas de liste. Aucun secret lu.
+      - name: Calculer la version calendaire (sans poser le tag)
         id: version
-        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: patch
-          release_branches: main
-          tag_prefix: v
-          custom_tag: ${{ steps.existant.outputs.premiere == 'true' && '0.1.0' || '' }}
-          dry_run: true
+        run: |
+          version=$(git tag --list 'v*' | bash scripts/prochaine-version.sh "$(date -u +%Y-%m-%dT%H:%M:%SZ)")
+          echo "new_version=$version" >> "$GITHUB_OUTPUT"
+          echo "new_tag=v$version" >> "$GITHUB_OUTPUT"
+          precedent=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+          if [ -n "$precedent" ]; then
+            liste=$(git log "$precedent..HEAD" --no-merges --pretty='- %s (%h)')
+            notes="## Changements depuis $precedent"$'\n\n'"${liste:-Aucun commit propre depuis $precedent.}"
+          else
+            notes="Première release : aucun tag précédent, pas de liste de changements."
+          fi
+          delim="FIN_NOTES_$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n')"
+          { echo "changelog<<$delim"; echo "$notes"; echo "$delim"; } >> "$GITHUB_OUTPUT"
+          echo "Version $version (tag v$version), depuis ${precedent:-aucun tag}."
 
       - name: Configurer JDK 21
         uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
@@ -77,6 +86,71 @@ jobs:
 
       - name: Contrôle des pages de 16 Ko (APK debug des tests)
         run: bash scripts/verifier-16ko.sh app/build/outputs/apk/debug/app-debug.apk
+
+      # Essai de fumée (ADR 0011, arbitrage de Pascal), AVANT l'approbation et sans aucun secret : l'application écrit
+      # une tournée de démonstration (sqlite-jdbc, natifs Android, fonctions ST_* en Kotlin, index rtree) puis la relit,
+      # sur un émulateur x86_64, avec R8 et le désucrage de la release. Il éprouve le type de build `fumee`, calqué sur
+      # la release et signé en debug (sans RELEASE_KEYSTORE, app/build.gradle.kts), et non l'APK signé qui sera publié.
+      # proguard-fumee.pro y ajoute des règles : il garde aussi :gpkg, :core, kotlin.** et kotlinx.**, donc la fumée
+      # n'éprouve pas R8 sur ces classes ni sur la bibliothèque standard Kotlin.
+      # Si elle échoue, « tester » échoue : « signer » (needs: tester) ne part pas, donc ni approbation demandée, ni
+      # tag, ni release. Elle n'utilise aucune sortie de « signer » (seulement la version, calculée plus haut).
+      # Limite assumée : x86_64 seulement, le chemin ARM n'est jamais exécuté ici (Pascal l'essaie sur téléphone).
+      - name: Activer KVM (émulateur)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Essai de fumée du type de build fumee sur émulateur (écrire puis relire une tournée)
+        # v2.38.0, épinglée par SHA (commit du tag annoté).
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        env:
+          VERSION: ${{ steps.version.outputs.new_version }}
+          NUMERO: ${{ github.run_number }}
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          # Gradle rend « réussi » une instrumentation qui plante avant le premier test (0 test joué) : on exige
+          # donc au moins un test joué et aucun échec dans le rapport.
+          script: |
+            ./gradlew :app:connectedFumeeAndroidTest --no-daemon "-PappVersionName=$VERSION" "-PappVersionCode=$NUMERO"
+            bash scripts/verifier-fumee.sh app/build/outputs/androidTest-results/connected/fumee
+
+  # Les secrets de signature RELEASE_* vivent dans l'environnement « release » (ADR 0010, mission 107) :
+  # limité à main, approbation de Pascal avant que le job ne parte. Seul ce job les lit.
+  # Choix : checkout propre (le code d'un autre job n'est pas transmis) et recompilation de l'APK release ici ;
+  # aucun APK ne passe d'un job à l'autre, donc l'APK debug non signé des tests ne peut pas passer pour l'APK signé.
+  signer:
+    needs: tester
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+    outputs:
+      signe: ${{ steps.cle.outputs.signe }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Configurer JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configurer le SDK Android
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          # build-tools fournit zipalign pour le contrôle 16 Ko.
+          packages: platform-tools build-tools;36.0.0
+
+      - name: Configurer Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
 
       - name: Préparer la clé de signature release
         id: cle
@@ -102,7 +176,7 @@ jobs:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-          VERSION: ${{ steps.version.outputs.new_version }}
+          VERSION: ${{ needs.tester.outputs.new_version }}
           NUMERO: ${{ github.run_number }}
         run: ./gradlew :app:assembleRelease --no-daemon "-PappVersionName=$VERSION" "-PappVersionCode=$NUMERO"
 
@@ -110,45 +184,11 @@ jobs:
         if: steps.cle.outputs.signe == 'true'
         run: bash scripts/verifier-16ko.sh app/build/outputs/apk/release/app-release.apk
 
-      # Essai de fumée de l'APK release (ADR 0011, arbitrage de Pascal) : l'application écrit une tournée de
-      # démonstration (sqlite-jdbc, natifs Android, fonctions ST_* en Kotlin, index rtree) puis la relit, sur un
-      # émulateur x86_64, avec R8 et le désucrage de la release. Il tourne sur le type de build `fumee`, calqué sur la release
-      # (proguard-fumee.pro y ajoute des règles : il garde aussi :gpkg, :core, kotlin.** et kotlinx.**, donc la fumée
-      # n'éprouve pas R8 sur ces classes ni sur la bibliothèque standard Kotlin). La release ne part pas s'il échoue.
-      # Limite assumée : x86_64 seulement, le chemin ARM n'est jamais exécuté ici (Pascal l'essaie sur téléphone).
-      - name: Activer KVM (émulateur)
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Essai de fumée de l'APK release sur émulateur (écrire puis relire une tournée)
-        # v2.38.0, épinglée par SHA (commit du tag annoté).
-        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
-        env:
-          # Mêmes variables que l'étape de compilation : sans elles, la signature release ne se configurerait pas.
-          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
-          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-          VERSION: ${{ steps.version.outputs.new_version }}
-          NUMERO: ${{ github.run_number }}
-        with:
-          api-level: 34
-          arch: x86_64
-          target: google_apis
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          # Gradle rend « réussi » une instrumentation qui plante avant le premier test (0 test joué) : on exige
-          # donc au moins un test joué et aucun échec dans le rapport.
-          script: |
-            ./gradlew :app:connectedFumeeAndroidTest --no-daemon "-PappVersionName=$VERSION" "-PappVersionCode=$NUMERO"
-            bash scripts/verifier-fumee.sh app/build/outputs/androidTest-results/connected/fumee
-
       - name: Préparer l'APK, les notes et le résumé
         env:
-          TAG: ${{ steps.version.outputs.new_tag }}
+          TAG: ${{ needs.tester.outputs.new_tag }}
           SIGNE: ${{ steps.cle.outputs.signe }}
-          CHANGELOG: ${{ steps.version.outputs.changelog }}
+          CHANGELOG: ${{ needs.tester.outputs.changelog }}
         run: |
           mkdir dist
           {
@@ -174,7 +214,7 @@ jobs:
           if-no-files-found: error
 
   publier:
-    needs: construire
+    needs: [tester, signer]
     runs-on: ubuntu-latest
     # Seul droit d'écriture du workflow ; pas de checkout, pas de Gradle.
     permissions:
@@ -188,9 +228,9 @@ jobs:
       - name: Créer le tag et la release GitHub
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
-          tag_name: ${{ needs.construire.outputs.new_tag }}
+          tag_name: ${{ needs.tester.outputs.new_tag }}
           target_commitish: ${{ github.sha }}
-          name: Surculus ${{ needs.construire.outputs.new_tag }}
+          name: Surculus ${{ needs.tester.outputs.new_tag }}
           body_path: dist/notes.md
           files: dist/*.apk
-          fail_on_unmatched_files: ${{ needs.construire.outputs.signe == 'true' }}
+          fail_on_unmatched_files: ${{ needs.signer.outputs.signe == 'true' }}

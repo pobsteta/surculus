@@ -17,8 +17,8 @@ const val URL_LICENCES = "https://github.com/pobsteta/surculus/blob/main/docs/de
 const val PLEIN_ECRAN_PAR_DEFAUT = false
 
 /**
- * Ligne « Version … » de la boîte « À propos » : [versionName] est celui du paquet installé (release : `0.7.41` ;
- * fumée : `0.7.41-fumee`). Absent ou vide : on le dit, on n'invente pas de numéro.
+ * Ligne « Version … » de la boîte « À propos » : [versionName] est celui du paquet installé (release : `2026.11.1` ;
+ * fumée : `2026.11.1-fumee`). Absent ou vide : on le dit, on n'invente pas de numéro.
  */
 fun texteVersion(versionName: String?): String =
     versionName?.trim()?.takeIf { it.isNotEmpty() }?.let { "Version $it" } ?: "Version inconnue"
